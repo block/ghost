@@ -172,7 +172,7 @@ export function formatReviewPacket(packet: ReviewPacket): string {
   } else {
     for (const check of packet.checks) {
       out.push(
-        `### haunts/checks/${check.id}${check.severity ? ` · ${check.severity}` : ""}`,
+        `### checks/${check.id}${check.severity ? ` · ${check.severity}` : ""}`,
       );
       const refs = check.via.map((ref) => `\`${ref}\``).join(", ");
       out.push(

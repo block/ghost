@@ -1,9 +1,9 @@
 import { cac } from "cac";
+import { registerChecksCommand } from "./commands/checks-command.js";
 import { formatGhostHelp } from "./commands/command-discovery.js";
 import { registerExportCommand } from "./commands/export-command.js";
 import { registerFingerprintCommands } from "./commands/fingerprint-commands.js";
 import { registerGatherCommand } from "./commands/gather-command.js";
-import { registerHauntCommand } from "./commands/haunt-command.js";
 import { registerManifestCommand } from "./commands/manifest-command.js";
 import { registerPullCommand } from "./commands/pull-command.js";
 import { registerPulseCommand } from "./commands/pulse-command.js";
@@ -25,7 +25,7 @@ export function buildCli(): ReturnType<typeof cac> {
   registerPulseCommand(cli);
   registerReviewCommand(cli);
   registerExportCommand(cli);
-  registerHauntCommand(cli);
+  registerChecksCommand(cli);
   registerManifestCommand(cli);
   registerSkillCommand(cli);
 

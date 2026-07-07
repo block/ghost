@@ -19,14 +19,14 @@ the component-system contract.
   manager, design archive, or autonomous judge. Keep the docs centered on the
   feed-forward act: the agent reads repo-local brand truth before it builds.
 - Preserve the flat corpus model: `.ghost/` is a package of prose nodes;
-  `manifest.yml`, `glossary.md`, and `haunts/` are reserved; everything else is
+  `manifest.yml`, `glossary.md`, and `checks/` are reserved; everything else is
   a node whose id comes from its filename. No hierarchy, inheritance, graph, or
   edge language.
 - The page should feel like a serious tool, not a SaaS explainer template:
   monochrome, restrained, typographic, with precise motion and only one
   memorable visual gesture at a time.
 - Concrete command names matter. Use `ghost init`, `ghost validate`,
-  `ghost gather`, `ghost pull`, `ghost pulse`, `ghost haunt add checks`, and
+  `ghost gather`, `ghost pull`, `ghost pulse`, `ghost checks init`, and
   `ghost review` exactly unless the CLI changes and the generated manifest has
   been updated.
 - Do not let optional review language obscure the boundary: checks and review

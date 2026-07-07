@@ -41,9 +41,9 @@ export function registerReviewCommand(cli: CAC): void {
 
         const paths = resolveFingerprintPackage(opts.package, process.cwd());
         const fingerprint = await loadFingerprintPackage(paths);
-        if (!fingerprint.haunts.includes("checks")) {
+        if (!fingerprint.hasChecksDir) {
           console.error(
-            "No checks haunt installed. Run `ghost haunt add checks` to add review assertions.",
+            "No checks directory. Run `ghost checks init` to add review assertions.",
           );
           process.exit(2);
           return;

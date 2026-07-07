@@ -21,7 +21,7 @@ asking. Every purpose lives in the projection, not in hidden routing logic.
 The test for any feature that "feels bundled":
 
 > Does serving this purpose require changing the *shape* of the fingerprint: the
-> flat corpus, node frontmatter, filename-kind convention, haunts reservation, or
+> flat corpus, node frontmatter, filename-kind convention, checks reservation, or
 > glossary?
 > - **No** then it is a projection. Fine. Keep it out of the model.
 > - **Yes** then that is a leak. Write it down below and fix the boundary.
@@ -41,7 +41,7 @@ into folders is a browsing convenience only.
 | `glossary.md` | The author's dictionary: every term with defined meaning in the corpus. Ghost ships no fixed vocabulary. |
 | Prose nodes (`<kind>.<slug>.md`, `<slug>.md`) | Durable brand truths; each body answers why (the stance), with what (the materials), or how it is assembled (the patterns). Altitude lives in prose; narrower truths name their condition. |
 | Node frontmatter | `description` (retrieval payload) and optional `materials` (repo-relative paths/globs or HTTPS URLs for concrete materials the prose governs). |
-| `haunts/` | Optional attached capabilities, each a directory anchored by a thin `haunt.yml`. Never a node source and never generation input. The first haunt is `checks`: review assertions binding to nodes with `references`. |
+| `checks/` | Optional review assertions binding to nodes with `references`. Never a node source and never generation input. |
 
 One resolution mechanism, read-only:
 
@@ -52,15 +52,14 @@ One resolution mechanism, read-only:
 The entrypoint node is `index.md` (id `index`): the human-curated front door. It
 is an ordinary node, listed in the menu like any other.
 
-Haunts are **not** nodes and are **never gathered**. Checks live in
-`haunts/checks/`, bind to the prose they enforce via `references`, and are
-consumed only by feedback projections such as `ghost review`.
+Checks are **not** nodes and are **never gathered**. They live in `checks/`,
+bind to the prose they enforce via `references`, and are consumed only by
+feedback projections such as `ghost review`.
 
 Two rules keep the reservation honest:
 
-- **The reserved list is closed.** `manifest.yml`, `glossary.md`, `haunts/`.
-  New capabilities are new haunt ids inside `haunts/`, not new root entries; a
-  new root entry ships only with an intentional schema change.
+- **The reserved list is closed.** `manifest.yml`, `glossary.md`, `checks/`.
+  A new root entry ships only with an intentional schema change.
 - **Materials are locators, not guidance.** Components, tokens, logos,
   illustrations, motion files, code patterns, and external asset libraries all
   use `materials`. The meaning of those materials lives in the node prose.
@@ -69,7 +68,7 @@ Two rules keep the reservation honest:
 
 | Consumer | CLI surface | Projection it needs | Reads | Changes the model? |
 | --- | --- | --- | --- | --- |
-| **Authoring** | `ghost init`, `ghost validate`, `ghost haunt add` | The raw nodes, haunts, and glossary for a human or agent writing the fingerprint. | the package | **No**, this is the model. |
+| **Authoring** | `ghost init`, `ghost validate`, `ghost checks init` | The raw nodes, checks, and glossary for a human or agent writing the fingerprint. | the package | **No**, this is the model. |
 | **Generation** | `ghost gather [ask…]`, `ghost pull <ids>` | The flat menu, then selected node bodies and materials. | nodes only | **No** if selection stays with the agent and checks stay invisible. |
 | **Local signal** | `ghost pulse` | The gitignored event tape (`.ghost/.events`) written by `gather` and `pull`, used to tune descriptions and menu ergonomics. | event ids and miss suggestions | **No**, observability must not become ranking, memory, or canonical state. |
 | **Diff review** | `ghost review` | Touched files matched to node `materials`, relevant checks, referenced prose, gaps, and the diff. | nodes, checks, diff | **No** if checks bind by `references` and are not gathered. |
@@ -94,7 +93,7 @@ Two rules keep the reservation honest:
 4. **Checks becoming generation input.** Checks are feedback assertions. If they
    appear in `gather`, the model starts writing to the test and the review
    signal collapses.
-   *Fix: `haunts/` is reserved and never loaded as nodes.*
+   *Fix: `checks/` is reserved and never loaded as nodes.*
 
 5. **Checks routing by anything other than `references`.** Filtering checks by
    kind, folder, or implicit corpus convention leaks governance policy into the

@@ -36,6 +36,7 @@ const FORBIDDEN_TERMS = [
   forbiddenDomainTerm(["s", "é", "ance"]),
   forbiddenDomainTerm(["elid", "ed"]),
   forbiddenDomainTerm(["appear", "ances"]),
+  forbiddenDomainTerm(["hau", "nt"], "s?"),
 ] as const;
 
 function forbiddenDomainTerm(parts: string[], suffix = ""): RegExp {

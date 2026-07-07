@@ -38,14 +38,14 @@ const sections: {
     name: "Checks And Review",
     href: "/docs/checks-and-review",
     description:
-      "Opt in to the checks haunt, bind review assertions to nodes, and assemble advisory packets from a diff.",
+      "Opt in to review checks, bind review assertions to nodes, and assemble advisory packets from a diff.",
     icon: <ShieldCheck className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "CLI Reference",
     href: "/docs/cli",
     description:
-      "Every command around the flat fingerprint: init, haunt, validate, gather, pull, pulse, and review.",
+      "Every command around the flat fingerprint: init, checks, validate, gather, pull, pulse, and review.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
 ];

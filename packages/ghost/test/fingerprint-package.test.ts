@@ -337,13 +337,13 @@ Provocation.
     });
   });
 
-  it("reserves haunts/ — checks-haunt files are never nodes", async () => {
+  it("reserves checks/ — check files are never nodes", async () => {
     await writeManifest(dir);
     await writeFile(
       join(dir, "asset.logo.md"),
       "---\ndescription: Logo.\nmaterials:\n  - brand/logo.svg\n---\n\nLogo prose.\n",
     );
-    await writeChecksHaunt(dir, [
+    await writeChecks(dir, [
       [
         "logo-clearspace.md",
         "---\nname: logo-clearspace\ndescription: Logo clearspace holds.\nseverity: high\nreferences:\n  - asset.logo\n---\n\nGrade it.\n",
@@ -353,13 +353,36 @@ Provocation.
     const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
 
     expect([...loaded.catalog.nodes.keys()]).toEqual(["asset.logo"]);
-    expect(loaded.haunts).toEqual(["checks"]);
+    expect(loaded.hasChecksDir).toBe(true);
     expect([...loaded.checks.keys()]).toEqual(["logo-clearspace"]);
     expect(loaded.invalid).toEqual([]);
-    expect(loaded.invalidHaunts).toEqual([]);
+    expect(loaded.invalidChecks).toEqual([]);
   });
 
-  it("flags a haunt directory without haunt.yml", async () => {
+  it("reports an absent checks/ directory without error", async () => {
+    await writeManifest(dir);
+
+    const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
+
+    expect(loaded.hasChecksDir).toBe(false);
+    expect(loaded.checks.size).toBe(0);
+    expect(loaded.invalidChecks).toEqual([]);
+  });
+
+  it("flags a nested directory inside checks/", async () => {
+    await writeManifest(dir);
+    await mkdir(join(dir, "checks", "nested"), { recursive: true });
+
+    const report = await lintFingerprintPackage(dir);
+
+    expect(report.errors).toBe(1);
+    expect(report.issues[0]).toMatchObject({
+      rule: "check-invalid",
+      path: "checks/nested",
+    });
+  });
+
+  it("flags the legacy haunts/ directory", async () => {
     await writeManifest(dir);
     await mkdir(join(dir, "haunts", "checks"), { recursive: true });
 
@@ -367,25 +390,8 @@ Provocation.
 
     expect(report.errors).toBe(1);
     expect(report.issues[0]).toMatchObject({
-      rule: "haunt-invalid",
-      path: "haunts/checks",
-    });
-  });
-
-  it("flags an unknown haunt id", async () => {
-    await writeManifest(dir);
-    await mkdir(join(dir, "haunts", "spectre"), { recursive: true });
-    await writeFile(
-      join(dir, "haunts", "spectre", "haunt.yml"),
-      "schema: ghost.haunt/v1\nid: spectre\n",
-    );
-
-    const report = await lintFingerprintPackage(dir);
-
-    expect(report.errors).toBe(1);
-    expect(report.issues[0]).toMatchObject({
-      rule: "haunt-invalid",
-      path: "haunts/spectre",
+      rule: "check-invalid",
+      path: "haunts",
     });
   });
 
@@ -446,18 +452,14 @@ async function writeManifest(dir: string): Promise<void> {
   );
 }
 
-async function writeChecksHaunt(
+async function writeChecks(
   dir: string,
   checks: Array<[string, string]>,
 ): Promise<void> {
-  const hauntDir = join(dir, "haunts", "checks");
-  await mkdir(hauntDir, { recursive: true });
-  await writeFile(
-    join(hauntDir, "haunt.yml"),
-    "schema: ghost.haunt/v1\nid: checks\n",
-  );
+  const checksDir = join(dir, "checks");
+  await mkdir(checksDir, { recursive: true });
   for (const [name, content] of checks) {
-    await writeFile(join(hauntDir, name), content);
+    await writeFile(join(checksDir, name), content);
   }
 }
 

@@ -57,19 +57,16 @@ describe("tarball writer", () => {
 
   it("excludes matching paths", async () => {
     const root = join(dir, "pkg");
-    await mkdir(join(root, "haunts", "checks"), { recursive: true });
+    await mkdir(join(root, "checks"), { recursive: true });
     await writeFile(join(root, ".events"), "private\n");
-    await writeFile(
-      join(root, "haunts", "checks", "haunt.yml"),
-      "id: checks\n",
-    );
+    await writeFile(join(root, "checks", "example.md"), "check\n");
     await writeFile(join(root, "manifest.yml"), "id: local\n");
     const archivePath = join(dir, "archive.tgz");
 
     await writeDirectoryTarball({
       rootDir: root,
       outFile: archivePath,
-      exclude: (path) => path === ".events" || path.startsWith("haunts/"),
+      exclude: (path) => path === ".events" || path.startsWith("checks/"),
     });
 
     const entries = parseTarEntries(gunzipSync(await readFile(archivePath)));

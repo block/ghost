@@ -18,10 +18,10 @@ Voice rules:
   deterministic work; your agent does the interpretation." Do not bury the
   boundary in hedging.
 - Use concrete artifact names: `.ghost/`, `manifest.yml`, `glossary.md`,
-  `index.md`, `haunts/`, `ghost gather`, `ghost pull`. The docs earn trust by
+  `index.md`, `checks/`, `ghost gather`, `ghost pull`. The docs earn trust by
   naming the files and commands agents actually touch.
 - Say **brand truth**, **fingerprint**, **node**, **kind**, **materials**,
-  **haunt**, **feed-forward**, **feed-back**, and **advisory review packet**
+  **feed-forward**, **feed-back**, and **advisory review packet**
   consistently. Do not introduce synonyms such as brand DNA, style cache,
   design brain, magic layer, or guardrail engine.
 - Explain by contrast: feed-forward versus feed-back, deterministic CLI versus

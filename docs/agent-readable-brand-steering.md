@@ -687,10 +687,10 @@ This captures the “taste move,” not just the artifact.
 
 Post-generation tests or review prompts.
 
-In Ghost, these live under the checks haunt:
+In Ghost, these live under the checks directory:
 
 ```text
-.ghost/haunts/checks/*.md
+.ghost/checks/*.md
 ```
 
 They are feed-back, not feed-forward. They do not appear in `ghost gather` or `ghost pull`.

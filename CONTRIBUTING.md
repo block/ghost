@@ -15,7 +15,7 @@ of quality elsewhere.
 2. **The fingerprint corpus stays flat.** No hierarchy, no inheritance, no
    edges between nodes. A node's identity is its filename; its kind is a
    glossary-declared prefix. Altitude lives in prose, not structure.
-3. **Feed-back never leaks into generation context.** Haunts, checks, and
+3. **Feed-back never leaks into generation context.** Checks and
    review packets inform the agent after the fact. They are never a node
    source and never enter `gather`/`pull` output.
 4. **The published artifact packs self-contained.** No `workspace:*` runtime

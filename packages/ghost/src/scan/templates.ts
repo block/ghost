@@ -46,7 +46,7 @@ function gitignoreFile(): TemplateFile {
  * The minimal starter: a manifest, a package-level glossary declaring the
  * starter kind vocabulary, and a package-root `index.md` node. Additional
  * truths are plain markdown nodes; optional material locators live on the node
- * that explains them. Haunts (e.g. checks) are opt-in via `ghost haunt add`.
+ * that explains them. Checks are opt-in via `ghost checks init`.
  */
 const MINIMAL_TEMPLATE: GhostInitTemplate = {
   name: "minimal",
@@ -225,7 +225,7 @@ Two laws keep the ladder honest:
   open; it may never contradict one. If a pattern conflicts with a principle,
   the principle wins and the pattern file is wrong.
 - **Every "never" casts a shadow.** Each refusal-grade line in a principle
-  should be mirrored by a review check (\`ghost haunt add checks\`) that
+  should be mirrored by a review check (\`ghost checks init\`) that
   references the node it enforces, so the same opinion steers before building
   and grades after.
 
@@ -261,7 +261,7 @@ numbers, not vibes — and replace the values with yours.**
 - **Separation escalates.** To separate content, reach for whitespace first,
   then a divider, then a container — in that order, never skipping a step.
 
-Mirror each refusal here with a check under \`haunts/checks/\` that lists this
+Mirror each refusal here with a check under \`checks/\` that lists this
 node in its \`references\`, so review enforces the same floor this prose sets.
 `,
       },

@@ -16,14 +16,14 @@ import { registerInitCommand } from "./init-command.js";
  *
  * Verbs author and validate the root `.ghost/` fingerprint package: `init`
  * (scaffold) and `validate` (manifest shape, node validity, material locators,
- * installed haunts, check references, and glossary kind prefixes).
+ * check references, and glossary kind prefixes).
  */
 export function registerFingerprintCommands(cli: CAC): void {
   // --- validate (shape pass + catalog pass) ---
   cli
     .command(
       "validate [file]",
-      "Validate the Ghost fingerprint package — manifest shape, node validity, material locators, installed haunts, check references, and glossary kind prefixes. Defaults to .ghost.",
+      "Validate the Ghost fingerprint package — manifest shape, node validity, material locators, check references, and glossary kind prefixes. Defaults to .ghost.",
     )
     .option(
       "--package <dir>",

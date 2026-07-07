@@ -146,7 +146,7 @@ const COMMAND_DISCOVERY = [
     defaultHelp: true,
     compactName: "review",
     summary:
-      "Emit an advisory review packet for a diff (needs the checks haunt).",
+      "Emit an advisory review packet for a diff (needs .ghost/checks/).",
   },
   {
     name: "export",
@@ -156,11 +156,11 @@ const COMMAND_DISCOVERY = [
     summary: "Package the fingerprint as a portable brand artifact.",
   },
   {
-    name: "haunt",
+    name: "checks",
     group: "core",
     defaultHelp: true,
-    compactName: "haunt add|remove|list",
-    summary: "Manage optional haunts attached to the fingerprint.",
+    compactName: "checks init",
+    summary: "Scaffold .ghost/checks/ with review assertions.",
   },
   {
     name: "skill",

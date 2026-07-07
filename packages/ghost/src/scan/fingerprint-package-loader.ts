@@ -8,11 +8,11 @@ import {
   UsageError,
 } from "#ghost-core";
 import { isMissingPathError } from "../internal/fs.js";
+import { loadCheckFiles } from "./check-files.js";
 import type {
   FingerprintPackagePaths,
   LoadedFingerprintPackage,
 } from "./fingerprint-package.js";
-import { loadHauntFiles } from "./haunt-files.js";
 import type { LintIssue } from "./lint.js";
 import { loadNodeFiles } from "./node-files.js";
 
@@ -36,7 +36,7 @@ export async function loadFingerprintPackage(
   // The catalog is flat and valid by construction — no edges to resolve.
   // Per-node schema failures are collected as `invalid`.
   const { nodes: placedNodes, invalid } = await loadNodeFiles(paths.packageDir);
-  const haunts = await loadHauntFiles(paths.packageDir);
+  const checkFiles = await loadCheckFiles(paths.packageDir);
   const postureKinds = await readPostureGlossaryKinds(paths.glossary);
   const catalog = assembleCatalog({
     placedNodes,
@@ -48,10 +48,10 @@ export async function loadFingerprintPackage(
     manifest,
     manifestRaw,
     catalog,
-    haunts: haunts.installed,
-    checks: haunts.checks,
+    hasChecksDir: checkFiles.hasChecksDir,
+    checks: checkFiles.checks,
     invalid,
-    invalidHaunts: haunts.invalid,
+    invalidChecks: checkFiles.invalid,
   };
 }
 

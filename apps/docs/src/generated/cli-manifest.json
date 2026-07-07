@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-05T15:50:02.398Z",
+  "generatedAt": "2026-07-07T16:48:56.039Z",
   "tools": [
     {
       "tool": "ghost",
@@ -8,7 +8,7 @@
           "tool": "ghost",
           "name": "validate",
           "rawName": "validate [file]",
-          "description": "Validate the Ghost fingerprint package — manifest shape, node validity, material locators, installed haunts, check references, and glossary kind prefixes. Defaults to .ghost.",
+          "description": "Validate the Ghost fingerprint package — manifest shape, node validity, material locators, check references, and glossary kind prefixes. Defaults to .ghost.",
           "group": "core",
           "defaultHelp": true,
           "compactName": "validate",
@@ -59,9 +59,9 @@
               "negated": false
             },
             {
-              "rawName": "--with <haunts>",
+              "rawName": "--with <capabilities>",
               "name": "with",
-              "description": "Comma-separated haunts to add after scaffolding (e.g. checks)",
+              "description": "Comma-separated capabilities to add after scaffolding (e.g. checks)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -208,7 +208,7 @@
           "group": "core",
           "defaultHelp": true,
           "compactName": "review",
-          "summary": "Emit an advisory review packet for a diff (needs the checks haunt).",
+          "summary": "Emit an advisory review packet for a diff (needs .ghost/checks/).",
           "options": [
             {
               "rawName": "--package <dir>",
@@ -279,9 +279,9 @@
               "negated": false
             },
             {
-              "rawName": "--no-haunts",
-              "name": "haunts",
-              "description": "Exclude the haunts/ subtree from the archive",
+              "rawName": "--no-checks",
+              "name": "checks",
+              "description": "Exclude the checks/ directory from the archive",
               "default": true,
               "takesValue": false,
               "negated": true
@@ -314,13 +314,13 @@
         },
         {
           "tool": "ghost",
-          "name": "haunt",
-          "rawName": "haunt <action> [id]",
-          "description": "Manage haunts: add, remove, or list.",
+          "name": "checks",
+          "rawName": "checks <action>",
+          "description": "Manage review checks: init.",
           "group": "core",
           "defaultHelp": true,
-          "compactName": "haunt add|remove|list",
-          "summary": "Manage optional haunts attached to the fingerprint.",
+          "compactName": "checks init",
+          "summary": "Scaffold .ghost/checks/ with review assertions.",
           "options": [
             {
               "rawName": "--package <dir>",

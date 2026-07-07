@@ -17,7 +17,7 @@ const cards: {
     name: "Checks and review",
     href: "/docs/checks-and-review",
     description:
-      "Opt in to the checks haunt, bind assertions to nodes, and assemble advisory packets.",
+      "Opt in to review checks, bind assertions to nodes, and assemble advisory packets.",
     icon: <Orbit className="size-8" strokeWidth={1.5} />,
   },
   {

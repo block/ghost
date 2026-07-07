@@ -14,7 +14,7 @@ The non-negotiables:
 - **The vocabulary is policed.** `scripts/check-terminology.mjs` bans the
   memory-era vocabulary and other retired terms across shipped prose,
   including this fingerprint. Use the current names: fingerprint, node, kind,
-  glossary, corpus, materials, haunt, check, gather, pull, pulse, review.
+  glossary, corpus, materials, check, gather, pull, pulse, review.
 - **Deterministic CLI, interpretive agent.** The CLI never calls an LLM and
   never interprets. Anything requiring reading a brand or grading a diff
   belongs to the host agent via the skill. See

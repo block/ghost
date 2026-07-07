@@ -133,7 +133,7 @@ describe("ghost CLI", () => {
       "pulse",
       "review",
       "export",
-      "haunt add|remove|list",
+      "checks init",
       "skill install",
     ]) {
       expect(result.stdout).toContain(command);
@@ -159,7 +159,7 @@ describe("ghost CLI", () => {
       "pulse",
       "review",
       "export",
-      "haunt <action> [id]",
+      "checks <action>",
       "manifest",
       "skill <action>",
     ]) {
@@ -185,7 +185,7 @@ describe("ghost CLI", () => {
     expect(names).toContain("pulse");
     expect(names).toContain("review");
     expect(names).toContain("export");
-    expect(names).toContain("haunt");
+    expect(names).toContain("checks");
     expect(names).toContain("manifest");
 
     const gather = manifest.data.commands.find(
@@ -228,7 +228,7 @@ describe("ghost CLI", () => {
     expect(initOutput.written).toContain("exemplar.annotated-reference.md");
     expect(initOutput.written).toContain("asset.materials.md");
     expect(initOutput.written).toContain("decision.tradeoff.md");
-    // Core init is fingerprint-only: haunts are opt-in via --with / haunt add.
+    // Core init is fingerprint-only: checks are opt-in via --with / checks init.
     expect(initOutput.written).not.toContain("checks/example.md.example");
     await expect(
       readFile(join(dir, ".ghost", "manifest.yml"), "utf-8"),
@@ -1384,18 +1384,14 @@ a deliberate provocation past the fingerprint — surfaced only on request
 
   it("gather shows material counts on nodes and never serves checks", async () => {
     await writeGatherPackage(dir);
-    const checksHaunt = join(dir, ".ghost", "haunts", "checks");
-    await mkdir(checksHaunt, { recursive: true });
-    await writeFile(
-      join(checksHaunt, "haunt.yml"),
-      "schema: ghost.haunt/v1\nid: checks\n",
-    );
+    const checksDir = join(dir, ".ghost", "checks");
+    await mkdir(checksDir, { recursive: true });
     await writeFile(
       join(dir, ".ghost", "asset.logo.md"),
       "---\ndescription: Logo.\nmaterials:\n  - brand/logo.svg\n  - https://example.com/logo\n---\n\nLogo prose.\n",
     );
     await writeFile(
-      join(checksHaunt, "secret-check.md"),
+      join(checksDir, "secret-check.md"),
       "---\nname: secret-check\ndescription: Never served.\nseverity: high\nreferences:\n  - asset.logo\n---\n\nGrade it.\n",
     );
 
@@ -1457,7 +1453,7 @@ a deliberate provocation past the fingerprint — surfaced only on request
       "---\ndescription: Logo.\nmaterials:\n  - brand/logo*.svg\n---\n\nLogo prose.\n",
     );
     await writeFile(
-      join(dir, ".ghost", "haunts", "checks", "logo-clearspace.md"),
+      join(dir, ".ghost", "checks", "logo-clearspace.md"),
       "---\nname: logo-clearspace\ndescription: Logo clearspace holds.\nseverity: medium\nreferences:\n  - asset.logo\n---\n\nGrade logo clearspace.\n",
     );
     const diff = [
@@ -1497,7 +1493,7 @@ a deliberate provocation past the fingerprint — surfaced only on request
       "---\ndescription: Logo.\nmaterials:\n  - brand/logo.svg\n---\n\nLogo prose.\n",
     );
     await writeFile(
-      join(dir, ".ghost", "haunts", "checks", "logo-probe.md"),
+      join(dir, ".ghost", "checks", "logo-probe.md"),
       "---\nname: logo-probe\ndescription: Probe logo evidence.\nseverity: low\nreferences:\n  - asset.logo\nprobe: node -e \"console.log('probe evidence')\"\n---\n\nUse probe evidence, then judge.\n",
     );
     const diff = [
@@ -1541,7 +1537,7 @@ a deliberate provocation past the fingerprint — surfaced only on request
       "---\ndescription: Replace generic marks.\nmaterials:\n  - brand/logo.svg\n---\n\nNot a stock spark; instead use the wordmark and measured clearspace.\n",
     );
     await writeFile(
-      join(dir, ".ghost", "haunts", "checks", "unrelated.md"),
+      join(dir, ".ghost", "checks", "unrelated.md"),
       "---\nname: unrelated\ndescription: Always review unrelated posture.\nseverity: low\nreferences:\n  - missing.future\n---\n\nReview unrelated things.\n",
     );
     const diff = [
@@ -1586,7 +1582,7 @@ a deliberate provocation past the fingerprint — surfaced only on request
     expect(archive.has("asset.tokens.md")).toBe(true);
     expect(archive.has("export.yml")).toBe(true);
     expect(archive.has("glossary.md")).toBe(true);
-    expect(archive.has("haunts/checks/haunt.yml")).toBe(true);
+    expect(archive.has("checks/example.md.example")).toBe(true);
     expect(archive.has("manifest.yml")).toBe(true);
     expect(archive.has("materials/tokens.css")).toBe(true);
     expect(archive.has(".events")).toBe(false);
@@ -1600,15 +1596,15 @@ a deliberate provocation past the fingerprint — surfaced only on request
     });
   });
 
-  it("export --no-haunts excludes haunts from the archive", async () => {
+  it("export --no-checks excludes checks from the archive", async () => {
     await runCli(["init", "--with", "checks"], dir);
 
-    const out = join(dir, "brand-no-haunts.tgz");
-    const result = await runCli(["export", "--out", out, "--no-haunts"], dir);
+    const out = join(dir, "brand-no-checks.tgz");
+    const result = await runCli(["export", "--out", out, "--no-checks"], dir);
 
     expect(result.code).toBe(0);
     const archive = parseTarEntries(gunzipSync(await readFile(out)));
-    expect([...archive.keys()].some((path) => path.startsWith("haunts/"))).toBe(
+    expect([...archive.keys()].some((path) => path.startsWith("checks/"))).toBe(
       false,
     );
   });
@@ -1708,52 +1704,53 @@ a deliberate provocation past the fingerprint — surfaced only on request
     expect(pull.stdout).toContain(":root{}");
   });
 
-  it("haunt add scaffolds the checks haunt and list reports it", async () => {
+  it("checks init scaffolds .ghost/checks/ with an example", async () => {
     await runCli(["init"], dir);
 
-    const add = await runCli(
-      ["haunt", "add", "checks", "--format", "json"],
-      dir,
-    );
+    const add = await runCli(["checks", "init", "--format", "json"], dir);
     expect(add.code).toBe(0);
     const added = JSON.parse(add.stdout);
-    expect(added.added).toBe("checks");
-    expect(added.written).toContain("haunt.yml");
-    expect(added.written).toContain("example.md.example");
+    expect(added.written).toEqual(["example.md.example"]);
     await expect(
-      readFile(join(dir, ".ghost", "haunts", "checks", "haunt.yml"), "utf-8"),
-    ).resolves.toContain("schema: ghost.haunt/v1");
+      readFile(join(dir, ".ghost", "checks", "example.md.example"), "utf-8"),
+    ).resolves.toContain("references:");
 
-    const list = await runCli(["haunt", "list"], dir);
-    expect(list.code).toBe(0);
-    expect(list.stdout).toContain("Haunting this fingerprint: checks");
-
-    // Adding the same haunt twice is a usage error.
-    const again = await runCli(["haunt", "add", "checks"], dir);
+    // Running init twice is a usage error.
+    const again = await runCli(["checks", "init"], dir);
     expect(again.code).toBe(2);
+    expect(again.stderr).toContain("already exists");
 
     // The scaffold validates cleanly (example.md.example is inert).
     const validate = await runCli(["validate"], dir);
     expect(validate.code).toBe(0);
-
-    const remove = await runCli(["haunt", "remove", "checks"], dir);
-    expect(remove.code).toBe(0);
-    const listAfter = await runCli(["haunt", "list"], dir);
-    expect(listAfter.stdout).toContain("No haunts installed.");
   });
 
-  it("haunt add rejects unknown haunt ids", async () => {
+  it("checks rejects unknown actions", async () => {
     await runCli(["init"], dir);
-    const result = await runCli(["haunt", "add", "spectre"], dir);
+    const result = await runCli(["checks", "remove"], dir);
     expect(result.code).toBe(2);
-    expect(result.stderr).toContain("Unknown haunt 'spectre'");
+    expect(result.stderr).toContain("supports `init`");
   });
 
-  it("review without the checks haunt exits with an add hint", async () => {
+  it("init --with rejects unknown capabilities", async () => {
+    const result = await runCli(["init", "--with", "spectre"], dir);
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain("Unknown --with capability 'spectre'");
+  });
+
+  it("review without a checks directory exits with an init hint", async () => {
     await runCli(["init"], dir);
     const result = await runCli(["review", "--diff=-"], dir, { stdin: "" });
     expect(result.code).toBe(2);
-    expect(result.stderr).toContain("ghost haunt add checks");
+    expect(result.stderr).toContain("ghost checks init");
+  });
+
+  it("validate flags the legacy haunts/ directory", async () => {
+    await runCli(["init"], dir);
+    await mkdir(join(dir, ".ghost", "haunts", "checks"), { recursive: true });
+    const result = await runCli(["validate"], dir);
+    expect(result.code).toBe(1);
+    expect(result.stdout).toContain("no longer supported");
   });
 });
 

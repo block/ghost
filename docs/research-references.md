@@ -334,7 +334,7 @@ necessary.
   tasks.
 - Bai et al., *Constitutional AI: Harmlessness from AI Feedback*,
   [arXiv:2212.08073](https://arxiv.org/abs/2212.08073). The closest
-  architectural precedent for the checks haunt: explicit written principles
+  architectural precedent for Ghost checks: explicit written principles
   applied at **critique time** to revise outputs, rather than stuffed into the
   generation prompt.
 - Zheng et al., *LLM-as-a-Judge with MT-Bench and Chatbot Arena*,

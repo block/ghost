@@ -27,5 +27,5 @@ Why review does not lead:
   reused before generation.
 
 The decision reverses only for a page whose explicit job is `ghost review`, the
-checks haunt, or CI-style integration. Even there, repeat the boundary: review is
+checks directory, or CI-style integration. Even there, repeat the boundary: review is
 feed-back and advisory; checks do not leak into generation context.

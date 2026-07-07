@@ -45,7 +45,7 @@ Report first:
 | Materials | present / missing | `materials`, inspect-pointers | point at real assets/components/tokens |
 | Exemplars | annotated / unannotated / missing | fenced samples, screenshots | say what to copy and what is incidental |
 | Patterns | bound-open / loose / missing | `pattern.*`, Skeletons | state applies / bound / open and add a Skeleton when opening structure matters |
-| Checks | covered / partial / missing | checks haunt, probes, review packet | add checks/probes for high-risk invariants |
+| Checks | covered / partial / missing | checks/, probes, review packet | add checks/probes for high-risk invariants |
 | Silence posture | defined / missing | `index` | say when to proceed provisionally or ask |
 
 ## Task-level readiness

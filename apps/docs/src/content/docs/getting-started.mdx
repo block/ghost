@@ -25,7 +25,7 @@ sentence. The packet is agent-agnostic and travels with the repo. The public
 package is `@design-intelligence/ghost`, and it installs one CLI: `ghost`.
 
 The core loop is **feed-forward**: it grounds generation before your agent
-builds. An optional feed-back side — the checks haunt and `ghost review` —
+builds. An optional feed-back side — the checks directory and `ghost review` —
 assembles advisory review packets after, but never grades output itself. You
 work through a short loop:
 
@@ -37,7 +37,7 @@ ghost pull <ids>   # read the selected truths' full bodies
 ghost pulse        # inspect the local signal while tuning the fingerprint
 ```
 
-When you want review assertions too, opt in with `ghost haunt add checks` and
+When you want review assertions too, opt in with `ghost checks init` and
 run `ghost review` against a diff — [Checks And Review](/docs/checks-and-review)
 covers that side of the loop.
 
@@ -169,7 +169,7 @@ The fingerprint is a **flat set of prose nodes**:
   condition.density.md  # a brand truth of kind `condition`
   asset.logo.md         # a truth that may point at concrete materials
   voice.md              # a brand truth without a kind
-  haunts/               # optional attached capabilities (e.g. checks); never a node
+  checks/               # optional review assertions; never a node
 ```
 
 There is no hierarchy, no inheritance, and no edges between nodes. A node's
@@ -182,7 +182,7 @@ flat menu.
 Altitude lives in the prose: a universal truth is stated plainly; a narrower
 truth names the *situation* it applies in. The agent reads the condition and
 decides when the truth applies. Reserved at the package root: `manifest.yml`,
-`glossary.md`, and `haunts/`; every other `*.md` is a node.
+`glossary.md`, and `checks/`; every other `*.md` is a node.
 
 A node may carry `materials`: repo-relative paths/globs or HTTPS
 URLs for the concrete materials the prose governs. `ghost gather` emits the menu;

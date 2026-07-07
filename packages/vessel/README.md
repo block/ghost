@@ -18,7 +18,7 @@ They define how Vessel relates to upstream shadcn, downstream product forks,
 Ghost, and Orbit-style LLM-safe design-system discipline.
 
 This workspace carries a repo-local `.ghost/` fingerprint (a flat corpus of
-prose nodes plus a checks haunt) governing Vessel itself: the token contract,
+prose nodes plus checks) governing Vessel itself: the token contract,
 agent-safety discipline, registry shape, and the boundary between reference
 vocabulary and product brand truth. It does not define product-specific flows,
 copy, trust obligations, or business intent for consuming apps. New products

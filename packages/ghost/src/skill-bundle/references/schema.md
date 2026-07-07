@@ -1,6 +1,6 @@
 ---
 name: schema
-description: The Ghost fingerprint package shape: flat nodes, derived concreteness, Skeletons, guards, probes, and haunts.
+description: The Ghost fingerprint package shape: flat nodes, derived concreteness, Skeletons, guards, probes, and checks.
 ---
 
 # Ghost Fingerprint Package Reference
@@ -14,11 +14,11 @@ Canonical package:
   materials/          bundled materials; never a node source
   <kind>.<slug>.md    a brand truth of a declared kind
   <slug>.md           a brand truth without a kind
-  haunts/             optional attached capabilities; never a node source
+  checks/             optional review assertions; never a node source
 ```
 
 Reserved at the root: `manifest.yml`, `glossary.md`, `materials/`, and
-`haunts/`. Every other `*.md` is a node.
+`checks/`. Every other `*.md` is a node.
 
 ## Glossary posture
 
@@ -85,9 +85,9 @@ when a Skeleton section has zero or multiple fences.
 `ghost pull` extracts Skeleton fences and emits them dead last under a banner
 instructing the agent to begin from that structure verbatim.
 
-## Haunts and checks
+## Checks
 
-Checks live under `.ghost/haunts/checks/*.md` and are never gathered or pulled:
+Checks live under `.ghost/checks/*.md` and are never gathered or pulled:
 
 ```markdown
 ---

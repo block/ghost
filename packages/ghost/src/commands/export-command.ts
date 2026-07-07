@@ -12,6 +12,7 @@ import {
   resolveFingerprintPackage,
 } from "../fingerprint.js";
 import { readPackageVersion } from "../package-version.js";
+import { GHOST_CHECKS_DIR } from "../scan/check-files.js";
 import {
   GHOST_EVENTS_FILENAME,
   GHOST_MATERIALS_DIR,
@@ -41,7 +42,6 @@ interface ExportAudit {
 }
 
 const EXPORT_SCHEMA = "ghost.export/v1";
-const HAUNTS_DIR = "haunts";
 
 export function registerExportCommand(cli: CAC): void {
   cli
@@ -50,7 +50,7 @@ export function registerExportCommand(cli: CAC): void {
       "Package the fingerprint as a portable brand artifact with a locator audit.",
     )
     .option("--out <path>", "Write the archive to this path")
-    .option("--no-haunts", "Exclude the haunts/ subtree from the archive")
+    .option("--no-checks", "Exclude the checks/ directory from the archive")
     .option(
       "--strict",
       "Exit 2 if any referenced local material locators will not travel",
@@ -106,9 +106,9 @@ export function registerExportCommand(cli: CAC): void {
           ],
           exclude: (relativePath) =>
             relativePath === GHOST_EVENTS_FILENAME ||
-            (opts.haunts === false &&
-              (relativePath === HAUNTS_DIR ||
-                relativePath.startsWith(`${HAUNTS_DIR}/`))),
+            (opts.checks === false &&
+              (relativePath === GHOST_CHECKS_DIR ||
+                relativePath.startsWith(`${GHOST_CHECKS_DIR}/`))),
         });
 
         const repoRoot = await resolveGitRoot(process.cwd());

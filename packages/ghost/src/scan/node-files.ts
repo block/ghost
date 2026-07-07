@@ -10,14 +10,16 @@ import {
 /**
  * Reserved package-root entries that are never nodes: the manifest (the
  * package anchor), the glossary, `materials/` (bundled materials), and
- * `haunts/` (optional attached capabilities such as review checks). The list
- * is closed.
+ * `checks/` (review checks — feed-back only, never generation context). The
+ * list is closed. `haunts/` is the legacy pre-flat checks location, kept
+ * reserved so stale packages do not misload its contents as nodes.
  */
 const RESERVED_ROOT_ENTRIES = new Set<string>([
   FINGERPRINT_MANIFEST_FILENAME,
   "manifest.yaml",
   GHOST_GLOSSARY_FILENAME,
   GHOST_MATERIALS_DIR,
+  "checks",
   "haunts",
 ]);
 
@@ -35,7 +37,7 @@ export interface LoadedNodeFiles {
  * Every `*.md` file under the package directory is a node. Its id is its path
  * with `.md` dropped, uniformly (`marketing/email.md` → `marketing/email`,
  * `index.md` → `index`). The reserved root entries — `manifest.yml`,
- * `glossary.md`, `materials/`, and `haunts/` — are skipped.
+ * `glossary.md`, `materials/`, and `checks/` — are skipped.
  *
  * A file that fails per-node lint is collected in `invalid` (with its first
  * error) and skipped rather than throwing, so one bad node does not block

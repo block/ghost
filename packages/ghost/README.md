@@ -26,16 +26,14 @@ npx ghost --help
   index.md              # front door node
   principle.trust.md    # prose truth
   asset.logo.md         # prose truth, optionally with materials
-  haunts/               # optional attached capabilities; never gathered as nodes
-    checks/             # the first haunt: review assertions
+  checks/               # optional review assertions; never gathered as nodes
 ```
 
 A node is markdown with `description`, optional `materials`, and a prose body.
 `materials` accepts repo-relative paths/globs and HTTPS URLs.
 
-A haunt is an optional capability attached under `.ghost/haunts/<id>/`; manage
-them with `ghost haunt add|remove|list`. Checks — the first haunt — live under
-`.ghost/haunts/checks/` and declare `references` to the nodes they review.
+Checks live under `.ghost/checks/` (scaffold with `ghost checks init`) and
+declare `references` to the nodes they review.
 `ghost review` reads a diff, matches touched files to node materials, offers
 relevant checks, and emits an advisory packet for the host agent.
 
@@ -43,7 +41,7 @@ relevant checks, and emits an advisory packet for the host agent.
 
 ```bash
 ghost init
-ghost haunt add checks
+ghost checks init
 ghost validate
 ghost gather "checkout settings"
 ghost pull principle.trust

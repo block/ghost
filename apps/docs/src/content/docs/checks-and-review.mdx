@@ -1,6 +1,6 @@
 ---
 title: Checks And Review
-description: Opt in to review assertions with the checks haunt, bind them to fingerprint nodes, and assemble advisory review packets from a diff.
+description: Opt in to review assertions with the checks directory, bind them to fingerprint nodes, and assemble advisory review packets from a diff.
 kicker: Docs
 section: guide
 order: 25
@@ -28,34 +28,30 @@ Review this diff against the Ghost checks.
 
 </DocSection>
 
-<DocSection title="Haunts: Opt-In Capabilities">
+<DocSection title="Checks: Opt-In Review Assertions">
 
-The fingerprint is the ghost; **haunts** are what it does to the world. A haunt
-is an optional capability attached under `.ghost/haunts/<id>/`, anchored by a
-thin `haunt.yml` (`schema: ghost.haunt/v1` + `id`). Two properties keep haunts
+Checks live in a flat `.ghost/checks/` directory. Two properties keep them
 honest:
 
-- **Opt-in.** Core `ghost init` ships no haunts. You add them explicitly.
-- **Feed-back only.** Nothing under `haunts/` is a node. `ghost gather` and
-  `ghost pull` never emit haunt content, so haunts cannot leak into generation
+- **Opt-in.** Core `ghost init` ships no checks. You add them explicitly.
+- **Feed-back only.** Nothing under `checks/` is a node. `ghost gather` and
+  `ghost pull` never emit check content, so checks cannot leak into generation
   context.
 
 ```bash
-ghost haunt add checks     # attach the checks haunt
-ghost haunt list           # Haunting this fingerprint: checks
-ghost haunt remove checks  # detach it again
+ghost checks init          # scaffold .ghost/checks/
 ghost init --with checks   # or opt in at scaffold time
 ```
 
-Checks are the first haunt. `ghost validate` validates installed haunts along
-with the rest of the package, and ordinary Git review is the approval boundary
-for haunt changes, same as any fingerprint edit.
+`ghost validate` validates checks along with the rest of the package, and
+ordinary Git review is the approval boundary for check changes, same as any
+fingerprint edit.
 
 </DocSection>
 
 <DocSection title="Authoring Checks">
 
-A check is one markdown file under `.ghost/haunts/checks/`: a review assertion
+A check is one markdown file under `.ghost/checks/`: a review assertion
 bound to the fingerprint nodes it guards.
 
 ```markdown
@@ -93,7 +89,7 @@ which is the right shape for cross-cutting assertions like voice or tone.
 
 <DocSection title="Running A Review">
 
-`ghost review` requires the checks haunt and a diff. By default it diffs the
+`ghost review` requires the checks directory and a diff. By default it diffs the
 worktree against `HEAD`; point it elsewhere with `--base` or feed it a diff
 directly:
 

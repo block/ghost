@@ -1,5 +1,5 @@
 ---
-categories:
+kinds:
   - name: principle
   - name: condition
   - name: exemplar

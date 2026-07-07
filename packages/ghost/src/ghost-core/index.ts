@@ -44,12 +44,6 @@ export {
   type GhostGlossaryParseResult,
   parseGlossary,
 } from "./glossary.js";
-export type { GhostHauntManifest } from "./haunt-manifest.js";
-export {
-  GHOST_HAUNT_MANIFEST_FILENAME,
-  GHOST_HAUNT_SCHEMA,
-  GhostHauntManifestSchema,
-} from "./haunt-manifest.js";
 export {
   type ExpandedLocalMaterialLocator,
   expandLocalMaterialLocator,

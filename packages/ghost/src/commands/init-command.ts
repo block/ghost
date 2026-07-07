@@ -1,6 +1,7 @@
 import type { CAC } from "cac";
+import { UsageError } from "#ghost-core";
 import { initFingerprintPackage } from "../fingerprint.js";
-import { addHaunt } from "../scan/haunt-scaffold.js";
+import { addChecksDir } from "../scan/check-scaffold.js";
 import { resolveGhostDirDefault } from "../scan/index.js";
 import { failFromError } from "./errors.js";
 
@@ -16,8 +17,8 @@ export function registerInitCommand(cli: CAC): void {
       "Init template to scaffold (default: steering)",
     )
     .option(
-      "--with <haunts>",
-      "Comma-separated haunts to add after scaffolding (e.g. checks)",
+      "--with <capabilities>",
+      "Comma-separated capabilities to add after scaffolding (e.g. checks)",
     )
     .option("--force", "Overwrite existing Ghost fingerprint files")
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
@@ -45,12 +46,17 @@ export function registerInitCommand(cli: CAC): void {
           },
         );
 
-        const hauntIds = parseWithHaunts(opts.with);
-        const addedHaunts: Array<{ id: string; written: string[] }> = [];
-        for (const hauntId of hauntIds) {
-          const added = await addHaunt(result.paths.packageDir, hauntId);
-          addedHaunts.push({ id: hauntId, written: added.written });
+        const withIds = parseWithCapabilities(opts.with);
+        for (const id of withIds) {
+          if (id !== "checks") {
+            throw new UsageError(
+              `Unknown --with capability '${id}'. Available: checks.`,
+            );
+          }
         }
+        const addedChecks = withIds.includes("checks")
+          ? await addChecksDir(result.paths.packageDir)
+          : undefined;
 
         if (opts.format === "json") {
           process.stdout.write(
@@ -58,7 +64,9 @@ export function registerInitCommand(cli: CAC): void {
               {
                 dir: result.paths.dir,
                 written: result.written,
-                ...(addedHaunts.length > 0 ? { haunts: addedHaunts } : {}),
+                ...(addedChecks !== undefined
+                  ? { checks: { written: addedChecks.written } }
+                  : {}),
               },
               null,
               2,
@@ -71,10 +79,10 @@ export function registerInitCommand(cli: CAC): void {
           for (const relativePath of result.written) {
             process.stdout.write(`  ${relativePath}\n`);
           }
-          for (const haunt of addedHaunts) {
-            process.stdout.write(`Added haunt '${haunt.id}':\n`);
-            for (const file of haunt.written) {
-              process.stdout.write(`  haunts/${haunt.id}/${file}\n`);
+          if (addedChecks !== undefined) {
+            process.stdout.write("Added checks/:\n");
+            for (const file of addedChecks.written) {
+              process.stdout.write(`  checks/${file}\n`);
             }
           }
         }
@@ -89,7 +97,7 @@ function ghostDirFromEnv(): string {
   return resolveGhostDirDefault();
 }
 
-function parseWithHaunts(withOpt: unknown): string[] {
+function parseWithCapabilities(withOpt: unknown): string[] {
   if (typeof withOpt !== "string" || withOpt.trim().length === 0) return [];
   return [
     ...new Set(

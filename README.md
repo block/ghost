@@ -65,8 +65,8 @@ The CLI does deterministic work. The agent does interpretation.
 
 ```bash
 ghost init          # scaffold .ghost/ with the steering starter (fingerprint only)
-ghost haunt add checks  # opt in to review assertions
-ghost validate      # check package shape, nodes, materials, and haunts
+ghost checks init   # opt in to review assertions
+ghost validate      # check package shape, nodes, materials, and checks
 ghost gather <ask>  # before building: list every node for this task
 ghost pull <ids>    # read the picked truths' full bodies
 ghost review        # during review: assemble a diff + matched nodes + checks packet
@@ -81,12 +81,12 @@ for. The events tape is local tuning signal, not canonical fingerprint state.
 
 | Command | Description |
 | --- | --- |
-| `ghost init` | Scaffold `.ghost/` with the steering starter: manifest, glossary, `index.md`, and demo nodes for stance, composition, anti-goals, patterns, exemplars, materials, and decisions. `--template minimal` writes only the small manifest/glossary/index starter. `--with checks` also adds the checks haunt. |
-| `ghost haunt add\|remove\|list` | Manage optional haunts — capabilities attached to the fingerprint (e.g. `checks`). |
-| `ghost validate` | Validate the package: manifest, node validity, material locators, installed haunts, check references, and glossary kind prefixes. |
+| `ghost init` | Scaffold `.ghost/` with the steering starter: manifest, glossary, `index.md`, and demo nodes for stance, composition, anti-goals, patterns, exemplars, materials, and decisions. `--template minimal` writes only the small manifest/glossary/index starter. `--with checks` also adds the checks directory. |
+| `ghost checks init` | Scaffold `.ghost/checks/` with an example review assertion. |
+| `ghost validate` | Validate the package: manifest, node validity, material locators, check references, and glossary kind prefixes. |
 | `ghost gather [ask…]` | Emit the fingerprint menu for the agent to select from; log the exposed ids. Wild-posture kinds are excluded by default; `--wild` opts in. |
 | `ghost pull <id> [<id>…]` | Emit selected node bodies and material locators; log selected and missed ids. |
-| `ghost review` | Emit an advisory review packet from a diff, matched material-backed nodes, and checks (requires the checks haunt). |
+| `ghost review` | Emit an advisory review packet from a diff, matched material-backed nodes, and checks (requires `.ghost/checks/`). |
 | `ghost export` | Package the fingerprint as a portable artifact with a locator audit. |
 | `ghost pulse` | Summarize local gather/pull events: abandoned gathers, hit rates, cold nodes, and misses. |
 | `ghost skill install` | Install the skill bundle for your host agent. |
@@ -107,7 +107,7 @@ writes, and decides.
   index.md              # the curated front door
   principle.trust.md    # a brand truth of kind `principle`
   asset.logo.md         # a truth that may point at concrete materials
-  haunts/               # optional attached capabilities (e.g. checks); never nodes
+  checks/               # optional review assertions; never nodes
 ```
 
 The fingerprint is a **flat set of nodes**. A node is one markdown file: a
@@ -131,17 +131,14 @@ repo-relative paths/globs or absolute HTTPS URLs. Components, patterns, logos,
 motion files, illustrations, and external asset libraries all use the same field.
 Guidance stays in prose; `materials` only says where the material is.
 
-The fingerprint is the ghost; **haunts** are what it does to the world. A haunt
-is an optional capability attached under `.ghost/haunts/<id>/`, anchored by a
-thin `haunt.yml`. Core `ghost init` ships no haunts; add them explicitly:
+**Checks** are optional review assertions in a flat `.ghost/checks/` directory.
+Core `ghost init` ships no checks; add them explicitly:
 
 ```bash
-ghost haunt add checks
-ghost haunt list        # Haunting this fingerprint: checks
+ghost checks init
 ```
 
-Checks — the first haunt — live under `.ghost/haunts/checks/` and are not
-nodes. They are review assertions used by `ghost review`:
+Checks are not nodes. They are review assertions used by `ghost review`:
 
 ```markdown
 ---
@@ -159,11 +156,11 @@ Grade whether the change preserves the logo guidance in `asset.logo`.
 reads a diff, matches touched files to node `materials`, offers relevant checks,
 and emits an advisory packet for the host agent to weigh.
 
-Reserved at the package root: `manifest.yml`, `glossary.md`, and `haunts/`.
+Reserved at the package root: `manifest.yml`, `glossary.md`, and `checks/`.
 Every other `*.md` is a node. Renaming a node changes its id.
 
 The packet is the product; the CLI is the courier. Everything above —
-gather, pull, review, haunts, the events tape — is machinery around the
+gather, pull, review, checks, the events tape — is machinery around the
 fingerprint, and the fingerprint outlives all of it.
 
 ## Portable by Design

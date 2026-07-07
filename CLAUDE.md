@@ -10,7 +10,7 @@ fingerprint package, a flat corpus of prose nodes read before anything is made. 
 `@design-intelligence/ghost`, with one user-facing bin, `ghost`. The CLI
 validates the corpus, emits the fingerprint menu, pulls selected nodes, records
 local selection events, and assembles advisory review packets from checks. Optional
-capabilities (haunts) attach under `.ghost/haunts/`. The host agent does all
+review checks attach under `.ghost/checks/`. The host agent does all
 selection and interpretive BYOA work through the installed `ghost` skill.
 
 ## Build & Run
@@ -41,14 +41,14 @@ review packet assembly. The skill teaches the agent how to author and consume
 the fingerprint.
 
 The canonical root `.ghost/` package is a flat set of prose nodes plus optional
-haunts:
+checks:
 
 ```text
 manifest.yml          # schema + id (the package anchor)
 glossary.md           # the author's category vocabulary + what each kind means
 <kind>.<slug>.md      # a brand truth of a declared kind (principle.density.md)
 <slug>.md             # an uncategorized brand truth (voice.md)
-haunts/               # optional attached capabilities (e.g. checks); never a node source
+checks/               # optional review assertions; never a node source
 ```
 
 The **corpus is flat**. A node is a markdown file: a `description` in
@@ -77,15 +77,12 @@ actual task. `ghost pull` emits selected node bodies and materials. `ghost
 review` reads a diff, matches touched files to node materials, offers relevant
 checks, and emits an advisory packet for the host agent to judge.
 
-A **haunt** is an optional capability attached to the fingerprint: a directory
-under `.ghost/haunts/<id>/` anchored by a thin `haunt.yml` (`schema:
-ghost.haunt/v1` + `id`). Haunts are feed-back only and never leak into
-generation context. The first haunt is **checks** (`.ghost/haunts/checks/*.md`):
-review assertions that declare `references` to fingerprint node ids (with
-optional heading anchors) and prose instructions for the reviewing agent.
-Manage haunts with `ghost haunt add|remove|list` or `ghost init --with checks`.
-Ordinary Git review is the approval boundary for fingerprint edits, haunts, and
-checks.
+**Checks** (`.ghost/checks/*.md`) are optional review assertions that declare
+`references` to fingerprint node ids (with optional heading anchors) and prose
+instructions for the reviewing agent. Checks are feed-back only and never leak
+into generation context. Scaffold them with `ghost checks init` or `ghost init
+--with checks`. Ordinary Git review is the approval boundary for fingerprint
+edits and checks.
 
 ## Packages
 
@@ -101,12 +98,12 @@ Core workflow:
 
 | Command | Description |
 | --- | --- |
-| `ghost init` | Scaffold `.ghost/` with a manifest, starter glossary, and a starter `index.md`. `--with checks` also adds the checks haunt. |
-| `ghost haunt add\|remove\|list` | Manage optional haunts attached to the fingerprint. |
-| `ghost validate` | Validate the package: manifest shape, node validity, material locators, installed haunts, check references, and glossary kind prefixes. |
+| `ghost init` | Scaffold `.ghost/` with a manifest, starter glossary, and a starter `index.md`. `--with checks` also adds the checks directory. |
+| `ghost checks init` | Scaffold `.ghost/checks/` with an example review assertion. |
+| `ghost validate` | Validate the package: manifest shape, node validity, material locators, check references, and glossary kind prefixes. |
 | `ghost gather [ask…]` | Emit the fingerprint menu for the agent to select from. |
 | `ghost pull <id> [<id>…]` | Emit selected nodes' bodies and materials; append the selection to the local `.ghost/.events` tape. |
-| `ghost review` | Emit an advisory review packet for a diff using material-backed nodes and checks (requires the checks haunt). |
+| `ghost review` | Emit an advisory review packet for a diff using material-backed nodes and checks (requires `.ghost/checks/`). |
 | `ghost pulse` | Summarize local gather/pull events from `.ghost/.events`. |
 | `ghost skill install` | Install the unified `ghost` skill bundle. |
 
@@ -157,7 +154,7 @@ Use `patch` for fixes and docs, `minor` for new commands/flags/exports, and
   `workspace:*` runtime dependencies in the packed public artifact.
 - The canonical on-disk form is a flat `.ghost/` package: `manifest.yml` plus
   `glossary.md` plus prose nodes (`<kind>.<slug>.md` or bare `<slug>.md`) plus
-  optional `.ghost/haunts/` capabilities (e.g. the checks haunt). The corpus is flat; kinds come
+  an optional `.ghost/checks/` directory. The corpus is flat; kinds come
   from filename prefixes declared in the glossary, never from a separate
   declaration or a directory hierarchy.
 - Skill recipes live in `packages/ghost/src/skill-bundle/references/`; install

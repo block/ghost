@@ -21,7 +21,7 @@ true, and an agent reads the relevant truths before building.
   materials/          # bundled materials; reserved, never nodes
   <kind>.<slug>.md    # a brand truth of a declared kind
   <slug>.md           # a brand truth without a kind
-  haunts/             # optional attached capabilities (e.g. checks); never nodes
+  checks/             # optional review assertions; never nodes
 ```
 
 ## The model in one breath
@@ -40,11 +40,10 @@ true, and an agent reads the relevant truths before building.
   pull it first.
 - There is **no hierarchy, no inheritance, no edges**. Directories are for browsing
   only; the model reads a flat menu.
-- A **haunt** is an optional capability attached to the fingerprint, living
-  under `.ghost/haunts/<id>/` with a thin `haunt.yml`. Haunts are feed-back;
-  they never leak into generation context.
-- **Checks** are the first haunt (`.ghost/haunts/checks/*.md`). Each check
-  declares `references` to node ids and is used by `ghost review`. A check may
+- **Checks** are optional review assertions in a flat `.ghost/checks/*.md`
+  directory. Checks are feed-back only; they never leak into generation
+  context. Each check declares `references` to node ids and is used by
+  `ghost review`. A check may
   include `probe: <command>`; review runs it as evidence unless `--no-probes` is
   set. Checks are never emitted by `ghost gather` or `ghost pull`.
 
@@ -52,8 +51,8 @@ true, and an agent reads the relevant truths before building.
 
 ```bash
 ghost init          # scaffold .ghost/ with the steering starter
-ghost haunt add checks  # opt in to review assertions
-ghost validate      # artifact shape + node/material/haunt validation
+ghost checks init   # opt in to review assertions
+ghost validate      # artifact shape + node/material/check validation
 ghost gather <ask>  # emit the fingerprint menu for this task
 ghost pull <ids>    # read selected node bodies and materials
 ghost review        # assemble diff + matched material-backed nodes + checks
@@ -80,13 +79,13 @@ evidence, coverage gaps, and the diff. The host agent renders findings.
 
 | Verb | Purpose |
 |---|---|
-| `ghost init` | Scaffold `.ghost/` with the steering starter: manifest, glossary, `index.md`, and demo nodes for stance, composition, anti-goals, patterns, exemplars, materials, and decisions. `--template minimal` writes only the small manifest/glossary/index starter. `--with checks` also adds the checks haunt. |
-| `ghost haunt add\|remove\|list` | Manage optional haunts (e.g. `ghost haunt add checks`). |
-| `ghost validate [file-or-dir]` | Validate manifest, nodes, material locators, installed haunts, check references, and glossary kind prefixes. |
+| `ghost init` | Scaffold `.ghost/` with the steering starter: manifest, glossary, `index.md`, and demo nodes for stance, composition, anti-goals, patterns, exemplars, materials, and decisions. `--template minimal` writes only the small manifest/glossary/index starter. `--with checks` also adds the checks directory. |
+| `ghost checks init` | Scaffold `.ghost/checks/` with an example review assertion. |
+| `ghost validate [file-or-dir]` | Validate manifest, nodes, material locators, check references, and glossary kind prefixes. |
 | `ghost gather [ask…] [--wild] [--format json]` | Emit the node menu for selection plus coverage line; log exposed ids. Default gather excludes wild kinds unless `--wild` is explicit. |
 | `ghost pull <id> [<id>…]` | Emit selected nodes' full bodies and materials in steering order; log selected/missed ids. |
-| `ghost review [--diff <path|->] [--base <ref>] [--format json] [--no-probes]` | Emit an advisory review packet for a diff (requires the checks haunt). |
-| `ghost export [--out <path>] [--no-haunts] [--strict] [--format json]` | Package `.ghost/` as a portable brand artifact and report which material locators will not travel. |
+| `ghost review [--diff <path|->] [--base <ref>] [--format json] [--no-probes]` | Emit an advisory review packet for a diff (requires `.ghost/checks/`). |
+| `ghost export [--out <path>] [--no-checks] [--strict] [--format json]` | Package `.ghost/` as a portable brand artifact and report which material locators will not travel. |
 | `ghost pulse [--format json]` | Summarize local `.ghost/.events`. |
 | `ghost skill install` | Install this skill bundle. |
 | `ghost manifest [--format json]` | Emit a self-describing JSON manifest of every command and flag. |

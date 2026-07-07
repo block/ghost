@@ -316,8 +316,8 @@ Nodes may carry a `materials` list in frontmatter: repo-relative paths/globs or
 HTTPS URLs for the concrete materials the prose governs. Put brand-owned
 materials that should survive export or refactors under `materials/`; point at
 living app code where the implementation itself should stay in place. Optional
-capabilities (haunts) live under `.ghost/haunts/` — e.g. the checks haunt
-(`ghost haunt add checks`) — and are feed-back only; they are never gathered.
+review checks live under `.ghost/checks/` (`ghost checks init`) and are
+feed-back only; they are never gathered.
 
 ### 3. Shape the glossary
 
@@ -360,7 +360,7 @@ ghost validate .ghost
 ```
 
 `validate` checks artifact shape, per-node validity, glossary kind prefixes,
-material locators, haunts, check references, and Skeleton fence counts.
+material locators, check references, and Skeleton fence counts.
 Undeclared kind prefixes and malformed Skeleton sections are warnings.
 
 ## Never

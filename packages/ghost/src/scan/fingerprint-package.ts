@@ -15,6 +15,7 @@ import {
   UsageError,
 } from "#ghost-core";
 import { isExistingPathError, isMissingPathError } from "../internal/fs.js";
+import type { LoadedCheck } from "./check-files.js";
 import {
   FINGERPRINT_COMPOSITION_FILENAME,
   FINGERPRINT_INTENT_FILENAME,
@@ -28,7 +29,6 @@ import {
   lintFingerprintPackageManifest,
   loadFingerprintPackage,
 } from "./fingerprint-package-loader.js";
-import type { LoadedCheck } from "./haunt-files.js";
 import type { LintIssue, LintReport } from "./lint.js";
 import { resolveGitRoot } from "./package-paths.js";
 import {
@@ -55,9 +55,9 @@ export interface LoadedFingerprintPackage {
   manifestRaw: string;
   /** The in-memory flat node catalog — the only fingerprint model. */
   catalog: GhostCatalog;
-  /** Ids of haunts installed under `.ghost/haunts/`. */
-  haunts: string[];
-  /** Checks from the `checks` haunt; never part of gather/pull. */
+  /** Whether `.ghost/checks/` exists; `ghost review` requires it. */
+  hasChecksDir: boolean;
+  /** Checks from `.ghost/checks/`; never part of gather/pull. */
   checks: Map<string, LoadedCheck>;
   /**
    * Nodes that failed per-node lint and were skipped while loading the catalog,
@@ -65,8 +65,8 @@ export interface LoadedFingerprintPackage {
    * so `validate` can surface a malformed node instead of silently dropping it.
    */
   invalid: Array<{ file: string; message: string }>;
-  /** Haunt artifacts (manifests, checks) that failed lint/loading. */
-  invalidHaunts: Array<{ file: string; message: string }>;
+  /** Check files that failed lint/loading. */
+  invalidChecks: Array<{ file: string; message: string }>;
 }
 
 export interface InitFingerprintPackageOptions {
@@ -204,7 +204,7 @@ export async function lintFingerprintPackage(
     if (manifestHasErrors) return finalize(issues);
     // catalog pass: load + validate the node catalog.
     try {
-      const { catalog, checks, invalid, invalidHaunts } =
+      const { catalog, checks, invalid, invalidChecks } =
         await loadFingerprintPackage(paths);
       // node pass: a node that failed its own schema was skipped while loading
       // the catalog; surface it here so a malformed node is loud, not silent.
@@ -217,9 +217,9 @@ export async function lintFingerprintPackage(
         })),
       );
       issues.push(
-        ...invalidHaunts.map((entry) => ({
+        ...invalidChecks.map((entry) => ({
           severity: "error" as const,
-          rule: "haunt-invalid",
+          rule: "check-invalid",
           message: entry.message,
           path: entry.file,
         })),
@@ -386,7 +386,7 @@ function lintCheckReferences(
           severity: "error",
           rule: "check-reference-malformed",
           message: `check reference '${raw}' is not a node id with optional '> Heading' anchor`,
-          path: `haunts/checks/${check.id}.md.references`,
+          path: `checks/${check.id}.md.references`,
         });
         continue;
       }
@@ -396,7 +396,7 @@ function lintCheckReferences(
           severity: "warning",
           rule: "check-reference-unresolved",
           message: `check reference '${raw}' does not resolve to a fingerprint node`,
-          path: `haunts/checks/${check.id}.md.references`,
+          path: `checks/${check.id}.md.references`,
         });
         continue;
       }
@@ -408,7 +408,7 @@ function lintCheckReferences(
           severity: "warning",
           rule: "check-reference-heading-missing",
           message: `check reference '${raw}' names a heading that was not found`,
-          path: `haunts/checks/${check.id}.md.references`,
+          path: `checks/${check.id}.md.references`,
         });
       }
     }

@@ -3,7 +3,7 @@ import {
   type GhostCatalog,
   parseSourceRef,
 } from "#ghost-core";
-import type { LoadedCheck } from "../scan/haunt-files.js";
+import type { LoadedCheck } from "../scan/check-files.js";
 import { parseTouchedFiles, type TouchedFile } from "./diff.js";
 import { matchesGlob } from "./glob.js";
 
