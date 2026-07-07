@@ -1,5 +1,5 @@
 ---
-"@design-intelligence/ghost": major
+"@design-intelligence/ghost": minor
 ---
 
 Remove cross-package `extends` and inherited nodes. A Ghost package is a single

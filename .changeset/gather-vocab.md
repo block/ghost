@@ -1,5 +1,5 @@
 ---
-"@design-intelligence/ghost": major
+"@design-intelligence/ghost": minor
 ---
 
 Rename the `gather` slice vocabulary to plain language. The JSON `slice.spokes`
