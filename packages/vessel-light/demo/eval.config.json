@@ -1,0 +1,21 @@
+{
+  "package": "../.ghost",
+  "asks": "./asks.md",
+  "ballast": "./ballast.md",
+  "runsPerCell": 5,
+  "arms": {
+    "naked": true,
+    "dump": true,
+    "gather": true,
+    "dump-growth": {
+      "extraPackages": [
+        "../../vessel-react/.ghost",
+        "../../../apps/docs/.ghost"
+      ],
+      "asks": [1]
+    }
+  },
+  "tells": "./median-tells.json",
+  "out": "./out",
+  "ghostBin": "node ../../ghost/dist/bin.js"
+}
