@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vessel Light — Data Table</title>
+    <link rel="stylesheet" href="../tokens.css" />
+    <link rel="stylesheet" href="../primitives.css" />
+    <style>
+      body { margin: 0; min-height: 100vh; padding: var(--page-container-side-gutter); }
+      main { width: min(100%, calc(var(--page-container-side-gutter) * 56)); margin-inline: auto; }
+      .table-surface { overflow: hidden; border-radius: var(--radius-sm); }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { padding: calc(var(--page-container-side-gutter) / 5) calc(var(--page-container-side-gutter) / 2.5); border-bottom: 1px solid var(--border); text-align: left; font-size: 14px; line-height: 1.5; }
+      th { color: var(--muted-foreground); font-weight: 500; }
+      tbody tr { transition: background var(--duration-fast) var(--ease-spring); }
+      tbody tr:hover { background: var(--muted); }
+      tbody tr:last-child td { border-bottom: 0; }
+      .cell-secondary { color: var(--muted-foreground); }
+      .cell-number { font-family: var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; }
+      .status { color: var(--success); font-size: 12px; font-weight: 600; line-height: 1.4; }
+      .align-right { text-align: right; }
+    </style>
+  </head>
+  <body>
+    <main class="stack stack--gap-lg">
+      <header class="stack stack--row stack--justify-between stack--align-end stack--gap-md stack--wrap">
+        <div class="stack stack--gap-xs">
+          <p class="text text--label text--muted">Billing console</p>
+          <h1 class="text text--title">Recent payments</h1>
+        </div>
+        <button class="button button--secondary button--size-sm" type="button">Export CSV</button>
+      </header>
+
+      <section class="surface surface--card surface--border table-surface" aria-label="Recent payments table">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Customer</th>
+              <th scope="col">Plan</th>
+              <th scope="col">Invoice</th>
+              <th scope="col" class="align-right">Amount</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="stack stack--gap-none">
+                  <span>Northstar Studio</span>
+                  <span class="cell-secondary">design@northstar.example</span>
+                </div>
+              </td>
+              <td class="cell-secondary">Team</td>
+              <td class="cell-secondary">VS-1048</td>
+              <td class="cell-number">$96.00</td>
+              <td><span class="status">Paid</span></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="stack stack--gap-none">
+                  <span>Common Room</span>
+                  <span class="cell-secondary">ops@common.example</span>
+                </div>
+              </td>
+              <td class="cell-secondary">Business</td>
+              <td class="cell-secondary">VS-1047</td>
+              <td class="cell-number">$240.00</td>
+              <td><span class="status">Paid</span></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="stack stack--gap-none">
+                  <span>Field Notes Lab</span>
+                  <span class="cell-secondary">admin@fieldnotes.example</span>
+                </div>
+              </td>
+              <td class="cell-secondary">Team</td>
+              <td class="cell-secondary">VS-1046</td>
+              <td class="cell-number">$96.00</td>
+              <td><span class="status">Paid</span></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="stack stack--gap-none">
+                  <span>Atlas Review</span>
+                  <span class="cell-secondary">finance@atlas.example</span>
+                </div>
+              </td>
+              <td class="cell-secondary">Starter</td>
+              <td class="cell-secondary">VS-1045</td>
+              <td class="cell-number">$24.00</td>
+              <td><span class="status">Paid</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </body>
+</html>

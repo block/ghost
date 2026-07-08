@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vessel Light — Conversation</title>
+    <link rel="stylesheet" href="../tokens.css" />
+    <link rel="stylesheet" href="../primitives.css" />
+    <style>
+      body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+      main { width: min(100%, 720px); height: min(760px, calc(100vh - 48px)); }
+      section[aria-label="Conversation thread"] { overflow: auto; flex: 1; }
+      article[data-turn="user"] { max-width: 80%; margin-left: auto; }
+      article[data-turn="assistant"] { max-width: 92%; }
+      textarea[aria-label="Prompt"] { min-height: 96px; }
+    </style>
+  </head>
+  <body>
+    <main class="stack stack--gap-md">
+      <section class="stack stack--gap-lg" aria-label="Conversation thread">
+        <article class="surface surface--muted surface--pad-md surface--radius-lg" data-turn="user">
+          <p class="text">Can you make the billing page feel calmer without losing the upgrade prompt?</p>
+        </article>
+
+        <article class="stack stack--gap-sm" data-turn="assistant">
+          <p class="text">Yes. I would reduce the number of competing panels, keep the plan state explicit, and move the upgrade prompt into a single bordered decision area.</p>
+          <p class="text">The page should feel like account infrastructure first, promotion second.</p>
+        </article>
+
+        <section class="surface surface--muted surface--pad-sm surface--radius-md surface--border stack stack--gap-sm" aria-label="Collapsed tool call">
+          <header class="stack stack--row stack--justify-between stack--align-center stack--gap-sm">
+            <span class="text text--label">Inspecting tokens</span>
+            <span class="text text--label text--success">Completed</span>
+          </header>
+          <pre class="text text--mono text--muted">read packages/vessel/src/components/billing-card.tsx</pre>
+        </section>
+
+        <article class="stack stack--gap-sm" data-turn="assistant">
+          <p class="text">Use one card surface for the current plan, muted rows for secondary facts, and a primary action only where the user can commit. Keep helper copy short and concrete.</p>
+        </article>
+
+        <article class="surface surface--muted surface--pad-md surface--radius-lg" data-turn="user">
+          <p class="text">Show me the smallest set of changes.</p>
+        </article>
+      </section>
+
+      <form class="surface surface--border-input surface--pad-sm surface--radius-card stack stack--gap-sm" aria-label="Prompt input">
+        <textarea class="input input--textarea" aria-label="Prompt" placeholder="Ask Vessel to revise the interface"></textarea>
+        <div class="stack stack--row stack--justify-between stack--align-center stack--gap-sm">
+          <div class="stack stack--row stack--gap-xs stack--align-center">
+            <button class="button button--ghost button--icon-sm" type="button" aria-label="Attach">＋</button>
+            <button class="button button--ghost button--icon-sm" type="button" aria-label="Mention">@</button>
+          </div>
+          <button class="button button--primary button--icon-sm" type="submit" aria-label="Send">↵</button>
+        </div>
+      </form>
+    </main>
+  </body>
+</html>

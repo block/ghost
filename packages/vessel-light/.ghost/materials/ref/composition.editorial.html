@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vessel Light — Editorial Landing</title>
+    <link rel="stylesheet" href="../tokens.css" />
+    <link rel="stylesheet" href="../primitives.css" />
+    <style>
+      body { margin: 0; }
+      .page { width: min(calc(100% - (var(--page-container-side-gutter) * 2)), var(--page-container-max-width)); margin-inline: auto; }
+      .section { padding-block: var(--section-padding-vertical); }
+      .hero { min-height: calc(var(--section-padding-vertical) * 5); justify-content: center; }
+      .label-kicker { text-transform: uppercase; }
+      .display-heading { max-width: calc(var(--page-container-side-gutter) * 48); font-size: var(--heading-display-font-size); font-weight: var(--heading-display-font-weight); line-height: var(--heading-display-line-height); letter-spacing: var(--heading-display-letter-spacing); }
+      .reading-line { max-width: calc(var(--page-container-side-gutter) * 32); font-size: var(--body-reading-size); line-height: var(--body-reading-line-height); letter-spacing: var(--body-reading-letter-spacing); }
+      .section-heading { max-width: calc(var(--page-container-side-gutter) * 36); margin-bottom: var(--section-heading-margin-bottom); font-size: var(--heading-section-font-size); font-weight: var(--heading-section-font-weight); line-height: var(--heading-section-line-height); letter-spacing: var(--heading-section-letter-spacing); }
+      /* expression budget: two hues per page — periwinkle tints the dark band, amber accents the pull quote */
+      .dark-band { width: 100vw; margin-left: calc(50% - 50vw); background: color-mix(in srgb, var(--expression-2) 12%, var(--surface-dark)); color: var(--surface-dark-text); }
+      .dark-inner { width: min(calc(100% - (var(--page-container-side-gutter) * 2)), var(--page-container-max-width)); margin-inline: auto; padding-block: var(--section-padding-vertical); }
+      .dark-muted { color: var(--surface-dark-muted); }
+      .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(calc(var(--page-container-side-gutter) * 12), 1fr)); gap: var(--section-heading-margin-bottom); }
+      .feature { border-top: 1px solid var(--surface-dark-border); padding-top: var(--page-container-side-gutter); }
+      .pullquote { max-width: calc(var(--page-container-side-gutter) * 48); margin: 0; font-size: var(--pullquote-size); font-weight: var(--pullquote-weight); line-height: var(--pullquote-line-height); letter-spacing: var(--pullquote-letter-spacing); border-left: 3px solid var(--expression-1); padding-left: var(--page-container-side-gutter); }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="page section hero stack stack--gap-lg stack--align-start" aria-labelledby="hero-title">
+        <p class="text text--label text--muted label-kicker">Independent review layer</p>
+        <h1 class="text display-heading" id="hero-title">Make every generated screen answer to the same brand memory.</h1>
+        <p class="text reading-line text--muted">Vessel keeps interface materials plain, inspectable, and close to the repo so agents can preserve the feel behind the product, not just the surface.</p>
+        <a class="button button--primary" href="#material-system">Review materials</a>
+      </section>
+
+      <section class="dark-band" id="material-system" aria-labelledby="system-title">
+        <div class="dark-inner">
+          <h2 class="text section-heading" id="system-title">A small set of primitives carries the whole system.</h2>
+          <div class="feature-grid">
+            <article class="feature stack stack--gap-sm">
+              <p class="text text--label dark-muted label-kicker">Density</p>
+              <h3 class="text text--title">Compact by default</h3>
+              <p class="text dark-muted">Controls stay close to their labels. Surfaces reserve padding for decisions, not decoration.</p>
+            </article>
+            <article class="feature stack stack--gap-sm">
+              <p class="text text--label dark-muted label-kicker">Restraint</p>
+              <h3 class="text text--title">Monochrome first</h3>
+              <p class="text dark-muted">Contrast, rhythm, and type scale do the work before color is asked to explain status.</p>
+            </article>
+            <article class="feature stack stack--gap-sm">
+              <p class="text text--label dark-muted label-kicker">Trust</p>
+              <h3 class="text text--title">Every action is explicit</h3>
+              <p class="text dark-muted">Buttons name the commitment. Secondary copy clarifies consequence without trying to persuade.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="page section" aria-label="Editorial note">
+        <blockquote class="pullquote">“The interface should feel authored even when an agent produced the first pass.”</blockquote>
+      </section>
+    </main>
+  </body>
+</html>

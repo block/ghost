@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vessel Light — Settings Form</title>
+    <link rel="stylesheet" href="../tokens.css" />
+    <link rel="stylesheet" href="../primitives.css" />
+    <style>
+      body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+      main { width: min(100%, 560px); }
+    </style>
+  </head>
+  <body>
+    <main class="surface surface--card surface--pad-lg surface--radius-card surface--border surface--elevation-card">
+      <form class="stack stack--gap-lg">
+        <header class="stack stack--gap-sm">
+          <h1 class="text text--title">Workspace settings</h1>
+          <p class="text text--muted">Tune the defaults your team sees when Vessel drafts interface work.</p>
+        </header>
+
+        <section class="stack stack--gap-md">
+          <div class="field">
+            <label class="label" for="workspace-name">Workspace name</label>
+            <input class="input" id="workspace-name" value="Ghost Studio" />
+          </div>
+
+          <div class="field">
+            <label class="label" for="reply-email">Reply email</label>
+            <input class="input" id="reply-email" value="design@ghost.example" aria-invalid="true" />
+            <p class="field-error">Use a verified sender before inviting collaborators.</p>
+          </div>
+
+          <div class="field">
+            <span class="label">Default density</span>
+            <div class="input input--select" role="button" tabindex="0" aria-label="Default density">
+              <span>Comfortable</span>
+              <span aria-hidden="true">⌄</span>
+            </div>
+          </div>
+
+          <label class="stack stack--row stack--gap-sm stack--align-center">
+            <input class="input input--checkbox" type="checkbox" checked />
+            <span class="text">Send weekly review summaries</span>
+          </label>
+        </section>
+
+        <footer class="stack stack--row stack--justify-end stack--gap-sm stack--wrap">
+          <button class="button button--ghost" type="button">Cancel</button>
+          <button class="button button--primary" type="submit">Save settings</button>
+        </footer>
+      </form>
+    </main>
+  </body>
+</html>
