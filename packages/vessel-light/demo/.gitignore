@@ -1,2 +1,3 @@
-# regenerable from ballast.md + asks.md via `steering-eval prompt`
-out/**/*.prompt.md
+# Eval run artifacts are not committed on mainline; the 2026-07-08 matrix run
+# is parked on the `vessel-eval-artifacts` branch. Regenerate via steering-eval.
+out/
