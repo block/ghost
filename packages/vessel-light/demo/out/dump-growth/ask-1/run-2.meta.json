@@ -1,0 +1,18 @@
+{
+  "arm": "dump-growth",
+  "askN": 1,
+  "runK": 2,
+  "inventory": {
+    "ballast": 77244,
+    "brand": 8376,
+    "menu": 0,
+    "ask": 29,
+    "total": 85649,
+    "tokensEstimate": 113913
+  },
+  "tape": {
+    "events": [],
+    "pulledIds": [],
+    "pullCount": 0
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "arm": "gather",
+  "askN": 3,
+  "runK": 2,
+  "inventory": {
+    "ballast": 77244,
+    "brand": 0,
+    "menu": 603,
+    "ask": 29,
+    "total": 77876,
+    "tokensEstimate": 103575
+  },
+  "tape": {
+    "events": [
+      {
+        "ts": "2026-07-08T15:44:19.171Z",
+        "event": "gather",
+        "ask": "Build the payment-receipt email Meridian sends after a successful invoice",
+        "menu": [
+          "anti-goal.decoration",
+          "anti-goal.median",
+          "foundation.expression",
+          "foundation.motion",
+          "foundation.tokens",
+          "foundation.type",
+          "foundation.voice",
+          "index",
+          "pattern.conversation",
+          "pattern.data-density",
+          "pattern.editorial",
+          "pattern.email",
+          "primitive.control",
+          "primitive.stack",
+          "primitive.surface",
+          "primitive.text"
+        ],
+        "wild": false,
+        "wildIds": []
+      },
+      {
+        "ts": "2026-07-08T15:44:57.165Z",
+        "event": "pull",
+        "ids": [
+          "index",
+          "pattern.email",
+          "foundation.voice",
+          "foundation.expression",
+          "foundation.tokens",
+          "anti-goal.decoration",
+          "anti-goal.median"
+        ],
+        "inlinedMaterials": 12,
+        "omittedMaterials": 18
+      },
+      {
+        "ts": "2026-07-08T15:45:03.934Z",
+        "event": "pull",
+        "ids": [
+          "foundation.voice",
+          "anti-goal.decoration",
+          "anti-goal.median"
+        ],
+        "inlinedMaterials": 0,
+        "omittedMaterials": 0
+      }
+    ],
+    "pulledIds": [
+      "index",
+      "pattern.email",
+      "foundation.voice",
+      "foundation.expression",
+      "foundation.tokens",
+      "anti-goal.decoration",
+      "anti-goal.median"
+    ],
+    "pullCount": 2
+  }
+}

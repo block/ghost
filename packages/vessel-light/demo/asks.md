@@ -20,6 +20,7 @@ customer quote, closing call to action. Single HTML file.
 
 expect: pattern.editorial, foundation.expression, foundation.type
 poison: pattern.email
+discount: unprompted-dark-theme
 
 ## Ask 3 — payment-receipt email
 

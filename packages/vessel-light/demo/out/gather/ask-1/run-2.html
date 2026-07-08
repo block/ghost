@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Billing — Meridian</title>
+    <style>
+      /* ── Vessel Light tokens ─────────────────────────────────────────── */
+      :root {
+        --font-sans: "HK Grotesk", system-ui, sans-serif;
+        --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+
+        --color-white: #ffffff;
+        --color-gray-100: #f0f0f0;
+        --color-gray-200: #e8e8e8;
+        --color-gray-300: #e5e5e5;
+        --color-gray-400: #cccccc;
+        --color-gray-500: #999999;
+        --color-gray-900: #1a1a1a;
+        --color-red-200: #f94b4b;
+        --color-green-200: #91cb80;
+
+        --radius: 20px;
+        --radius-sm: calc(var(--radius) - 4px);
+        --radius-md: calc(var(--radius) - 2px);
+        --radius-card: 20px;
+        --radius-pill: 999px;
+        --radius-input: 999px;
+
+        --background: var(--color-white);
+        --foreground: var(--color-gray-900);
+        --card: var(--background);
+        --card-foreground: var(--foreground);
+        --primary: var(--color-gray-900);
+        --primary-foreground: var(--color-white);
+        --muted: var(--color-gray-100);
+        --muted-foreground: var(--color-gray-500);
+        --destructive: var(--color-red-200);
+        --destructive-foreground: var(--color-white);
+        --success: var(--color-green-200);
+        --border: var(--color-gray-200);
+        --input: var(--color-gray-300);
+        --ring: var(--color-gray-400);
+
+        --shadow-btn: 0 2px 8px rgba(76, 76, 76, 0.15);
+        --shadow-card: 0 2px 8px rgba(76, 76, 76, 0.15);
+
+        --label-font-size: 11px;
+        --label-letter-spacing: 0.12em;
+        --label-font-weight: 600;
+        --label-line-height: 1.2;
+
+        --ease-spring: cubic-bezier(0.33, 1, 0.68, 1);
+        --duration-fast: 0.15s;
+      }
+
+      /* ── Primitives ──────────────────────────────────────────────────── */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--background);
+        color: var(--foreground);
+        font-family: var(--font-sans);
+      }
+
+      .surface {
+        background: var(--background);
+        color: var(--foreground);
+        border: 0;
+        border-radius: var(--radius-md);
+        box-shadow: none;
+      }
+      .surface--card {
+        background: var(--card);
+        color: var(--card-foreground);
+      }
+      .surface--muted {
+        background: var(--muted);
+        color: var(--foreground);
+      }
+      .surface--pad-md {
+        padding: 16px;
+      }
+      .surface--pad-lg {
+        padding: 24px;
+      }
+      .surface--radius-md {
+        border-radius: var(--radius-md);
+      }
+      .surface--radius-card {
+        border-radius: var(--radius-card);
+      }
+      .surface--border {
+        border: 1px solid var(--border);
+      }
+
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+      }
+      .stack--row {
+        flex-direction: row;
+      }
+      .stack--gap-none { gap: 0; }
+      .stack--gap-xs { gap: 4px; }
+      .stack--gap-sm { gap: 8px; }
+      .stack--gap-lg { gap: 24px; }
+      .stack--gap-xl { gap: 32px; }
+      .stack--align-start { align-items: flex-start; }
+      .stack--align-center { align-items: center; }
+      .stack--align-baseline { align-items: baseline; }
+      .stack--justify-between { justify-content: space-between; }
+      .stack--justify-end { justify-content: flex-end; }
+      .stack--wrap { flex-wrap: wrap; }
+
+      .text {
+        margin: 0;
+        color: var(--foreground);
+        font-family: var(--font-sans);
+        font-size: 14px;
+        line-height: 1.625;
+      }
+      .text--headline {
+        font-size: 24px;
+        font-weight: 400;
+        line-height: 1.25;
+        letter-spacing: -0.025em;
+      }
+      .text--title {
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 1;
+        letter-spacing: -0.025em;
+      }
+      .text--label {
+        font-size: var(--label-font-size);
+        font-weight: var(--label-font-weight);
+        line-height: var(--label-line-height);
+        letter-spacing: var(--label-letter-spacing);
+        text-transform: uppercase;
+      }
+      .text--mono {
+        font-family: var(--font-mono);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      .text--muted {
+        color: var(--muted-foreground);
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-width: 0;
+        height: 36px;
+        padding: 8px 24px;
+        border: 1px solid transparent;
+        border-radius: var(--radius-pill);
+        background: var(--primary);
+        color: var(--primary-foreground);
+        box-shadow: none;
+        font: inherit;
+        font-size: 14px;
+        line-height: 1;
+        text-decoration: none;
+        white-space: nowrap;
+        cursor: pointer;
+        transition:
+          background var(--duration-fast) var(--ease-spring),
+          border-color var(--duration-fast) var(--ease-spring),
+          box-shadow var(--duration-fast) var(--ease-spring),
+          opacity var(--duration-fast) var(--ease-spring);
+      }
+      .button:hover {
+        box-shadow: var(--shadow-btn);
+      }
+      .button:focus-visible {
+        outline: none;
+        border-color: var(--ring);
+        box-shadow: 0 0 0 1px var(--ring);
+      }
+      .button--secondary {
+        background: var(--muted);
+        color: var(--foreground);
+      }
+      .button--ghost {
+        background: transparent;
+        color: var(--foreground);
+      }
+      .button--outline {
+        background: var(--background);
+        color: var(--foreground);
+        border-color: var(--input);
+      }
+      .button--ghost:hover,
+      .button--secondary:hover,
+      .button--outline:hover {
+        background: var(--muted);
+      }
+      .button--destructive {
+        background: var(--destructive);
+        color: var(--destructive-foreground);
+      }
+      .button--size-sm {
+        height: 32px;
+        padding: 6px 16px;
+        gap: 6px;
+      }
+      .button--size-xs {
+        height: 24px;
+        padding: 4px 8px;
+        gap: 4px;
+        font-size: 12px;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .label {
+        display: flex;
+        gap: 8px;
+        color: var(--foreground);
+        font-size: 14px;
+        line-height: 1;
+        user-select: none;
+      }
+      .input {
+        display: flex;
+        width: 100%;
+        min-width: 0;
+        height: 36px;
+        padding: 4px 12px;
+        border: 1px solid var(--input);
+        border-radius: var(--radius-input);
+        background: transparent;
+        color: var(--foreground);
+        font: inherit;
+        font-size: 16px;
+        outline: none;
+        transition:
+          border-color var(--duration-fast) var(--ease-spring),
+          box-shadow var(--duration-fast) var(--ease-spring);
+      }
+      .input::placeholder {
+        color: var(--muted-foreground);
+      }
+      .input:hover {
+        border-color: var(--border);
+      }
+      .input:focus,
+      .input:focus-visible {
+        border-color: var(--ring);
+        box-shadow: 0 0 0 1px var(--ring);
+      }
+
+      /* ── Page composition ────────────────────────────────────────────── */
+      .page {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 48px 20px 96px;
+      }
+
+      .invoice-row {
+        padding: 12px 0;
+        border-top: 1px solid var(--border);
+      }
+      .invoice-row:first-of-type {
+        border-top: 0;
+      }
+      .invoice-amount {
+        font-variant-numeric: tabular-nums;
+      }
+
+      .status-paid {
+        color: var(--success);
+        font-weight: 600;
+      }
+
+      .card-brand {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 28px;
+        padding: 0 10px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        color: var(--muted-foreground);
+      }
+
+      @media (max-width: 560px) {
+        .invoice-cols {
+          flex-wrap: wrap;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page stack stack--gap-xl">
+      <!-- Page header -->
+      <header class="stack stack--gap-xs">
+        <p class="text text--label text--muted">Meridian workspace</p>
+        <h1 class="text text--headline">Billing</h1>
+        <p class="text text--muted">
+          Manage your plan, payment method, and invoices.
+        </p>
+      </header>
+
+      <!-- Plan summary -->
+      <section
+        class="surface surface--card surface--pad-lg surface--radius-card surface--border stack stack--gap-lg"
+        aria-labelledby="plan-title"
+      >
+        <header class="stack stack--row stack--justify-between stack--align-center stack--wrap stack--gap-sm">
+          <h2 class="text text--title" id="plan-title">Plan</h2>
+          <button class="button button--outline button--size-sm" type="button">
+            Change plan
+          </button>
+        </header>
+
+        <div class="stack stack--gap-sm">
+          <div class="stack stack--row stack--align-baseline stack--gap-sm">
+            <p class="text" style="font-weight: 600">Team</p>
+            <p class="text text--muted">$24 per member, per month</p>
+          </div>
+          <p class="text text--muted">
+            12 members · billed monthly · renews March 1, 2026
+          </p>
+        </div>
+
+        <div class="surface surface--muted surface--pad-md surface--radius-md stack stack--gap-xs">
+          <p class="text text--label text--muted">Next charge</p>
+          <p class="text">
+            <span class="text--mono invoice-amount">$288.00</span> on March 1, 2026
+          </p>
+        </div>
+      </section>
+
+      <!-- Payment method -->
+      <section
+        class="surface surface--card surface--pad-lg surface--radius-card surface--border stack stack--gap-lg"
+        aria-labelledby="payment-title"
+      >
+        <header class="stack stack--row stack--justify-between stack--align-center stack--wrap stack--gap-sm">
+          <h2 class="text text--title" id="payment-title">Payment method</h2>
+          <button class="button button--outline button--size-sm" type="button">
+            Update card
+          </button>
+        </header>
+
+        <div class="stack stack--row stack--align-center stack--gap-sm stack--wrap">
+          <span class="card-brand">VISA</span>
+          <p class="text text--mono">•••• 4242</p>
+          <p class="text text--muted">expires 08 / 2027</p>
+        </div>
+        <p class="text text--muted">
+          This card is charged on the first of each month.
+        </p>
+      </section>
+
+      <!-- Billing email -->
+      <section
+        class="surface surface--card surface--pad-lg surface--radius-card surface--border stack stack--gap-lg"
+        aria-labelledby="email-title"
+      >
+        <header class="stack stack--gap-xs">
+          <h2 class="text text--title" id="email-title">Billing email</h2>
+          <p class="text text--muted">
+            Invoices and receipts are sent to this address.
+          </p>
+        </header>
+
+        <form class="stack stack--gap-lg" action="#" method="post">
+          <div class="field">
+            <label class="label" for="billing-email">Email address</label>
+            <input
+              class="input"
+              id="billing-email"
+              name="billing-email"
+              type="email"
+              value="finance@meridian.co"
+              autocomplete="email"
+            />
+          </div>
+          <div class="stack stack--row stack--justify-end">
+            <button class="button" type="submit">Save changes</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Invoice history -->
+      <section
+        class="surface surface--card surface--pad-lg surface--radius-card surface--border stack stack--gap-lg"
+        aria-labelledby="invoices-title"
+      >
+        <header class="stack stack--gap-xs">
+          <h2 class="text text--title" id="invoices-title">Invoices</h2>
+          <p class="text text--muted">The last six months of charges.</p>
+        </header>
+
+        <div class="stack stack--gap-none" role="list">
+          <div class="invoice-row stack stack--row stack--justify-between stack--align-center stack--gap-sm invoice-cols" role="listitem">
+            <div class="stack stack--gap-xs" style="flex: 1; min-width: 160px">
+              <p class="text">February 1, 2026</p>
+              <p class="text text--mono text--muted" style="font-size: 12px">INV-2026-0201</p>
+            </div>
+            <p class="text text--label status-paid">Paid</p>
+            <p class="text text--mono invoice-amount" style="min-width: 72px; text-align: right">$288.00</p>
+            <button class="button button--ghost button--size-xs" type="button">Download</button>
+          </div>
+
+          <div class="invoice-row stack stack--row stack--justify-between stack--align-center stack--gap-sm invoice-cols" role="listitem">
+            <div class="stack stack--gap-xs" style="flex: 1; min-width: 160px">
+              <p class="text">January 1, 2026</p>
+              <p class="text text--mono text--muted" style="font-size: 12px">INV-2026-0101</p>
+            </div>
+            <p class="text text--label status-paid">Paid</p>
+            <p class="text text--mono invoice-amount" style="min-width: 72px; text-align: right">$288.00</p>
+            <button class="button button--ghost button--size-xs" type="button">Download</button>
+          </div>
+
+          <div class="invoice-row stack stack--row stack--justify-between stack--align-center stack--gap-sm invoice-cols" role="listitem">
+            <div class="stack stack--gap-xs" style="flex: 1; min-width: 160px">
+              <p class="text">December 1, 2025</p>
+              <p class="text text--mono text--muted" style="font-size: 12px">INV-2025-1201</p>
+            </div>
+            <p class="text text--label status-paid">Paid</p>
+            <p class="text text--mono invoice-amount" style="min-width: 72px; text-align: right">$264.00</p>
+            <button class="button button--ghost button--size-xs" type="button">Download</button>
+          </div>
+
+          <div class="invoice-row stack stack--row stack--justify-between stack--align-center stack--gap-sm invoice-cols" role="listitem">
+            <div class="stack stack--gap-xs" style="flex: 1; min-width: 160px">
+              <p class="text">November 1, 2025</p>
+              <p class="text text--mono text--muted" style="font-size: 12px">INV-2025-1101</p>
+            </div>
+            <p class="text text--label status-paid">Paid</p>
+            <p class="text text--mono invoice-amount" style="min-width: 72px; text-align: right">$264.00</p>
+            <button class="button button--ghost button--size-xs" type="button">Download</button>
+          </div>
+
+          <div class="invoice-row stack stack--row stack--justify-between stack--align-center stack--gap-sm invoice-cols" role="listitem">
+            <div class="stack stack--gap-xs" style="flex: 1; min-width: 160px">
+              <p class="text">October 1, 2025</p>
+              <p class="text text--mono text--muted" style="font-size: 12px">INV-2025-1001</p>
+            </div>
+            <p class="text text--label status-paid">Paid</p>
+            <p class="text text--mono invoice-amount" style="min-width: 72px; text-align: right">$240.00</p>
+            <button class="button button--ghost button--size-xs" type="button">Download</button>
+          </div>
+
+          <div class="invoice-row stack stack--row stack--justify-between stack--align-center stack--gap-sm invoice-cols" role="listitem">
+            <div class="stack stack--gap-xs" style="flex: 1; min-width: 160px">
+              <p class="text">September 1, 2025</p>
+              <p class="text text--mono text--muted" style="font-size: 12px">INV-2025-0901</p>
+            </div>
+            <p class="text text--label status-paid">Paid</p>
+            <p class="text text--mono invoice-amount" style="min-width: 72px; text-align: right">$240.00</p>
+            <button class="button button--ghost button--size-xs" type="button">Download</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Cancel subscription -->
+      <section
+        class="surface surface--card surface--pad-lg surface--radius-card surface--border stack stack--gap-lg"
+        aria-labelledby="cancel-title"
+      >
+        <header class="stack stack--gap-xs">
+          <h2 class="text text--title" id="cancel-title">Cancel subscription</h2>
+          <p class="text text--muted">
+            Cancelling ends billing at the close of the current period. The
+            workspace stays active until March 1, 2026, then moves to read-only.
+          </p>
+        </header>
+        <div class="stack stack--row stack--justify-end">
+          <button class="button button--destructive" type="button">
+            Cancel subscription
+          </button>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Meridian — Pricing</title>
+    <meta name="description" content="Meridian pricing: three plans, one contract, no surprises." />
+    <style>
+      /* ── Vessel Light token contract ─────────────────────────────── */
+      :root {
+        --font-sans: "HK Grotesk", system-ui, sans-serif;
+        --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+
+        --color-white: #ffffff;
+        --color-gray-100: #f0f0f0;
+        --color-gray-200: #e8e8e8;
+        --color-gray-400: #cccccc;
+        --color-gray-500: #999999;
+        --color-gray-900: #1a1a1a;
+
+        --radius: 20px;
+        --radius-card: 20px;
+        --radius-pill: 999px;
+
+        --background: var(--color-white);
+        --foreground: var(--color-gray-900);
+        --card: var(--background);
+        --card-foreground: var(--foreground);
+        --primary: var(--color-gray-900);
+        --primary-foreground: var(--color-white);
+        --secondary: var(--color-gray-100);
+        --secondary-foreground: var(--foreground);
+        --muted: var(--color-gray-100);
+        --muted-foreground: var(--color-gray-500);
+        --border: var(--color-gray-200);
+        --ring: var(--color-gray-400);
+
+        --shadow-card: 0 2px 8px rgba(76, 76, 76, 0.15);
+
+        --surface-dark: #0a0a0a;
+        --surface-dark-text: #f5f5f5;
+        --surface-dark-muted: rgba(255, 255, 255, 0.5);
+        --surface-dark-border: rgba(255, 255, 255, 0.08);
+
+        --heading-display-font-size: clamp(64px, 8vw, 96px);
+        --heading-display-line-height: 0.88;
+        --heading-display-letter-spacing: -0.05em;
+        --heading-display-font-weight: 900;
+        --heading-section-font-size: clamp(44px, 5vw, 64px);
+        --heading-section-line-height: 0.95;
+        --heading-section-letter-spacing: -0.035em;
+        --heading-section-font-weight: 700;
+        --heading-card-font-size: clamp(20px, 2vw, 28px);
+        --heading-card-line-height: 1.1;
+        --heading-card-letter-spacing: -0.01em;
+        --heading-card-font-weight: 600;
+
+        --body-reading-size: clamp(1rem, 1.3vw, 1.25rem);
+        --body-reading-line-height: 1.65;
+        --body-reading-letter-spacing: -0.01em;
+        --label-font-size: 11px;
+        --label-letter-spacing: 0.12em;
+        --label-font-weight: 600;
+        --label-line-height: 1.2;
+        --pullquote-size: clamp(1.5rem, 3vw, 2.5rem);
+        --pullquote-line-height: 1.3;
+        --pullquote-weight: 300;
+        --pullquote-letter-spacing: -0.02em;
+
+        --page-container-max-width: 1440px;
+        --page-container-side-gutter: 20px;
+        --section-padding-vertical: 100px;
+        --section-heading-margin-bottom: 75px;
+
+        --ease-spring: cubic-bezier(0.33, 1, 0.68, 1);
+        --duration-fast: 0.15s;
+        --duration-normal: 0.2s;
+
+        /* Expression budget for this page: two hues.
+           Periwinkle tints the dark quote band; amber accents the plan kicker rule. */
+        --expression-1: #f6b44a; /* amber */
+        --expression-2: #7585ff; /* periwinkle */
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--background);
+        color: var(--foreground);
+        font-family: var(--font-sans);
+        font-size: 16px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* ── layout primitives ───────────────────────────────────────── */
+      .page {
+        width: min(calc(100% - (var(--page-container-side-gutter) * 2)), var(--page-container-max-width));
+        margin-inline: auto;
+      }
+      .section {
+        padding-block: var(--section-padding-vertical);
+      }
+      .stack {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .stack--row {
+        flex-direction: row;
+        align-items: center;
+      }
+      .stack--gap-xs { gap: 4px; }
+      .stack--gap-sm { gap: 8px; }
+      .stack--gap-md { gap: 16px; }
+      .stack--gap-lg { gap: 24px; }
+      .stack--gap-xl { gap: 32px; }
+      .stack--align-start { align-items: flex-start; }
+      .stack--justify-between { justify-content: space-between; }
+
+      /* ── text ────────────────────────────────────────────────────── */
+      .text { margin: 0; }
+      .text--muted { color: var(--muted-foreground); }
+      .text--dark-muted { color: var(--surface-dark-muted); }
+      .label-kicker {
+        font-size: var(--label-font-size);
+        font-weight: var(--label-font-weight);
+        letter-spacing: var(--label-letter-spacing);
+        line-height: var(--label-line-height);
+        text-transform: uppercase;
+      }
+      .display-heading {
+        max-width: 18ch;
+        font-size: var(--heading-display-font-size);
+        font-weight: var(--heading-display-font-weight);
+        line-height: var(--heading-display-line-height);
+        letter-spacing: var(--heading-display-letter-spacing);
+        text-wrap: balance;
+      }
+      .section-heading {
+        max-width: 22ch;
+        margin-bottom: var(--section-heading-margin-bottom);
+        font-size: var(--heading-section-font-size);
+        font-weight: var(--heading-section-font-weight);
+        line-height: var(--heading-section-line-height);
+        letter-spacing: var(--heading-section-letter-spacing);
+        text-wrap: balance;
+      }
+      .card-heading {
+        font-size: var(--heading-card-font-size);
+        font-weight: var(--heading-card-font-weight);
+        line-height: var(--heading-card-line-height);
+        letter-spacing: var(--heading-card-letter-spacing);
+      }
+      .reading-line {
+        max-width: 52ch;
+        font-size: var(--body-reading-size);
+        line-height: var(--body-reading-line-height);
+        letter-spacing: var(--body-reading-letter-spacing);
+      }
+
+      /* ── controls: monochrome pills, one primary per page ────────── */
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 28px;
+        border-radius: var(--radius-pill);
+        border: 1px solid transparent;
+        font: inherit;
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 1.2;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background var(--duration-fast) var(--ease-spring),
+          color var(--duration-fast) var(--ease-spring),
+          border-color var(--duration-fast) var(--ease-spring);
+      }
+      .button:focus-visible {
+        outline: 2px solid var(--ring);
+        outline-offset: 2px;
+      }
+      .button--primary {
+        background: var(--primary);
+        color: var(--primary-foreground);
+      }
+      .button--primary:hover { background: #333333; }
+      .button--secondary {
+        background: var(--secondary);
+        color: var(--secondary-foreground);
+      }
+      .button--secondary:hover { background: var(--color-gray-200); }
+      .button--outline {
+        background: transparent;
+        color: var(--foreground);
+        border-color: var(--border);
+      }
+      .button--outline:hover {
+        background: var(--muted);
+        border-color: var(--ring);
+      }
+      .button--inverse {
+        background: var(--surface-dark-text);
+        color: var(--surface-dark);
+      }
+      .button--inverse:hover { background: var(--color-white); }
+      .button--full { width: 100%; }
+
+      /* ── hero ────────────────────────────────────────────────────── */
+      .hero {
+        min-height: calc(var(--section-padding-vertical) * 4.5);
+        justify-content: center;
+      }
+      .site-header {
+        padding-block: var(--page-container-side-gutter);
+        border-bottom: 1px solid var(--border);
+      }
+      .wordmark {
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--foreground);
+        text-decoration: none;
+      }
+
+      /* ── plan cards ──────────────────────────────────────────────── */
+      .plan-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--page-container-side-gutter);
+        align-items: stretch;
+      }
+      .plan {
+        background: var(--card);
+        color: var(--card-foreground);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-card);
+        padding: 32px;
+      }
+      .plan--featured {
+        border-color: var(--foreground);
+        box-shadow: var(--shadow-card);
+      }
+      .plan .kicker-rule {
+        border: 0;
+        border-top: 2px solid var(--expression-1);
+        width: 32px;
+        margin: 0;
+      }
+      .plan-price {
+        font-size: clamp(40px, 4vw, 56px);
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -0.03em;
+        font-variant-numeric: tabular-nums;
+      }
+      .plan-price .per {
+        font-size: 15px;
+        font-weight: 500;
+        letter-spacing: 0;
+        color: var(--muted-foreground);
+      }
+      .plan-features {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .plan-features li {
+        padding-top: 8px;
+        border-top: 1px solid var(--border);
+        font-size: 15px;
+        color: var(--muted-foreground);
+      }
+      .plan-features li b {
+        font-weight: 600;
+        color: var(--foreground);
+      }
+      .plan-cta { margin-top: 8px; }
+
+      /* ── dark quote band (sanctioned dramatic moment) ────────────── */
+      .dark-band {
+        width: 100vw;
+        margin-left: calc(50% - 50vw);
+        background: color-mix(in srgb, var(--expression-2) 12%, var(--surface-dark));
+        color: var(--surface-dark-text);
+      }
+      .dark-inner {
+        width: min(calc(100% - (var(--page-container-side-gutter) * 2)), var(--page-container-max-width));
+        margin-inline: auto;
+        padding-block: var(--section-padding-vertical);
+      }
+      .pullquote {
+        max-width: 40ch;
+        margin: 0;
+        font-size: var(--pullquote-size);
+        font-weight: var(--pullquote-weight);
+        line-height: var(--pullquote-line-height);
+        letter-spacing: var(--pullquote-letter-spacing);
+      }
+      .quote-attribution {
+        margin-top: 32px;
+        padding-top: 16px;
+        border-top: 1px solid var(--surface-dark-border);
+        max-width: 40ch;
+      }
+
+      /* ── closing ─────────────────────────────────────────────────── */
+      .closing { text-align: left; }
+      .site-footer {
+        border-top: 1px solid var(--border);
+        padding-block: var(--page-container-side-gutter);
+      }
+      .site-footer .text { font-size: 13px; }
+
+      @media (max-width: 640px) {
+        .hero { min-height: auto; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="page site-header stack stack--row stack--justify-between">
+      <a class="wordmark" href="#">Meridian</a>
+      <p class="text text--muted label-kicker">Pricing</p>
+    </header>
+
+    <main>
+      <!-- hero -->
+      <section class="page section hero stack stack--gap-lg stack--align-start" aria-labelledby="hero-title">
+        <p class="text text--muted label-kicker">Pricing</p>
+        <h1 class="text display-heading" id="hero-title">One contract. Three sizes of the same product.</h1>
+        <p class="text reading-line text--muted">Every plan runs the full Meridian engine. The tiers change how much you can move through it — never what it can do. No feature gates, no usage cliffs, no negotiation theater.</p>
+        <a class="button button--secondary" href="#plans">See the plans</a>
+      </section>
+
+      <!-- plans -->
+      <section class="page section" id="plans" aria-labelledby="plans-title">
+        <h2 class="text section-heading" id="plans-title">Pick the size. The product is already decided.</h2>
+
+        <div class="plan-grid">
+          <!-- Starter -->
+          <article class="plan stack stack--gap-lg" aria-labelledby="plan-starter">
+            <div class="stack stack--gap-sm stack--align-start">
+              <hr class="kicker-rule" />
+              <p class="text text--muted label-kicker">Starter</p>
+            </div>
+            <div class="stack stack--gap-xs">
+              <p class="text plan-price">$0 <span class="per">/ month</span></p>
+              <p class="text text--muted">For a first project and a fair evaluation.</p>
+            </div>
+            <ul class="plan-features">
+              <li><b>1</b> workspace, up to 3 members</li>
+              <li><b>10k</b> events per month</li>
+              <li><b>7-day</b> history retention</li>
+              <li>Community support</li>
+            </ul>
+            <div class="plan-cta">
+              <a class="button button--outline button--full" href="#start">Start free</a>
+            </div>
+          </article>
+
+          <!-- Standard (featured) -->
+          <article class="plan plan--featured stack stack--gap-lg" aria-labelledby="plan-standard">
+            <div class="stack stack--row stack--justify-between">
+              <div class="stack stack--gap-sm stack--align-start">
+                <hr class="kicker-rule" />
+                <p class="text text--muted label-kicker">Standard</p>
+              </div>
+              <p class="text text--muted label-kicker">Most teams land here</p>
+            </div>
+            <div class="stack stack--gap-xs">
+              <p class="text plan-price">$40 <span class="per">/ seat / month</span></p>
+              <p class="text text--muted">For teams shipping with Meridian every day.</p>
+            </div>
+            <ul class="plan-features">
+              <li><b>Unlimited</b> workspaces and members</li>
+              <li><b>1M</b> events per month, then metered</li>
+              <li><b>90-day</b> history retention</li>
+              <li>SSO and audit log</li>
+              <li>Support within one business day</li>
+            </ul>
+            <div class="plan-cta">
+              <a class="button button--primary button--full" href="#start">Choose Standard</a>
+            </div>
+          </article>
+
+          <!-- Scale -->
+          <article class="plan stack stack--gap-lg" aria-labelledby="plan-scale">
+            <div class="stack stack--gap-sm stack--align-start">
+              <hr class="kicker-rule" />
+              <p class="text text--muted label-kicker">Scale</p>
+            </div>
+            <div class="stack stack--gap-xs">
+              <p class="text plan-price">Custom</p>
+              <p class="text text--muted">For volume, compliance, and dedicated capacity.</p>
+            </div>
+            <ul class="plan-features">
+              <li><b>Committed-use</b> event pricing</li>
+              <li><b>Unlimited</b> history retention</li>
+              <li>Single-tenant deployment option</li>
+              <li>SOC 2 report and DPA on request</li>
+              <li>Named engineer, shared channel</li>
+            </ul>
+            <div class="plan-cta">
+              <a class="button button--outline button--full" href="#contact">Talk to us</a>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- customer quote: the one full-bleed dark moment -->
+      <section class="dark-band" aria-label="Customer quote">
+        <div class="dark-inner stack stack--gap-md stack--align-start">
+          <p class="text text--dark-muted label-kicker">From a customer</p>
+          <blockquote class="pullquote">
+            “We modeled our first year on the Standard tier and the invoice matched the model. That has never happened with an infrastructure vendor before.”
+          </blockquote>
+          <div class="quote-attribution stack stack--gap-xs">
+            <p class="text">Priya Raman</p>
+            <p class="text text--dark-muted">Head of Platform, Fieldnote</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- closing call to action -->
+      <section class="page section closing stack stack--gap-lg stack--align-start" id="start" aria-labelledby="closing-title">
+        <h2 class="text section-heading" id="closing-title" style="margin-bottom: 0;">Start on Starter. Upgrade when the numbers say so.</h2>
+        <p class="text reading-line text--muted">The free tier is the real product. When your volume outgrows it, moving up is a plan change, not a migration.</p>
+        <div class="stack stack--row stack--gap-md">
+          <a class="button button--secondary" href="#">Create an account</a>
+          <a class="button button--outline" href="#contact" id="contact">Contact sales</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="page site-footer stack stack--row stack--justify-between">
+      <p class="text text--muted">© 2026 Meridian Systems, Inc.</p>
+      <p class="text text--muted">Prices in USD. Taxes may apply.</p>
+    </footer>
+  </body>
+</html>

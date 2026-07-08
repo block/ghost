@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Billing — Meridian</title>
+<style>
+  /* ── Vessel Light token contract ── */
+  :root {
+    --font-sans: "HK Grotesk", system-ui, sans-serif;
+    --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+
+    --color-white: #ffffff;
+    --color-gray-100: #f0f0f0;
+    --color-gray-200: #e8e8e8;
+    --color-gray-300: #e5e5e5;
+    --color-gray-400: #cccccc;
+    --color-gray-500: #999999;
+    --color-gray-900: #1a1a1a;
+    --color-red-200: #f94b4b;
+    --color-green-200: #91cb80;
+
+    --background: var(--color-white);
+    --foreground: var(--color-gray-900);
+    --card: var(--background);
+    --primary: var(--color-gray-900);
+    --primary-foreground: var(--color-white);
+    --muted: var(--color-gray-100);
+    --muted-foreground: var(--color-gray-500);
+    --destructive: var(--color-red-200);
+    --destructive-foreground: var(--color-white);
+    --success: var(--color-green-200);
+    --border: var(--color-gray-200);
+    --input: var(--color-gray-300);
+    --ring: var(--color-gray-400);
+
+    --dark-40: rgba(26, 26, 26, 0.4);
+
+    --radius-card: 20px;
+    --radius-md: 18px;
+    --radius-sm: 16px;
+    --radius-pill: 999px;
+
+    --shadow-btn: 0 2px 8px rgba(76, 76, 76, 0.15);
+    --shadow-card: 0 2px 8px rgba(76, 76, 76, 0.15);
+    --shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.2);
+
+    --label-font-size: 11px;
+    --label-letter-spacing: 0.12em;
+    --label-font-weight: 600;
+    --label-line-height: 1.2;
+
+    --ease-spring: cubic-bezier(0.33, 1, 0.68, 1);
+    --duration-fast: 0.15s;
+    --duration-normal: 0.2s;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.625;
+  }
+
+  /* ── stacks ── */
+  .stack { display: flex; flex-direction: column; gap: 16px; align-items: stretch; }
+  .stack--row { flex-direction: row; }
+  .stack--gap-xs { gap: 4px; }
+  .stack--gap-sm { gap: 8px; }
+  .stack--gap-lg { gap: 24px; }
+  .stack--gap-xl { gap: 32px; }
+  .stack--align-center { align-items: center; }
+  .stack--align-baseline { align-items: baseline; }
+  .stack--justify-between { justify-content: space-between; }
+  .stack--justify-end { justify-content: flex-end; }
+  .stack--wrap { flex-wrap: wrap; }
+
+  /* ── text ── */
+  .text { margin: 0; color: var(--foreground); font-size: 14px; line-height: 1.625; }
+  .text--headline { font-size: 24px; font-weight: 400; line-height: 1.25; letter-spacing: -0.025em; }
+  .text--title { font-size: 18px; font-weight: 600; line-height: 1; letter-spacing: -0.025em; }
+  .text--label {
+    font-size: var(--label-font-size);
+    font-weight: var(--label-font-weight);
+    line-height: var(--label-line-height);
+    letter-spacing: var(--label-letter-spacing);
+    text-transform: uppercase;
+  }
+  .text--mono { font-family: var(--font-mono); font-size: 14px; line-height: 1.5; }
+  .text--muted { color: var(--muted-foreground); }
+  .text--destructive { color: var(--destructive); }
+
+  /* ── surfaces ── */
+  .surface--card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    padding: 24px;
+  }
+  .surface--muted {
+    background: var(--muted);
+    border-radius: var(--radius-md);
+    padding: 16px;
+  }
+
+  /* ── buttons ── */
+  .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 36px;
+    padding: 8px 24px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-pill);
+    background: var(--primary);
+    color: var(--primary-foreground);
+    font: inherit;
+    font-size: 14px;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background var(--duration-fast) var(--ease-spring),
+      border-color var(--duration-fast) var(--ease-spring),
+      box-shadow var(--duration-fast) var(--ease-spring);
+  }
+  .button:hover { box-shadow: var(--shadow-btn); }
+  .button:focus-visible { outline: none; border-color: var(--ring); box-shadow: 0 0 0 1px var(--ring); }
+  .button--outline { background: var(--background); color: var(--foreground); border-color: var(--input); }
+  .button--ghost { background: transparent; color: var(--foreground); }
+  .button--outline:hover, .button--ghost:hover { background: var(--muted); box-shadow: none; }
+  .button--destructive { background: var(--destructive); color: var(--destructive-foreground); }
+  .button--size-sm { height: 32px; padding: 6px 16px; }
+
+  /* ── fields ── */
+  .field { display: flex; flex-direction: column; gap: 8px; }
+  .label { color: var(--foreground); font-size: 14px; line-height: 1; user-select: none; }
+  .input {
+    width: 100%;
+    height: 36px;
+    padding: 4px 16px;
+    border: 1px solid var(--input);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--foreground);
+    font: inherit;
+    font-size: 16px;
+    outline: none;
+    transition:
+      border-color var(--duration-fast) var(--ease-spring),
+      box-shadow var(--duration-fast) var(--ease-spring);
+  }
+  .input::placeholder { color: var(--muted-foreground); }
+  .input:hover { border-color: var(--border); }
+  .input:focus-visible { border-color: var(--ring); box-shadow: 0 0 0 1px var(--ring); }
+
+  /* ── page ── */
+  .page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 56px 20px 96px;
+  }
+
+  /* ── plan summary ── */
+  .plan-price { font-size: 24px; font-weight: 600; letter-spacing: -0.025em; line-height: 1; }
+  .plan-price .per { font-size: 14px; font-weight: 400; color: var(--muted-foreground); letter-spacing: 0; }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    height: 22px;
+    padding: 0 12px;
+    border-radius: var(--radius-pill);
+    background: var(--muted);
+    color: var(--foreground);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  /* ── definition rows ── */
+  .kv { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+  .kv dt { color: var(--muted-foreground); font-size: 14px; }
+  .kv dd { font-size: 14px; }
+
+  /* ── card brand mark ── */
+  .card-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 30px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--background);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--foreground);
+    flex: 0 0 auto;
+  }
+
+  /* ── invoice table ── */
+  table.invoices { width: 100%; border-collapse: collapse; }
+  table.invoices th {
+    text-align: left;
+    padding: 0 0 10px;
+    border-bottom: 1px solid var(--border);
+    font-size: var(--label-font-size);
+    font-weight: var(--label-font-weight);
+    letter-spacing: var(--label-letter-spacing);
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+  table.invoices td {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    vertical-align: baseline;
+  }
+  table.invoices tr:last-child td { border-bottom: 0; }
+  table.invoices td.amount, table.invoices th.amount { text-align: right; }
+  table.invoices td.amount { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  table.invoices td.action, table.invoices th.action { text-align: right; }
+  table.invoices a.receipt {
+    color: var(--foreground);
+    text-decoration: underline;
+    text-decoration-color: var(--ring);
+    text-underline-offset: 3px;
+    transition: text-decoration-color var(--duration-fast) var(--ease-spring);
+  }
+  table.invoices a.receipt:hover { text-decoration-color: var(--foreground); }
+  table.invoices a.receipt:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  .status-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: var(--radius-pill);
+    background: var(--success);
+    margin-right: 8px;
+    vertical-align: 1px;
+  }
+
+  /* ── modal ── */
+  .scrim {
+    position: fixed;
+    inset: 0;
+    background: var(--dark-40);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 10;
+  }
+  .scrim[data-open="true"] { display: flex; }
+  .modal {
+    background: var(--card);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-modal);
+    max-width: 440px;
+    width: 100%;
+    padding: 24px;
+  }
+
+  @media (max-width: 560px) {
+    .page { padding-top: 40px; }
+    table.invoices th.number, table.invoices td.number { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<main class="page stack stack--gap-xl">
+
+  <!-- header -->
+  <header class="stack stack--gap-xs">
+    <p class="text text--label text--muted">Meridian West · Settings</p>
+    <h1 class="text text--headline">Billing</h1>
+    <p class="text text--muted">Manage the plan, payment method, and invoices for this workspace.</p>
+  </header>
+
+  <!-- plan summary -->
+  <section class="surface--card stack stack--gap-lg" aria-labelledby="plan-title">
+    <div class="stack stack--row stack--justify-between stack--align-center">
+      <h2 class="text text--title" id="plan-title">Plan</h2>
+      <span class="badge">Active</span>
+    </div>
+
+    <div class="stack stack--row stack--justify-between stack--align-baseline stack--wrap">
+      <div class="stack stack--gap-xs">
+        <p class="plan-price">Growth <span class="per">· $18 per seat / month</span></p>
+        <p class="text text--muted">14 seats · billed monthly · renews August 1, 2026</p>
+      </div>
+      <button type="button" class="button button--outline">Change plan</button>
+    </div>
+
+    <dl class="surface--muted stack stack--gap-sm">
+      <div class="kv"><dt>Seats in use</dt><dd>14 of 14</dd></div>
+      <div class="kv"><dt>Next charge</dt><dd class="text--mono">$252.00 on Aug 1, 2026</dd></div>
+      <div class="kv"><dt>Billing cycle</dt><dd>Monthly</dd></div>
+    </dl>
+  </section>
+
+  <!-- payment method -->
+  <section class="surface--card stack stack--gap-lg" aria-labelledby="payment-title">
+    <h2 class="text text--title" id="payment-title">Payment method</h2>
+
+    <div class="stack stack--row stack--justify-between stack--align-center stack--wrap">
+      <div class="stack stack--row stack--gap-sm stack--align-center">
+        <span class="card-mark" aria-hidden="true">VISA</span>
+        <div class="stack stack--gap-xs">
+          <p class="text">Visa ending in 4421</p>
+          <p class="text text--muted">Expires 09 / 2027</p>
+        </div>
+      </div>
+      <button type="button" class="button button--outline">Update card</button>
+    </div>
+
+    <p class="text text--muted">The card on file is charged automatically at the start of each billing cycle.</p>
+  </section>
+
+  <!-- billing email -->
+  <section class="surface--card stack stack--gap-lg" aria-labelledby="email-title">
+    <div class="stack stack--gap-xs">
+      <h2 class="text text--title" id="email-title">Billing email</h2>
+      <p class="text text--muted">Invoices and receipts are sent to this address.</p>
+    </div>
+
+    <form class="stack stack--gap-lg" id="email-form">
+      <div class="field">
+        <label class="label" for="billing-email">Email address</label>
+        <input class="input" id="billing-email" name="billing-email" type="email"
+               value="billing@meridian-west.com" autocomplete="email" required />
+      </div>
+      <div class="stack stack--row stack--justify-between stack--align-center">
+        <p class="text text--muted" id="email-status" role="status"></p>
+        <button type="submit" class="button">Save changes</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- invoice history -->
+  <section class="surface--card stack stack--gap-lg" aria-labelledby="invoices-title">
+    <h2 class="text text--title" id="invoices-title">Invoices</h2>
+
+    <table class="invoices">
+      <thead>
+        <tr>
+          <th scope="col">Date</th>
+          <th scope="col" class="number">Invoice</th>
+          <th scope="col">Status</th>
+          <th scope="col" class="amount">Amount</th>
+          <th scope="col" class="action"><span class="visually-hidden">Receipt</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Jul 1, 2026</td>
+          <td class="number text--mono">MW-2026-0107</td>
+          <td><span class="status-dot" aria-hidden="true"></span>Paid</td>
+          <td class="amount">$252.00</td>
+          <td class="action"><a class="receipt" href="#receipt-0107">Receipt</a></td>
+        </tr>
+        <tr>
+          <td>Jun 1, 2026</td>
+          <td class="number text--mono">MW-2026-0093</td>
+          <td><span class="status-dot" aria-hidden="true"></span>Paid</td>
+          <td class="amount">$252.00</td>
+          <td class="action"><a class="receipt" href="#receipt-0093">Receipt</a></td>
+        </tr>
+        <tr>
+          <td>May 1, 2026</td>
+          <td class="number text--mono">MW-2026-0081</td>
+          <td><span class="status-dot" aria-hidden="true"></span>Paid</td>
+          <td class="amount">$234.00</td>
+          <td class="action"><a class="receipt" href="#receipt-0081">Receipt</a></td>
+        </tr>
+        <tr>
+          <td>Apr 1, 2026</td>
+          <td class="number text--mono">MW-2026-0070</td>
+          <td><span class="status-dot" aria-hidden="true"></span>Paid</td>
+          <td class="amount">$234.00</td>
+          <td class="action"><a class="receipt" href="#receipt-0070">Receipt</a></td>
+        </tr>
+        <tr>
+          <td>Mar 1, 2026</td>
+          <td class="number text--mono">MW-2026-0058</td>
+          <td><span class="status-dot" aria-hidden="true"></span>Paid</td>
+          <td class="amount">$216.00</td>
+          <td class="action"><a class="receipt" href="#receipt-0058">Receipt</a></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="stack stack--row stack--justify-end">
+      <button type="button" class="button button--ghost button--size-sm">View all invoices</button>
+    </div>
+  </section>
+
+  <!-- cancel subscription -->
+  <section class="surface--card stack stack--gap-lg" aria-labelledby="cancel-title">
+    <div class="stack stack--gap-xs">
+      <h2 class="text text--title" id="cancel-title">Cancel subscription</h2>
+      <p class="text text--muted">
+        Canceling ends the Growth plan at the close of the current billing period.
+        The workspace stays readable; editing is disabled until a new plan is chosen.
+      </p>
+    </div>
+    <div class="stack stack--row">
+      <button type="button" class="button button--outline text--destructive" id="cancel-open">
+        Cancel subscription
+      </button>
+    </div>
+  </section>
+
+</main>
+
+<!-- confirm cancel modal -->
+<div class="scrim" id="cancel-scrim" data-open="false">
+  <div class="modal stack stack--gap-lg" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-desc">
+    <div class="stack stack--gap-sm">
+      <h2 class="text text--title" id="modal-title">Cancel the Growth plan?</h2>
+      <p class="text text--muted" id="modal-desc">
+        The subscription stays active until July 31, 2026. After that, all 14 seats
+        lose edit access and no further charges are made. Invoices remain available.
+      </p>
+    </div>
+    <div class="stack stack--row stack--gap-sm stack--justify-end">
+      <button type="button" class="button button--ghost" id="cancel-close">Keep plan</button>
+      <button type="button" class="button button--destructive" id="cancel-confirm">Cancel subscription</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var scrim = document.getElementById("cancel-scrim");
+    var openBtn = document.getElementById("cancel-open");
+    var closeBtn = document.getElementById("cancel-close");
+    var confirmBtn = document.getElementById("cancel-confirm");
+
+    function open() {
+      scrim.setAttribute("data-open", "true");
+      closeBtn.focus();
+    }
+    function close() {
+      scrim.setAttribute("data-open", "false");
+      openBtn.focus();
+    }
+
+    openBtn.addEventListener("click", open);
+    closeBtn.addEventListener("click", close);
+    scrim.addEventListener("click", function (e) { if (e.target === scrim) close(); });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && scrim.getAttribute("data-open") === "true") close();
+    });
+    confirmBtn.addEventListener("click", function () {
+      close();
+      var status = document.getElementById("email-status");
+      status.textContent = "";
+      openBtn.textContent = "Cancellation scheduled for July 31, 2026";
+      openBtn.disabled = true;
+      openBtn.style.opacity = "0.5";
+      openBtn.style.pointerEvents = "none";
+    });
+
+    // billing email save
+    var form = document.getElementById("email-form");
+    var emailStatus = document.getElementById("email-status");
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      emailStatus.textContent = "Changes saved";
+    });
+  })();
+</script>
+
+</body>
+</html>

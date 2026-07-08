@@ -1,0 +1,77 @@
+{
+  "arm": "gather",
+  "askN": 2,
+  "runK": 2,
+  "inventory": {
+    "ballast": 77244,
+    "brand": 0,
+    "menu": 605,
+    "ask": 21,
+    "total": 77870,
+    "tokensEstimate": 103567
+  },
+  "tape": {
+    "events": [
+      {
+        "ts": "2026-07-08T15:31:09.539Z",
+        "event": "gather",
+        "ask": "Build a pricing landing page for Meridian: hero, three plan tiers, one",
+        "menu": [
+          "anti-goal.decoration",
+          "anti-goal.median",
+          "foundation.expression",
+          "foundation.motion",
+          "foundation.tokens",
+          "foundation.type",
+          "foundation.voice",
+          "index",
+          "pattern.conversation",
+          "pattern.data-density",
+          "pattern.editorial",
+          "pattern.email",
+          "primitive.control",
+          "primitive.stack",
+          "primitive.surface",
+          "primitive.text"
+        ],
+        "wild": false,
+        "wildIds": []
+      },
+      {
+        "ts": "2026-07-08T15:31:44.325Z",
+        "event": "pull",
+        "ids": [
+          "index",
+          "anti-goal.decoration",
+          "anti-goal.median",
+          "foundation.tokens",
+          "foundation.type",
+          "foundation.voice",
+          "foundation.expression",
+          "pattern.editorial",
+          "primitive.surface",
+          "primitive.stack",
+          "primitive.text",
+          "primitive.control"
+        ],
+        "inlinedMaterials": 44,
+        "omittedMaterials": 79
+      }
+    ],
+    "pulledIds": [
+      "index",
+      "anti-goal.decoration",
+      "anti-goal.median",
+      "foundation.tokens",
+      "foundation.type",
+      "foundation.voice",
+      "foundation.expression",
+      "pattern.editorial",
+      "primitive.surface",
+      "primitive.stack",
+      "primitive.text",
+      "primitive.control"
+    ],
+    "pullCount": 1
+  }
+}

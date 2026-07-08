@@ -1,0 +1,88 @@
+{
+  "arm": "gather",
+  "askN": 1,
+  "runK": 4,
+  "inventory": {
+    "ballast": 77244,
+    "brand": 0,
+    "menu": 604,
+    "ask": 29,
+    "total": 77877,
+    "tokensEstimate": 103576
+  },
+  "tape": {
+    "events": [
+      {
+        "ts": "2026-07-08T15:22:06.981Z",
+        "event": "gather",
+        "ask": "Build a billing settings page for the Meridian workspace: plan summary,",
+        "menu": [
+          "anti-goal.decoration",
+          "anti-goal.median",
+          "foundation.expression",
+          "foundation.motion",
+          "foundation.tokens",
+          "foundation.type",
+          "foundation.voice",
+          "index",
+          "pattern.conversation",
+          "pattern.data-density",
+          "pattern.editorial",
+          "pattern.email",
+          "primitive.control",
+          "primitive.stack",
+          "primitive.surface",
+          "primitive.text"
+        ],
+        "wild": false,
+        "wildIds": []
+      },
+      {
+        "ts": "2026-07-08T15:22:46.698Z",
+        "event": "pull",
+        "ids": [
+          "index",
+          "foundation.tokens",
+          "foundation.type",
+          "foundation.voice",
+          "anti-goal.decoration",
+          "anti-goal.median",
+          "primitive.surface",
+          "primitive.control",
+          "primitive.stack",
+          "primitive.text",
+          "pattern.data-density"
+        ],
+        "inlinedMaterials": 43,
+        "omittedMaterials": 79
+      },
+      {
+        "ts": "2026-07-08T15:23:16.437Z",
+        "event": "pull",
+        "ids": [
+          "foundation.voice",
+          "anti-goal.decoration",
+          "anti-goal.median",
+          "primitive.text",
+          "pattern.data-density"
+        ],
+        "inlinedMaterials": 3,
+        "omittedMaterials": 0
+      }
+    ],
+    "pulledIds": [
+      "index",
+      "foundation.tokens",
+      "foundation.type",
+      "foundation.voice",
+      "anti-goal.decoration",
+      "anti-goal.median",
+      "primitive.surface",
+      "primitive.control",
+      "primitive.stack",
+      "primitive.text",
+      "pattern.data-density"
+    ],
+    "pullCount": 2
+  }
+}

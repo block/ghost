@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Meridian — Pricing</title>
+<meta name="description" content="Simple, transparent pricing for Meridian. Start free, scale when you're ready." />
+<style>
+  :root {
+    --bg: #0b0d12;
+    --surface: #12151d;
+    --surface-2: #171b25;
+    --border: #232838;
+    --border-strong: #2f3650;
+    --text: #e8eaf1;
+    --text-muted: #9aa1b5;
+    --text-faint: #6c7389;
+    --accent: #5b8cff;
+    --accent-strong: #3f74f5;
+    --accent-soft: rgba(91, 140, 255, 0.12);
+    --radius: 14px;
+    --max: 1080px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    width: min(var(--max), 100% - 3rem);
+    margin-inline: auto;
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  /* ---------- Header ---------- */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(12px);
+    background: rgba(11, 13, 18, 0.8);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+  }
+
+  .logo svg { display: block; }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 1.75rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+
+  .nav-links a:hover { color: var(--text); }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font: inherit;
+    font-size: 0.925rem;
+    font-weight: 600;
+    padding: 0.65rem 1.35rem;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  }
+
+  .btn:active { transform: translateY(1px); }
+
+  .btn-primary {
+    background: var(--accent-strong);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--accent); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text);
+    border-color: var(--border-strong);
+  }
+  .btn-ghost:hover { border-color: var(--text-faint); background: var(--surface); }
+
+  .btn-lg { padding: 0.85rem 1.8rem; font-size: 1rem; }
+  .btn-block { width: 100%; }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    position: relative;
+    text-align: center;
+    padding: 6.5rem 0 4.5rem;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: -40% -20% auto;
+    height: 480px;
+    background: radial-gradient(ellipse at center, rgba(91, 140, 255, 0.18), transparent 65%);
+    pointer-events: none;
+  }
+
+  .eyebrow {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid rgba(91, 140, 255, 0.25);
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.25rem, 5vw, 3.5rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.12;
+    max-width: 18ch;
+    margin-inline: auto;
+  }
+
+  .hero p {
+    max-width: 52ch;
+    margin: 1.25rem auto 0;
+    font-size: 1.125rem;
+    color: var(--text-muted);
+  }
+
+  .hero-actions {
+    margin-top: 2.25rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.85rem;
+    flex-wrap: wrap;
+  }
+
+  .hero-note {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-faint);
+  }
+
+  /* ---------- Pricing ---------- */
+  .pricing { padding: 2rem 0 5rem; }
+
+  .plans {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    align-items: stretch;
+  }
+
+  .plan {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem 1.75rem;
+  }
+
+  .plan-featured {
+    background: var(--surface-2);
+    border-color: rgba(91, 140, 255, 0.55);
+    box-shadow: 0 0 0 1px rgba(91, 140, 255, 0.25), 0 24px 60px -24px rgba(91, 140, 255, 0.35);
+  }
+
+  .plan-badge {
+    position: absolute;
+    top: -13px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent-strong);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.85rem;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .plan h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .plan-desc {
+    margin-top: 0.35rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    min-height: 2.7em;
+  }
+
+  .plan-price {
+    margin: 1.5rem 0 0.25rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+  }
+
+  .plan-price .amount {
+    font-size: 2.6rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  .plan-price .period {
+    font-size: 0.9rem;
+    color: var(--text-faint);
+  }
+
+  .plan-billing {
+    font-size: 0.8rem;
+    color: var(--text-faint);
+    margin-bottom: 1.5rem;
+  }
+
+  .plan ul {
+    list-style: none;
+    display: grid;
+    gap: 0.7rem;
+    font-size: 0.925rem;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+  }
+
+  .plan li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+  }
+
+  .plan li svg {
+    flex: none;
+    margin-top: 0.28em;
+    color: var(--accent);
+  }
+
+  .plan .btn { margin-top: auto; }
+
+  /* ---------- Quote ---------- */
+  .quote {
+    padding: 4.5rem 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(91, 140, 255, 0.04), transparent);
+  }
+
+  .quote blockquote {
+    max-width: 46rem;
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  .quote-mark {
+    color: var(--accent);
+    margin-bottom: 1.25rem;
+  }
+
+  .quote p {
+    font-size: clamp(1.25rem, 2.6vw, 1.6rem);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.45;
+  }
+
+  .quote footer {
+    margin-top: 1.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.85rem;
+  }
+
+  .avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #5b8cff, #9b6bff);
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #fff;
+    flex: none;
+  }
+
+  .quote-attrib { text-align: left; font-style: normal; }
+  .quote-attrib .name { font-weight: 600; font-size: 0.95rem; }
+  .quote-attrib .role { font-size: 0.82rem; color: var(--text-faint); }
+
+  /* ---------- CTA ---------- */
+  .cta {
+    text-align: center;
+    padding: 5.5rem 0;
+  }
+
+  .cta-card {
+    position: relative;
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4rem 2rem;
+  }
+
+  .cta-card::before {
+    content: "";
+    position: absolute;
+    inset: auto -20% -60%;
+    height: 320px;
+    background: radial-gradient(ellipse at center, rgba(91, 140, 255, 0.22), transparent 65%);
+    pointer-events: none;
+  }
+
+  .cta h2 {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+  }
+
+  .cta p {
+    margin: 0.9rem auto 0;
+    max-width: 44ch;
+    color: var(--text-muted);
+  }
+
+  .cta .btn { margin-top: 2rem; }
+
+  /* ---------- Footer ---------- */
+  .site-footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+    color: var(--text-faint);
+  }
+
+  .site-footer nav { display: flex; gap: 1.5rem; }
+  .site-footer a:hover { color: var(--text); }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 880px) {
+    .plans { grid-template-columns: 1fr; max-width: 26rem; margin-inline: auto; }
+    .plan-featured { order: -1; }
+    .plan-desc { min-height: 0; }
+    .nav-links a:not(.btn) { display: none; }
+    .hero { padding-top: 4.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container nav">
+    <a class="logo" href="#" aria-label="Meridian home">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="12" r="10" stroke="#5b8cff" stroke-width="2"/>
+        <path d="M12 2a15.3 15.3 0 0 1 0 20" stroke="#5b8cff" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      Meridian
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#pricing">Pricing</a>
+      <a href="#quote">Customers</a>
+      <a href="#cta" class="btn btn-primary">Get started</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <span class="eyebrow">Pricing</span>
+      <h1>Pricing that scales with your team, not against it</h1>
+      <p>Meridian gives every team a clear view of the work that matters. Start free, upgrade when you're ready — no contracts, no surprises.</p>
+      <div class="hero-actions">
+        <a href="#pricing" class="btn btn-primary btn-lg">See plans</a>
+        <a href="#cta" class="btn btn-ghost btn-lg">Talk to sales</a>
+      </div>
+      <p class="hero-note">14-day free trial on paid plans · No credit card required</p>
+    </div>
+  </section>
+
+  <!-- Plans -->
+  <section class="pricing" id="pricing">
+    <div class="container">
+      <div class="plans">
+
+        <article class="plan">
+          <h3>Starter</h3>
+          <p class="plan-desc">For individuals and small teams getting their first workflows in order.</p>
+          <div class="plan-price">
+            <span class="amount">$0</span>
+            <span class="period">/ month</span>
+          </div>
+          <p class="plan-billing">Free forever</p>
+          <ul>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Up to 3 team members</li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>5 active projects</li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Core dashboards &amp; reports</li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Community support</li>
+          </ul>
+          <a href="#cta" class="btn btn-ghost btn-block">Start for free</a>
+        </article>
+
+        <article class="plan plan-featured">
+          <span class="plan-badge">Most popular</span>
+          <h3>Growth</h3>
+          <p class="plan-desc">For growing teams that need automation, integrations, and room to scale.</p>
+          <div class="plan-price">
+            <span class="amount">$24</span>
+            <span class="period">/ user / month</span>
+          </div>
+          <p class="plan-billing">Billed annually, or $29 month-to-month</p>
+          <ul>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Unlimited team members</li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Unlimited projects &amp; workflows</li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Automation &amp; 50+ integrations</li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Advanced analytics &amp; exports</li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Priority email &amp; chat support</li>
+          </ul>
+          <a href="#cta" class="btn btn-primary btn-block">Start 14-day trial</a>
+        </article>
+
+        <article class="plan">
+          <h3>Enterprise</h3>
+          <p class="plan-desc">For organizations with advanced security, compliance, and scale needs.</p>
+          <div class="plan-price">
+            <span class="amount">Custom</span>
+          </div>
+          <p class="plan-billing">Annual agreement, volume pricing</p>
+          <ul>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Everything in Growth</li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>SSO / SAML &amp; SCIM provisioning</li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Audit logs &amp; data residency</li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>99.9% uptime SLA</li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Dedicated success manager</li>
+          </ul>
+          <a href="#cta" class="btn btn-ghost btn-block">Contact sales</a>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Customer quote -->
+  <section class="quote" id="quote">
+    <div class="container">
+      <blockquote>
+        <svg class="quote-mark" width="36" height="28" viewBox="0 0 36 28" fill="currentColor" aria-hidden="true">
+          <path d="M0 28V15.6C0 6.9 4.9 1.3 13.4 0l1.6 4.6c-4.6 1.4-7 4.2-7.2 8.4H15V28H0zm21 0V15.6C21 6.9 25.9 1.3 34.4 0L36 4.6c-4.6 1.4-7 4.2-7.2 8.4H36V28H21z"/>
+        </svg>
+        <p>Meridian replaced three tools and a mess of spreadsheets. Our team ships faster and everyone finally sees the same picture of the work. It paid for itself in the first month.</p>
+        <footer>
+          <span class="avatar" aria-hidden="true">SK</span>
+          <div class="quote-attrib">
+            <div class="name">Sana Khalid</div>
+            <div class="role">VP of Operations, Northwind Labs</div>
+          </div>
+        </footer>
+      </blockquote>
+    </div>
+  </section>
+
+  <!-- Closing CTA -->
+  <section class="cta" id="cta">
+    <div class="container">
+      <div class="cta-card">
+        <h2>Ready to bring your team into focus?</h2>
+        <p>Join thousands of teams running their work on Meridian. Start free today — upgrade whenever you're ready.</p>
+        <a href="#" class="btn btn-primary btn-lg">Get started free</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="container site-footer">
+  <span>© 2026 Meridian, Inc. All rights reserved.</span>
+  <nav aria-label="Footer">
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+    <a href="#">Contact</a>
+  </nav>
+</footer>
+
+</body>
+</html>

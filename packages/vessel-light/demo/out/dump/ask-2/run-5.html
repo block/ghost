@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meridian — Pricing</title>
+<meta name="description" content="Pricing for Meridian, the operations platform. Three plans, one contract, no surprises.">
+<style>
+  /* ------------------------------------------------------------------
+     Tokens — semantic monochrome spine, status kept out, one expression
+     hue (amber) as the page's single atmospheric accent.
+  ------------------------------------------------------------------ */
+  :root {
+    --background: #ffffff;
+    --foreground: #1a1a1a;
+    --muted: #999999;
+    --muted-surface: #f5f5f4;
+    --border: #e8e8e8;
+    --card: #ffffff;
+    --primary: #1a1a1a;
+    --primary-foreground: #ffffff;
+
+    --surface-dark-bg: #161513;
+    --surface-dark-fg: #f5f4f2;
+    --surface-dark-muted: #a9a6a0;
+    --surface-dark-border: #33312d;
+
+    --expression-1: #f6b44a; /* amber — the one expression hue on this page */
+
+    --radius: 20px;
+    --radius-pill: 999px;
+
+    --shadow-card: 0 1px 2px rgba(26, 26, 26, 0.06);
+
+    --duration-fast: 150ms;
+    --duration-normal: 250ms;
+    --duration-slow: 400ms;
+    --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+
+    --heading-display-font-size: clamp(64px, 8vw, 96px);
+    --heading-display-line-height: 0.88;
+    --heading-display-font-weight: 900;
+    --heading-section-font-size: clamp(34px, 4vw, 48px);
+    --heading-section-line-height: 1.04;
+    --heading-section-font-weight: 800;
+
+    --section-padding-vertical: 100px;
+
+    --font-sans: "HK Grotesk", "Hanken Grotesk", -apple-system, BlinkMacSystemFont,
+      "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--background);
+    color: var(--foreground);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    width: min(1120px, 100% - 48px);
+    margin-inline: auto;
+  }
+
+  /* ---------- text primitives ---------- */
+
+  .kicker {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .display {
+    font-size: var(--heading-display-font-size);
+    line-height: var(--heading-display-line-height);
+    font-weight: var(--heading-display-font-weight);
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+
+  .section-heading {
+    font-size: var(--heading-section-font-size);
+    line-height: var(--heading-section-line-height);
+    font-weight: var(--heading-section-font-weight);
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  .title {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+  }
+
+  .body-muted { color: var(--muted); }
+
+  .mono { font-family: var(--font-mono); font-size: 0.94em; }
+
+  /* ---------- controls: monochrome pills only ---------- */
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1;
+    padding: 14px 28px;
+    border-radius: var(--radius-pill);
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color var(--duration-fast) var(--ease-spring),
+                border-color var(--duration-fast) var(--ease-spring),
+                color var(--duration-fast) var(--ease-spring);
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+  .btn-primary:hover { background: #333333; }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--foreground);
+    border-color: var(--border);
+  }
+  .btn-outline:hover { background: var(--muted-surface); border-color: #d6d6d4; }
+
+  .btn-inverse {
+    background: var(--surface-dark-fg);
+    color: var(--surface-dark-bg);
+  }
+  .btn-inverse:hover { background: #ffffff; }
+
+  .link {
+    color: var(--foreground);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--border);
+    transition: text-decoration-color var(--duration-fast) var(--ease-spring);
+  }
+  .link:hover { text-decoration-color: var(--foreground); }
+
+  :is(.btn, .link):focus-visible {
+    outline: 2px solid var(--foreground);
+    outline-offset: 2px;
+  }
+
+  /* ---------- header ---------- */
+
+  .site-header {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .site-header .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding-block: 20px;
+  }
+
+  .wordmark {
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: -0.01em;
+    color: var(--foreground);
+    text-decoration: none;
+  }
+
+  .site-nav {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .site-nav a {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-spring);
+  }
+  .site-nav a:hover, .site-nav a[aria-current="page"] { color: var(--foreground); }
+
+  .btn-compact { padding: 10px 20px; font-size: 14px; }
+
+  /* ---------- sections ---------- */
+
+  section { padding-block: var(--section-padding-vertical); }
+
+  .hero { padding-block: var(--section-padding-vertical) 72px; }
+
+  .hero-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+    max-width: 820px;
+  }
+
+  .hero-lede {
+    font-size: 20px;
+    line-height: 1.55;
+    color: var(--muted);
+    max-width: 560px;
+  }
+
+  .hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  /* ---------- pricing tiers ---------- */
+
+  .plans { padding-top: 24px; }
+
+  .plans-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    align-items: stretch;
+  }
+
+  .plan {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .plan-featured { border-color: var(--foreground); }
+
+  .plan-head {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .plan-name-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .plan-tag {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--foreground);
+    background: var(--muted-surface);
+    border-radius: var(--radius-pill);
+    padding: 5px 12px;
+    white-space: nowrap;
+  }
+
+  .plan-desc {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .plan-price {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .plan-price .amount {
+    font-size: 44px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .plan-price .per {
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  .plan-features {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-size: 15px;
+    line-height: 1.45;
+    border-top: 1px solid var(--border);
+    padding-top: 24px;
+  }
+
+  .plan-features li {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+  }
+
+  .plan-features li::before {
+    content: "";
+    flex: none;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--foreground);
+    transform: translateY(-2px);
+  }
+
+  .plan .btn { margin-top: auto; width: 100%; }
+
+  .plans-footnote {
+    margin-top: 32px;
+    font-size: 14px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  /* ---------- quote: the sanctioned full-bleed dark moment ---------- */
+
+  .quote-band {
+    background: var(--surface-dark-bg);
+    color: var(--surface-dark-fg);
+  }
+
+  .quote-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    max-width: 880px;
+  }
+
+  .quote-rule {
+    width: 56px;
+    height: 3px;
+    background: var(--expression-1); /* the page's one expression moment */
+    border-radius: var(--radius-pill);
+  }
+
+  .quote-band blockquote p {
+    font-size: clamp(28px, 3.4vw, 42px);
+    line-height: 1.18;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  .quote-attrib {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-style: normal;
+  }
+
+  .quote-attrib .who { font-size: 15px; font-weight: 600; }
+  .quote-attrib .where { font-size: 14px; color: var(--surface-dark-muted); }
+
+  /* ---------- closing CTA ---------- */
+
+  .closing .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    text-align: center;
+  }
+
+  .closing p {
+    color: var(--muted);
+    max-width: 480px;
+  }
+
+  .closing-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* ---------- footer ---------- */
+
+  .site-footer { border-top: 1px solid var(--border); }
+
+  .site-footer .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding-block: 32px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  .site-footer nav { display: flex; gap: 24px; }
+  .site-footer a { color: var(--muted); text-decoration: none; transition: color var(--duration-fast) var(--ease-spring); }
+  .site-footer a:hover { color: var(--foreground); }
+
+  /* ---------- responsive ---------- */
+
+  @media (max-width: 900px) {
+    .plans-grid { grid-template-columns: 1fr; max-width: 480px; margin-inline: auto; }
+  }
+
+  @media (max-width: 640px) {
+    section { padding-block: 72px; }
+    .site-nav a:not(.btn) { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container">
+      <a class="wordmark" href="#">Meridian</a>
+      <nav class="site-nav" aria-label="Primary">
+        <a href="#">Product</a>
+        <a href="#" aria-current="page">Pricing</a>
+        <a href="#">Docs</a>
+        <a class="btn btn-outline btn-compact" href="#">Sign in</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero-stack">
+          <p class="kicker">Pricing</p>
+          <h1 class="display">Pay for the work, not the seats.</h1>
+          <p class="hero-lede">
+            Meridian runs your orders, refunds, and exports on one platform.
+            Every plan includes the full toolset. Price scales with the
+            operations you run, and nothing else.
+          </p>
+          <div class="hero-meta">
+            <span>14-day trial on every plan</span>
+            <span>No card required to start</span>
+            <span>Cancel any month</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Plans -->
+    <section class="plans" aria-labelledby="plans-heading">
+      <div class="container">
+        <h2 id="plans-heading" class="visually-hidden" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;">Plans</h2>
+        <div class="plans-grid">
+
+          <article class="plan" aria-label="Starter plan">
+            <div class="plan-head">
+              <div class="plan-name-row">
+                <h3 class="title">Starter</h3>
+              </div>
+              <p class="plan-desc">For a single team getting its operations out of spreadsheets.</p>
+            </div>
+            <p class="plan-price">
+              <span class="amount">$0</span>
+              <span class="per">per month</span>
+            </p>
+            <ul class="plan-features">
+              <li>Up to 3 members</li>
+              <li>1,000 tracked orders per month</li>
+              <li>Order search and customer records</li>
+              <li>Manual exports, CSV</li>
+              <li>Community support</li>
+            </ul>
+            <a class="btn btn-outline" href="#">Create workspace</a>
+          </article>
+
+          <article class="plan plan-featured" aria-label="Growth plan">
+            <div class="plan-head">
+              <div class="plan-name-row">
+                <h3 class="title">Growth</h3>
+                <span class="plan-tag">Most teams</span>
+              </div>
+              <p class="plan-desc">For operations teams that live in the queue every day.</p>
+            </div>
+            <p class="plan-price">
+              <span class="amount">$89</span>
+              <span class="per">per workspace / month</span>
+            </p>
+            <ul class="plan-features">
+              <li>Up to 15 members</li>
+              <li>50,000 tracked orders per month</li>
+              <li>Refunds, subscriptions, and escalations</li>
+              <li>Bulk exports and scheduled reports</li>
+              <li>Metrics API and audit log</li>
+              <li>Support within one business day</li>
+            </ul>
+            <a class="btn btn-primary" href="#">Start with Growth</a>
+          </article>
+
+          <article class="plan" aria-label="Scale plan">
+            <div class="plan-head">
+              <div class="plan-name-row">
+                <h3 class="title">Scale</h3>
+              </div>
+              <p class="plan-desc">For organizations running multiple workspaces under one contract.</p>
+            </div>
+            <p class="plan-price">
+              <span class="amount">Custom</span>
+              <span class="per">annual contract</span>
+            </p>
+            <ul class="plan-features">
+              <li>Unlimited members and workspaces</li>
+              <li>Volume order pricing</li>
+              <li>SSO, SCIM, and role policies</li>
+              <li>Data residency options</li>
+              <li>99.9% uptime SLA</li>
+              <li>Named support contact</li>
+            </ul>
+            <a class="btn btn-outline" href="#">Talk to sales</a>
+          </article>
+
+        </div>
+        <p class="plans-footnote">
+          Prices in USD. Order volume above plan limits is billed at
+          <span class="mono">$0.90</span> per 1,000 orders. Annual billing takes two months off.
+        </p>
+      </div>
+    </section>
+
+    <!-- Customer quote — full-bleed dark section -->
+    <section class="quote-band" aria-label="Customer quote">
+      <div class="container">
+        <figure class="quote-stack">
+          <div class="quote-rule" aria-hidden="true"></div>
+          <blockquote>
+            <p>We closed month-end in two days instead of nine. Meridian didn’t change how we work — it removed everything between us and the work.</p>
+          </blockquote>
+          <figcaption class="quote-attrib">
+            <span class="who">Dana Whitfield</span>
+            <span class="where">Operations Manager, Meridian West</span>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- Closing CTA -->
+    <section class="closing">
+      <div class="container">
+        <p class="kicker">Get started</p>
+        <h2 class="section-heading">Your queue is waiting.</h2>
+        <p>Start a workspace on the trial, import your orders, and see your first clean month-end before the first invoice.</p>
+        <div class="closing-actions">
+          <a class="btn btn-primary" href="#">Start with Growth</a>
+          <a class="link" href="#">Compare all plan limits</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <span>© 2026 Meridian Systems, Inc.</span>
+      <nav aria-label="Footer">
+        <a href="#">Terms</a>
+        <a href="#">Privacy</a>
+        <a href="#">Status</a>
+        <a href="#">Contact</a>
+      </nav>
+    </div>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meridian — Pricing</title>
+<meta name="description" content="Simple, transparent pricing for Meridian. Start free, scale as you grow.">
+<style>
+  :root {
+    --bg: #0b0d12;
+    --surface: #12151d;
+    --surface-raised: #171b25;
+    --border: #232936;
+    --border-strong: #313a4d;
+    --text: #eef1f6;
+    --text-muted: #9aa4b5;
+    --text-faint: #6b7689;
+    --accent: #5b8cff;
+    --accent-strong: #3f74f2;
+    --accent-soft: rgba(91, 140, 255, 0.12);
+    --radius: 14px;
+    --max: 1120px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  /* ---------- Header ---------- */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(11, 13, 18, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+  }
+
+  .logo-mark {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), #8b5bff);
+    display: grid;
+    place-items: center;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #fff;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+
+  .nav-links a:hover { color: var(--text); }
+
+  .btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--accent-strong); }
+
+  .btn-ghost {
+    border-color: var(--border-strong);
+    color: var(--text);
+  }
+  .btn-ghost:hover { border-color: var(--accent); background: var(--accent-soft); }
+
+  .btn-lg { padding: 14px 28px; font-size: 1rem; border-radius: 12px; }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    text-align: center;
+    padding: 96px 0 72px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: "";
+    position: absolute;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 720px;
+    height: 480px;
+    background: radial-gradient(closest-side, rgba(91, 140, 255, 0.18), transparent);
+    pointer-events: none;
+  }
+
+  .eyebrow {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.25rem, 5vw, 3.5rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    max-width: 760px;
+    margin: 0 auto 20px;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    background: linear-gradient(90deg, var(--accent), #a78bfa);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .hero p {
+    color: var(--text-muted);
+    font-size: 1.125rem;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  /* ---------- Pricing ---------- */
+  .pricing {
+    padding: 24px 0 88px;
+  }
+
+  .tiers {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    align-items: stretch;
+  }
+
+  .tier {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px 28px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+
+  .tier:hover { border-color: var(--border-strong); }
+
+  .tier-featured {
+    background: var(--surface-raised);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), 0 24px 60px -24px rgba(91, 140, 255, 0.35);
+  }
+
+  .tier-badge {
+    position: absolute;
+    top: -13px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .tier h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .tier-desc {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 24px;
+    min-height: 2.7em;
+  }
+
+  .price {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 24px;
+  }
+
+  .price .amount {
+    font-size: 2.6rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  .price .period {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  .tier ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 32px;
+    flex: 1;
+  }
+
+  .tier li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.92rem;
+    color: var(--text-muted);
+  }
+
+  .tier li svg {
+    flex-shrink: 0;
+    margin-top: 4px;
+    color: var(--accent);
+  }
+
+  .tier .btn { text-align: center; width: 100%; }
+
+  .fine-print {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-top: 32px;
+  }
+
+  /* ---------- Quote ---------- */
+  .quote {
+    padding: 80px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .quote blockquote {
+    max-width: 720px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .quote-mark {
+    font-size: 3rem;
+    line-height: 1;
+    color: var(--accent);
+    font-family: Georgia, serif;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .quote p {
+    font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: -0.01em;
+    margin-bottom: 28px;
+  }
+
+  .quote footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+  }
+
+  .avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8b5bff, var(--accent));
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #fff;
+  }
+
+  .quote-attrib { text-align: left; }
+  .quote-attrib .name { font-weight: 600; font-size: 0.95rem; }
+  .quote-attrib .role { color: var(--text-muted); font-size: 0.85rem; }
+
+  /* ---------- CTA ---------- */
+  .cta {
+    padding: 96px 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta::before {
+    content: "";
+    position: absolute;
+    bottom: -240px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 720px;
+    height: 420px;
+    background: radial-gradient(closest-side, rgba(91, 140, 255, 0.16), transparent);
+    pointer-events: none;
+  }
+
+  .cta h2 {
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+  }
+
+  .cta p {
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    max-width: 480px;
+    margin: 0 auto 36px;
+  }
+
+  .cta-actions {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  /* ---------- Footer ---------- */
+  .site-footer {
+    border-top: 1px solid var(--border);
+    padding: 28px 0;
+  }
+
+  .site-footer .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .footer-links { display: flex; gap: 20px; }
+  .footer-links a:hover { color: var(--text); }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 900px) {
+    .tiers { grid-template-columns: 1fr; max-width: 440px; margin: 0 auto; }
+    .tier-featured { order: -1; }
+    .nav-links a:not(.btn) { display: none; }
+    .hero { padding: 64px 0 48px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container nav">
+    <a class="logo" href="#">
+      <span class="logo-mark">M</span>
+      Meridian
+    </a>
+    <nav class="nav-links">
+      <a href="#pricing">Pricing</a>
+      <a href="#quote">Customers</a>
+      <a href="#cta">Docs</a>
+      <a href="#cta" class="btn btn-primary">Get started</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <span class="eyebrow">Pricing</span>
+      <h1>Plans that scale <em>with your team</em>, not against it.</h1>
+      <p>Start free. Upgrade when you're ready. Every plan includes unlimited projects, world-class support, and no surprise fees.</p>
+    </div>
+  </section>
+
+  <!-- Pricing tiers -->
+  <section class="pricing" id="pricing">
+    <div class="container">
+      <div class="tiers">
+
+        <article class="tier">
+          <h2>Starter</h2>
+          <p class="tier-desc">For individuals and side projects getting off the ground.</p>
+          <div class="price">
+            <span class="amount">$0</span>
+            <span class="period">/ month</span>
+          </div>
+          <ul>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Up to 3 team members</li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Unlimited projects</li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>1 GB storage</li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Community support</li>
+          </ul>
+          <a href="#cta" class="btn btn-ghost">Start for free</a>
+        </article>
+
+        <article class="tier tier-featured">
+          <span class="tier-badge">Most popular</span>
+          <h2>Growth</h2>
+          <p class="tier-desc">For growing teams that need power, speed, and collaboration.</p>
+          <div class="price">
+            <span class="amount">$24</span>
+            <span class="period">/ user / month</span>
+          </div>
+          <ul>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Unlimited team members</li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Advanced analytics &amp; reporting</li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>100 GB storage</li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Priority email support</li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Integrations &amp; API access</li>
+          </ul>
+          <a href="#cta" class="btn btn-primary">Start 14-day trial</a>
+        </article>
+
+        <article class="tier">
+          <h2>Enterprise</h2>
+          <p class="tier-desc">For organizations with advanced security and compliance needs.</p>
+          <div class="price">
+            <span class="amount">Custom</span>
+          </div>
+          <ul>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Everything in Growth</li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>SSO / SAML &amp; SCIM provisioning</li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Unlimited storage</li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Dedicated success manager</li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>99.99% uptime SLA</li>
+          </ul>
+          <a href="#cta" class="btn btn-ghost">Contact sales</a>
+        </article>
+
+      </div>
+      <p class="fine-print">All plans include unlimited projects. Prices in USD, billed annually. Cancel anytime.</p>
+    </div>
+  </section>
+
+  <!-- Customer quote -->
+  <section class="quote" id="quote">
+    <div class="container">
+      <blockquote>
+        <span class="quote-mark">&ldquo;</span>
+        <p>Meridian paid for itself in the first month. Our team ships twice as fast, and for the first time everyone — from design to ops — is working from the same source of truth.</p>
+        <footer>
+          <span class="avatar" aria-hidden="true">SC</span>
+          <div class="quote-attrib">
+            <div class="name">Sofia Chen</div>
+            <div class="role">VP of Engineering, Northwind Labs</div>
+          </div>
+        </footer>
+      </blockquote>
+    </div>
+  </section>
+
+  <!-- Closing CTA -->
+  <section class="cta" id="cta">
+    <div class="container">
+      <h2>Ready to find your bearing?</h2>
+      <p>Join thousands of teams navigating their work with Meridian. Free to start — no credit card required.</p>
+      <div class="cta-actions">
+        <a href="#" class="btn btn-primary btn-lg">Get started free</a>
+        <a href="#" class="btn btn-ghost btn-lg">Talk to sales</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <span>&copy; 2026 Meridian, Inc.</span>
+    <nav class="footer-links">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Status</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,2 @@
+# regenerable from ballast.md + asks.md via `steering-eval prompt`
+out/**/*.prompt.md

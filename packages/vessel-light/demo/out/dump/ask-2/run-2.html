@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Meridian — Pricing</title>
+<style>
+  /* ------------------------------------------------------------------
+     Tokens — semantic monochrome roles, one expression hue (amber),
+     three durations, spring ease, pill controls, 20px signature radius.
+     ------------------------------------------------------------------ */
+  :root {
+    --background: #ffffff;
+    --foreground: #1a1a1a;
+    --card: #ffffff;
+    --muted: #f5f5f4;
+    --muted-foreground: #999999;
+    --secondary: #f0f0ef;
+    --border: #e8e8e8;
+    --primary: #1a1a1a;
+    --primary-foreground: #ffffff;
+    --ring: #1a1a1a;
+
+    --surface-dark-background: #141414;
+    --surface-dark-foreground: #fafafa;
+    --surface-dark-muted: #a3a3a3;
+    --surface-dark-border: #2e2e2e;
+
+    --expression-1: #f6b44a; /* amber — the page's single expression hue */
+
+    --radius: 20px;
+    --radius-pill: 999px;
+
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.05);
+
+    --duration-fast: 150ms;
+    --duration-normal: 250ms;
+    --duration-slow: 400ms;
+    --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+
+    --heading-display-font-size: clamp(64px, 8vw, 96px);
+    --heading-display-line-height: 0.88;
+    --heading-display-font-weight: 900;
+    --heading-section-font-size: clamp(32px, 4vw, 44px);
+    --heading-section-line-height: 1.05;
+    --heading-section-font-weight: 800;
+
+    --section-padding-vertical: 100px;
+    --content-max: 1080px;
+
+    --font-sans: "HK Grotesk", "Hanken Grotesk", system-ui, -apple-system,
+      "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas,
+      monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--background);
+    color: var(--foreground);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  .container {
+    max-width: var(--content-max);
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  section { padding: var(--section-padding-vertical) 0; }
+
+  /* ---------- text primitives ---------- */
+  .kicker {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+
+  .display {
+    font-size: var(--heading-display-font-size);
+    line-height: var(--heading-display-line-height);
+    font-weight: var(--heading-display-font-weight);
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+
+  .section-heading {
+    font-size: var(--heading-section-font-size);
+    line-height: var(--heading-section-line-height);
+    font-weight: var(--heading-section-font-weight);
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  .lede {
+    font-size: 19px;
+    line-height: 1.6;
+    color: var(--muted-foreground);
+    max-width: 52ch;
+  }
+
+  .muted { color: var(--muted-foreground); }
+
+  /* ---------- controls: pills, monochrome, quiet hover ---------- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1;
+    padding: 14px 28px;
+    border-radius: var(--radius-pill);
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    transition:
+      background-color var(--duration-fast) var(--ease-spring),
+      border-color var(--duration-fast) var(--ease-spring),
+      color var(--duration-fast) var(--ease-spring);
+  }
+  .btn:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+  .btn-primary:hover { background: #333333; }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--foreground);
+    border-color: var(--border);
+  }
+  .btn-outline:hover { background: var(--muted); border-color: #d6d6d4; }
+
+  .btn-link {
+    background: transparent;
+    color: var(--foreground);
+    padding: 14px 8px;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-color: var(--border);
+  }
+  .btn-link:hover { text-decoration-color: var(--foreground); }
+
+  /* the one primary action on the page lives in the dark closing band */
+  .btn-inverse {
+    background: var(--surface-dark-foreground);
+    color: #141414;
+  }
+  .btn-inverse:hover { background: #e4e4e4; }
+
+  /* ---------- header ---------- */
+  header {
+    border-bottom: 1px solid var(--border);
+  }
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 0;
+  }
+  .wordmark {
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--foreground);
+    text-decoration: none;
+  }
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+  .nav-links a {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--muted-foreground);
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-spring);
+  }
+  .nav-links a:hover { color: var(--foreground); }
+
+  /* ---------- hero ---------- */
+  .hero {
+    padding: 120px 0 var(--section-padding-vertical);
+  }
+  .hero-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 32px;
+  }
+  .hero .kicker { color: var(--foreground); }
+  .hero .kicker::before {
+    content: "";
+    display: inline-block;
+    width: 24px;
+    height: 3px;
+    background: var(--expression-1);
+    margin-right: 12px;
+    vertical-align: middle;
+  }
+
+  /* ---------- pricing tiers ---------- */
+  .plans { padding-top: 0; }
+  .plans-intro {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 56px;
+  }
+  .tier-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    align-items: stretch;
+  }
+  .tier {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+  }
+  .tier-featured {
+    border-color: var(--foreground);
+    box-shadow: var(--shadow-card);
+  }
+  .tier-head {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .tier-name-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .tier-name {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .tier-tag {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--foreground);
+    background: var(--muted);
+    border-radius: var(--radius-pill);
+    padding: 4px 10px;
+  }
+  .tier-desc {
+    font-size: 15px;
+    color: var(--muted-foreground);
+  }
+  .tier-price {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .tier-amount {
+    font-size: 44px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .tier-period {
+    font-size: 14px;
+    color: var(--muted-foreground);
+  }
+  .tier-features {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border-top: 1px solid var(--border);
+    padding-top: 24px;
+    flex: 1;
+  }
+  .tier-features li {
+    font-size: 15px;
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+  }
+  .tier-features li::before {
+    content: "—";
+    color: var(--muted-foreground);
+    flex: none;
+  }
+  .tier .btn { width: 100%; }
+  .plans-footnote {
+    margin-top: 32px;
+    font-size: 14px;
+    color: var(--muted-foreground);
+  }
+
+  /* ---------- customer quote ---------- */
+  .quote-section {
+    border-top: 1px solid var(--border);
+  }
+  .pullquote {
+    max-width: 780px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    border-left: 3px solid var(--expression-1);
+    padding-left: 40px;
+  }
+  .pullquote blockquote {
+    font-size: clamp(26px, 3.2vw, 36px);
+    line-height: 1.25;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+  .pullquote figcaption {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .quote-name { font-size: 15px; font-weight: 600; }
+  .quote-role { font-size: 14px; color: var(--muted-foreground); }
+
+  /* ---------- closing call to action: full-bleed dark band ---------- */
+  .closing {
+    background: var(--surface-dark-background);
+    color: var(--surface-dark-foreground);
+  }
+  .closing-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 32px;
+    max-width: 720px;
+  }
+  .closing .kicker { color: var(--expression-1); }
+  .closing .section-heading {
+    font-size: clamp(40px, 5.5vw, 60px);
+    line-height: 1.0;
+  }
+  .closing p { color: var(--surface-dark-muted); max-width: 46ch; }
+  .closing-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .closing .btn-link {
+    color: var(--surface-dark-muted);
+    text-decoration-color: var(--surface-dark-border);
+  }
+  .closing .btn-link:hover {
+    color: var(--surface-dark-foreground);
+    text-decoration-color: var(--surface-dark-foreground);
+  }
+  .closing .btn-inverse:focus-visible { outline-color: var(--surface-dark-foreground); }
+
+  /* ---------- footer ---------- */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 0;
+  }
+  .footer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 14px;
+    color: var(--muted-foreground);
+  }
+  .footer-row a {
+    color: var(--muted-foreground);
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-spring);
+  }
+  .footer-row a:hover { color: var(--foreground); }
+  .footer-links { display: flex; gap: 24px; }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 900px) {
+    .tier-grid { grid-template-columns: 1fr; }
+    .hero { padding-top: 80px; }
+    section { padding: 72px 0; }
+    .pullquote { padding-left: 24px; }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <nav class="nav" aria-label="Main">
+      <a class="wordmark" href="#">Meridian</a>
+      <div class="nav-links">
+        <a href="#plans">Pricing</a>
+        <a href="#">Docs</a>
+        <a href="#">Changelog</a>
+        <a href="#">Sign in</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-stack">
+        <span class="kicker">Pricing</span>
+        <h1 class="display">Pay for the work,<br />not the promise.</h1>
+        <p class="lede">
+          Meridian runs your operations pipeline — exports, billing events,
+          and monitoring — on one platform. Every plan includes the full
+          product. The tiers differ in scale, not in capability.
+        </p>
+        <a class="btn btn-link" href="#plans">Compare the plans</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Plan tiers -->
+  <section class="plans" id="plans">
+    <div class="container">
+      <div class="plans-intro">
+        <span class="kicker">Plans</span>
+        <h2 class="section-heading">Three tiers. One product.</h2>
+      </div>
+
+      <div class="tier-grid">
+
+        <article class="tier">
+          <div class="tier-head">
+            <div class="tier-name-row">
+              <h3 class="tier-name">Starter</h3>
+            </div>
+            <p class="tier-desc">For small teams putting their first pipeline into production.</p>
+          </div>
+          <div class="tier-price">
+            <span class="tier-amount">$0</span>
+            <span class="tier-period">per month</span>
+          </div>
+          <ul class="tier-features">
+            <li>Up to 3 seats</li>
+            <li>50,000 events per month</li>
+            <li>7-day event retention</li>
+            <li>Community support</li>
+          </ul>
+          <a class="btn btn-outline" href="#">Create a workspace</a>
+        </article>
+
+        <article class="tier tier-featured">
+          <div class="tier-head">
+            <div class="tier-name-row">
+              <h3 class="tier-name">Growth</h3>
+              <span class="tier-tag">Most teams</span>
+            </div>
+            <p class="tier-desc">For teams whose exports, billing, and monitoring run every day.</p>
+          </div>
+          <div class="tier-price">
+            <span class="tier-amount">$49</span>
+            <span class="tier-period">per seat, per month</span>
+          </div>
+          <ul class="tier-features">
+            <li>Unlimited seats</li>
+            <li>5 million events per month</li>
+            <li>13-month event retention</li>
+            <li>Bulk export and scheduling</li>
+            <li>Support with a next-business-day reply</li>
+          </ul>
+          <a class="btn btn-outline" href="#">Start with Growth</a>
+        </article>
+
+        <article class="tier">
+          <div class="tier-head">
+            <div class="tier-name-row">
+              <h3 class="tier-name">Enterprise</h3>
+            </div>
+            <p class="tier-desc">For organizations with audit, residency, and volume requirements.</p>
+          </div>
+          <div class="tier-price">
+            <span class="tier-amount">Custom</span>
+            <span class="tier-period">annual agreement</span>
+          </div>
+          <ul class="tier-features">
+            <li>Everything in Growth</li>
+            <li>Unmetered events with committed volume</li>
+            <li>SSO, SCIM, and audit log export</li>
+            <li>Data residency options</li>
+            <li>Uptime SLA with named support</li>
+          </ul>
+          <a class="btn btn-outline" href="#">Talk to sales</a>
+        </article>
+
+      </div>
+
+      <p class="plans-footnote">
+        Prices are in USD. Growth is billed monthly or annually; annual billing
+        reduces the seat price to $41. You can change plans at any time, and
+        downgrades take effect at the end of the billing period.
+      </p>
+    </div>
+  </section>
+
+  <!-- Customer quote -->
+  <section class="quote-section">
+    <div class="container">
+      <figure class="pullquote">
+        <blockquote>
+          &ldquo;We moved our nightly exports and billing reconciliation to
+          Meridian in a week. The pricing did what the product does — it stayed
+          out of the way.&rdquo;
+        </blockquote>
+        <figcaption>
+          <span class="quote-name">Dana Whitfield</span>
+          <span class="quote-role">Operations Manager, Halcyon Freight</span>
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- Closing call to action -->
+  <section class="closing">
+    <div class="container">
+      <div class="closing-stack">
+        <span class="kicker">Get started</span>
+        <h2 class="section-heading">Your pipeline is already waiting.</h2>
+        <p>
+          Connect a data source, run your first export, and see the numbers
+          before you commit to anything. The Starter plan is free and does not
+          expire.
+        </p>
+        <div class="closing-actions">
+          <a class="btn btn-inverse" href="#">Create your workspace</a>
+          <a class="btn btn-link" href="#">Read the docs</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer-row">
+      <span>&copy; 2026 Meridian Systems, Inc.</span>
+      <div class="footer-links">
+        <a href="#">Terms</a>
+        <a href="#">Privacy</a>
+        <a href="#">Status</a>
+        <a href="#">Contact</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

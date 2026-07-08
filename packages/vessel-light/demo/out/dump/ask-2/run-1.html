@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meridian — Pricing</title>
+<meta name="description" content="Meridian pricing. Three plans for operations teams: Starter, Growth, and Scale.">
+<style>
+  /* ---------------------------------------------------------------
+     Tokens — semantic monochrome spine, one expression hue (amber),
+     three durations, one spring ease, pill controls, 20px cards.
+     --------------------------------------------------------------- */
+  :root {
+    --background: #fafafa;
+    --foreground: #1a1a1a;
+    --card: #ffffff;
+    --muted: #999999;
+    --muted-surface: #f1f1f0;
+    --border: #e8e8e8;
+    --primary: #1a1a1a;
+    --primary-foreground: #ffffff;
+
+    --surface-dark-background: #161615;
+    --surface-dark-foreground: #f5f5f4;
+    --surface-dark-muted: #8f8f8c;
+    --surface-dark-border: #2e2e2c;
+
+    --expression-1: #f6b44a; /* amber — the one expressive moment */
+
+    --radius: 20px;
+    --radius-pill: 999px;
+
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.05);
+
+    --duration-fast: 150ms;
+    --duration-normal: 250ms;
+    --duration-slow: 400ms;
+    --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+
+    --heading-display-font-size: clamp(64px, 8vw, 96px);
+    --heading-display-line-height: 0.88;
+    --heading-display-font-weight: 900;
+
+    --heading-section-font-size: clamp(34px, 4vw, 44px);
+    --heading-section-line-height: 1.05;
+    --heading-section-font-weight: 800;
+
+    --section-padding-vertical: 100px;
+
+    --font-sans: "HK Grotesk", "Hanken Grotesk", ui-sans-serif, system-ui,
+      -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas,
+      monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--background);
+    color: var(--foreground);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  .container {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ---- text primitives ---- */
+  .kicker {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .body-muted { color: var(--muted); }
+
+  .mono { font-family: var(--font-mono); }
+
+  /* ---- controls: pills, monochrome, one primary per page ---- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: var(--radius-pill);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1;
+    padding: 14px 28px;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition:
+      background-color var(--duration-fast) var(--ease-spring),
+      border-color var(--duration-fast) var(--ease-spring),
+      color var(--duration-fast) var(--ease-spring);
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+  .btn-primary:hover { background: #333330; }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--foreground);
+    border-color: var(--foreground);
+  }
+  .btn-outline:hover { background: rgba(26, 26, 26, 0.06); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--foreground);
+  }
+  .btn-ghost:hover { background: rgba(26, 26, 26, 0.06); }
+
+  .btn-inverse {
+    background: var(--surface-dark-foreground);
+    color: var(--surface-dark-background);
+  }
+  .btn-inverse:hover { background: #ffffff; }
+
+  .btn-outline-inverse {
+    background: transparent;
+    color: var(--surface-dark-foreground);
+    border-color: var(--surface-dark-border);
+  }
+  .btn-outline-inverse:hover { border-color: var(--surface-dark-muted); }
+
+  .btn:focus-visible {
+    outline: 2px solid var(--foreground);
+    outline-offset: 2px;
+  }
+  .btn-inverse:focus-visible,
+  .btn-outline-inverse:focus-visible {
+    outline-color: var(--surface-dark-foreground);
+  }
+
+  .text-link {
+    color: var(--foreground);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--border);
+    transition: text-decoration-color var(--duration-fast) var(--ease-spring);
+  }
+  .text-link:hover { text-decoration-color: var(--foreground); }
+
+  /* ---- header ---- */
+  .site-header {
+    border-bottom: 1px solid var(--border);
+    background: var(--background);
+  }
+  .site-header .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 72px;
+  }
+  .wordmark {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--foreground);
+    text-decoration: none;
+  }
+  .site-nav {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .site-nav a {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-spring);
+  }
+  .site-nav a:hover { color: var(--foreground); }
+
+  /* ---- hero ---- */
+  .hero {
+    padding: var(--section-padding-vertical) 0 80px;
+  }
+  .hero-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 32px;
+    max-width: 840px;
+  }
+  .hero h1 {
+    font-size: var(--heading-display-font-size);
+    line-height: var(--heading-display-line-height);
+    font-weight: var(--heading-display-font-weight);
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+  .hero p {
+    font-size: 19px;
+    line-height: 1.6;
+    color: var(--muted);
+    max-width: 560px;
+  }
+
+  /* ---- pricing ---- */
+  .pricing {
+    padding: 40px 0 var(--section-padding-vertical);
+  }
+  .plan-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    align-items: stretch;
+  }
+  .plan {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    padding: 32px;
+  }
+  .plan-featured {
+    border-color: var(--foreground);
+  }
+  .plan-head {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .plan-name-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .plan-name {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .plan-flag {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--foreground);
+    background: var(--muted-surface);
+    border-radius: var(--radius-pill);
+    padding: 4px 10px;
+    white-space: nowrap;
+  }
+  .plan-desc {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--muted);
+  }
+  .plan-price {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .plan-price .amount {
+    font-size: 44px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .plan-price .per {
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .plan-features {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-top: 1px solid var(--border);
+    padding-top: 24px;
+  }
+  .plan-features li {
+    display: flex;
+    gap: 10px;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  .plan-features li::before {
+    content: "—";
+    color: var(--muted);
+    flex: none;
+  }
+  .plan-action { margin-top: auto; }
+  .plan-action .btn { width: 100%; }
+
+  .pricing-footnote {
+    margin-top: 32px;
+    font-size: 14px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  /* ---- quote ---- */
+  .quote-section {
+    border-top: 1px solid var(--border);
+    padding: var(--section-padding-vertical) 0;
+  }
+  .quote-inner {
+    max-width: 800px;
+    margin: 0 auto;
+    border-left: 3px solid var(--expression-1);
+    padding-left: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .quote-inner blockquote p {
+    font-size: clamp(26px, 3.2vw, 34px);
+    line-height: 1.25;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+  .quote-attribution {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-style: normal;
+  }
+  .quote-attribution .name {
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .quote-attribution .role {
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  /* ---- closing dark band ---- */
+  .closing {
+    background: var(--surface-dark-background);
+    color: var(--surface-dark-foreground);
+    padding: var(--section-padding-vertical) 0;
+  }
+  .closing-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 32px;
+    max-width: 720px;
+  }
+  .closing .kicker { color: var(--surface-dark-muted); }
+  .closing h2 {
+    font-size: var(--heading-section-font-size);
+    line-height: var(--heading-section-line-height);
+    font-weight: var(--heading-section-font-weight);
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+  .closing p {
+    font-size: 17px;
+    color: var(--surface-dark-muted);
+    max-width: 520px;
+  }
+  .closing-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  /* ---- footer ---- */
+  .site-footer {
+    background: var(--surface-dark-background);
+    border-top: 1px solid var(--surface-dark-border);
+    padding: 32px 0;
+  }
+  .site-footer .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .site-footer span,
+  .site-footer a {
+    font-size: 13px;
+    color: var(--surface-dark-muted);
+    text-decoration: none;
+  }
+  .site-footer a:hover { color: var(--surface-dark-foreground); }
+  .footer-links { display: flex; gap: 20px; }
+
+  /* ---- editorial entrance: staged reveal, normal duration ---- */
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      opacity: 0;
+      transform: translateY(8px);
+      animation: reveal var(--duration-slow) var(--ease-spring) forwards;
+    }
+    .reveal-2 { animation-delay: 80ms; }
+    .reveal-3 { animation-delay: 160ms; }
+    @keyframes reveal {
+      to { opacity: 1; transform: none; }
+    }
+  }
+
+  /* ---- responsive ---- */
+  @media (max-width: 900px) {
+    .plan-grid { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; }
+  }
+  @media (max-width: 640px) {
+    :root { --section-padding-vertical: 72px; }
+    .quote-inner { padding-left: 24px; }
+    .site-nav a:not(.btn) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container">
+      <a class="wordmark" href="#">Meridian</a>
+      <nav class="site-nav" aria-label="Primary">
+        <a href="#plans">Plans</a>
+        <a href="#">Docs</a>
+        <a class="btn btn-ghost" href="#" style="padding: 10px 20px; font-size: 14px;">Sign in</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero-inner">
+          <span class="kicker reveal">Pricing</span>
+          <h1 class="reveal reveal-2">Pay for the operation you run. Nothing else.</h1>
+          <p class="reveal reveal-3">
+            Meridian handles orders, exports, and webhook delivery for
+            operations teams. Every plan includes the full platform. The
+            difference is volume, retention, and support.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Plans -->
+    <section class="pricing" id="plans">
+      <div class="container">
+        <div class="plan-grid">
+
+          <!-- Starter -->
+          <article class="plan">
+            <div class="plan-head">
+              <div class="plan-name-row">
+                <h2 class="plan-name">Starter</h2>
+              </div>
+              <p class="plan-desc">For a single team getting its first workflows into production.</p>
+            </div>
+            <p class="plan-price">
+              <span class="amount">$29</span>
+              <span class="per">per month</span>
+            </p>
+            <ul class="plan-features">
+              <li>Up to 5 seats</li>
+              <li>50,000 events per month</li>
+              <li>30-day event retention</li>
+              <li>Scheduled exports, daily</li>
+              <li>Email support, next business day</li>
+            </ul>
+            <div class="plan-action">
+              <a class="btn btn-outline" href="#">Choose Starter</a>
+            </div>
+          </article>
+
+          <!-- Growth (featured) -->
+          <article class="plan plan-featured" aria-label="Growth plan, recommended for most teams">
+            <div class="plan-head">
+              <div class="plan-name-row">
+                <h2 class="plan-name">Growth</h2>
+                <span class="plan-flag">Most teams</span>
+              </div>
+              <p class="plan-desc">For operations running real volume across multiple workspaces.</p>
+            </div>
+            <p class="plan-price">
+              <span class="amount">$79</span>
+              <span class="per">per month</span>
+            </p>
+            <ul class="plan-features">
+              <li>Up to 25 seats</li>
+              <li>2 million events per month</li>
+              <li>13-month event retention</li>
+              <li>Bulk export with status tracking</li>
+              <li>Webhook delivery dashboard</li>
+              <li>Support in 4 business hours</li>
+            </ul>
+            <div class="plan-action">
+              <a class="btn btn-primary" href="#">Start with Growth</a>
+            </div>
+          </article>
+
+          <!-- Scale -->
+          <article class="plan">
+            <div class="plan-head">
+              <div class="plan-name-row">
+                <h2 class="plan-name">Scale</h2>
+              </div>
+              <p class="plan-desc">For platforms where Meridian sits in the critical path.</p>
+            </div>
+            <p class="plan-price">
+              <span class="amount">Custom</span>
+            </p>
+            <ul class="plan-features">
+              <li>Unlimited seats</li>
+              <li>Volume-based event pricing</li>
+              <li>Custom retention and legal hold</li>
+              <li>Single sign-on and audit log</li>
+              <li>99.95% uptime commitment</li>
+              <li>Named support engineer</li>
+            </ul>
+            <div class="plan-action">
+              <a class="btn btn-outline" href="#">Talk to sales</a>
+            </div>
+          </article>
+
+        </div>
+
+        <p class="pricing-footnote">
+          Prices are billed annually. Monthly billing is available at a 20%
+          premium. Change or cancel your plan at any time; changes apply at
+          the next billing period.
+        </p>
+      </div>
+    </section>
+
+    <!-- Customer quote -->
+    <section class="quote-section" aria-label="Customer quote">
+      <div class="container">
+        <figure class="quote-inner">
+          <blockquote>
+            <p>We moved 14 people onto Growth and closed our export backlog in
+            a week. The delivery dashboard alone replaced a spreadsheet three
+            teams were fighting over.</p>
+          </blockquote>
+          <figcaption class="quote-attribution">
+            <span class="name">Dana Whitfield</span>
+            <span class="role">Operations manager, Meridian West</span>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- Closing call to action -->
+    <section class="closing">
+      <div class="container">
+        <div class="closing-inner">
+          <span class="kicker">Get started</span>
+          <h2>Fourteen days on Growth. No card required.</h2>
+          <p>
+            Every trial includes the full plan: bulk export, the delivery
+            dashboard, and 13-month retention. If it does not fit, your data
+            exports cleanly and you owe nothing.
+          </p>
+          <div class="closing-actions">
+            <a class="btn btn-inverse" href="#">Start the trial</a>
+            <a class="btn btn-outline-inverse" href="#">Talk to sales</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <span>© 2026 Meridian, Inc.</span>
+      <nav class="footer-links" aria-label="Footer">
+        <a href="#">Terms</a>
+        <a href="#">Privacy</a>
+        <a href="#">Status</a>
+      </nav>
+    </div>
+  </footer>
+
+</body>
+</html>

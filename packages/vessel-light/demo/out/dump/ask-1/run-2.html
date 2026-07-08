@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Billing — meridian-west</title>
+<style>
+  /* ---------- tokens ---------- */
+  :root {
+    /* monochrome semantic roles */
+    --background: #fafafa;
+    --foreground: #1a1a1a;
+    --card: #ffffff;
+    --popover: #ffffff;
+    --primary: #1a1a1a;
+    --primary-foreground: #ffffff;
+    --secondary: #f0f0f0;
+    --secondary-foreground: #1a1a1a;
+    --muted: #f4f4f4;
+    --muted-foreground: #767676;
+    --border: #e8e8e8;
+    --input: #e0e0e0;
+    --ring: #1a1a1a;
+
+    /* status — functional only */
+    --destructive: #c0362c;
+    --destructive-foreground: #ffffff;
+    --success: #22703c;
+
+    /* shape */
+    --radius: 20px;
+    --radius-sm: 10px;
+    --radius-pill: 999px;
+
+    /* elevation tiers */
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-popover: 0 4px 16px rgba(0, 0, 0, 0.10);
+    --shadow-modal: 0 12px 40px rgba(0, 0, 0, 0.18);
+
+    /* motion */
+    --duration-fast: 120ms;
+    --duration-normal: 200ms;
+    --duration-slow: 320ms;
+    --ease-spring: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+    --font-sans: "HK Grotesk", "HKGrotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--background);
+    color: var(--foreground);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ---------- text variants ---------- */
+  .text-headline { font-size: 24px; font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; }
+  .text-title    { font-size: 16px; font-weight: 600; line-height: 1.35; }
+  .text-body     { font-size: 15px; font-weight: 400; line-height: 1.6; }
+  .text-label    { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  .text-mono     { font-family: var(--font-mono); font-size: 13px; }
+
+  .tone-muted       { color: var(--muted-foreground); }
+  .tone-success     { color: var(--success); }
+  .tone-destructive { color: var(--destructive); }
+
+  /* ---------- stacks ---------- */
+  .stack     { display: flex; flex-direction: column; align-items: stretch; }
+  .row       { display: flex; flex-direction: row; align-items: center; }
+  .gap-4  { gap: 4px; }
+  .gap-8  { gap: 8px; }
+  .gap-16 { gap: 16px; }
+  .gap-24 { gap: 24px; }
+  .gap-32 { gap: 32px; }
+  .between { justify-content: space-between; }
+  .grow    { flex: 1; min-width: 0; }
+
+  /* ---------- surfaces ---------- */
+  .page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+  }
+  .card-body   { padding: 24px; }
+  .card-header { padding: 24px 24px 0; }
+  .card-divider { border: 0; border-top: 1px solid var(--border); }
+
+  /* ---------- controls ---------- */
+  .btn {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1;
+    padding: 10px 18px;
+    border-radius: var(--radius-pill);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-spring),
+                border-color var(--duration-fast) var(--ease-spring),
+                color var(--duration-fast) var(--ease-spring);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .btn:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-primary { background: var(--primary); color: var(--primary-foreground); }
+  .btn-primary:hover { background: #333333; }
+
+  .btn-outline { background: var(--card); color: var(--foreground); border-color: var(--input); }
+  .btn-outline:hover { background: var(--muted); }
+
+  .btn-ghost { background: transparent; color: var(--foreground); }
+  .btn-ghost:hover { background: var(--muted); }
+
+  .btn-destructive { background: var(--destructive); color: var(--destructive-foreground); }
+  .btn-destructive:hover { background: #a52d24; }
+
+  .btn-destructive-outline { background: var(--card); color: var(--destructive); border-color: var(--input); }
+  .btn-destructive-outline:hover { background: #faf1f0; border-color: #e3b5b1; }
+
+  .link {
+    color: var(--foreground);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--input);
+    transition: text-decoration-color var(--duration-fast) var(--ease-spring);
+  }
+  .link:hover { text-decoration-color: var(--foreground); }
+
+  .field-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+
+  .input {
+    width: 100%;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    color: var(--foreground);
+    background: var(--card);
+    border: 1px solid var(--input);
+    border-radius: var(--radius-pill);
+    padding: 10px 18px;
+    transition: border-color var(--duration-fast) var(--ease-spring);
+  }
+  .input::placeholder { color: var(--muted-foreground); }
+  .input:focus { outline: 2px solid var(--ring); outline-offset: 1px; border-color: var(--ring); }
+
+  .helper { font-size: 13px; color: var(--muted-foreground); }
+
+  /* ---------- plan summary rows ---------- */
+  .kv-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .kv-row:last-child { border-bottom: 0; }
+  .kv-key { color: var(--muted-foreground); font-size: 14px; }
+  .kv-val { font-size: 14px; font-weight: 500; text-align: right; }
+  .kv-val.num { font-family: var(--font-mono); font-size: 13px; }
+
+  /* ---------- payment method ---------- */
+  .card-brand {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 30px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--muted-foreground);
+    flex: none;
+  }
+
+  /* ---------- invoice table (data-dense) ---------- */
+  .invoice-table { width: 100%; border-collapse: collapse; }
+  .invoice-table th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .invoice-table td {
+    font-size: 13px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .invoice-table tbody tr:last-child td { border-bottom: 0; }
+  .invoice-table tbody tr { transition: background-color var(--duration-fast) var(--ease-spring); }
+  .invoice-table tbody tr:hover { background: var(--muted); }
+  .invoice-table .num { font-family: var(--font-mono); font-size: 12.5px; text-align: right; }
+  .invoice-table th.num { text-align: right; }
+  .invoice-table .id { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted-foreground); }
+  .invoice-table .status-paid { font-size: 12px; font-weight: 600; color: var(--success); }
+  .invoice-table .dl { font-size: 12.5px; }
+  .table-wrap { overflow-x: auto; }
+
+  /* ---------- cancel section ---------- */
+  .cancel-note { max-width: 46ch; }
+
+  /* ---------- modal ---------- */
+  dialog.modal {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-modal);
+    background: var(--popover);
+    padding: 0;
+    width: min(440px, calc(100vw - 48px));
+    color: var(--foreground);
+  }
+  dialog.modal::backdrop { background: rgba(0, 0, 0, 0.4); }
+  .modal-body { padding: 24px; }
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  /* ---------- header ---------- */
+  .page-header { margin-bottom: 32px; }
+  .breadcrumb { font-size: 13px; color: var(--muted-foreground); }
+  .breadcrumb .sep { margin: 0 6px; }
+
+  @media (max-width: 560px) {
+    .stack-collapse { flex-direction: column; align-items: stretch; }
+    .kv-val { text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<main class="page stack gap-24">
+
+  <header class="page-header stack gap-8">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      meridian-west<span class="sep">/</span>Settings<span class="sep">/</span>Billing
+    </nav>
+    <h1 class="text-headline">Billing</h1>
+    <p class="text-body tone-muted">Plan, payment method, and invoices for the meridian-west workspace.</p>
+  </header>
+
+  <!-- Plan summary -->
+  <section class="card" aria-labelledby="plan-heading">
+    <div class="card-header row between gap-16 stack-collapse">
+      <div class="stack gap-4">
+        <h2 id="plan-heading" class="text-title">Growth plan</h2>
+        <p class="helper">Billed monthly. Renews on August 1, 2026.</p>
+      </div>
+      <button type="button" class="btn btn-outline">Change plan</button>
+    </div>
+    <div class="card-body">
+      <div class="stack">
+        <div class="kv-row">
+          <span class="kv-key">Seats</span>
+          <span class="kv-val num">14 of 20</span>
+        </div>
+        <div class="kv-row">
+          <span class="kv-key">Price per seat</span>
+          <span class="kv-val num">$24.00 / month</span>
+        </div>
+        <div class="kv-row">
+          <span class="kv-key">Next charge</span>
+          <span class="kv-val num">$336.00 on Aug 1, 2026</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Payment method -->
+  <section class="card" aria-labelledby="payment-heading">
+    <div class="card-body stack gap-16">
+      <h2 id="payment-heading" class="text-title">Payment method</h2>
+      <div class="row between gap-16 stack-collapse">
+        <div class="row gap-16">
+          <span class="card-brand" aria-hidden="true">VISA</span>
+          <div class="stack gap-4">
+            <span class="text-body">Visa ending in 4242</span>
+            <span class="helper">Expires 09/2027 &middot; Dana Whitfield</span>
+          </div>
+        </div>
+        <button type="button" class="btn btn-outline">Update card</button>
+      </div>
+      <p class="helper">The card on file is charged on the first of each month. A failed charge is retried for 7 days before the workspace is paused.</p>
+    </div>
+  </section>
+
+  <!-- Billing email -->
+  <section class="card" aria-labelledby="email-heading">
+    <form class="card-body stack gap-16" action="#" method="post">
+      <div class="stack gap-4">
+        <h2 id="email-heading" class="text-title">Billing email</h2>
+        <p class="helper">Invoices and receipts are sent to this address.</p>
+      </div>
+      <div class="stack gap-8">
+        <label class="field-label" for="billing-email">Email address</label>
+        <input class="input" type="email" id="billing-email" name="billing-email"
+               value="billing@meridianwest.com" autocomplete="email" required>
+      </div>
+      <div class="row gap-8">
+        <button type="submit" class="btn btn-primary">Save changes</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Invoice history -->
+  <section class="card" aria-labelledby="invoices-heading">
+    <div class="card-header stack gap-4">
+      <h2 id="invoices-heading" class="text-title">Invoices</h2>
+      <p class="helper">The last six months. Older invoices are available on request.</p>
+    </div>
+    <div class="card-body table-wrap">
+      <table class="invoice-table">
+        <thead>
+          <tr>
+            <th scope="col">Invoice</th>
+            <th scope="col">Date</th>
+            <th scope="col">Seats</th>
+            <th scope="col" class="num">Amount</th>
+            <th scope="col">Status</th>
+            <th scope="col" aria-label="Download"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="id">INV-2026-0701</td>
+            <td>Jul 1, 2026</td>
+            <td class="num">14</td>
+            <td class="num">$336.00</td>
+            <td><span class="status-paid">Paid</span></td>
+            <td class="dl"><a class="link" href="#" download>Download</a></td>
+          </tr>
+          <tr>
+            <td class="id">INV-2026-0601</td>
+            <td>Jun 1, 2026</td>
+            <td class="num">14</td>
+            <td class="num">$336.00</td>
+            <td><span class="status-paid">Paid</span></td>
+            <td class="dl"><a class="link" href="#" download>Download</a></td>
+          </tr>
+          <tr>
+            <td class="id">INV-2026-0501</td>
+            <td>May 1, 2026</td>
+            <td class="num">12</td>
+            <td class="num">$288.00</td>
+            <td><span class="status-paid">Paid</span></td>
+            <td class="dl"><a class="link" href="#" download>Download</a></td>
+          </tr>
+          <tr>
+            <td class="id">INV-2026-0401</td>
+            <td>Apr 1, 2026</td>
+            <td class="num">12</td>
+            <td class="num">$288.00</td>
+            <td><span class="status-paid">Paid</span></td>
+            <td class="dl"><a class="link" href="#" download>Download</a></td>
+          </tr>
+          <tr>
+            <td class="id">INV-2026-0301</td>
+            <td>Mar 1, 2026</td>
+            <td class="num">11</td>
+            <td class="num">$264.00</td>
+            <td><span class="status-paid">Paid</span></td>
+            <td class="dl"><a class="link" href="#" download>Download</a></td>
+          </tr>
+          <tr>
+            <td class="id">INV-2026-0201</td>
+            <td>Feb 1, 2026</td>
+            <td class="num">11</td>
+            <td class="num">$264.00</td>
+            <td><span class="status-paid">Paid</span></td>
+            <td class="dl"><a class="link" href="#" download>Download</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Cancel subscription -->
+  <section class="card" aria-labelledby="cancel-heading">
+    <div class="card-body row between gap-16 stack-collapse">
+      <div class="stack gap-4 cancel-note">
+        <h2 id="cancel-heading" class="text-title">Cancel subscription</h2>
+        <p class="helper">Cancellation takes effect at the end of the current billing period on July 31, 2026. Workspace data is retained for 90 days after that.</p>
+      </div>
+      <button type="button" class="btn btn-destructive-outline" id="open-cancel">Cancel subscription</button>
+    </div>
+  </section>
+
+</main>
+
+<!-- Cancel confirmation modal -->
+<dialog class="modal" id="cancel-dialog" aria-labelledby="cancel-dialog-title">
+  <div class="modal-body stack gap-16">
+    <div class="stack gap-8">
+      <h2 id="cancel-dialog-title" class="text-title">Cancel the Growth plan for meridian-west</h2>
+      <p class="text-body tone-muted">The workspace stays active until July 31, 2026. After that, all 14 members lose access and data is retained for 90 days. This action can be undone before the period ends.</p>
+    </div>
+    <div class="stack gap-8">
+      <label class="field-label" for="confirm-workspace">Type <strong>meridian-west</strong> to confirm</label>
+      <input class="input" type="text" id="confirm-workspace" autocomplete="off"
+             spellcheck="false" placeholder="meridian-west">
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-ghost" id="keep-plan">Keep plan</button>
+    <button type="button" class="btn btn-destructive" id="confirm-cancel" disabled>Cancel subscription</button>
+  </div>
+</dialog>
+
+<script>
+  const dialog = document.getElementById('cancel-dialog');
+  const openBtn = document.getElementById('open-cancel');
+  const keepBtn = document.getElementById('keep-plan');
+  const confirmBtn = document.getElementById('confirm-cancel');
+  const confirmInput = document.getElementById('confirm-workspace');
+
+  openBtn.addEventListener('click', () => {
+    confirmInput.value = '';
+    confirmBtn.disabled = true;
+    dialog.showModal();
+  });
+  keepBtn.addEventListener('click', () => dialog.close());
+  confirmInput.addEventListener('input', () => {
+    confirmBtn.disabled = confirmInput.value.trim() !== 'meridian-west';
+  });
+  confirmBtn.addEventListener('click', () => dialog.close());
+</script>
+
+</body>
+</html>

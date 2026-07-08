@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Billing · Meridian</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --border: #e2e5ea;
+    --border-strong: #cdd2da;
+    --text: #16181d;
+    --text-secondary: #5a6070;
+    --text-muted: #8a90a0;
+    --accent: #2f5af0;
+    --accent-hover: #2448cc;
+    --accent-soft: #eef2fe;
+    --danger: #c62f3b;
+    --danger-hover: #a92531;
+    --danger-soft: #fdeef0;
+    --success: #1a7f4e;
+    --success-soft: #e9f7f0;
+    --radius: 10px;
+    --radius-sm: 7px;
+    --shadow: 0 1px 2px rgba(22, 24, 29, 0.05), 0 1px 4px rgba(22, 24, 29, 0.04);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ---------- Top bar ---------- */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  .topbar-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-weight: 650;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+  .brand-mark {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #2f5af0, #7a3ff0);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .topbar .crumb {
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+  .topbar .crumb-current { color: var(--text-secondary); font-size: 14px; }
+  .topbar-spacer { flex: 1; }
+  .avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #dfe4ee;
+    color: #47506a;
+    font-size: 12px;
+    font-weight: 650;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ---------- Layout ---------- */
+  .page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 32px 24px 72px;
+  }
+  .page-header { margin-bottom: 28px; }
+  .page-header h1 {
+    font-size: 22px;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+  }
+  .page-header p {
+    color: var(--text-secondary);
+    margin-top: 4px;
+    font-size: 14px;
+  }
+
+  .stack { display: flex; flex-direction: column; gap: 20px; }
+
+  /* ---------- Cards ---------- */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 18px 22px 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .card-header h2 {
+    font-size: 15px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+  }
+  .card-header .card-sub {
+    color: var(--text-secondary);
+    font-size: 13px;
+    margin-top: 2px;
+  }
+  .card-body { padding: 18px 22px 22px; }
+  .card-footer {
+    padding: 14px 22px;
+    border-top: 1px solid var(--border);
+    background: #fafbfc;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .card-footer .hint { color: var(--text-muted); font-size: 12.5px; }
+
+  /* ---------- Badges ---------- */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 999px;
+    line-height: 1.6;
+    white-space: nowrap;
+  }
+  .badge-success { background: var(--success-soft); color: var(--success); }
+  .badge-accent { background: var(--accent-soft); color: var(--accent); }
+  .badge .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor;
+  }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 550;
+    padding: 7px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background-color .12s ease, border-color .12s ease, color .12s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    line-height: 1.4;
+  }
+  .btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-secondary {
+    background: var(--surface);
+    border-color: var(--border-strong);
+    color: var(--text);
+  }
+  .btn-secondary:hover { background: #f2f4f7; }
+  .btn-danger-outline {
+    background: var(--surface);
+    border-color: #ecc4c8;
+    color: var(--danger);
+  }
+  .btn-danger-outline:hover { background: var(--danger-soft); border-color: #e0a6ac; }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-danger:hover { background: var(--danger-hover); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    padding: 6px 10px;
+  }
+  .btn-ghost:hover { background: #f0f2f5; color: var(--text); }
+  .btn-sm { padding: 5px 11px; font-size: 12.5px; }
+
+  /* ---------- Plan summary ---------- */
+  .plan-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .plan-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 19px;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+  }
+  .plan-price { text-align: right; }
+  .plan-price .amount {
+    font-size: 22px;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+  }
+  .plan-price .amount span {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+  }
+  .plan-price .renews {
+    color: var(--text-secondary);
+    font-size: 12.5px;
+    margin-top: 2px;
+  }
+  .plan-meta {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 20px;
+  }
+  .meta-tile {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    background: #fafbfc;
+  }
+  .meta-tile .label {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .meta-tile .value {
+    font-size: 15px;
+    font-weight: 600;
+    margin-top: 3px;
+  }
+  .meta-tile .value small {
+    font-size: 12.5px;
+    font-weight: 450;
+    color: var(--text-secondary);
+  }
+  .usage-bar {
+    height: 5px;
+    border-radius: 3px;
+    background: #e6e9ef;
+    margin-top: 9px;
+    overflow: hidden;
+  }
+  .usage-bar > span {
+    display: block;
+    height: 100%;
+    border-radius: 3px;
+    background: var(--accent);
+  }
+
+  /* ---------- Payment method ---------- */
+  .pm-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+  }
+  .cc-mark {
+    width: 44px;
+    height: 30px;
+    border-radius: 5px;
+    background: #1a1f36;
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    font-style: italic;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+  }
+  .pm-details { flex: 1; min-width: 0; }
+  .pm-details .pm-primary {
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .pm-details .pm-secondary {
+    color: var(--text-secondary);
+    font-size: 12.5px;
+    margin-top: 1px;
+  }
+  .pm-number { font-family: var(--mono); letter-spacing: 0.03em; }
+
+  /* ---------- Billing email form ---------- */
+  .field { max-width: 420px; }
+  .field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .field input[type="email"] {
+    width: 100%;
+    font-family: inherit;
+    font-size: 14px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    background: var(--surface);
+    transition: border-color .12s ease, box-shadow .12s ease;
+  }
+  .field input[type="email"]:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(47, 90, 240, 0.15);
+  }
+  .field .help {
+    color: var(--text-muted);
+    font-size: 12.5px;
+    margin-top: 6px;
+  }
+  .email-form-actions {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .save-confirm {
+    color: var(--success);
+    font-size: 13px;
+    font-weight: 550;
+    opacity: 0;
+    transition: opacity .2s ease;
+  }
+  .save-confirm.visible { opacity: 1; }
+
+  /* ---------- Invoice table ---------- */
+  .table-wrap { overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  thead th {
+    text-align: left;
+    font-size: 11.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    padding: 10px 22px;
+    border-bottom: 1px solid var(--border);
+    background: #fafbfc;
+    white-space: nowrap;
+  }
+  tbody td {
+    padding: 12px 22px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: #fafbfd; }
+  td.num, th.num { text-align: right; }
+  .inv-id { font-family: var(--mono); font-size: 12.5px; color: var(--text-secondary); }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 1px 8px;
+    border-radius: 999px;
+  }
+  .pill-paid { background: var(--success-soft); color: var(--success); }
+  .dl-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12.5px;
+    font-weight: 550;
+  }
+  .dl-link svg { width: 13px; height: 13px; }
+
+  /* ---------- Danger zone ---------- */
+  .card-danger { border-color: #efcacd; }
+  .card-danger .card-header h2 { color: var(--danger); }
+  .danger-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .danger-row p { color: var(--text-secondary); font-size: 13.5px; max-width: 540px; }
+
+  /* ---------- Modal ---------- */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 17, 22, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 50;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: 12px;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: 0 20px 50px rgba(15, 17, 22, 0.28);
+    animation: modal-in .16s ease-out;
+  }
+  @keyframes modal-in {
+    from { transform: translateY(8px) scale(0.98); opacity: 0; }
+    to   { transform: none; opacity: 1; }
+  }
+  .modal-body { padding: 24px; }
+  .modal-body h3 {
+    font-size: 16px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+  }
+  .modal-body > p {
+    color: var(--text-secondary);
+    font-size: 13.5px;
+    margin-top: 8px;
+  }
+  .modal-callout {
+    margin-top: 16px;
+    background: var(--danger-soft);
+    border: 1px solid #efcacd;
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    font-size: 13px;
+    color: #7e2029;
+  }
+  .modal-callout ul { margin: 6px 0 0 18px; }
+  .modal-callout li { margin-top: 3px; }
+  .confirm-field { margin-top: 18px; }
+  .confirm-field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .confirm-field label code {
+    font-family: var(--mono);
+    background: #f0f2f5;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  .confirm-field input {
+    width: 100%;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+  }
+  .confirm-field input:focus {
+    outline: none;
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px rgba(198, 47, 59, 0.13);
+  }
+  .modal-actions {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* ---------- Toast ---------- */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translate(-50%, 12px);
+    background: #16181d;
+    color: #fff;
+    font-size: 13.5px;
+    font-weight: 500;
+    padding: 11px 18px;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(15, 17, 22, 0.3);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease, transform .2s ease;
+    z-index: 60;
+  }
+  .toast.visible { opacity: 1; transform: translate(-50%, 0); }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 720px) {
+    .plan-meta { grid-template-columns: 1fr; }
+    .plan-price { text-align: left; }
+    thead th, tbody td { padding-left: 16px; padding-right: 16px; }
+    .card-header, .card-body { padding-left: 16px; padding-right: 16px; }
+    .card-footer { padding-left: 16px; padding-right: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <span class="brand"><span class="brand-mark">M</span>Meridian</span>
+    <span class="crumb">/</span>
+    <span class="crumb">Settings</span>
+    <span class="crumb">/</span>
+    <span class="crumb-current">Billing</span>
+    <span class="topbar-spacer"></span>
+    <span class="avatar" title="Ava Reyes">AR</span>
+  </div>
+</header>
+
+<main class="page">
+  <div class="page-header">
+    <h1>Billing</h1>
+    <p>Manage your workspace plan, payment method, and invoices.</p>
+  </div>
+
+  <div class="stack">
+
+    <!-- Plan summary -->
+    <section class="card" aria-labelledby="plan-heading">
+      <div class="card-header">
+        <div>
+          <h2 id="plan-heading">Current plan</h2>
+          <p class="card-sub">Your workspace is billed annually.</p>
+        </div>
+        <span class="badge badge-success"><span class="dot"></span>Active</span>
+      </div>
+      <div class="card-body">
+        <div class="plan-row">
+          <div>
+            <div class="plan-name">
+              Business
+              <span class="badge badge-accent">Annual</span>
+            </div>
+          </div>
+          <div class="plan-price">
+            <div class="amount">$24 <span>/ seat / month</span></div>
+            <div class="renews">Renews on March 12, 2027 · $6,912.00/yr</div>
+          </div>
+        </div>
+        <div class="plan-meta">
+          <div class="meta-tile">
+            <div class="label">Seats</div>
+            <div class="value">24 <small>of 30 used</small></div>
+            <div class="usage-bar"><span style="width: 80%"></span></div>
+          </div>
+          <div class="meta-tile">
+            <div class="label">Storage</div>
+            <div class="value">312 GB <small>of 1 TB</small></div>
+            <div class="usage-bar"><span style="width: 31%"></span></div>
+          </div>
+          <div class="meta-tile">
+            <div class="label">API requests</div>
+            <div class="value">1.4M <small>of 5M this month</small></div>
+            <div class="usage-bar"><span style="width: 28%"></span></div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="hint">Need more seats or a custom contract? <a href="#">Contact sales</a>.</span>
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-secondary" type="button">Compare plans</button>
+          <button class="btn btn-primary" type="button">Change plan</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Payment method -->
+    <section class="card" aria-labelledby="pm-heading">
+      <div class="card-header">
+        <div>
+          <h2 id="pm-heading">Payment method</h2>
+          <p class="card-sub">This card is charged on each renewal.</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="pm-row">
+          <span class="cc-mark" aria-hidden="true">VISA</span>
+          <div class="pm-details">
+            <div class="pm-primary">
+              <span class="pm-number">Visa •••• 4242</span>
+              <span class="badge badge-accent">Default</span>
+            </div>
+            <div class="pm-secondary">Expires 08/2028 · Ava Reyes · Billing address on file</div>
+          </div>
+          <button class="btn btn-secondary btn-sm" type="button">Update card</button>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="hint">We accept Visa, Mastercard, and American Express. Charges appear as <strong>MERIDIAN&nbsp;INC</strong>.</span>
+        <button class="btn btn-ghost btn-sm" type="button">Add backup method</button>
+      </div>
+    </section>
+
+    <!-- Billing email -->
+    <section class="card" aria-labelledby="email-heading">
+      <div class="card-header">
+        <div>
+          <h2 id="email-heading">Billing email</h2>
+          <p class="card-sub">Receipts and renewal reminders are sent here.</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <form id="email-form" novalidate>
+          <div class="field">
+            <label for="billing-email">Email address</label>
+            <input type="email" id="billing-email" name="billing-email"
+                   value="finance@meridianhq.com" autocomplete="email" required>
+            <p class="help">You can use a shared inbox — this doesn’t need to belong to a workspace member.</p>
+          </div>
+          <div class="email-form-actions">
+            <button class="btn btn-primary" type="submit">Save email</button>
+            <span class="save-confirm" id="email-saved" role="status">✓ Saved</span>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Invoice history -->
+    <section class="card" aria-labelledby="invoices-heading">
+      <div class="card-header" style="padding-bottom: 16px;">
+        <div>
+          <h2 id="invoices-heading">Invoice history</h2>
+          <p class="card-sub">Download PDF receipts for your records.</p>
+        </div>
+        <button class="btn btn-ghost btn-sm" type="button">Export all (CSV)</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Invoice</th>
+              <th scope="col">Date</th>
+              <th scope="col">Description</th>
+              <th scope="col">Status</th>
+              <th scope="col" class="num">Amount</th>
+              <th scope="col" class="num"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="inv-id">INV-2026-0312</td>
+              <td>Mar 12, 2026</td>
+              <td>Business plan · Annual renewal · 24 seats</td>
+              <td><span class="pill pill-paid">Paid</span></td>
+              <td class="num">$6,912.00</td>
+              <td class="num"><a class="dl-link" href="#" download>
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8m0 0 3-3m-3 3L5 7M3 12v1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1"/></svg>
+                PDF</a></td>
+            </tr>
+            <tr>
+              <td class="inv-id">INV-2026-0118</td>
+              <td>Jan 18, 2026</td>
+              <td>Seat expansion · +4 seats (prorated)</td>
+              <td><span class="pill pill-paid">Paid</span></td>
+              <td class="num">$147.20</td>
+              <td class="num"><a class="dl-link" href="#" download>
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8m0 0 3-3m-3 3L5 7M3 12v1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1"/></svg>
+                PDF</a></td>
+            </tr>
+            <tr>
+              <td class="inv-id">INV-2025-0902</td>
+              <td>Sep 2, 2025</td>
+              <td>Seat expansion · +6 seats (prorated)</td>
+              <td><span class="pill pill-paid">Paid</span></td>
+              <td class="num">$763.10</td>
+              <td class="num"><a class="dl-link" href="#" download>
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8m0 0 3-3m-3 3L5 7M3 12v1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1"/></svg>
+                PDF</a></td>
+            </tr>
+            <tr>
+              <td class="inv-id">INV-2025-0312</td>
+              <td>Mar 12, 2025</td>
+              <td>Business plan · Annual renewal · 14 seats</td>
+              <td><span class="pill pill-paid">Paid</span></td>
+              <td class="num">$4,032.00</td>
+              <td class="num"><a class="dl-link" href="#" download>
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8m0 0 3-3m-3 3L5 7M3 12v1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1"/></svg>
+                PDF</a></td>
+            </tr>
+            <tr>
+              <td class="inv-id">INV-2024-0312</td>
+              <td>Mar 12, 2024</td>
+              <td>Business plan · First annual term · 14 seats</td>
+              <td><span class="pill pill-paid">Paid</span></td>
+              <td class="num">$4,032.00</td>
+              <td class="num"><a class="dl-link" href="#" download>
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8m0 0 3-3m-3 3L5 7M3 12v1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1"/></svg>
+                PDF</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Danger zone -->
+    <section class="card card-danger" aria-labelledby="danger-heading">
+      <div class="card-header">
+        <div>
+          <h2 id="danger-heading">Cancel subscription</h2>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="danger-row">
+          <p>
+            Cancelling ends your Business plan at the close of the current billing
+            period (<strong>March 12, 2027</strong>). Your workspace keeps full
+            access until then, after which it moves to the Free plan with read-only
+            access to content over the free limits.
+          </p>
+          <button class="btn btn-danger-outline" type="button" id="open-cancel">Cancel subscription…</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- Cancel confirmation modal -->
+<div class="modal-overlay" id="cancel-overlay" role="dialog" aria-modal="true" aria-labelledby="cancel-title">
+  <div class="modal">
+    <div class="modal-body">
+      <h3 id="cancel-title">Cancel your Business subscription?</h3>
+      <p>Your plan stays active until <strong>March 12, 2027</strong>. No further charges will be made after that date.</p>
+      <div class="modal-callout">
+        <strong>After the billing period ends:</strong>
+        <ul>
+          <li>Your workspace downgrades to the Free plan (5 seats).</li>
+          <li>Content beyond free limits becomes read-only — nothing is deleted.</li>
+          <li>You can resubscribe at any time to restore full access.</li>
+        </ul>
+      </div>
+      <div class="confirm-field">
+        <label for="confirm-input">To confirm, type <code>cancel meridian</code> below</label>
+        <input type="text" id="confirm-input" autocomplete="off" spellcheck="false" placeholder="cancel meridian">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" type="button" id="keep-plan">Keep my plan</button>
+      <button class="btn btn-danger" type="button" id="confirm-cancel" disabled>Cancel subscription</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  var toast = document.getElementById('toast');
+  var toastTimer;
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('visible');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.remove('visible'); }, 3200);
+  }
+
+  // Billing email form
+  var emailForm = document.getElementById('email-form');
+  var emailInput = document.getElementById('billing-email');
+  var savedNote = document.getElementById('email-saved');
+  var savedTimer;
+  emailForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (!emailInput.checkValidity()) {
+      emailInput.reportValidity();
+      return;
+    }
+    savedNote.classList.add('visible');
+    clearTimeout(savedTimer);
+    savedTimer = setTimeout(function () { savedNote.classList.remove('visible'); }, 2500);
+    showToast('Billing email updated to ' + emailInput.value);
+  });
+
+  // Cancel subscription modal
+  var overlay = document.getElementById('cancel-overlay');
+  var openBtn = document.getElementById('open-cancel');
+  var keepBtn = document.getElementById('keep-plan');
+  var confirmBtn = document.getElementById('confirm-cancel');
+  var confirmInput = document.getElementById('confirm-input');
+  var PHRASE = 'cancel meridian';
+
+  function openModal() {
+    overlay.classList.add('open');
+    confirmInput.value = '';
+    confirmBtn.disabled = true;
+    confirmInput.focus();
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal() {
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+    openBtn.focus();
+  }
+
+  openBtn.addEventListener('click', openModal);
+  keepBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', function (e) {
+    if (e.target === overlay) closeModal();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && overlay.classList.contains('open')) closeModal();
+  });
+
+  confirmInput.addEventListener('input', function () {
+    confirmBtn.disabled = confirmInput.value.trim().toLowerCase() !== PHRASE;
+  });
+
+  confirmBtn.addEventListener('click', function () {
+    closeModal();
+    showToast('Subscription cancelled — access continues until March 12, 2027.');
+  });
+})();
+</script>
+
+</body>
+</html>
