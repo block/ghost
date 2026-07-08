@@ -560,7 +560,7 @@ describe("ghost CLI", () => {
 
   it("rejects the removed --reference init flag", async () => {
     await expect(
-      runCli(["init", "--reference", "packages/vessel/.ghost"], dir),
+      runCli(["init", "--reference", "packages/vessel-react/.ghost"], dir),
     ).rejects.toThrow("Unknown option `--reference`");
   });
 

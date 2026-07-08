@@ -35,7 +35,7 @@
   },
   "overrides": [
     {
-      "includes": ["packages/vessel/**", "apps/docs/**"],
+      "includes": ["packages/vessel-react/**", "apps/docs/**"],
       "linter": {
         "enabled": false
       }

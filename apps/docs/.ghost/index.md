@@ -9,7 +9,7 @@ materials:
 This fingerprint governs the Ghost docs site: the landing page, documentation
 index, tool landings, MDX docs pages, and the small components that carry them.
 It does not govern Vessel as a reference component registry; Vessel has its own
-fingerprint under `packages/vessel/.ghost/`. When the docs consume Vessel
+fingerprint under `packages/vessel-react/.ghost/`. When the docs consume Vessel
 materials, this fingerprint decides the docs' product stance and Vessel decides
 the component-system contract.
 

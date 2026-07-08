@@ -44,7 +44,7 @@ importers:
 
   apps/docs:
     dependencies:
-      '@design-intelligence/vessel':
+      '@design-intelligence/vessel-react':
         specifier: workspace:*
         version: link:../../packages/vessel
       '@hookform/resolvers':
@@ -316,7 +316,7 @@ importers:
         specifier: ^4.3.6
         version: 4.3.6
 
-  packages/vessel:
+  packages/vessel-react:
     dependencies:
       '@hookform/resolvers':
         specifier: ^5.2.2

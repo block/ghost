@@ -1,4 +1,4 @@
-import { cn } from "@design-intelligence/vessel";
+import { cn } from "@design-intelligence/vessel-react";
 import type { ComponentProps } from "react";
 
 export function DocProse({

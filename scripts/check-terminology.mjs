@@ -13,7 +13,7 @@ const ROOTS = [
   "packages/ghost/package.json",
   "packages/ghost/src",
   "packages/ghost/test",
-  "packages/vessel/README.md",
+  "packages/vessel-react/README.md",
   ".ghost",
   ".changeset",
 ];

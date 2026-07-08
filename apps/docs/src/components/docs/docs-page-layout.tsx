@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@design-intelligence/vessel";
+import { cn } from "@design-intelligence/vessel-react";
 import type { ReactNode } from "react";
 
 /**

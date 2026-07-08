@@ -1,8 +1,8 @@
 ---
 description: Make off-system output hard to express — decision names beat raw values, checks beat prose.
 materials:
-  - packages/vessel/src/components/**
-  - packages/vessel/scripts/audit-agent-safety.mjs
+  - packages/vessel-react/src/components/**
+  - packages/vessel-react/scripts/audit-agent-safety.mjs
 ---
 
 Vessel's agent-safety discipline: **make off-system output hard to express,

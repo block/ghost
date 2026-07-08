@@ -1,6 +1,6 @@
 "use client";
 
-import { useStaggerReveal } from "@design-intelligence/vessel";
+import { useStaggerReveal } from "@design-intelligence/vessel-react";
 import { BookOpen, Orbit, Rocket } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";

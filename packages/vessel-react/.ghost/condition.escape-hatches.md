@@ -1,7 +1,7 @@
 ---
 description: When component work needs className, inline style, or arbitrary values — the governed escape-hatch path.
 materials:
-  - packages/vessel/scripts/audit-agent-safety.mjs
+  - packages/vessel-react/scripts/audit-agent-safety.mjs
 ---
 
 Condition: you are writing or reviewing Vessel component code and the change
