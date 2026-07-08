@@ -1,19 +1,16 @@
 import { execFileSync, spawnSync } from "node:child_process";
-import { existsSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readdirSync, statSync, unlinkSync } from "node:fs";
 import { resolve } from "node:path";
 
 export function shootAll(config) {
-  const help = spawnSync("agent-browser", ["--help"], { encoding: "utf8" });
-  if (help.error?.code === "ENOENT") {
-    console.error(
-      "steering-eval: agent-browser is required for screenshots. Install agent-browser and ensure it is on PATH.",
-    );
-    process.exit(1);
-  }
+  requireTool("agent-browser", "screenshots");
+  requireTool("cwebp", "screenshot optimization");
 
   for (const html of findHtml(config.out)) {
+    const webp = html.replace(/\.html$/u, ".webp");
+    if (existsSync(webp)) continue;
+    // agent-browser only emits PNG; shoot, convert to WebP, drop the PNG.
     const png = html.replace(/\.html$/u, ".png");
-    if (existsSync(png)) continue;
     execFileSync("agent-browser", ["open", `file://${resolve(html)}`], {
       stdio: "inherit",
     });
@@ -23,6 +20,20 @@ export function shootAll(config) {
     execFileSync("agent-browser", ["screenshot", png, "--full"], {
       stdio: "inherit",
     });
+    execFileSync("cwebp", ["-quiet", "-q", "80", png, "-o", webp], {
+      stdio: "inherit",
+    });
+    unlinkSync(png);
+  }
+}
+
+function requireTool(name, purpose) {
+  const probe = spawnSync(name, ["-version"], { encoding: "utf8" });
+  if (probe.error?.code === "ENOENT") {
+    console.error(
+      `steering-eval: ${name} is required for ${purpose}. Install ${name} and ensure it is on PATH.`,
+    );
+    process.exit(1);
   }
 }
 

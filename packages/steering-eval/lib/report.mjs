@@ -121,11 +121,11 @@ function headlineChart(cells) {
 // --- per-ask sections -----------------------------------------------------
 
 async function screenshotCell(outDir, cell, k) {
-  const rel = join(cell.arm, `ask-${cell.ask}`, `run-${k}.png`);
+  const rel = join(cell.arm, `ask-${cell.ask}`, `run-${k}.webp`);
   const abs = join(outDir, rel);
   if (await fileExists(abs)) {
     const b64 = (await readFile(abs)).toString("base64");
-    const uri = `data:image/png;base64,${b64}`;
+    const uri = `data:image/webp;base64,${b64}`;
     return `<a href="${uri}" target="_blank"><img class="thumb" src="${uri}" alt="${esc(cell.arm)} ask ${cell.ask} run ${k}"/></a>`;
   }
   return `<div class="thumb placeholder">${esc(cell.arm)}<br/>ask ${cell.ask} \u00b7 run ${k}<br/><span class="dim">no screenshot</span></div>`;

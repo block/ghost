@@ -60,7 +60,7 @@ describe("renderReport", () => {
     const html = await readFile(await renderReport(FIXTURE, outDir), "utf8");
     expect(html).toContain("placeholder");
     expect(html).toContain("no screenshot");
-    expect(html).not.toContain("data:image/png;base64");
+    expect(html).not.toContain("data:image/webp;base64");
   });
 
   it("is deterministic modulo the generatedAt line", async () => {
