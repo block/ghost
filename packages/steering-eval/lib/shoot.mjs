@@ -17,7 +17,7 @@ export function shootAll(config) {
     execFileSync("agent-browser", ["open", `file://${resolve(html)}`], {
       stdio: "inherit",
     });
-    execFileSync("agent-browser", ["viewport", "1280", "900"], {
+    execFileSync("agent-browser", ["set", "viewport", "1280", "900"], {
       stdio: "inherit",
     });
     execFileSync("agent-browser", ["screenshot", png, "--full"], {

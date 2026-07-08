@@ -33,6 +33,7 @@ export function scoreAll(config) {
     for (const ask of asksForArm(config, arm, asks)) {
       const dir = join(config.out, arm, `ask-${ask.n}`);
       const htmlFiles = existingRunFiles(dir, ".html");
+      if (htmlFiles.length === 0) continue;
       const runScores = htmlFiles.map(
         (file) =>
           scoreHtml(readFileSync(join(dir, file), "utf8"), tells, {
@@ -55,9 +56,11 @@ export function scoreAll(config) {
               .map((meta) => meta.inventory?.tokensEstimate)
               .filter(Number.isFinite),
           ),
+          brandTokens: mean(metas.map((meta) => brandTokens(config, meta))),
         },
       };
-      if (arm === "gather") cell.retrieval = retrievalMetrics(metas, ask);
+      if (arm === "gather")
+        cell.retrieval = retrievalMetrics(metas, ask, config);
       cells.push(cell);
     }
   }
@@ -74,7 +77,7 @@ export function scoreAll(config) {
   return metrics;
 }
 
-export function retrievalMetrics(metas, ask) {
+export function retrievalMetrics(metas, ask, config) {
   const expected = new Set(ask.expect ?? []);
   const poison = new Set(ask.poison ?? []);
   const runs = metas.map((meta) => new Set(meta.tape?.pulledIds ?? []));
@@ -93,10 +96,33 @@ export function retrievalMetrics(metas, ask) {
     poisonPulled: perRun.map((run) => run.poisonPulled),
     poisonCount: perRun.filter((run) => run.poisonPulled).length,
     selectionStability: meanPairwiseJaccard(runs),
-    pulledWords: mean(
-      metas.map((meta) => meta.pulledWords).filter(Number.isFinite),
-    ),
+    pulledWords: config
+      ? mean(
+          metas.map((meta) =>
+            (meta.tape?.pulledIds ?? []).reduce((sum, id) => {
+              const nodePath = join(config.package, `${id}.md`);
+              if (!existsSync(nodePath)) return sum;
+              return (
+                sum +
+                (readFileSync(nodePath, "utf8").match(/\S+/gu) ?? []).length
+              );
+            }, 0),
+          ),
+        )
+      : 0,
   };
+}
+
+function brandTokens(config, meta) {
+  const inv = meta.inventory ?? {};
+  const brandWords = inv.brand ?? 0;
+  const menuWords = inv.menu ?? 0;
+  const pulledWords = (meta.tape?.pulledIds ?? []).reduce((sum, id) => {
+    const nodePath = join(config.package, `${id}.md`);
+    if (!existsSync(nodePath)) return sum;
+    return sum + (readFileSync(nodePath, "utf8").match(/\S+/gu) ?? []).length;
+  }, 0);
+  return Math.round((brandWords + menuWords + pulledWords) * 1.33);
 }
 
 function countTell(html, tell) {
