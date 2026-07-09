@@ -342,6 +342,61 @@ const TEMPLATES = new Map<string, GhostInitTemplate>([
   [SKELETON_TEMPLATE.name, SKELETON_TEMPLATE],
 ]);
 
+/**
+ * An init body: a full inhabited fingerprint package — answered signature
+ * dials, materials, refs, and its own checks. Templates are shapes of
+ * emptiness awaiting the owner's truths; a body is the same anatomy with a
+ * real brand's values plugged in. Bodies keep their own manifest id (e.g.
+ * `vessel-light`) so an unadapted install stays honestly labeled — changing
+ * the id is step one of adapting the starter, an explicit human act.
+ */
+export interface GhostInitBody {
+  name: string;
+  description: string;
+  /** Whether the body payload ships its own `checks/` directory. */
+  includesChecks: boolean;
+  files(): Promise<TemplateFile[]>;
+}
+
+const VESSEL_LIGHT_BODY: GhostInitBody = {
+  name: "vessel-light",
+  description:
+    "Vessel's design language at full strength: corpus, tokens, fonts, refs, and checks.",
+  includesChecks: true,
+  async files() {
+    const payload = await loadPackedPayload("vessel-light");
+    payload.sort((a, b) => {
+      const ao = BODY_FILE_ORDER.get(a.relativePath);
+      const bo = BODY_FILE_ORDER.get(b.relativePath);
+      return (
+        (ao ?? Number.MAX_SAFE_INTEGER) - (bo ?? Number.MAX_SAFE_INTEGER) ||
+        a.relativePath.localeCompare(b.relativePath)
+      );
+    });
+    // The payload carries its own manifest.yml (id stays `vessel-light`);
+    // only the gitignore is generated locally.
+    return [gitignoreFile(), ...payload];
+  },
+};
+
+/** Listing order for the body scaffold output: anchors first, then the rest. */
+const BODY_FILE_ORDER = new Map<string, number>(
+  ["manifest.yml", "glossary.md", "index.md"].map((path, i) => [path, i]),
+);
+
+const BODIES = new Map<string, GhostInitBody>([
+  [VESSEL_LIGHT_BODY.name, VESSEL_LIGHT_BODY],
+]);
+
+/** Look up a registered init body by name. */
+export function getInitBody(name: string): GhostInitBody | undefined {
+  return BODIES.get(name);
+}
+
+export function listInitBodies(): string[] {
+  return [...BODIES.keys()];
+}
+
 export const DEFAULT_TEMPLATE_NAME = SKELETON_TEMPLATE.name;
 
 /** Look up a registered init template by name. */

@@ -1,16 +1,28 @@
+import { existsSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { TemplateFile } from "./templates.js";
 
-const INIT_PAYLOADS_DIR = fileURLToPath(
-  new URL("../init-payloads", import.meta.url),
-);
+/**
+ * Payload roots, first match wins. At runtime this module lives in
+ * `dist/scan/`, so `../init-payloads` is the packed payload dir. Under
+ * vitest it runs from `src/scan/`, where only committed payloads (skeleton)
+ * exist — synced payloads (vessel-light) resolve through the built
+ * `dist/init-payloads` sibling.
+ */
+const INIT_PAYLOAD_ROOTS = [
+  fileURLToPath(new URL("../init-payloads", import.meta.url)),
+  fileURLToPath(new URL("../../dist/init-payloads", import.meta.url)),
+];
 
 const BINARY_EXTENSIONS = new Set([".woff", ".woff2"]);
 
 export async function loadPackedPayload(name: string): Promise<TemplateFile[]> {
-  const payloadDir = join(INIT_PAYLOADS_DIR, name);
+  const payloadDir =
+    INIT_PAYLOAD_ROOTS.map((root) => join(root, name)).find((dir) =>
+      existsSync(dir),
+    ) ?? join(INIT_PAYLOAD_ROOTS[0], name);
   const files = await listPayloadFiles(payloadDir);
 
   return Promise.all(

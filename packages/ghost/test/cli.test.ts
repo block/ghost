@@ -420,6 +420,83 @@ describe("ghost CLI", () => {
     expect(result.stderr).toContain("skeleton");
   });
 
+  it("installs the vessel-light body: full corpus, materials, checks", async () => {
+    const init = await runCli(
+      ["init", "--body", "vessel-light", "--format", "json"],
+      dir,
+    );
+    expect(init.code).toBe(0);
+    const { written } = JSON.parse(init.stdout) as { written: string[] };
+
+    // The body is the inhabited package: corpus + tells + registers +
+    // materials tree + its own checks. No .events tape.
+    expect(written).toContain("manifest.yml");
+    expect(written).toContain("anti-goal.median.md");
+    expect(written).toContain("anti-goal.tells.md");
+    expect(written).toContain("register.email.md");
+    expect(written).toContain("signature.shape.md");
+    expect(written).toContain("materials/tokens.css");
+    expect(written).toContain("materials/fonts/HKGrotesk-Regular.woff2");
+    expect(written).toContain("materials/ref/composition.form.html");
+    expect(written).toContain("checks/median-tells.md");
+    expect(written).toContain("checks/values.md");
+    expect(written.some((p) => p.includes(".events"))).toBe(false);
+
+    // Manifest id stays vessel-light: renaming it is step one of adapting
+    // the starter — an explicit human act, never pre-executed by init.
+    const manifest = await readFile(
+      join(dir, ".ghost", "manifest.yml"),
+      "utf-8",
+    );
+    expect(manifest).toContain("id: vessel-light");
+
+    // Fonts survive the packed payload byte-identically.
+    const [installed, source] = await Promise.all([
+      readFile(
+        join(dir, ".ghost", "materials", "fonts", "HKGrotesk-Regular.woff2"),
+      ),
+      readFile(
+        new URL(
+          "../../vessel-light/.ghost/materials/fonts/HKGrotesk-Regular.woff2",
+          import.meta.url,
+        ),
+      ),
+    ]);
+    expect(installed.equals(source)).toBe(true);
+
+    // The installed body validates clean, checks included.
+    const validate = await runCli(["validate", "--format", "json"], dir);
+    expect(validate.code).toBe(0);
+    const report = JSON.parse(validate.stdout);
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(0);
+  });
+
+  it("rejects unknown bodies and contradictory body flags", async () => {
+    const unknown = await runCli(["init", "--body", "nope"], dir, {
+      allowNoExit: true,
+    });
+    expect(unknown.code).toBe(2);
+    expect(unknown.stderr).toContain("Unknown init body 'nope'");
+    expect(unknown.stderr).toContain("vessel-light");
+
+    const both = await runCli(
+      ["init", "--body", "vessel-light", "--template", "minimal"],
+      dir,
+      { allowNoExit: true },
+    );
+    expect(both.code).toBe(2);
+    expect(both.stderr).toContain("mutually exclusive");
+
+    const withChecks = await runCli(
+      ["init", "--body", "vessel-light", "--with", "checks"],
+      dir,
+      { allowNoExit: true },
+    );
+    expect(withChecks.code).toBe(2);
+    expect(withChecks.stderr).toContain("already includes its own checks/");
+  });
+
   it("uses GHOST_PACKAGE_DIR as the default fingerprint package directory for init", async () => {
     const init = await runCli(["init", "--format", "json"], dir, {
       env: { GHOST_PACKAGE_DIR: ".agents/ghost" },

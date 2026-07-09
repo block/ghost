@@ -33,7 +33,10 @@ import type { LintIssue, LintReport } from "./lint.js";
 import { resolveGitRoot } from "./package-paths.js";
 import {
   DEFAULT_TEMPLATE_NAME,
+  type GhostInitTemplate,
+  getInitBody,
   getInitTemplate,
+  listInitBodies,
   listInitTemplates,
 } from "./templates.js";
 
@@ -70,8 +73,14 @@ export interface LoadedFingerprintPackage {
 }
 
 export interface InitFingerprintPackageOptions {
-  /** Init template name (default: "steering"). */
+  /** Init template name (default: "skeleton"). Mutually exclusive with `body`. */
   template?: string;
+  /**
+   * Init body name (e.g. "vessel-light"): a full inhabited package with
+   * answered dials, materials, and its own checks. Mutually exclusive with
+   * `template`.
+   */
+  body?: string;
   force?: boolean;
 }
 
@@ -103,18 +112,36 @@ export async function initFingerprintPackage(
   cwd = process.cwd(),
   options: InitFingerprintPackageOptions = {},
 ): Promise<InitFingerprintPackageResult> {
-  const templateName = options.template ?? DEFAULT_TEMPLATE_NAME;
-  const template = getInitTemplate(templateName);
-  if (!template) {
+  if (options.body !== undefined && options.template !== undefined) {
     throw new UsageError(
-      `Unknown init template '${templateName}'. Available: ${listInitTemplates().join(", ")}.`,
+      "--body and --template are mutually exclusive. A template is a shape of emptiness; a body is a full inhabited package — pick one.",
     );
+  }
+
+  let source: Pick<GhostInitTemplate, "files">;
+  if (options.body !== undefined) {
+    const body = getInitBody(options.body);
+    if (!body) {
+      throw new UsageError(
+        `Unknown init body '${options.body}'. Available: ${listInitBodies().join(", ")}.`,
+      );
+    }
+    source = body;
+  } else {
+    const templateName = options.template ?? DEFAULT_TEMPLATE_NAME;
+    const template = getInitTemplate(templateName);
+    if (!template) {
+      throw new UsageError(
+        `Unknown init template '${templateName}'. Available: ${listInitTemplates().join(", ")}.`,
+      );
+    }
+    source = template;
   }
 
   const paths = resolveFingerprintPackage(dirArg, cwd);
   await mkdir(paths.packageDir, { recursive: true });
 
-  const files = (await template.files()).map((file) => ({
+  const files = (await source.files()).map((file) => ({
     relativePath: file.relativePath,
     path: join(paths.packageDir, file.relativePath),
     content: file.content,
