@@ -3,7 +3,7 @@ import {
   GHOST_EVENTS_FILENAME,
   LEGACY_PULL_HISTORY_FILENAME,
 } from "./constants.js";
-import { createSkeletonTemplate } from "./skeleton-template.js";
+import { loadPackedPayload } from "./packed-payloads.js";
 /**
  * A single seed file an `init` template writes, relative to the package dir.
  */
@@ -301,10 +301,40 @@ When a blessed render of this pattern exists, add an \`exemplar.*\` node with
   },
 };
 
-const SKELETON_TEMPLATE = createSkeletonTemplate({
-  manifestFile,
-  gitignoreFile,
-});
+const SKELETON_FILE_ORDER = new Map(
+  [
+    "glossary.md",
+    "index.md",
+    "anti-goal.median.md",
+    "grammar.hierarchy.md",
+    "grammar.rhythm.md",
+    "grammar.surfaces.md",
+    "grammar.motion.md",
+    "grammar.color-roles.md",
+    "grammar.conversation.md",
+    "signature.shape.md",
+    "signature.palette.md",
+    "signature.type.md",
+    "signature.temperature.md",
+  ].map((path, index) => [path, index]),
+);
+
+const SKELETON_TEMPLATE: GhostInitTemplate = {
+  name: "skeleton",
+  description:
+    "Naked skeleton: the median floor + grammar law, with the signature dials left unanswered.",
+  async files() {
+    const skeletonFiles = await loadPackedPayload("skeleton");
+    skeletonFiles.sort(
+      (a, b) =>
+        (SKELETON_FILE_ORDER.get(a.relativePath) ?? Number.MAX_SAFE_INTEGER) -
+          (SKELETON_FILE_ORDER.get(b.relativePath) ??
+            Number.MAX_SAFE_INTEGER) ||
+        a.relativePath.localeCompare(b.relativePath),
+    );
+    return [manifestFile(), gitignoreFile(), ...skeletonFiles];
+  },
+};
 
 const TEMPLATES = new Map<string, GhostInitTemplate>([
   [MINIMAL_TEMPLATE.name, MINIMAL_TEMPLATE],
