@@ -1,5 +1,15 @@
 import type { GhostCatalog } from "./types.js";
 
+export interface BuildGatherMenuOptions {
+  includeWild?: boolean;
+}
+
+export interface GatherMenu {
+  entries: CatalogMenuEntry[];
+  wildAvailable: number;
+  wildIncluded: boolean;
+}
+
 export interface BuildCatalogMenuOptions {
   /** Include kinds that declare `posture: wild`; default menus omit them. */
   includeWild?: boolean;
@@ -59,4 +69,21 @@ export function buildCatalogMenu(
   }
 
   return entries.sort((a, b) => a.id.localeCompare(b.id));
+}
+
+export function buildGatherMenu(
+  catalog: GhostCatalog,
+  options: BuildGatherMenuOptions = {},
+): GatherMenu {
+  const includeWild = Boolean(options.includeWild);
+  const entries = buildCatalogMenu(catalog, { includeWild });
+  const wildCount = [...catalog.nodes.values()].filter(
+    (node) => node.wild,
+  ).length;
+
+  return {
+    entries,
+    wildAvailable: includeWild ? 0 : wildCount,
+    wildIncluded: includeWild && entries.some((entry) => entry.wild),
+  };
 }

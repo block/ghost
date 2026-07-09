@@ -12,7 +12,11 @@ export {
 export { closestIds } from "./closest.js";
 export {
   type BuildCatalogMenuOptions,
+  type BuildGatherMenuOptions,
   buildCatalogMenu,
+  buildGatherMenu,
   type CatalogMenuEntry,
+  type GatherMenu,
 } from "./menu.js";
+export { orderPulledNodes, steeringBucket } from "./steering.js";
 export type { GhostCatalog, GhostCatalogNode } from "./types.js";

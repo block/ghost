@@ -5,6 +5,7 @@ import {
   extractSkeletonFences,
   type GhostCatalogNode,
   type MaterialTransportResult,
+  orderPulledNodes,
   resolveLocalMaterialLocator,
   stripSkeletonSections,
   type TransportedMaterial,
@@ -177,21 +178,6 @@ async function resolvePulledNodes(
         : locatorOnlyMaterials(node.materials, repoRoot, packageDir),
     })),
   );
-}
-
-function orderPulledNodes(nodes: GhostCatalogNode[]): GhostCatalogNode[] {
-  return nodes
-    .map((node, index) => ({ node, index, bucket: steeringBucket(node) }))
-    .sort((a, b) => a.bucket - b.bucket || a.index - b.index)
-    .map((entry) => entry.node);
-}
-
-function steeringBucket(node: GhostCatalogNode): number {
-  if (node.id === "index" || node.slug === "index") return 0;
-  if (node.guard) return 3;
-  if (node.wild) return 2;
-  if (node.concrete) return 1;
-  return 2;
 }
 
 function locatorOnlyMaterials(

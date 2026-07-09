@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import type { CAC } from "cac";
 import {
-  buildCatalogMenu,
+  buildGatherMenu,
   type CatalogMenuEntry,
   parseGlossary,
 } from "#ghost-core";
@@ -46,12 +46,9 @@ export function registerGatherCommand(cli: CAC): void {
         const ask = normalizeAsk(askParts);
         const paths = resolveFingerprintPackage(opts.package, process.cwd());
         const loaded = await loadFingerprintPackage(paths);
-        const wildIds = [...loaded.catalog.nodes.values()]
-          .filter((node) => node.wild)
-          .map((node) => node.id)
-          .sort();
         const includeWild = Boolean(opts.wild);
-        const menu = buildCatalogMenu(loaded.catalog, { includeWild });
+        const gatherMenu = buildGatherMenu(loaded.catalog, { includeWild });
+        const menu = gatherMenu.entries;
         const exposedWildIds = menu
           .filter((entry) => entry.wild)
           .map((entry) => entry.id);
@@ -75,8 +72,8 @@ export function registerGatherCommand(cli: CAC): void {
                 coverage: menuCoverage(menu),
                 ...(kinds.length > 0 ? { kinds } : {}),
                 nodes: menu,
-                ...(wildIds.length > 0 && !includeWild
-                  ? { wildAvailable: wildIds.length }
+                ...(gatherMenu.wildAvailable > 0
+                  ? { wildAvailable: gatherMenu.wildAvailable }
                   : {}),
               },
               null,
@@ -87,8 +84,8 @@ export function registerGatherCommand(cli: CAC): void {
           process.stdout.write(
             formatMenuMarkdown(menu, kinds, {
               ask,
-              wildAvailable: includeWild ? 0 : wildIds.length,
-              wildIncluded: includeWild && exposedWildIds.length > 0,
+              wildAvailable: gatherMenu.wildAvailable,
+              wildIncluded: gatherMenu.wildIncluded,
             }),
           );
         }

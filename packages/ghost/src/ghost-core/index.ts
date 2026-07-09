@@ -5,12 +5,17 @@ export {
   type AssembleCatalogInput,
   assembleCatalog,
   type BuildCatalogMenuOptions,
+  type BuildGatherMenuOptions,
   buildCatalogMenu,
+  buildGatherMenu,
   type CatalogMenuEntry,
   closestIds,
+  type GatherMenu,
   type GhostCatalog,
   type GhostCatalogNode,
+  orderPulledNodes,
   type PlacedNode,
+  steeringBucket,
 } from "./catalog/index.js";
 // --- Check (ghost.check/v1) — markdown checks, agent-evaluated ---
 export {

@@ -1,3 +1,12 @@
+export type {
+  GatherObservabilityEvent,
+  GhostObservabilityEvent,
+  NewGhostObservabilityEvent,
+  PullMiss,
+  PullObservabilityEvent,
+} from "./observability-events.js";
+export { stampGhostEvent } from "./observability-events.js";
+export type { LoadedCheck } from "./scan/check-files.js";
 export {
   FINGERPRINT_MANIFEST_FILENAME,
   FINGERPRINT_PACKAGE_DIR,

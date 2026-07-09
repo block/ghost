@@ -31,11 +31,11 @@
   },
   "imports": {
     "#ghost-core": {
-      "types": "./src/ghost-core/index.ts",
+      "types": "./dist/ghost-core/index.d.ts",
       "import": "./dist/ghost-core/index.js"
     },
     "#scan": {
-      "types": "./src/scan/index.ts",
+      "types": "./dist/scan/index.d.ts",
       "import": "./dist/scan/index.js"
     }
   },

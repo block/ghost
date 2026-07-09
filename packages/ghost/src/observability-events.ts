@@ -4,6 +4,12 @@ import { GHOST_EVENTS_FILENAME } from "./scan/constants.js";
 
 const FIRST_WRITE_NOTICE = `ghost: logging selection events locally to .ghost/${GHOST_EVENTS_FILENAME} (gitignored; never leaves your machine). Summarize with \`ghost pulse\`.`;
 
+/**
+ * Gather event shape used by Ghost observability. The CLI appends these events
+ * to `.ghost/.events`; library consumers may construct the same shapes for
+ * their own telemetry, but must never write into a fingerprint package
+ * directory.
+ */
 export type GatherObservabilityEvent = {
   ts: string;
   event: "gather";
@@ -14,11 +20,23 @@ export type GatherObservabilityEvent = {
   wildIds?: string[];
 };
 
+/**
+ * Pull miss shape used by Ghost observability. The CLI appends enclosing pull
+ * events to `.ghost/.events`; library consumers may construct the same shapes
+ * for their own telemetry, but must never write into a fingerprint package
+ * directory.
+ */
 export type PullMiss = {
   requested: string;
   suggested: string[];
 };
 
+/**
+ * Pull event shape used by Ghost observability. The CLI appends these events
+ * to `.ghost/.events`; library consumers may construct the same shapes for
+ * their own telemetry, but must never write into a fingerprint package
+ * directory.
+ */
 export type PullObservabilityEvent = {
   ts: string;
   event: "pull";
@@ -29,19 +47,36 @@ export type PullObservabilityEvent = {
   omittedMaterials?: number;
 };
 
+/**
+ * Timestamped Ghost observability event. The CLI appends these events to
+ * `.ghost/.events`; library consumers may construct the same shapes for their
+ * own telemetry, but must never write into a fingerprint package directory.
+ */
 export type GhostObservabilityEvent =
   | GatherObservabilityEvent
   | PullObservabilityEvent;
 
+/**
+ * Untimestamped Ghost observability event input. The CLI timestamps and appends
+ * these events to `.ghost/.events`; library consumers may construct the same
+ * shapes for their own telemetry, but must never write into a fingerprint
+ * package directory.
+ */
 export type NewGhostObservabilityEvent =
   | Omit<GatherObservabilityEvent, "ts">
   | Omit<PullObservabilityEvent, "ts">;
+
+export function stampGhostEvent(
+  event: NewGhostObservabilityEvent,
+): GhostObservabilityEvent {
+  return { ts: new Date().toISOString(), ...event };
+}
 
 export async function appendGhostEvent(
   packageDir: string,
   event: NewGhostObservabilityEvent,
 ): Promise<void> {
-  const line = `${JSON.stringify({ ts: new Date().toISOString(), ...event })}\n`;
+  const line = `${JSON.stringify(stampGhostEvent(event))}\n`;
   const tapePath = join(packageDir, GHOST_EVENTS_FILENAME);
   try {
     const isFirstWrite = await access(tapePath).then(
