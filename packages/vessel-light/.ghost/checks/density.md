@@ -3,11 +3,13 @@ name: Density and token discipline
 description: Flags decorative color, raw values, and invented shadows that break Vessel's monochrome-first token contract and register expression budgets.
 severity: high
 references:
-  - anti-goal.decoration
-  - foundation.tokens
-  - foundation.expression
-  - primitive.stack
-  - primitive.control
+  - anti-goal.median
+  - grammar.color-roles
+  - grammar.surfaces
+  - grammar.rhythm
+  - grammar.hierarchy
+  - signature.palette
+  - signature.shape
 ---
 
 Review changed HTML and CSS by view, not just by file.

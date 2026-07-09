@@ -3,8 +3,8 @@ name: Conversation grammar
 description: Flags conversation UI that breaks plain assistant text, prompt-input structure, primary-action discipline, or collapsed tool output.
 severity: high
 references:
-  - pattern.conversation
-  - primitive.surface
+  - grammar.conversation
+  - grammar.surfaces
 ---
 
 Apply this check to diffs that touch AI threads, agent consoles, prompt composers, chat messages, or tool-call rendering.

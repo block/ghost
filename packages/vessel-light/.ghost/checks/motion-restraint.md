@@ -3,7 +3,7 @@ name: Motion restraint
 description: Flags non-token motion, looping decoration, and keyframes that do not explain state change.
 severity: medium
 references:
-  - foundation.motion
+  - grammar.motion
 ---
 
 Review changed transitions and animations for vocabulary first.

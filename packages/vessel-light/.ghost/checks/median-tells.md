@@ -4,8 +4,8 @@ description: Flags the measured defaults of unsteered generation — hover-lift,
 severity: high
 references:
   - anti-goal.median
-  - foundation.motion
-  - pattern.conversation
+  - grammar.motion
+  - grammar.conversation
 ---
 
 These flags target the measured convergence patterns of unsteered model
