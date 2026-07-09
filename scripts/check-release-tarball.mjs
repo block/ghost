@@ -7,6 +7,7 @@ import {
   readdirSync,
   readFileSync,
   rmSync,
+  statSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -65,6 +66,9 @@ try {
     "package.json",
     "dist/bin.js",
     "dist/cli.js",
+    "dist/init-payloads/skeleton/anti-goal.median.md",
+    "dist/init-payloads/vessel-light/manifest.yml",
+    "dist/init-payloads/vessel-light/materials/fonts/HKGrotesk-Regular.woff2",
     "node_modules/cac",
     "node_modules/yaml",
     "node_modules/zod",
@@ -74,6 +78,20 @@ try {
     if (!existsSync(fullPath)) {
       fail(`release tarball is missing ${relativePath}`);
     }
+  }
+
+  // Binary payloads must survive packing byte-for-byte.
+  const fontRelative = "materials/fonts/HKGrotesk-Regular.woff2";
+  const packedFont = statSync(
+    join(packageDir, "dist", "init-payloads", "vessel-light", fontRelative),
+  );
+  const sourceFont = statSync(
+    join(ROOT, "packages", "vessel-light", ".ghost", fontRelative),
+  );
+  if (packedFont.size !== sourceFont.size) {
+    fail(
+      `packed font size ${packedFont.size} does not match source ${sourceFont.size}`,
+    );
   }
 
   const packedPkg = JSON.parse(
@@ -109,6 +127,34 @@ try {
     fail(
       "release tarball ghost init did not scaffold the expected node package",
     );
+  }
+
+  // The vessel-light body installs from the standalone tarball too.
+  const bodyDir = join(tmpRoot, "body-consumer");
+  mkdirSync(bodyDir, { recursive: true });
+  const bodyInit = run(
+    "node",
+    [
+      join(packageDir, "dist", "bin.js"),
+      "init",
+      "--body",
+      "vessel-light",
+      "--format",
+      "json",
+    ],
+    { cwd: bodyDir },
+  );
+  const bodyOutput = JSON.parse(bodyInit);
+  for (const required of [
+    "anti-goal.median.md",
+    "materials/fonts/HKGrotesk-Regular.woff2",
+    "checks/values.md",
+  ]) {
+    if (!bodyOutput.written?.includes(required)) {
+      fail(
+        `release tarball ghost init --body vessel-light did not write ${required}`,
+      );
+    }
   }
 
   const topLevelEntries = readdirSync(extractDir);
