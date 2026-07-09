@@ -10,8 +10,8 @@ kinds:
 # grammar
 
 The brand's decision logic: closed sets, role vocabularies, and assembly
-rules, stated in token roles and never in literal values. Grammar survives a
-rebrand unchanged — swap every value and these nodes still hold. Gather
+rules, stated in token roles and never in literal values. Grammar survives an
+adaptation unchanged — swap every value and these nodes still hold. Gather
 grammar before inventing structure.
 
 # signature
@@ -39,5 +39,6 @@ anti-goals before styling anything greenfield.
 
 ---
 
-The ghost skill bundle teaches authoring: how to answer the dials, add
-registers, and grow this skeleton into a real fingerprint.
+The ghost skill bundle teaches authoring — its `adapting-a-starter` recipe is
+the procedure for growing this skeleton into a real fingerprint: answer the
+dials, prune the median floor, edit your values, then generate refs and tells.

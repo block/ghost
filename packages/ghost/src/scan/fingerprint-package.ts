@@ -425,7 +425,7 @@ function lintCheckReferences(
         issues.push({
           severity: "warning",
           rule: "check-reference-unresolved",
-          message: `check reference '${raw}' does not resolve to a fingerprint node`,
+          message: `check reference '${raw}' does not resolve to a fingerprint node — if you pruned this rule from the node, delete its paired flag in the check too`,
           path: `checks/${check.id}.md.references`,
         });
         continue;
@@ -437,7 +437,7 @@ function lintCheckReferences(
         issues.push({
           severity: "warning",
           rule: "check-reference-heading-missing",
-          message: `check reference '${raw}' names a heading that was not found`,
+          message: `check reference '${raw}' names a heading that was not found — if you pruned this rule from the node, delete its paired flag in the check too`,
           path: `checks/${check.id}.md.references`,
         });
       }

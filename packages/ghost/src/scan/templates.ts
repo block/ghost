@@ -3,7 +3,7 @@ import {
   GHOST_EVENTS_FILENAME,
   LEGACY_PULL_HISTORY_FILENAME,
 } from "./constants.js";
-import { loadPackedPayload } from "./packed-payloads.js";
+import { loadPackedPayload, loadPayloadFile } from "./packed-payloads.js";
 /**
  * A single seed file an `init` template writes, relative to the package dir.
  */
@@ -52,7 +52,8 @@ const MINIMAL_TEMPLATE: GhostInitTemplate = {
   name: "minimal",
   description:
     "Minimal node package: manifest + glossary + a starter index node.",
-  files() {
+  async files() {
+    const medianFile = await medianTemplateFile();
     return [
       manifestFile(),
       gitignoreFile(),
@@ -87,6 +88,8 @@ evidence unless the node says the sample itself is normative.
 What this brand must never look, sound, or feel like — named generic patterns
 and rejected neighbors. Always-on, like a principle, but stated as the thing
 to steer away from.
+\`anti-goal.median\` is the model's floor, not the brand's taste. Gather
+anti-goals before styling anything greenfield.
 
 # asset
 
@@ -127,6 +130,7 @@ When a truth is narrower, state the condition in the prose — the situation whe
 it applies — never a filing destination.
 `,
       },
+      medianFile,
     ];
   },
 };
@@ -146,7 +150,8 @@ const COMPOSITION_TEMPLATE: GhostInitTemplate = {
   name: "composition",
   description:
     "Composition starter: minimal files + an invariants floor and a worked bound/open pattern.",
-  files() {
+  async files() {
+    const medianFile = await medianTemplateFile();
     return [
       manifestFile(),
       gitignoreFile(),
@@ -185,6 +190,8 @@ render travels with the prose.
 What this brand must never look, sound, or feel like — named generic patterns
 and rejected neighbors. Always-on, like a principle, but stated as the thing
 to steer away from.
+\`anti-goal.median\` is the model's floor, not the brand's taste. Gather
+anti-goals before styling anything greenfield.
 
 # asset
 
@@ -297,6 +304,7 @@ When a blessed render of this pattern exists, add an \`exemplar.*\` node with
 \`materials\` pointing at the screenshot and the implementation path.
 `,
       },
+      medianFile,
     ];
   },
 };
@@ -324,7 +332,10 @@ const SKELETON_TEMPLATE: GhostInitTemplate = {
   description:
     "Naked skeleton: the median floor + grammar law, with the signature dials left unanswered.",
   async files() {
-    const skeletonFiles = await loadPackedPayload("skeleton");
+    const skeletonFiles = [
+      ...(await loadPackedPayload("skeleton")),
+      await medianTemplateFile(),
+    ];
     skeletonFiles.sort(
       (a, b) =>
         (SKELETON_FILE_ORDER.get(a.relativePath) ?? Number.MAX_SAFE_INTEGER) -
@@ -335,6 +346,13 @@ const SKELETON_TEMPLATE: GhostInitTemplate = {
     return [manifestFile(), gitignoreFile(), ...skeletonFiles];
   },
 };
+
+async function medianTemplateFile(): Promise<TemplateFile> {
+  return {
+    relativePath: "anti-goal.median.md",
+    content: await loadPayloadFile("median", "anti-goal.median.md"),
+  };
+}
 
 const TEMPLATES = new Map<string, GhostInitTemplate>([
   [MINIMAL_TEMPLATE.name, MINIMAL_TEMPLATE],

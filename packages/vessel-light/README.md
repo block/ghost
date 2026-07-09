@@ -25,7 +25,7 @@ ghost review
 
 ## Structure
 
-The corpus is factored by rate of change under rebrand: `grammar.*` nodes are value-free decision logic that survives any fork; `signature.*` nodes are the identity dials (shape, palette, type, temperature), each stating Vessel's current answer; `register.*` nodes are named conditions that re-tune the contract; `anti-goal.median` is the model's measured defaults (prune lines your brand legitimately violates) and `anti-goal.tells` guards near-misses of Vessel's own signature. Every literal value lives in `materials/tokens.css`.
+The corpus is factored by rate of change under adaptation: `grammar.*` nodes are value-free decision logic that survives any adaptation; `signature.*` nodes are the identity dials (shape, palette, type, temperature), each stating Vessel's current answer; `register.*` nodes are named conditions that re-tune the contract; `anti-goal.median` is the model's measured defaults (prune lines your brand legitimately violates) and `anti-goal.tells` guards near-misses of Vessel's own signature. Every literal value lives in `materials/tokens.css`.
 
 ## Curation
 

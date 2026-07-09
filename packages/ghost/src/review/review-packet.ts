@@ -1,5 +1,8 @@
+import { join } from "node:path";
 import type { GhostCatalogNode } from "#ghost-core";
+import { GHOST_MATERIALS_DIR } from "../scan/constants.js";
 import type { LoadedFingerprintPackage } from "../scan/fingerprint-package.js";
+import { resolveGitRoot } from "../scan/package-paths.js";
 import { type BaselineProse, resolveBaseline } from "./baseline.js";
 import { type ProbeEvidence, runProbe } from "./probes.js";
 import type { CoverageGap } from "./resolve.js";
@@ -38,6 +41,8 @@ export interface ReviewPacket {
 }
 
 export interface BuildReviewPacketOptions {
+  /** Absolute path of the fingerprint package directory (default: cwd/.ghost). */
+  packageDir?: string;
   runProbes?: boolean;
   cwd?: string;
   probeTimeoutMs?: number;
@@ -48,10 +53,16 @@ export async function buildReviewPacket(
   diffText: string,
   options: BuildReviewPacketOptions = {},
 ): Promise<ReviewPacket> {
+  const cwd = options.cwd ?? process.cwd();
   const resolution = resolveReview(
     fingerprint.catalog,
     fingerprint.checks,
     diffText,
+    {
+      repoRoot: await resolveGitRoot(cwd),
+      packageDir: options.packageDir ?? join(cwd, ".ghost"),
+      materialsDir: GHOST_MATERIALS_DIR,
+    },
   );
 
   const materialNodes: PacketMaterialNode[] = resolution.materialNodes.map(

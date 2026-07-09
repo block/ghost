@@ -1,11 +1,12 @@
 import {
   classifyMaterialLocator,
   type GhostCatalog,
+  type MaterialTransportOptions,
+  materialLocatorClaimsPath,
   parseSourceRef,
 } from "#ghost-core";
 import type { LoadedCheck } from "../scan/check-files.js";
 import { parseTouchedFiles, type TouchedFile } from "./diff.js";
-import { matchesGlob } from "./glob.js";
 
 export interface MatchedMaterialNode {
   id: string;
@@ -39,6 +40,7 @@ export function resolveReview(
   catalog: GhostCatalog,
   checks: Map<string, LoadedCheck>,
   diffText: string,
+  transport: MaterialTransportOptions,
 ): ReviewResolution {
   const touchedFiles = parseTouchedFiles(diffText);
   const materialNodeIds = new Set<string>();
@@ -55,8 +57,13 @@ export function resolveReview(
     if (localLocators.length === 0) continue;
     materialNodeIds.add(node.id);
     for (const file of touchedFiles) {
+      // Resolve each locator the same way validate does: package-relative
+      // `materials/…` locators expand to their repo-relative form before
+      // matching diff paths (which git emits repo-relative). Matching the
+      // raw locator text silently missed every exact-path locator whenever
+      // the package lives below the repo root.
       const locators = localLocators.filter((locator) =>
-        matchesGlob(locator, file.path),
+        materialLocatorClaimsPath(locator, file.path, transport),
       );
       if (locators.length === 0) continue;
       claimedFiles.add(file.path);

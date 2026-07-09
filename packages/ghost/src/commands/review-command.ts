@@ -53,6 +53,7 @@ export function registerReviewCommand(cli: CAC): void {
           diff: opts.diff,
         });
         const packet = await buildReviewPacket(fingerprint, diffText, {
+          packageDir: paths.packageDir,
           runProbes: opts.probes !== false,
           cwd: process.cwd(),
         });

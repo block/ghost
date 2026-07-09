@@ -10,15 +10,15 @@ kinds:
 # grammar
 
 The brand's decision logic: closed sets, role vocabularies, and assembly
-rules, stated in token roles and never in literal values. Grammar survives a
-rebrand unchanged — fork the package, swap every value, and these nodes still
+rules, stated in token roles and never in literal values. Grammar survives an
+adaptation unchanged — adapt the package, swap every value, and these nodes still
 hold. Gather grammar before inventing structure.
 
 # signature
 
 The dials: the choices that make this brand this brand, each stated as a
 current answer that stands until you replace it. Signature nodes name real
-values because they are the values — on fork, edit the token roles in
+values because they are the values — on adaptation, edit the token roles in
 `materials/tokens.css` and restate the node. Gather signature before setting
 any value a dial governs.
 
@@ -39,7 +39,7 @@ anti-goals before styling anything greenfield.
 
 ---
 
-To adapt this package to another brand, follow the transplant procedure —
-it ships with the ghost skill bundle. In short: new manifest id, prune the
+To adapt this package to another brand, follow the `adapting-a-starter`
+recipe in the ghost skill bundle. In short: new manifest id, prune the
 median rules your brand legitimately violates, answer each signature node,
 edit `materials/tokens.css`, regenerate the refs, rewrite the tells.
