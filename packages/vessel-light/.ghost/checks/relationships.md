@@ -1,6 +1,6 @@
 ---
 name: Relationship discipline
-description: Flags structural violations of the grammar — emphasis-ladder breaks, sibling margins, decorative borders, nested cards. These rules survive any rebrand.
+description: Flags structural violations of the grammar — emphasis-ladder breaks, sibling margins, decorative borders, nested cards. These rules survive any adaptation.
 severity: high
 references:
   - grammar.hierarchy
@@ -9,7 +9,7 @@ references:
 ---
 
 These assertions test relationships between token roles, not the values behind
-them. They hold for any brand built on this grammar; a fork keeps this check
+them. They hold for any brand built on this grammar; an adapted package keeps this check
 unchanged.
 
 Flag more than one primary-variant button per view. Secondary actions step

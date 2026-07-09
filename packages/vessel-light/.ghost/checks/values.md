@@ -1,17 +1,18 @@
 ---
 name: Value discipline
-description: Flags off-signature values — non-pill controls, off-palette hues, raw color literals, expression over budget. A fork rewrites this check alongside the signature nodes.
+description: Flags off-signature values — non-pill controls, off-palette hues, raw color literals, expression over budget. Adapting the dials rewrites this check alongside the signature nodes.
 severity: high
 references:
   - signature.shape
   - signature.palette
+  - grammar.color-roles
   - register.data-density
   - register.editorial
   - register.email
 ---
 
 These assertions test Vessel's current answers to the signature dials. A
-rebrand that changes the dials rewrites this check with them; the paired
+adaptation that changes the dials rewrites this check with them; the paired
 relationship check stays.
 
 Review changed HTML and CSS by view, not just by file. Classify the register

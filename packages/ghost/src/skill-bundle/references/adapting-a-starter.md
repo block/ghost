@@ -13,12 +13,12 @@ handoffs:
 vessel-light`) or the naked skeleton (`ghost init`) — into *your* brand's
 fingerprint without shipping a self-contradicting package.
 
-A starter is factored by rate of change under rebrand. Knowing which stratum a
+A starter is factored by rate of change under adaptation. Knowing which stratum a
 file belongs to tells you what to do with it:
 
 | Stratum | Files | On adaptation |
 | --- | --- | --- |
-| Grammar | `grammar.*` | Keep unchanged — value-free decision logic that survives any rebrand. |
+| Grammar | `grammar.*` | Keep unchanged — value-free decision logic that survives any adaptation. |
 | Median floor | `anti-goal.median` | Prune, never rewrite — delete lines your brand legitimately violates. |
 | Signature | `signature.*` | Answer — each is a dial; restate it with your brand's answer. |
 | Values | `materials/tokens.css` | Edit — the single injection point for every literal value. |
@@ -34,7 +34,7 @@ itself.
 
 1. **Change the manifest id.** Edit `id:` in `manifest.yml` to your brand's
    name. This is deliberately first: it is the explicit act that marks the
-   fork as begun. Until it changes, the package honestly claims to be the
+   adaptation as begun. Until it changes, the package honestly claims to be the
    starter, and every consuming agent cites it as a starter default.
 2. **Prune `anti-goal.median`.** Read every rule; delete the lines your brand
    legitimately violates (a brand built on gradients deletes the gradient
@@ -52,7 +52,7 @@ itself.
    palette, type sizes, durations, eases. Change the values; keep the role
    names. The role names are the grammar's vocabulary and the reason the
    grammar nodes survive untouched.
-5. **Regenerate the refs.** This is the step that decides whether the fork
+5. **Regenerate the refs.** This is the step that decides whether the adaptation
    succeeded. Exemplars dominate prose: a prose rule contradicted by a stale
    ref loses. Rebuild each `materials/ref/*.html` against the new tokens and
    answered dials, keep the annotation headers (`normative-for` /

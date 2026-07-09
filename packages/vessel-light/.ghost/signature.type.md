@@ -14,8 +14,7 @@ outside the text variants — and product UI never mixes the two vocabularies
 in one view.
 
 Vessel's current answer: HK Grotesk. vessel-light ships it as its embedded
-voice; the React package currently falls back to system-ui. This fingerprint
-is the intended future — here, `tokens.css` is canonical.
+voice — here, `tokens.css` is canonical.
 
 The heading scale is editorial: display, section, sub, and card each carry
 their own rhythm (`--heading-display-*`, `--heading-section-*`,

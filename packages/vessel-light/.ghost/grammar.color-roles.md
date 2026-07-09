@@ -21,9 +21,9 @@ brand accents, and they never moonlight as atmosphere, in any register.
 
 One view should not perform a color palette. If a status color is present,
 let the rest of the view stay on the base roles. Richness beyond this is
-register-gated: the expression roles (`--expression-1` through
-`--expression-5`) exist, but their volume ladder is a brand answer — see the
-palette signature — and each register caps how loud they may be.
+register-gated: a closed expression set (`--expression-*`) exists, but its
+size, members, and volume ladder are a brand answer — see the palette
+signature — and each register caps how loud they may be.
 
 The constant that holds across every register: expression never touches what
 you click. Buttons, inputs, and links stay on the base roles everywhere. A

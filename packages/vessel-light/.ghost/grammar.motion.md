@@ -22,6 +22,6 @@ keyframes are off-language.
 Prefer opacity and small transform changes. If removing an animation does not
 reduce comprehension, the animation was decoration.
 
-Condition: editorial surfaces may stage entrances — scroll reveals and
+Condition: marketing and editorial surfaces may stage entrances — scroll reveals and
 section transitions are part of editorial rhythm, still built from the three
 durations and the one ease. In product UI the same staging is decoration.
