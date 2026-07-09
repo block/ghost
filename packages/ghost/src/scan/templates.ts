@@ -3,7 +3,7 @@ import {
   GHOST_EVENTS_FILENAME,
   LEGACY_PULL_HISTORY_FILENAME,
 } from "./constants.js";
-import { createSteeringTemplate } from "./steering-template.js";
+import { createSkeletonTemplate } from "./skeleton-template.js";
 /**
  * A single seed file an `init` template writes, relative to the package dir.
  */
@@ -301,7 +301,7 @@ When a blessed render of this pattern exists, add an \`exemplar.*\` node with
   },
 };
 
-const STEERING_TEMPLATE = createSteeringTemplate({
+const SKELETON_TEMPLATE = createSkeletonTemplate({
   manifestFile,
   gitignoreFile,
 });
@@ -309,14 +309,17 @@ const STEERING_TEMPLATE = createSteeringTemplate({
 const TEMPLATES = new Map<string, GhostInitTemplate>([
   [MINIMAL_TEMPLATE.name, MINIMAL_TEMPLATE],
   [COMPOSITION_TEMPLATE.name, COMPOSITION_TEMPLATE],
-  [STEERING_TEMPLATE.name, STEERING_TEMPLATE],
+  [SKELETON_TEMPLATE.name, SKELETON_TEMPLATE],
 ]);
 
-export const DEFAULT_TEMPLATE_NAME = STEERING_TEMPLATE.name;
+export const DEFAULT_TEMPLATE_NAME = SKELETON_TEMPLATE.name;
 
 /** Look up a registered init template by name. */
 export function getInitTemplate(name: string): GhostInitTemplate | undefined {
-  if (name === "default") return STEERING_TEMPLATE;
+  // `default` and `steering` are silent aliases for the skeleton starter:
+  // `default` for callers that never named a template, `steering` for
+  // callers pinned to the pre-skeleton default's name.
+  if (name === "default" || name === "steering") return SKELETON_TEMPLATE;
   return TEMPLATES.get(name);
 }
 

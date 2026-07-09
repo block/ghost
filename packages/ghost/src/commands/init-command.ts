@@ -14,7 +14,7 @@ export function registerInitCommand(cli: CAC): void {
     )
     .option(
       "--template <name>",
-      "Init template to scaffold (default: steering)",
+      "Init template to scaffold (default: skeleton)",
     )
     .option(
       "--with <capabilities>",
