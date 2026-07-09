@@ -235,6 +235,35 @@ advice for the reviewing agent, not an enforcement level.
 
 </DocSection>
 
+<DocSection title="Export The Fingerprint">
+
+### Package a portable artifact: `export`
+
+`export` packages the fingerprint as a portable brand artifact: a tarball of
+the `.ghost/` directory plus a stamped `export.yml` (schema, package id, CLI
+version, export time). The events tape stays out of the archive; pass
+`--no-checks` to leave the checks directory out too.
+
+The export also audits every node's `materials` entry and reports which ones
+travel with the archive (bundled files and URLs) and which are **stranded**:
+repo-relative paths that point outside the package and won't exist wherever
+the archive lands. Stranded entries are reported, not fatal; pass `--strict`
+to exit `2` when any exist.
+
+`export` refuses to package a fingerprint with validation errors. Run
+`ghost validate` and fix them first.
+
+<CliHelp tool="ghost" command="export" hideDescription />
+
+```bash
+ghost export                    # write <id>-fingerprint.tgz with an audit summary
+ghost export --out dist/brand.ghost.tgz
+ghost export --strict           # fail if any materials won't travel
+ghost export --format json      # audit as JSON for host tooling
+```
+
+</DocSection>
+
 <DocSection title="Skill And Inspection">
 
 ### Install the skill: `skill`

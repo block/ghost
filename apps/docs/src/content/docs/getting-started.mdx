@@ -1,6 +1,6 @@
 ---
 title: Getting Started
-description: Install Ghost, author a brand fingerprint as a flat set of prose truths, and gather the right context before your agent builds.
+description: Install Ghost, write your brand's truths as prose, and give your agent the right context before it builds.
 kicker: Docs
 section: guide
 order: 10
@@ -11,7 +11,7 @@ slug: getting-started
 
 <Callout variant="info" title="Just want a first win?">
 
-Start with [Five-Minute Ghost](/docs/quickstart) — one file, one repeated
+Start with [Five-Minute Ghost](/docs/quickstart): one file, one repeated
 decision, no vocabulary. This guide is the full loop for when you're ready to
 author a glossary and gather context end to end.
 
@@ -19,31 +19,31 @@ author a glossary and gather context end to end.
 
 Ghost is your brand as a **portable steering packet**: its truths, its stance,
 its conditions, written as prose your agent reads **before** it makes anything.
-A truth is stated once, at the altitude it is actually true, and the agent
-manifests it into whatever it is making — a screen, an email, a landing page, a
+A truth is stated once, at the altitude where it holds, and the agent
+manifests it into whatever it is making: a screen, an email, a landing page, a
 sentence. The packet is agent-agnostic and travels with the repo. The public
 package is `@design-intelligence/ghost`, and it installs one CLI: `ghost`.
 
-The core loop is **feed-forward**: it grounds generation before your agent
-builds. An optional feed-back side — the checks directory and `ghost review` —
-assembles advisory review packets after, but never grades output itself. You
-work through a short loop:
+The core loop grounds generation **before** your agent builds. An optional
+review side, the checks directory and `ghost review`, helps the same agent
+check its work **after**, but Ghost never grades output itself. You work
+through a short loop:
 
 ```bash
 ghost init        # scaffold .ghost/ with the skeleton starter
-ghost validate    # artifact shape + node validity + kind-prefix check
+ghost validate    # make sure the fingerprint is well-formed
 ghost gather <ask> # emit the menu for this task; your agent selects the truths it needs
 ghost pull <ids>   # read the selected truths' full bodies
 ghost pulse        # inspect the local signal while tuning the fingerprint
 ```
 
 When you want review assertions too, opt in with `ghost checks init` and
-run `ghost review` against a diff — [Checks And Review](/docs/checks-and-review)
+run `ghost review` against a diff; [Checks And Review](/docs/checks-and-review)
 covers that side of the loop.
 
-The CLI does the deterministic work; your agent does the interpretation. The
-rest of this guide walks the loop; the **How It Works** section at the end
-covers the data model underneath it.
+Ghost never calls an LLM itself; your agent does the thinking, so there's no
+API key and no lock-in. The rest of this guide walks the loop; the **How It
+Works** section at the end covers the model underneath it.
 
 </DocSection>
 
@@ -73,14 +73,19 @@ The skill tells the agent what to read, what to write, and how to gather.
 <DocSection title="Author Your First Fingerprint">
 
 Start with one truth, not the whole brand. The hardest part is picking the first
-one, so pick the decision whose review feedback you keep repeating — the checkout
-you always flag for trust, the voice you always re-tone, the empty state you
-always rewrite. Write that one down as a node, and grow the fingerprint decision
+one, so pick the decision whose review feedback you keep repeating: the checkout
+you flag for trust, the voice you re-tone, the empty state you
+rewrite. Write that one down as a node, and grow the fingerprint decision
 by decision. One high-confidence truth beats an empty catalog.
 
-The CLI handles the deterministic package work. Your agent handles the authoring:
-interviewing you, working with the material you show it, drafting node prose,
-and asking you to curate the claims. `ghost init` stamps `anti-goal.median` into every template and body; the median node is Ghost's measured knowledge of unsteered model behavior — model truth, not brand truth — owned (pruned, adapted) by you after init. The skeleton starter also includes `manifest.yml`, a `glossary.md` declaring the grammar/signature/register/anti-goal kinds, a core `index.md`, six grammar nodes of value-free decision logic, and four signature nodes as unanswered dials. Nothing in the skeleton is fiction: grammar and the median floor hold for any brand, and each dial tells the agent to ask you or flag the gap rather than freehand a value. Answering the dials is how the skeleton becomes your brand. Use `ghost init --template minimal` when you only want the small manifest/glossary/index starter.
+The CLI scaffolds; your agent authors: interviewing you, working with the
+material you show it, drafting node prose, and asking you to curate the claims.
+`ghost init` writes a starter you adapt: a glossary, an index, truths that hold
+for any brand, and a few files left as unanswered **dials** that
+tell the agent to ask you rather than invent a value. Answering the dials is how
+the starter becomes your brand. Prefer a bare start? `ghost init --template
+minimal` writes only the manifest, glossary, and index. The full starter
+anatomy is in the [CLI reference](/docs/cli).
 
 ```bash
 ghost init
@@ -88,7 +93,7 @@ ghost validate
 ```
 
 Prefer starting from a working brand instead of an empty anatomy? Install a
-**body** — the same skeleton with a real brand's values plugged in: answered
+**body**, the same skeleton with a real brand's values plugged in: answered
 dials, a `materials/` tree with tokens and fonts, worked reference
 compositions, and its own checks:
 
@@ -96,21 +101,21 @@ compositions, and its own checks:
 ghost init --body vessel-light
 ```
 
-The body's manifest keeps its own id (`vessel-light`) until you adapt it —
-renaming the id is deliberately the first step of making the brand yours.
+The body's manifest keeps its own id (`vessel-light`) until you adapt it;
+renaming the id is the first step of making the brand yours.
 
 Each node's prose records a durable brand truth. While drafting, ask three
-questions of every truth: **why** (the stance — what this brand is, who it
-serves, what must remain true), **with what** (the materials — building blocks,
+questions of every truth: **why** (the stance: what this brand is, who it
+serves, what must remain true), **with what** (the materials: building blocks,
 files, assets, and source links agents may inspect or use), and **how it is
-assembled** (the patterns that make it intentional — hierarchy, density,
+assembled** (the patterns that make it intentional: hierarchy, density,
 restraint, repetition, trust, and flow).
 
 These are drafting prompts, never frontmatter fields. Node frontmatter carries
 only `description` plus free-form passthrough
 keys. A node's **kind** comes from its filename prefix (`principle.density.md` →
 kind `principle`), and the kinds are declared in `glossary.md`. When a truth is
-narrower than universal, state its **condition** in the prose — the situation it
+narrower than universal, state its **condition** in the prose: the situation it
 applies in, never a filename destination. For a fuller human-agent workflow, read
 [Fingerprint Authoring](/docs/fingerprint-authoring).
 
@@ -118,7 +123,7 @@ applies in, never a filename destination. For a fuller human-agent workflow, rea
 
 <DocSection title="Gather Context Before You Build">
 
-Before generating, gather the fingerprint menu. `gather` does no selection — it
+Before generating, gather the fingerprint menu. `gather` does no selection: it
 emits every node's id, kind, and description, and your agent reads the ask
 against it and pulls the truths it judges relevant:
 
@@ -133,10 +138,11 @@ against the actual task, then manifests the truths into whatever it is building.
 Run it before generation, so the agent builds with the brand in hand rather than
 discovering the gaps in review.
 
-Each `gather` and `pull` also appends a structured JSONL event to
-`.ghost/.events`, a gitignored events tape. That one is for you: tweak a node's
-description, re-run the task, and `ghost pulse` shows whether the truth appeared
-on the menu, got pulled, was missed by name, or stayed cold.
+Each `gather` and `pull` also adds a line to a private local log at
+`.ghost/.events`; it stays on your machine and never enters version control.
+That one is for you: tweak a node's description, re-run the task, and `ghost
+pulse` shows whether the truth appeared on the menu, got pulled, was missed by
+name, or stayed cold.
 
 ```bash
 ghost pulse
@@ -145,14 +151,15 @@ ghost pulse
 Read `pulse` as a tuning signal, not a score. A cold node may need a sharper
 `description`; a repeated miss may mean the id or glossary vocabulary is not
 what agents expect; an abandoned gather means the menu did not lead to a useful
-selection. The events tape is local tuning signal, not canonical fingerprint state.
+selection. The log is local tuning signal, not canonical fingerprint state.
 
 </DocSection>
 
 <DocSection title="Validate">
 
-`ghost validate` checks the package deterministically: artifact shape, per-node
-validity, and that each node's kind prefix is declared in the glossary.
+`ghost validate` checks that the fingerprint is well-formed: the manifest and
+each node parse, `materials` entries resolve, and every node's kind prefix is
+declared in the glossary.
 
 ```bash
 ghost validate
@@ -167,7 +174,7 @@ edits are drafts; checked-in nodes are canonical.
 
 <DocSection title="How It Works (the model underneath)">
 
-You can run the whole loop above without this section — your agent handles the
+You can run the whole loop above without this section; your agent handles the
 format. Read on when you want to understand how the folder of files is wired.
 
 The fingerprint is a **flat set of prose nodes**:
@@ -188,7 +195,7 @@ There is no hierarchy, no inheritance, and no edges between nodes. A node's
 identity is its file path with `.md` dropped (`marketing.email.md` is the node
 `marketing.email`). Its **kind** is the filename's first dotted segment, and must
 be a kind declared in `glossary.md`; a bare name (`voice.md`) has
-no kind. Folders are a human-browsing convenience only — the model reads a
+no kind. Folders are a human-browsing convenience only; the model reads a
 flat menu.
 
 Altitude lives in the prose: a universal truth is stated plainly; a narrower

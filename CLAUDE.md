@@ -91,6 +91,7 @@ edits and checks.
 | `packages/ghost` | yes: `@design-intelligence/ghost` | The public package. Ships the `ghost` CLI, node authoring, corpus validation, gather/pull/pulse, review packet assembly, and the unified skill bundle. Shared runtime lives in `packages/ghost/src/ghost-core`. |
 | `packages/vessel-react` | no | A standalone shadcn component registry plus `vessel-mcp` MCP server: the opinionated default reference body. Design-system-agnostic; nothing in Ghost requires it. |
 | `packages/vessel-light` | no | Vessel's design language as a portable `.ghost/` fingerprint package for agents writing raw HTML/CSS. No build, no dependencies. |
+| `packages/steering-eval` | no | Before/after evaluation harness: measures what handing an agent a `.ghost` fingerprint buys, as a deterministic `report.html`. |
 | `apps/docs` | no | Docs site. |
 
 ## CLI Commands
@@ -99,13 +100,14 @@ Core workflow:
 
 | Command | Description |
 | --- | --- |
-| `ghost init` | Scaffold `.ghost/` with a manifest, starter glossary, and a starter `index.md`. `--with checks` also adds the checks directory. |
+| `ghost init` | Scaffold `.ghost/` with the skeleton starter: manifest, glossary, `index.md`, grammar nodes, and unanswered signature dials. `--template minimal` writes only the manifest/glossary/index starter; `--body vessel-light` installs a full inhabited fingerprint instead. `--with checks` also adds the checks directory. |
 | `ghost checks init` | Scaffold `.ghost/checks/` with an example review assertion. |
 | `ghost validate` | Validate the package: manifest shape, node validity, material locators, check references, and glossary kind prefixes. |
 | `ghost gather [ask…]` | Emit the fingerprint menu for the agent to select from. |
 | `ghost pull <id> [<id>…]` | Emit selected nodes' bodies and materials; append the selection to the local `.ghost/.events` tape. |
 | `ghost review` | Emit an advisory review packet for a diff using material-backed nodes and checks (requires `.ghost/checks/`). |
 | `ghost pulse` | Summarize local gather/pull events from `.ghost/.events`. |
+| `ghost export` | Package the fingerprint as a portable tarball with a materials audit (`--strict` fails on stranded locators). |
 | `ghost skill install` | Install the unified `ghost` skill bundle. |
 
 Advanced/maintenance:
@@ -151,6 +153,14 @@ Use `patch` for fixes and docs, `minor` for new commands/flags/exports, and
 
 ## Conventions
 
+- Shipped prose is plain, precise, restrained, and product-minded. When
+  completeness and compactness compete, compactness wins; link out for depth.
+  Concrete over aspirational: name the decision a truth forces, not the value
+  it serves. Teach terms by worked example before defining them. No em dashes,
+  no brand-deck filler, no exclamation points. `scripts/check-terminology.mjs`
+  enforces the retired-vocabulary list; run `pnpm check:terminology` before
+  pushing, and when renaming a concept, retire the old word everywhere in the
+  same change and add it to the forbidden list.
 - Keep publishable runtime code self-contained in `packages/ghost`; no
   `workspace:*` runtime dependencies in the packed public artifact.
 - The canonical on-disk form is a flat `.ghost/` package: `manifest.yml` plus

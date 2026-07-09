@@ -14,7 +14,6 @@ const ROOTS = [
   "packages/ghost/src",
   "packages/ghost/test",
   "packages/vessel-react/README.md",
-  ".ghost",
   ".changeset",
 ];
 
@@ -68,6 +67,30 @@ const FORBIDDEN_PHRASES = [
   "judged",
 ];
 
+/**
+ * Entrance docs hold a stricter bar: implementation vocabulary that is fine in
+ * contributor docs and reference pages must not leak into the welcome path.
+ * Say "materials", "paths or URLs", "private local log", "before you build /
+ * when you review" instead.
+ */
+const ENTRANCE_DOCS = new Set([
+  "README.md",
+  "packages/ghost/README.md",
+  "apps/docs/src/content/docs/quickstart.mdx",
+  "apps/docs/src/content/docs/getting-started.mdx",
+]);
+
+const ENTRANCE_FORBIDDEN_PHRASES = [
+  "JSONL",
+  "gitignored",
+  "events tape",
+  "feed-forward",
+  "feed-back",
+  "locator",
+  "corpus",
+  "deterministic",
+];
+
 const DISALLOWED_VERSION_MARKER = `${"v"}${"2"}`;
 
 const FORBIDDEN_PATTERNS = [
@@ -98,6 +121,11 @@ const forbiddenPatterns = FORBIDDEN_PHRASES.map((phrase) => ({
   pattern: new RegExp(escapeRegExp(phrase), "i"),
 })).concat(FORBIDDEN_PATTERNS);
 
+const entranceForbiddenPatterns = ENTRANCE_FORBIDDEN_PHRASES.map((phrase) => ({
+  phrase: `${phrase} (entrance docs)`,
+  pattern: new RegExp(escapeRegExp(phrase), "i"),
+}));
+
 const violations = [];
 
 for (const root of ROOTS) {
@@ -105,8 +133,11 @@ for (const root of ROOTS) {
     if (EXCLUDED_PATHS.has(file)) continue;
     const content = readFileSync(file, "utf8");
     const lines = content.split("\n");
+    const patterns = ENTRANCE_DOCS.has(file)
+      ? forbiddenPatterns.concat(entranceForbiddenPatterns)
+      : forbiddenPatterns;
     lines.forEach((line, index) => {
-      for (const { phrase, pattern } of forbiddenPatterns) {
+      for (const { phrase, pattern } of patterns) {
         if (!pattern.test(line)) continue;
         if (isAllowedTerminologyUse(line, phrase)) continue;
         violations.push({

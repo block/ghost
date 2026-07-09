@@ -1,7 +1,7 @@
 # Ghost
 
 **Ghost is your brand, packed for agents.** A `.ghost/` folder of plain-prose
-truths — your stance, your voice, your trust moves — checked into the repo and
+truths (your stance, your voice, your trust moves) checked into the repo and
 read by any agent before it makes anything: a screen, an email, an empty
 state, a sentence.
 
@@ -13,26 +13,12 @@ state, a sentence.
   asset.logo.md         # points at the actual SVGs
 ```
 
-Today those decisions live in reviewers' heads — "that's not our voice," again,
+Today those decisions live in reviewers' heads: "that's not our voice," again,
 on every surface. The agent that built the thing never saw them. Ghost writes
 them down once, where the agent looks first.
 
 One portable packet; Claude Code, Codex, Cursor, and Goose all read the same
 one. One package, `@design-intelligence/ghost`. One CLI, `ghost`.
-
-## Thesis
-
-Agents changed the unit of design work. When they make the screens, the
-emails, and the sentences, polishing any one of them moves nothing; the next
-generation starts from the model's average again. The work that compounds is
-architectural: decide where that average serves, decide where the brand must
-win, and put those decisions where the agent reads before it makes.
-
-Ghost is that artifact: a fingerprint checked into the repo, carrying the
-truths, the materials they point at, and the conditions they hold under.
-Buttons stay buttons. The moments that carry your brand get your stance
-instead of the default. The few author it once. Every agent it travels to
-builds from it.
 
 [Documentation](https://block.github.io/ghost/) · [npm](https://www.npmjs.com/package/@design-intelligence/ghost)
 
@@ -42,9 +28,6 @@ builds from it.
 npm install -D @design-intelligence/ghost
 npx ghost skill install
 ```
-
-Every `ghost` command is also available as `ghost-fingerprint` when another tool
-on your machine owns the `ghost` bin.
 
 ## Use It
 
@@ -59,41 +42,43 @@ Brief this work from the Ghost fingerprint.
 Review this diff against the Ghost checks.
 ```
 
-The CLI does deterministic work. The agent does interpretation.
+Ghost never calls an LLM itself; your agent does the thinking. No API key,
+no lock-in.
 
 ## The Loop
 
 ```bash
-ghost init          # scaffold .ghost/ with the steering starter (fingerprint only)
+ghost init          # scaffold .ghost/ with the skeleton starter
 ghost checks init   # opt in to review assertions
-ghost validate      # check package shape, nodes, materials, and checks
-ghost gather <ask>  # before building: list every node for this task
+ghost validate      # make sure the fingerprint is well-formed
+ghost gather <ask>  # before building: list every truth relevant to this task
 ghost pull <ids>    # read the picked truths' full bodies
-ghost review        # during review: assemble a diff + matched nodes + checks packet
-ghost export        # package the fingerprint as a portable artifact with a locator audit
-ghost pulse         # while tuning: summarize local gather/pull events
+ghost review        # during review: match a diff to truths and checks
+ghost export        # package the fingerprint as a portable artifact
+ghost pulse         # while tuning: see what agents reached for
 ```
 
-`gather` and `pull` append structured JSONL events to `.ghost/.events`, a gitignored events tape. That's for tuning descriptions and seeing what agents reached
-for. The events tape is local tuning signal, not canonical fingerprint state.
+Ghost keeps a private local log of what agents reached for; `ghost pulse`
+reads it so you can tune descriptions. It stays on your machine and never
+enters version control.
 
-## CLI Commands
+Run `ghost --help` for the core workflow and `ghost <command> --help` for
+flags; the [CLI reference](https://block.github.io/ghost/docs/cli) covers
+every command.
 
-| Command | Description |
-| --- | --- |
-| `ghost init` | Scaffold `.ghost/` with the steering starter: manifest, glossary, `index.md`, and demo nodes for stance, composition, anti-goals, patterns, exemplars, materials, and decisions. `--template minimal` writes only the small manifest/glossary/index starter. `--with checks` also adds the checks directory. |
-| `ghost checks init` | Scaffold `.ghost/checks/` with an example review assertion. |
-| `ghost validate` | Validate the package: manifest, node validity, material locators, check references, and glossary kind prefixes. |
-| `ghost gather [ask…]` | Emit the fingerprint menu for the agent to select from; log the exposed ids. Wild-posture kinds are excluded by default; `--wild` opts in. |
-| `ghost pull <id> [<id>…]` | Emit selected node bodies and material locators; log selected and missed ids. |
-| `ghost review` | Emit an advisory review packet from a diff, matched material-backed nodes, and checks (requires `.ghost/checks/`). |
-| `ghost export` | Package the fingerprint as a portable artifact with a locator audit. |
-| `ghost pulse` | Summarize local gather/pull events: abandoned gathers, hit rates, cold nodes, and misses. |
-| `ghost skill install` | Install the skill bundle for your host agent. |
-| `ghost manifest` | Emit a self-describing JSON manifest of commands and flags _(advanced)_. |
+## Thesis
 
-Run `ghost --help` for the core workflow, `ghost --help --all` for everything,
-and `ghost <command> --help` for flags.
+Agents changed the unit of design work. When they make the screens, the
+emails, and the sentences, polishing any one of them moves nothing; the next
+generation starts from the model's average again. The work that compounds is
+architectural: decide where that average serves, decide where the brand must
+win, and put those decisions where the agent reads before it makes.
+
+Ghost is that artifact: a fingerprint checked into the repo, carrying the
+truths, the materials they point at, and the conditions they hold under.
+Buttons stay buttons. The moments that carry your brand get your stance
+instead of the default. The few author it once. Every agent it travels to
+builds from it.
 
 ## How It Works
 
@@ -126,10 +111,11 @@ Use the full lockup when recognition matters. Use the glyph only when space is
 constrained or when brand presence should recede.
 ```
 
-`materials` is one list of locators for the concrete stuff the truth is about:
-repo-relative paths/globs or absolute HTTPS URLs. Components, patterns, logos,
-motion files, illustrations, and external asset libraries all use the same field.
-Guidance stays in prose; `materials` only says where the material is.
+`materials` is a list of paths or URLs pointing at the concrete stuff the
+truth is about: repo-relative paths/globs or absolute HTTPS URLs. Components,
+patterns, logos, motion files, illustrations, and external asset libraries all
+use the same field. Guidance stays in prose; `materials` only says where the
+material is.
 
 **Checks** are optional review assertions in a flat `.ghost/checks/` directory.
 Core `ghost init` ships no checks; add them explicitly:
@@ -152,15 +138,13 @@ references:
 Grade whether the change preserves the logo guidance in `asset.logo`.
 ```
 
-`ghost gather` and `ghost pull` are feed-forward. `ghost review` is feed-back: it
-reads a diff, matches touched files to node `materials`, offers relevant checks,
-and emits an advisory packet for the host agent to weigh.
+`gather` and `pull` run before your agent builds. `review` runs after: it
+reads a diff, matches touched files to node `materials`, offers relevant
+checks, and emits an advisory packet for the host agent to weigh. Review
+output never enters generation context.
 
-Reserved at the package root: `manifest.yml`, `glossary.md`, and `checks/`.
-Every other `*.md` is a node. Renaming a node changes its id.
-
-The packet is the product; the CLI is the courier. Everything above —
-gather, pull, review, checks, the events tape — is machinery around the
+The packet is the product; the CLI is the courier. Everything above
+(gather, pull, review, checks, the local log) is machinery around the
 fingerprint, and the fingerprint outlives all of it.
 
 ## Portable by Design
@@ -171,10 +155,10 @@ sentence), and repo-native (it moves with a clone, a fork, a new hire's first
 checkout). When you need it as a standalone artifact:
 
 ```bash
-ghost export    # package the fingerprint as a portable brand artifact, with a locator audit
+ghost export
 ```
 
-The export audits every `materials` locator so the packet doesn't silently
+The export audits every `materials` entry so the packet doesn't silently
 point at things that moved.
 
 ## Project Status: Beta
@@ -188,9 +172,10 @@ point at things that moved.
 
 | Path | Role | Published? |
 | ---- | ---- | --- |
-| [`packages/ghost`](./packages/ghost) | The public `ghost` CLI, node authoring, corpus validation, gather/pull, review packet assembly, and the skill bundle. | yes: `@design-intelligence/ghost` |
+| [`packages/ghost`](./packages/ghost) | The public `ghost` CLI, node authoring, fingerprint validation, gather/pull, review packet assembly, and the skill bundle. | yes: `@design-intelligence/ghost` |
 | [`packages/vessel-react`](./packages/vessel-react) | A standalone shadcn component registry plus `vessel-mcp` MCP server. | no |
 | [`packages/vessel-light`](./packages/vessel-light) | Vessel's design language as a portable `.ghost/` fingerprint for agents writing raw HTML/CSS. | no |
+| [`packages/steering-eval`](./packages/steering-eval) | Before/after evaluation harness: measures what a `.ghost` fingerprint buys as a self-contained `report.html`. | no |
 | [`apps/docs`](./apps/docs) | Docs site. | no |
 
 ## Development
@@ -203,7 +188,8 @@ pnpm check
 pnpm dump:cli-help
 ```
 
-No API key is required to run Ghost.
+Every `ghost` command is also available as `ghost-fingerprint` when another
+tool on your machine owns the `ghost` bin.
 
 ## License
 
