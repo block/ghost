@@ -46,7 +46,7 @@ importers:
     dependencies:
       '@design-intelligence/vessel-react':
         specifier: workspace:*
-        version: link:../../packages/vessel
+        version: link:../../packages/vessel-react
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.72.1(react@19.1.0))
@@ -315,6 +315,8 @@ importers:
       zod:
         specifier: ^4.3.6
         version: 4.3.6
+
+  packages/steering-eval: {}
 
   packages/vessel-react:
     dependencies:
