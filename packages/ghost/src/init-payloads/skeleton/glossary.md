@@ -39,5 +39,6 @@ anti-goals before styling anything greenfield.
 
 ---
 
-The ghost skill bundle teaches authoring: how to answer the dials, add
-registers, and grow this skeleton into a real fingerprint.
+The ghost skill bundle teaches authoring — its `adapting-a-starter` recipe is
+the procedure for growing this skeleton into a real fingerprint: answer the
+dials, prune the median floor, edit your values, then generate refs and tells.
