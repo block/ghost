@@ -114,7 +114,7 @@ export async function initFingerprintPackage(
   const paths = resolveFingerprintPackage(dirArg, cwd);
   await mkdir(paths.packageDir, { recursive: true });
 
-  const files = template.files().map((file) => ({
+  const files = (await template.files()).map((file) => ({
     relativePath: file.relativePath,
     path: join(paths.packageDir, file.relativePath),
     content: file.content,
@@ -137,14 +137,17 @@ export async function initFingerprintPackage(
 
 async function writeInitFile(
   path: string,
-  content: string,
+  content: string | Uint8Array,
   force = false,
 ): Promise<void> {
   try {
-    await writeFile(path, content, {
-      encoding: "utf-8",
-      flag: force ? "w" : "wx",
-    });
+    await writeFile(
+      path,
+      content,
+      typeof content === "string"
+        ? { encoding: "utf-8", flag: force ? "w" : "wx" }
+        : { flag: force ? "w" : "wx" },
+    );
   } catch (err) {
     if (!force && isExistingPathError(err)) {
       throw new UsageError(

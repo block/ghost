@@ -10,7 +10,7 @@ import { createSkeletonTemplate } from "./skeleton-template.js";
 export interface TemplateFile {
   /** Path relative to the package directory (e.g. "principle.voice.md"). */
   relativePath: string;
-  content: string;
+  content: string | Uint8Array;
 }
 /**
  * An `init` template: a pure description of the seed files a fresh node package
@@ -21,7 +21,7 @@ export interface TemplateFile {
 export interface GhostInitTemplate {
   name: string;
   description: string;
-  files(): TemplateFile[];
+  files(): TemplateFile[] | Promise<TemplateFile[]>;
 }
 function manifestFile(): TemplateFile {
   return {
