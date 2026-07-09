@@ -87,9 +87,21 @@
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
-  --radius-card: 20px;
-  --radius-pill: 999px;
+  --radius-surface: 20px;
+  --radius-control: 999px;
   --radius-input: 999px;
+
+  --gap-xs: 4px;
+  --gap-sm: 8px;
+  --gap-md: 16px;
+  --gap-lg: 24px;
+  --gap-xl: 32px;
+
+  --text-body-size: 14px;
+  --text-title-size: 18px;
+  --text-headline-size: 24px;
+
+  --control-height: 36px;
 
   --background: var(--color-white);
   --foreground: var(--color-gray-900);
