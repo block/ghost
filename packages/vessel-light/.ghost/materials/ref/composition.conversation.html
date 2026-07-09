@@ -1,3 +1,7 @@
+<!-- ghost ref annotations
+  normative-for: grammar.conversation — the whole grammar: assistant turns as plain text on the page surface (no bubble, border, or fill), user turns as compact muted surfaces aligned right, tool calls collapsed to a one-line labeled summary with status (mono detail only after expansion), one bordered prompt surface with an empty writing region and a single control row below, exactly one primary send. grammar.surfaces — no borders as decoration around assistant text. signature.shape — surface radius on the prompt surface and user turns.
+  incidental: all copy; the 720px thread width and turn max-widths; the specific attach/mention controls; the billing subject matter.
+-->
 <!doctype html>
 <html lang="en">
   <head>
@@ -18,7 +22,7 @@
   <body>
     <main class="stack stack--gap-md">
       <section class="stack stack--gap-lg" aria-label="Conversation thread">
-        <article class="surface surface--muted surface--pad-md surface--radius-lg" data-turn="user">
+        <article class="surface surface--muted surface--pad-md surface--radius-surface" data-turn="user">
           <p class="text">Can you make the billing page feel calmer without losing the upgrade prompt?</p>
         </article>
 
@@ -27,24 +31,24 @@
           <p class="text">The page should feel like account infrastructure first, promotion second.</p>
         </article>
 
-        <section class="surface surface--muted surface--pad-sm surface--radius-md surface--border stack stack--gap-sm" aria-label="Collapsed tool call">
-          <header class="stack stack--row stack--justify-between stack--align-center stack--gap-sm">
+        <details class="surface surface--muted surface--pad-sm surface--radius-surface surface--border stack stack--gap-sm" aria-label="Collapsed tool call">
+          <summary class="stack stack--row stack--justify-between stack--align-center stack--gap-sm">
             <span class="text text--label">Inspecting tokens</span>
             <span class="text text--label text--success">Completed</span>
-          </header>
+          </summary>
           <pre class="text text--mono text--muted">read packages/vessel/src/components/billing-card.tsx</pre>
-        </section>
+        </details>
 
         <article class="stack stack--gap-sm" data-turn="assistant">
           <p class="text">Use one card surface for the current plan, muted rows for secondary facts, and a primary action only where the user can commit. Keep helper copy short and concrete.</p>
         </article>
 
-        <article class="surface surface--muted surface--pad-md surface--radius-lg" data-turn="user">
+        <article class="surface surface--muted surface--pad-md surface--radius-surface" data-turn="user">
           <p class="text">Show me the smallest set of changes.</p>
         </article>
       </section>
 
-      <form class="surface surface--border-input surface--pad-sm surface--radius-card stack stack--gap-sm" aria-label="Prompt input">
+      <form class="surface surface--border-input surface--pad-sm surface--radius-surface stack stack--gap-sm" aria-label="Prompt input">
         <textarea class="input input--textarea" aria-label="Prompt" placeholder="Ask Vessel to revise the interface"></textarea>
         <div class="stack stack--row stack--justify-between stack--align-center stack--gap-sm">
           <div class="stack stack--row stack--gap-xs stack--align-center">

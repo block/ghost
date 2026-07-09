@@ -35,7 +35,11 @@ export function registerChecksCommand(cli: CAC): void {
         if (opts.format === "json") {
           process.stdout.write(
             `${JSON.stringify(
-              { dir: result.dir, written: result.written },
+              {
+                dir: result.dir,
+                written: result.written,
+                skipped: result.skipped,
+              },
               null,
               2,
             )}\n`,
@@ -44,6 +48,9 @@ export function registerChecksCommand(cli: CAC): void {
           process.stdout.write(`Added checks/: ${result.dir}\n`);
           for (const file of result.written) {
             process.stdout.write(`  ${file}\n`);
+          }
+          for (const file of result.skipped) {
+            process.stdout.write(`  skipped ${file}\n`);
           }
         }
         process.exit(0);

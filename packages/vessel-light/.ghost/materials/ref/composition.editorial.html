@@ -1,3 +1,7 @@
+<!-- ghost ref annotations
+  normative-for: register.editorial — display-scale hero with the single sanctioned kicker (one per page — repeating it on every section is the median tell), --section-padding-vertical rhythm, the sanctioned full-bleed dark band via --surface-dark-*, the pull quote as visual punctuation, one primary action per page. signature.type — the editorial heading scale (--heading-display-*, --heading-section-*) used where the words are the composition, product text variants (title, label, body) inside the features. grammar.hierarchy — the inverse tone on the dark surface. signature.palette — the editorial volume: exactly two expression hues per page (periwinkle tinting the dark band, amber accenting the pull quote), controls monochrome.
+  incidental: all copy; the specific hue assignments (any two of the five expression hues satisfy the budget); the three-feature grid count; content max-widths.
+-->
 <!doctype html>
 <html lang="en">
   <head>
@@ -21,7 +25,8 @@
       .dark-muted { color: var(--surface-dark-muted); }
       .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(calc(var(--page-container-side-gutter) * 12), 1fr)); gap: var(--section-heading-margin-bottom); }
       .feature { border-top: 1px solid var(--surface-dark-border); padding-top: var(--page-container-side-gutter); }
-      .pullquote { max-width: calc(var(--page-container-side-gutter) * 48); margin: 0; font-size: var(--pullquote-size); font-weight: var(--pullquote-weight); line-height: var(--pullquote-line-height); letter-spacing: var(--pullquote-letter-spacing); border-left: 3px solid var(--expression-1); padding-left: var(--page-container-side-gutter); }
+      .pullquote { max-width: calc(var(--page-container-side-gutter) * 48); margin: 0; font-size: var(--pullquote-size); font-weight: var(--pullquote-weight); line-height: var(--pullquote-line-height); letter-spacing: var(--pullquote-letter-spacing); padding-left: var(--page-container-side-gutter); position: relative; }
+      .pullquote::before { content: "\201C"; position: absolute; left: 0; top: 0; color: var(--expression-1); font-size: var(--pullquote-size); line-height: 1; }
     </style>
   </head>
   <body>
@@ -35,20 +40,20 @@
 
       <section class="dark-band" id="material-system" aria-labelledby="system-title">
         <div class="dark-inner">
-          <h2 class="text section-heading" id="system-title">A small set of primitives carries the whole system.</h2>
+          <h2 class="text text--inverse section-heading" id="system-title">A small set of primitives carries the whole system.</h2>
           <div class="feature-grid">
             <article class="feature stack stack--gap-sm">
-              <p class="text text--label dark-muted label-kicker">Density</p>
+              <p class="text text--label dark-muted">Density</p>
               <h3 class="text text--title">Compact by default</h3>
               <p class="text dark-muted">Controls stay close to their labels. Surfaces reserve padding for decisions, not decoration.</p>
             </article>
             <article class="feature stack stack--gap-sm">
-              <p class="text text--label dark-muted label-kicker">Restraint</p>
+              <p class="text text--label dark-muted">Restraint</p>
               <h3 class="text text--title">Monochrome first</h3>
               <p class="text dark-muted">Contrast, rhythm, and type scale do the work before color is asked to explain status.</p>
             </article>
             <article class="feature stack stack--gap-sm">
-              <p class="text text--label dark-muted label-kicker">Trust</p>
+              <p class="text text--label dark-muted">Trust</p>
               <h3 class="text text--title">Every action is explicit</h3>
               <p class="text dark-muted">Buttons name the commitment. Secondary copy clarifies consequence without trying to persuade.</p>
             </article>
@@ -57,7 +62,7 @@
       </section>
 
       <section class="page section" aria-label="Editorial note">
-        <blockquote class="pullquote">“The interface should feel authored even when an agent produced the first pass.”</blockquote>
+        <blockquote class="pullquote">The interface should feel authored even when an agent produced the first pass.</blockquote>
       </section>
     </main>
   </body>

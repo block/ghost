@@ -74,7 +74,7 @@ HTML artifact. Calibration on real data:
 Score every arm's artifacts; report the mean per arm alongside `ghost review`
 results. Known caveat: the font tells (`inter-font-default`,
 `segoe-font-default`) legitimately fire on email artifacts, where the system
-stack is mandated by `pattern.email` — discount them there.
+stack is mandated by `register.email` — discount them there.
 
 ## Files
 
