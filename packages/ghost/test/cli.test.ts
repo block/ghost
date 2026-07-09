@@ -1744,25 +1744,42 @@ a deliberate provocation past the fingerprint — surfaced only on request
     expect(pull.stdout).toContain(":root{}");
   });
 
-  it("checks init scaffolds .ghost/checks/ with an example", async () => {
+  it("checks init scaffolds .ghost/checks/ with median tells and an example", async () => {
     await runCli(["init"], dir);
 
     const add = await runCli(["checks", "init", "--format", "json"], dir);
     expect(add.code).toBe(0);
     const added = JSON.parse(add.stdout);
-    expect(added.written).toEqual(["example.md.example"]);
+    expect(added.written).toEqual(["median-tells.md", "example.md.example"]);
     await expect(
       readFile(join(dir, ".ghost", "checks", "example.md.example"), "utf-8"),
     ).resolves.toContain("references:");
+
+    // The live median check pairs with the skeleton's anti-goal.median node.
+    const median = await readFile(
+      join(dir, ".ghost", "checks", "median-tells.md"),
+      "utf-8",
+    );
+    expect(median).toContain("anti-goal.median");
+    expect(median).toContain("rule:median-hover-lift");
+    expect(median).toContain("prefers-reduced-motion");
+    expect(median).toContain("delete both together");
+    expect(median).not.toContain("Vessel");
 
     // Running init twice is a usage error.
     const again = await runCli(["checks", "init"], dir);
     expect(again.code).toBe(2);
     expect(again.stderr).toContain("already exists");
 
-    // The scaffold validates cleanly (example.md.example is inert).
-    const validate = await runCli(["validate"], dir);
+    // The scaffold validates cleanly on the default skeleton: median-tells
+    // references resolve against anti-goal.median and the grammar nodes.
+    const validate = await runCli(["validate", "--format", "json"], dir);
     expect(validate.code).toBe(0);
+    const report = JSON.parse(validate.stdout);
+    const unresolved = report.issues.filter(
+      (f: { rule: string }) => f.rule === "check-reference-unresolved",
+    );
+    expect(unresolved).toEqual([]);
   });
 
   it("checks rejects unknown actions", async () => {
