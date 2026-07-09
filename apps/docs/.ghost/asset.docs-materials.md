@@ -8,8 +8,8 @@ materials:
   - apps/docs/src/app/**/*.tsx
   - apps/docs/src/content/docs/*.mdx
   - apps/docs/src/generated/cli-manifest.json
-  - packages/vessel/src/styles/main.css
-  - packages/vessel/src/components/**
+  - packages/vessel-react/src/styles/main.css
+  - packages/vessel-react/src/components/**
 ---
 
 Do not invent docs-site vocabulary before inspecting the materials already in
@@ -17,8 +17,8 @@ place.
 
 Material contract:
 
-- **Tokens and primitives** come from `@design-intelligence/vessel/styles.css`,
-  backed by `packages/vessel/src/styles/main.css`. Author with semantic roles
+- **Tokens and primitives** come from `@design-intelligence/vessel-react/styles.css`,
+  backed by `packages/vessel-react/src/styles/main.css`. Author with semantic roles
   (`bg-background`, `text-foreground`, `text-muted-foreground`, `border-border`,
   `bg-card`) and the named docs typography variables (`--heading-*`,
   `--label-*`). Avoid raw palette utilities unless they are already part of a

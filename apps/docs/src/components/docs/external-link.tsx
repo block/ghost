@@ -1,4 +1,4 @@
-import { cn } from "@design-intelligence/vessel";
+import { cn } from "@design-intelligence/vessel-react";
 import { ArrowUpRight } from "lucide-react";
 import { ComponentProps } from "react";
 

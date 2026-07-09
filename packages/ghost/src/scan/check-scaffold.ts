@@ -2,8 +2,10 @@ import { access, mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { UsageError } from "#ghost-core";
 import { GHOST_CHECKS_DIR } from "./check-files.js";
+import { loadPayloadFile } from "./packed-payloads.js";
 
 const EXAMPLE_CHECK_FILENAME = "example.md.example";
+const MEDIAN_TELLS_FILENAME = "median-tells.md";
 
 const EXAMPLE_CHECK_CONTENT = `---
 name: logo-clearspace-holds
@@ -21,6 +23,7 @@ is used when the full lockup is required.
 export interface AddChecksResult {
   dir: string;
   written: string[];
+  skipped: string[];
 }
 
 /** Scaffold the flat `.ghost/checks/` directory with an example check. */
@@ -32,13 +35,33 @@ export async function addChecksDir(
     throw new UsageError(`checks/ already exists at ${checksDir}.`);
   }
 
+  const written: string[] = [];
+  const skipped: string[] = [];
+
   await mkdir(checksDir, { recursive: true });
+  if (await exists(join(packageDir, "anti-goal.median.md"))) {
+    await writeFile(
+      join(checksDir, MEDIAN_TELLS_FILENAME),
+      await loadPayloadFile("median", MEDIAN_TELLS_FILENAME),
+      "utf-8",
+    );
+    written.push(MEDIAN_TELLS_FILENAME);
+  } else {
+    skipped.push(`${MEDIAN_TELLS_FILENAME} (no anti-goal.median node)`);
+  }
+
   await writeFile(
     join(checksDir, EXAMPLE_CHECK_FILENAME),
     EXAMPLE_CHECK_CONTENT,
     "utf-8",
   );
-  return { dir: checksDir, written: [EXAMPLE_CHECK_FILENAME] };
+  written.push(EXAMPLE_CHECK_FILENAME);
+
+  return {
+    dir: checksDir,
+    written,
+    skipped,
+  };
 }
 
 async function exists(path: string): Promise<boolean> {

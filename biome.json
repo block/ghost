@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!**/test/fixtures"]
+    "includes": ["**", "!**/test/fixtures", "!packages/vessel-light/demo/out"]
   },
   "formatter": {
     "enabled": true,
@@ -35,7 +35,7 @@
   },
   "overrides": [
     {
-      "includes": ["packages/vessel/**", "apps/docs/**"],
+      "includes": ["packages/vessel-react/**", "apps/docs/**"],
       "linter": {
         "enabled": false
       }

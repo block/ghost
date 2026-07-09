@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-07T16:48:56.039Z",
+  "generatedAt": "2026-07-09T11:06:22.019Z",
   "tools": [
     {
       "tool": "ghost",
@@ -53,7 +53,15 @@
             {
               "rawName": "--template <name>",
               "name": "template",
-              "description": "Init template to scaffold (default: steering)",
+              "description": "Init template to scaffold (default: skeleton)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--body <name>",
+              "name": "body",
+              "description": "Init body to install: a full inhabited package (e.g. vessel-light)",
               "default": null,
               "takesValue": true,
               "negated": false

@@ -5,7 +5,7 @@ materials:
   - apps/docs/src/app/docs/page.tsx
   - apps/docs/src/app/tools/**/*.tsx
   - apps/docs/src/components/docs/**
-  - packages/vessel/src/styles/main.css
+  - packages/vessel-react/src/styles/main.css
 ---
 
 The Ghost docs site should render like a stark technical artifact with one

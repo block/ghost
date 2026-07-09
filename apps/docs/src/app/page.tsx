@@ -1,4 +1,4 @@
-import { useStaggerReveal } from "@design-intelligence/vessel";
+import { useStaggerReveal } from "@design-intelligence/vessel-react";
 import { Hero } from "@/components/docs/hero";
 import { SectionWrapper } from "@/components/docs/wrappers";
 

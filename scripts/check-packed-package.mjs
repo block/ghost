@@ -148,6 +148,39 @@ try {
   }
   run("pnpm", ["exec", "ghost", "lint", ".ghost"], { cwd: consumerDir });
 
+  // The vessel-light body must survive packing: corpus, binary fonts, checks.
+  // Run from the consumer root (where the tarball is installed) and target a
+  // separate package dir — `pnpm exec` from a bare subdirectory would escape
+  // to any globally installed ghost.
+  const bodyPackageDir = join("body-consumer", ".ghost");
+  const bodyInit = run(
+    "pnpm",
+    [
+      "exec",
+      "ghost",
+      "init",
+      "--body",
+      "vessel-light",
+      "--package",
+      bodyPackageDir,
+      "--format",
+      "json",
+    ],
+    { cwd: consumerDir },
+  );
+  const bodyOutput = JSON.parse(bodyInit);
+  for (const required of [
+    "manifest.yml",
+    "anti-goal.median.md",
+    "materials/fonts/HKGrotesk-Regular.woff2",
+    "checks/values.md",
+  ]) {
+    if (!bodyOutput.written?.includes(required)) {
+      fail(`packed ghost init --body vessel-light did not write ${required}`);
+    }
+  }
+  run("pnpm", ["exec", "ghost", "lint", bodyPackageDir], { cwd: consumerDir });
+
   for (const specifier of PUBLIC_IMPORTS) {
     runNode(`await import(${JSON.stringify(specifier)});`, consumerDir);
   }

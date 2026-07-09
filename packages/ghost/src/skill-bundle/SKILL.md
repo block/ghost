@@ -110,6 +110,7 @@ against the unpacked package with `--package <dir>`.
 - Author or update the fingerprint: follow [references/capture.md](references/capture.md).
 - Author material-backed nodes: follow [references/blocks.md](references/blocks.md).
 - Choose the right human-agent authoring workflow: follow [references/authoring-scenarios.md](references/authoring-scenarios.md).
+- Adapt a starter (a body or the skeleton) to your brand: follow [references/adapting-a-starter.md](references/adapting-a-starter.md).
 - Gather applicable truths for a task: follow [references/recall.md](references/recall.md).
 - Shape a pre-generation brief: follow [references/brief.md](references/brief.md).
 - Explore deliberate provocations with wild nodes: follow [references/wild.md](references/wild.md).

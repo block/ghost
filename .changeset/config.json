@@ -7,5 +7,5 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["@design-intelligence/vessel", "ghost-docs"]
+  "ignore": ["@design-intelligence/vessel-react", "ghost-docs"]
 }

@@ -1,0 +1,97 @@
+{
+  "source": "antimedian (300 unsteered generations, gemini/gpt/opus, 2026-07)",
+  "note": "counts are antimedian pattern occurrences; weight reflects distinctiveness-destroying power. Sanctioned-by-vessel median patterns (pills, clamp headings, max-width containers, email tables) are deliberately absent.",
+  "tells": [
+    {
+      "id": "hover-lift-family",
+      "antimedianCount": 341,
+      "kind": "regex",
+      "pattern": ":hover[^}]*transform:[^};]*translateY\\(-",
+      "weight": 3
+    },
+    {
+      "id": "indigo-blue-default-accent",
+      "antimedianCount": 60,
+      "kind": "regex",
+      "pattern": "#(4f46e5|6366f1|4338ca|2563eb|3b82f6|1d4ed8|4a90e2|4361ee)\\b",
+      "weight": 3
+    },
+    {
+      "id": "unprompted-dark-theme",
+      "antimedianCount": 271,
+      "kind": "regex",
+      "pattern": "(?:(?:^|[}\\s,])(?:body|html|:root)\\s*(?:,[^{}]*)?\\{[^}]*background(?:-color)?:\\s*(?:#(?:[0-2][0-9a-fA-F]){3}\\b|#[0-2]{3}\\b|black\\b|rgba?\\(\\s*[0-4]?\\d\\s*,\\s*[0-4]?\\d\\s*,\\s*[0-4]?\\d)|--(?:bg|background|surface)[\\w-]*:\\s*(?:#(?:[0-2][0-9a-fA-F]){3}\\b|#[0-2]{3}\\b|black\\b|rgba?\\(\\s*[0-4]?\\d\\s*,\\s*[0-4]?\\d\\s*,\\s*[0-4]?\\d))",
+      "weight": 2
+    },
+    {
+      "id": "gradient-background",
+      "antimedianCount": 63,
+      "kind": "regex",
+      "pattern": "background[^;]*:(linear|radial)-gradient|background-image:\\s*(linear|radial)-gradient",
+      "weight": 3
+    },
+    {
+      "id": "glassmorphism",
+      "antimedianCount": 23,
+      "kind": "regex",
+      "pattern": "backdrop-filter:\\s*blur",
+      "weight": 2
+    },
+    {
+      "id": "chat-bubble-avatar",
+      "antimedianCount": 57,
+      "kind": "regex",
+      "pattern": "(avatar[^}]*border-radius:\\s*50%|initials)",
+      "weight": 1
+    },
+    {
+      "id": "emoji-icons",
+      "antimedianCount": 26,
+      "kind": "regex",
+      "pattern": "[\\u{1F300}-\\u{1FAFF}\\u{2600}-\\u{27BF}]",
+      "weight": 1
+    },
+    {
+      "id": "stock-pricing-copy",
+      "antimedianCount": 14,
+      "kind": "text",
+      "pattern": "Simple, transparent pricing",
+      "weight": 2
+    },
+    {
+      "id": "welcome-back-copy",
+      "antimedianCount": 10,
+      "kind": "text",
+      "pattern": "Welcome back",
+      "weight": 1
+    },
+    {
+      "id": "sticky-top-header",
+      "antimedianCount": 239,
+      "kind": "regex",
+      "pattern": "(header|nav)[^}]*position:\\s*(sticky|fixed)[^}]*top:\\s*0",
+      "weight": 1
+    },
+    {
+      "id": "viewport-centered-card",
+      "antimedianCount": 152,
+      "kind": "regex",
+      "pattern": "(body|\\.container)[^}]*display:\\s*flex[^}]*(align-items:\\s*center[^}]*justify-content:\\s*center|justify-content:\\s*center[^}]*align-items:\\s*center)[^}]*(min-)?height:\\s*100(vh|dvh)",
+      "weight": 1
+    },
+    {
+      "id": "inter-font-default",
+      "antimedianCount": 44,
+      "kind": "regex",
+      "pattern": "font-family:[^;]*\\bInter\\b",
+      "weight": 1
+    },
+    {
+      "id": "segoe-font-default",
+      "antimedianCount": 104,
+      "kind": "regex",
+      "pattern": "font-family:[^;]*Segoe UI",
+      "weight": 1
+    }
+  ]
+}

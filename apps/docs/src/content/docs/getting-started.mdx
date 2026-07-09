@@ -30,7 +30,7 @@ assembles advisory review packets after, but never grades output itself. You
 work through a short loop:
 
 ```bash
-ghost init        # scaffold .ghost/ with the steering starter
+ghost init        # scaffold .ghost/ with the skeleton starter
 ghost validate    # artifact shape + node validity + kind-prefix check
 ghost gather <ask> # emit the menu for this task; your agent selects the truths it needs
 ghost pull <ids>   # read the selected truths' full bodies
@@ -80,12 +80,24 @@ by decision. One high-confidence truth beats an empty catalog.
 
 The CLI handles the deterministic package work. Your agent handles the authoring:
 interviewing you, working with the material you show it, drafting node prose,
-and asking you to curate the claims. `ghost init` scaffolds the steering starter: `manifest.yml`, a starter `glossary.md`, a core `index.md` node, and demo nodes for stance, composition, anti-goals, patterns, exemplars, materials, and decisions. The demo content is there for inspiration and guidance. Replace its claims, paths, examples, and decisions with your real product truth before using it to steer generation. Use `ghost init --template minimal` when you only want the small manifest/glossary/index starter.
+and asking you to curate the claims. `ghost init` stamps `anti-goal.median` into every template and body; the median node is Ghost's measured knowledge of unsteered model behavior — model truth, not brand truth — owned (pruned, adapted) by you after init. The skeleton starter also includes `manifest.yml`, a `glossary.md` declaring the grammar/signature/register/anti-goal kinds, a core `index.md`, six grammar nodes of value-free decision logic, and four signature nodes as unanswered dials. Nothing in the skeleton is fiction: grammar and the median floor hold for any brand, and each dial tells the agent to ask you or flag the gap rather than freehand a value. Answering the dials is how the skeleton becomes your brand. Use `ghost init --template minimal` when you only want the small manifest/glossary/index starter.
 
 ```bash
 ghost init
 ghost validate
 ```
+
+Prefer starting from a working brand instead of an empty anatomy? Install a
+**body** — the same skeleton with a real brand's values plugged in: answered
+dials, a `materials/` tree with tokens and fonts, worked reference
+compositions, and its own checks:
+
+```bash
+ghost init --body vessel-light
+```
+
+The body's manifest keeps its own id (`vessel-light`) until you adapt it —
+renaming the id is deliberately the first step of making the brand yours.
 
 Each node's prose records a durable brand truth. While drafting, ask three
 questions of every truth: **why** (the stance — what this brand is, who it

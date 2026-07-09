@@ -14,6 +14,6 @@
   "files": [],
   "references": [
     { "path": "packages/ghost" },
-    { "path": "packages/vessel/tsconfig.mcp.json" }
+    { "path": "packages/vessel-react/tsconfig.mcp.json" }
   ]
 }

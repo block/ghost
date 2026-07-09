@@ -1,0 +1,60 @@
+<!-- ghost ref annotations
+  normative-for: grammar.surfaces — the interrupting end of the elevation set: the modal tier (scrim, --shadow-modal, --radius-surface, compact header, clear footer) and the popover tier (an anchored menu floating above the flow with --shadow-popover). The card tier's home is composition.form.html and composition.table.html; together the three refs cover the closed elevation set. grammar.hierarchy — one primary confirm, ghost escape, menu items as ghost-weight actions; the info tone carrying a state-meaning note. signature.shape — surface radius on both overlay surfaces.
+  incidental: showing the popover and the modal in the same frame (a demonstration convenience — in a live UI the menu closes when the dialog interrupts); all copy and counts; the 512px dialog width; the specific menu items.
+-->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vessel Light — Overlay</title>
+    <link rel="stylesheet" href="../tokens.css" />
+    <link rel="stylesheet" href="../primitives.css" />
+    <style>
+      body { margin: 0; min-height: 100vh; padding: 24px; }
+      .page { width: min(100%, 720px); margin-inline: auto; position: relative; }
+      .menu { position: absolute; top: 48px; right: 0; width: 220px; }
+      .menu-item { justify-content: flex-start; width: 100%; height: 32px; padding: 6px 12px; }
+      .scrim { position: fixed; inset: 0; display: grid; place-items: center; padding: 16px; }
+      section[role="dialog"] { width: min(100%, 512px); }
+    </style>
+  </head>
+  <body>
+    <main class="page stack stack--gap-lg">
+      <header class="stack stack--row stack--justify-between stack--align-center stack--gap-md">
+        <h1 class="text text--headline">Fingerprint</h1>
+        <button class="button button--outline button--size-sm" type="button" aria-haspopup="menu" aria-expanded="true">Actions</button>
+      </header>
+      <p class="text text--muted">Three nodes changed since the last publish. Review the diff, then publish from the actions menu.</p>
+
+      <!-- popover tier: anchored menu, floats above the flow -->
+      <nav class="menu surface surface--popover surface--pad-xs surface--radius-surface surface--border surface--elevation-popover stack stack--gap-none" role="menu" aria-label="Fingerprint actions">
+        <button class="button button--ghost menu-item" type="button" role="menuitem">Review diff</button>
+        <button class="button button--ghost menu-item" type="button" role="menuitem">Publish changes…</button>
+        <button class="button button--ghost menu-item" type="button" role="menuitem">Export package</button>
+      </nav>
+    </main>
+
+    <!-- modal tier: scrim, interrupting dialog -->
+    <div class="scrim" role="presentation">
+      <section class="surface surface--popover surface--pad-lg surface--radius-surface surface--border surface--elevation-modal stack stack--gap-lg" role="dialog" aria-modal="true" aria-labelledby="dialog-title" aria-describedby="dialog-description">
+        <header class="stack stack--gap-sm">
+          <h2 class="text text--title" id="dialog-title">Publish fingerprint changes?</h2>
+          <p class="text text--muted" id="dialog-description">This will make the selected brand truths available to agents working in this repo. Review the diff before confirming.</p>
+        </header>
+
+        <div class="surface surface--muted surface--pad-md surface--radius-surface stack stack--gap-xs">
+          <p class="text text--label">Included</p>
+          <p class="text">3 nodes, 2 material references, 1 review assertion</p>
+        </div>
+
+        <p class="text text--info">Publishing replaces the previous packet for every agent in this repo.</p>
+
+        <footer class="stack stack--row stack--justify-end stack--gap-sm stack--wrap">
+          <button class="button button--ghost" type="button">Cancel</button>
+          <button class="button button--primary" type="button">Confirm publish</button>
+        </footer>
+      </section>
+    </div>
+  </body>
+</html>

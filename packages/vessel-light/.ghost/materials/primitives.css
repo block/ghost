@@ -1,0 +1,388 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+/* surface — defaults: background/foreground, radius-md, no padding, no border, no elevation. */
+.surface {
+  background: var(--background);
+  color: var(--foreground);
+  border: 0;
+  border-radius: var(--radius-md);
+  box-shadow: none;
+}
+.surface--card {
+  background: var(--card);
+  color: var(--card-foreground);
+}
+.surface--popover {
+  background: var(--popover);
+  color: var(--popover-foreground);
+}
+.surface--muted {
+  background: var(--muted);
+  color: var(--foreground);
+}
+.surface--accent {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+.surface--dark {
+  background: var(--surface-dark);
+  color: var(--surface-dark-text);
+  border-color: var(--surface-dark-border);
+}
+.surface--pad-xs {
+  padding: 8px;
+}
+.surface--pad-sm {
+  padding: 12px;
+}
+.surface--pad-md {
+  padding: 16px;
+}
+.surface--pad-lg {
+  padding: 24px;
+}
+.surface--radius-sm {
+  border-radius: var(--radius-sm);
+}
+.surface--radius-md {
+  border-radius: var(--radius-md);
+}
+.surface--radius-lg {
+  border-radius: var(--radius-lg);
+}
+.surface--radius-surface {
+  border-radius: var(--radius-surface);
+}
+.surface--radius-control {
+  border-radius: var(--radius-control);
+}
+.surface--border {
+  border: 1px solid var(--border);
+}
+.surface--border-input {
+  border: 1px solid var(--input);
+}
+.surface--elevation-card {
+  box-shadow: var(--shadow-card);
+}
+.surface--elevation-popover {
+  box-shadow: var(--shadow-popover);
+}
+.surface--elevation-modal {
+  box-shadow: var(--shadow-modal);
+}
+
+/* stack — defaults: column, gap-md(16px), stretch. Write class="stack" and you get vessel rhythm. */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+  align-items: stretch;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+}
+.stack--row {
+  flex-direction: row;
+}
+.stack--gap-none {
+  gap: 0;
+}
+.stack--gap-xs {
+  gap: var(--gap-xs);
+}
+.stack--gap-sm {
+  gap: var(--gap-sm);
+}
+.stack--gap-md {
+  gap: var(--gap-md);
+}
+.stack--gap-lg {
+  gap: var(--gap-lg);
+}
+.stack--gap-xl {
+  gap: var(--gap-xl);
+}
+.stack--align-start {
+  align-items: flex-start;
+}
+.stack--align-center {
+  align-items: center;
+}
+.stack--align-end {
+  align-items: flex-end;
+}
+.stack--align-baseline {
+  align-items: baseline;
+}
+.stack--justify-center {
+  justify-content: center;
+}
+.stack--justify-end {
+  justify-content: flex-end;
+}
+.stack--justify-between {
+  justify-content: space-between;
+}
+.stack--wrap {
+  flex-wrap: wrap;
+}
+
+/* text — defaults: body, 14px, relaxed, foreground. */
+.text {
+  margin: 0;
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: var(--text-body-size);
+  line-height: 1.625;
+}
+.text--display {
+  font-size: var(--heading-display-font-size);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: var(--heading-display-letter-spacing);
+}
+.text--headline {
+  font-size: var(--text-headline-size);
+  font-weight: 400;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+}
+.text--title {
+  font-size: var(--text-title-size);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.025em;
+}
+.text--label {
+  font-size: var(--label-font-size);
+  font-weight: var(--label-font-weight);
+  line-height: var(--label-line-height);
+  letter-spacing: var(--label-letter-spacing);
+}
+.text--mono {
+  font-family: var(--font-mono);
+  font-size: var(--text-body-size);
+  line-height: 1.5;
+}
+.text--muted {
+  color: var(--muted-foreground);
+}
+.text--inverse {
+  color: var(--primary-foreground);
+}
+.text--success {
+  color: var(--success);
+}
+.text--warning {
+  color: var(--warning);
+}
+.text--info {
+  color: var(--info);
+}
+.text--destructive {
+  color: var(--destructive);
+}
+
+/* button — defaults: primary pill, 36px high, centered, fast focusable action. */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-sm);
+  min-width: 0;
+  height: var(--control-height);
+  padding: 8px 24px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: none;
+  font: inherit;
+  font-size: var(--text-body-size);
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease-spring),
+    border-color var(--duration-fast) var(--ease-spring),
+    box-shadow var(--duration-fast) var(--ease-spring),
+    opacity var(--duration-fast) var(--ease-spring);
+}
+.button:hover {
+  box-shadow: var(--shadow-btn);
+}
+.button:focus-visible {
+  outline: none;
+  border-color: var(--ring);
+  box-shadow: 0 0 0 1px var(--ring);
+}
+.button:disabled,
+.button[aria-disabled="true"] {
+  pointer-events: none;
+  opacity: 0.5;
+}
+.button--primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+.button--secondary {
+  background: var(--muted);
+  color: var(--foreground);
+}
+.button--ghost {
+  background: transparent;
+  color: var(--foreground);
+}
+.button--ghost:hover,
+.button--secondary:hover,
+.button--outline:hover {
+  background: var(--muted);
+}
+.button--destructive {
+  background: var(--destructive);
+  color: var(--destructive-foreground);
+}
+.button--outline {
+  background: var(--background);
+  color: var(--foreground);
+  border-color: var(--input);
+}
+.button--link {
+  padding-inline: 4px;
+  background: transparent;
+  color: var(--foreground);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color var(--duration-fast) var(--ease-spring);
+}
+.button--link:hover {
+  background: transparent;
+  color: var(--muted-foreground);
+  box-shadow: none;
+}
+.button--size-xs {
+  height: 24px;
+  padding: 4px 8px;
+  gap: var(--gap-xs);
+  font-size: 12px;
+}
+.button--size-sm {
+  height: 32px;
+  padding: 6px 16px;
+  gap: 6px;
+}
+.button--size-lg {
+  height: 40px;
+  padding: 8px 32px;
+}
+.button--icon,
+.button--icon-sm,
+.button--icon-xs,
+.button--icon-lg {
+  padding: 0;
+}
+.button--icon {
+  width: var(--control-height);
+  height: var(--control-height);
+}
+.button--icon-xs {
+  width: 24px;
+  height: 24px;
+}
+.button--icon-sm {
+  width: 32px;
+  height: 32px;
+}
+.button--icon-lg {
+  width: 40px;
+  height: 40px;
+}
+
+/* field — defaults: label plus pill input with input border, muted placeholder, ring focus, compact error. */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+.label {
+  display: flex;
+  gap: var(--gap-sm);
+  color: var(--foreground);
+  font-size: var(--text-body-size);
+  line-height: 1;
+  user-select: none;
+}
+.input {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  height: var(--control-height);
+  padding: 4px 12px;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-input);
+  background: transparent;
+  color: var(--foreground);
+  font: inherit;
+  font-size: 16px;
+  outline: none;
+  transition:
+    border-color var(--duration-fast) var(--ease-spring),
+    box-shadow var(--duration-fast) var(--ease-spring);
+}
+.input::placeholder {
+  color: var(--muted-foreground);
+}
+.input:hover {
+  border-color: var(--border);
+}
+.input:focus,
+.input:focus-visible {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 1px var(--ring);
+}
+.input[aria-invalid="true"] {
+  border-color: var(--destructive);
+  box-shadow: 0 0 0 1px var(--destructive);
+}
+.input--textarea {
+  min-height: 64px;
+  height: auto;
+  padding: 12px;
+  resize: vertical;
+  border-radius: var(--radius-md);
+  line-height: 1.5;
+}
+.input--select {
+  align-items: center;
+  justify-content: space-between;
+  cursor: default;
+}
+.input--checkbox {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  flex: 0 0 16px;
+  border-radius: var(--radius-sm);
+  accent-color: var(--primary);
+}
+.field-error {
+  color: var(--destructive);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* scrim — default overlay wash uses the tokenized alpha surface. */
+.scrim {
+  background: var(--dark-40);
+}

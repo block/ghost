@@ -1,0 +1,210 @@
+{
+  "generatedAt": "2026-07-08T09:00:00.000Z",
+  "config": { "runsPerCell": 5, "package": "../.ghost" },
+  "cells": [
+    {
+      "arm": "naked",
+      "ask": 1,
+      "askTitle": "billing settings page",
+      "scores": {
+        "min": 12,
+        "median": 17,
+        "max": 21,
+        "mean": 16.6,
+        "n": 5,
+        "max_possible": 22
+      },
+      "consistency": { "accentHue": 0.2, "radius": 0.4, "fontStack": 0.4 },
+      "context": {
+        "tokensEstimate": 80150,
+        "segments": { "ballast": 80000, "brand": 0, "menu": 0, "ask": 150 }
+      }
+    },
+    {
+      "arm": "dump",
+      "ask": 1,
+      "askTitle": "billing settings page",
+      "scores": {
+        "min": 6,
+        "median": 10,
+        "max": 15,
+        "mean": 10.2,
+        "n": 5,
+        "max_possible": 22
+      },
+      "consistency": { "accentHue": 0.6, "radius": 0.6, "fontStack": 0.8 },
+      "context": {
+        "tokensEstimate": 85150,
+        "segments": { "ballast": 80000, "brand": 5000, "menu": 0, "ask": 150 }
+      }
+    },
+    {
+      "arm": "gather",
+      "ask": 1,
+      "askTitle": "billing settings page",
+      "scores": {
+        "min": 3,
+        "median": 5,
+        "max": 8,
+        "mean": 5.2,
+        "n": 5,
+        "max_possible": 22
+      },
+      "consistency": { "accentHue": 1.0, "radius": 0.8, "fontStack": 1.0 },
+      "context": {
+        "tokensEstimate": 87350,
+        "segments": { "ballast": 80000, "brand": 0, "menu": 700, "ask": 150 }
+      },
+      "retrieval": {
+        "precision": 0.86,
+        "recall": 0.9,
+        "poisonPulls": 0,
+        "poisonRuns": 0,
+        "stability": 0.88,
+        "pulledWordsMean": 4900
+      }
+    },
+    {
+      "arm": "dump-growth",
+      "ask": 1,
+      "askTitle": "billing settings page",
+      "scores": {
+        "min": 8,
+        "median": 12,
+        "max": 18,
+        "mean": 12.4,
+        "n": 5,
+        "max_possible": 22
+      },
+      "consistency": { "accentHue": 0.4, "radius": 0.4, "fontStack": 0.6 },
+      "context": {
+        "tokensEstimate": 91150,
+        "segments": { "ballast": 80000, "brand": 11000, "menu": 0, "ask": 150 }
+      }
+    },
+    {
+      "arm": "naked",
+      "ask": 2,
+      "askTitle": "pricing landing page",
+      "scores": {
+        "min": 11,
+        "median": 16,
+        "max": 22,
+        "mean": 16.2,
+        "n": 5,
+        "max_possible": 22
+      },
+      "consistency": { "accentHue": 0.2, "radius": 0.2, "fontStack": 0.6 },
+      "context": {
+        "tokensEstimate": 80180,
+        "segments": { "ballast": 80000, "brand": 0, "menu": 0, "ask": 180 }
+      }
+    },
+    {
+      "arm": "dump",
+      "ask": 2,
+      "askTitle": "pricing landing page",
+      "scores": {
+        "min": 5,
+        "median": 9,
+        "max": 14,
+        "mean": 9.4,
+        "n": 5,
+        "max_possible": 22
+      },
+      "consistency": { "accentHue": 0.6, "radius": 0.8, "fontStack": 0.8 },
+      "context": {
+        "tokensEstimate": 85180,
+        "segments": { "ballast": 80000, "brand": 5000, "menu": 0, "ask": 180 }
+      }
+    },
+    {
+      "arm": "gather",
+      "ask": 2,
+      "askTitle": "pricing landing page",
+      "scores": {
+        "min": 2,
+        "median": 4,
+        "max": 7,
+        "mean": 4.4,
+        "n": 5,
+        "max_possible": 22
+      },
+      "consistency": { "accentHue": 1.0, "radius": 1.0, "fontStack": 1.0 },
+      "context": {
+        "tokensEstimate": 88080,
+        "segments": { "ballast": 80000, "brand": 0, "menu": 700, "ask": 180 }
+      },
+      "retrieval": {
+        "precision": 0.82,
+        "recall": 0.85,
+        "poisonPulls": 0,
+        "poisonRuns": 0,
+        "stability": 0.84,
+        "pulledWordsMean": 5400
+      }
+    },
+    {
+      "arm": "naked",
+      "ask": 3,
+      "askTitle": "receipt email",
+      "scores": {
+        "min": 10,
+        "median": 15,
+        "max": 20,
+        "mean": 15.0,
+        "n": 5,
+        "max_possible": 22
+      },
+      "consistency": { "accentHue": 0.4, "radius": 0.2, "fontStack": 0.4 },
+      "context": {
+        "tokensEstimate": 80120,
+        "segments": { "ballast": 80000, "brand": 0, "menu": 0, "ask": 120 }
+      }
+    },
+    {
+      "arm": "dump",
+      "ask": 3,
+      "askTitle": "receipt email",
+      "scores": {
+        "min": 6,
+        "median": 11,
+        "max": 16,
+        "mean": 10.8,
+        "n": 5,
+        "max_possible": 22
+      },
+      "consistency": { "accentHue": 0.6, "radius": 0.6, "fontStack": 0.6 },
+      "context": {
+        "tokensEstimate": 85120,
+        "segments": { "ballast": 80000, "brand": 5000, "menu": 0, "ask": 120 }
+      }
+    },
+    {
+      "arm": "gather",
+      "ask": 3,
+      "askTitle": "receipt email",
+      "scores": {
+        "min": 3,
+        "median": 6,
+        "max": 9,
+        "mean": 6.0,
+        "n": 5,
+        "max_possible": 22
+      },
+      "consistency": { "accentHue": 0.8, "radius": 0.8, "fontStack": 1.0 },
+      "context": {
+        "tokensEstimate": 87720,
+        "segments": { "ballast": 80000, "brand": 0, "menu": 700, "ask": 120 }
+      },
+      "retrieval": {
+        "precision": 0.74,
+        "recall": 0.8,
+        "poisonPulls": 1,
+        "poisonRuns": 1,
+        "stability": 0.79,
+        "pulledWordsMean": 4700
+      }
+    }
+  ]
+}

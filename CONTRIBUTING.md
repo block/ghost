@@ -55,7 +55,7 @@ the list.
 ## Dogfooding
 
 Surfaces in this repo carry their own fingerprints: `apps/docs/.ghost` and
-`packages/vessel/.ghost`. If you touch a surface, `ghost gather` from its
+`packages/vessel-react/.ghost`. If you touch a surface, `ghost gather` from its
 fingerprint before you build, and expect review against it. This is where
 you experience Ghost as a user — treat friction you hit here as a bug worth
 reporting.

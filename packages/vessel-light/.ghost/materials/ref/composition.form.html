@@ -1,0 +1,89 @@
+<!-- ghost ref annotations
+  normative-for: grammar.hierarchy — the complete control emphasis ladder (primary, secondary, outline, ghost, link) working one coherent view with one primary; destructive as a meaning, not a rung; field/label/error anatomy; the product text variants headline, title, body, label, mono; the warning and destructive tones. grammar.rhythm — column stacks with named gap steps, rows only for controls and paired label/value moments. grammar.surfaces — card tier with structural border. signature.shape — --radius-control on every control, --radius-surface on the card.
+  incidental: all copy, field values, and key strings; the 560px column width; which specific action occupies each ladder rung; the settings domain itself.
+-->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vessel Light — Settings Form</title>
+    <link rel="stylesheet" href="../tokens.css" />
+    <link rel="stylesheet" href="../primitives.css" />
+    <style>
+      body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+      main { width: min(100%, 560px); }
+    </style>
+  </head>
+  <body>
+    <main class="stack stack--gap-lg">
+      <header class="stack stack--row stack--justify-between stack--align-end stack--gap-md stack--wrap">
+        <div class="stack stack--gap-xs">
+          <h1 class="text text--headline">Workspace settings</h1>
+          <p class="text text--muted">Tune the defaults your team sees when Vessel drafts interface work.</p>
+        </div>
+        <button class="button button--secondary button--size-sm" type="button">Invite member</button>
+      </header>
+
+      <section class="surface surface--card surface--pad-lg surface--radius-surface surface--border surface--elevation-card">
+        <form class="stack stack--gap-lg">
+          <header class="stack stack--gap-sm">
+            <h2 class="text text--title">Profile</h2>
+            <p class="text text--muted">These values appear on receipts, invites, and review packets.</p>
+          </header>
+
+          <section class="stack stack--gap-md">
+            <div class="field">
+              <label class="label" for="workspace-name">Workspace name</label>
+              <input class="input" id="workspace-name" value="Ghost Studio" />
+            </div>
+
+            <div class="field">
+              <label class="label" for="reply-email">Reply email</label>
+              <input class="input" id="reply-email" value="design@ghost.example" aria-invalid="true" />
+              <p class="field-error">Use a verified sender before inviting collaborators.</p>
+            </div>
+
+            <div class="field">
+              <span class="label">Default density</span>
+              <div class="input input--select" role="button" tabindex="0" aria-label="Default density">
+                <span>Comfortable</span>
+                <span aria-hidden="true">⌄</span>
+              </div>
+            </div>
+
+            <label class="stack stack--row stack--gap-sm stack--align-center">
+              <input class="input input--checkbox" type="checkbox" checked />
+              <span class="text">Send weekly review summaries</span>
+            </label>
+          </section>
+
+          <section class="stack stack--gap-sm">
+            <span class="text text--label text--muted">API access</span>
+            <div class="surface surface--muted surface--pad-sm surface--radius-surface stack stack--row stack--justify-between stack--align-center stack--gap-sm stack--wrap">
+              <code class="text text--mono text--muted">vsl_live_4f8a…03c2</code>
+              <button class="button button--outline button--size-sm" type="button">Regenerate key</button>
+            </div>
+            <p class="text text--warning">Regenerating invalidates the key currently in use by integrations.</p>
+          </section>
+
+          <section class="stack stack--row stack--justify-between stack--align-center stack--gap-md stack--wrap">
+            <div class="stack stack--gap-none">
+              <span class="text">Delete this workspace</span>
+              <span class="text text--destructive">Removes every fingerprint and review record immediately.</span>
+            </div>
+            <button class="button button--destructive button--size-sm" type="button">Delete workspace</button>
+          </section>
+
+          <footer class="stack stack--row stack--justify-between stack--align-center stack--gap-sm stack--wrap">
+            <a class="button button--link button--size-sm" href="#audit-log">View audit log</a>
+            <div class="stack stack--row stack--justify-end stack--gap-sm">
+              <button class="button button--ghost" type="button">Cancel</button>
+              <button class="button button--primary" type="submit">Save settings</button>
+            </div>
+          </footer>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

@@ -26,4 +26,4 @@ packages/ghost-ui/.ghost/cache/*
 docs/superpowers/plans/
 docs/superpowers/specs/
 notes/
-demo/
+/demo/

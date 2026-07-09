@@ -1,0 +1,3 @@
+# Eval run artifacts are never committed; regenerate via steering-eval
+# (prompt → generate → shoot → score → report) from asks.md + ballast.md.
+out/
