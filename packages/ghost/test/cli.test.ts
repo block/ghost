@@ -1603,6 +1603,54 @@ a deliberate provocation past the fingerprint — surfaced only on request
     });
   });
 
+  it("review resolves package-relative locators when the package sits below the repo root", async () => {
+    // Regression: exact-path `materials/…` locators were matched as raw text
+    // against repo-relative diff paths, so a package below the repo root
+    // (e.g. packages/vessel-light/.ghost) never matched them — its value
+    // checks were silently dropped from the packet.
+    const packageDir = join("nested", "app", ".ghost");
+    await runCli(["init", "--package", packageDir], dir);
+    await mkdir(join(dir, packageDir, "materials"), { recursive: true });
+    await writeFile(
+      join(dir, packageDir, "materials", "tokens.css"),
+      ":root{}\n",
+    );
+    await writeFile(
+      join(dir, packageDir, "asset.tokens.md"),
+      "---\ndescription: Tokens.\nmaterials:\n  - materials/tokens.css\n---\n\nTokens prose.\n",
+    );
+    await mkdir(join(dir, packageDir, "checks"), { recursive: true });
+    await writeFile(
+      join(dir, packageDir, "checks", "token-discipline.md"),
+      "---\nname: token-discipline\ndescription: Tokens hold.\nseverity: high\nreferences:\n  - asset.tokens\n---\n\nGrade token discipline.\n",
+    );
+    const touched = `${packageDir.replaceAll("\\", "/")}/materials/tokens.css`;
+    const diff = [
+      `diff --git a/${touched} b/${touched}`,
+      `--- a/${touched}`,
+      `+++ b/${touched}`,
+      "@@ -1 +1 @@",
+      "-old",
+      "+new",
+    ].join("\n");
+
+    const result = await runCli(
+      ["review", "--package", packageDir, "--diff=-", "--format", "json"],
+      dir,
+      { stdin: diff },
+    );
+
+    expect(result.code).toBe(0);
+    const packet = JSON.parse(result.stdout);
+    expect(packet.materialNodes.map((n: { id: string }) => n.id)).toContain(
+      "asset.tokens",
+    );
+    const check = packet.checks.find(
+      (c: { id: string }) => c.id === "token-discipline",
+    );
+    expect(check).toMatchObject({ offered: "matched" });
+  });
+
   it("review runs check probes as evidence and supports --no-probes", async () => {
     await runCli(["init", "--with", "checks"], dir);
     await writeFile(
