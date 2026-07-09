@@ -1,5 +1,23 @@
 # @design-intelligence/ghost
 
+## 0.21.0
+
+### Minor Changes
+
+- [#207](https://github.com/block/ghost/pull/207) [`27d5ebd`](https://github.com/block/ghost/commit/27d5ebdc795d1ed5a7468c823d48dc1c23f23936) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - The skill bundle gains the `adapting-a-starter` recipe: the seven-step transplant procedure for turning an installed starter — a body like vessel-light or the naked skeleton — into your own brand's fingerprint, plus guidance for consuming an unadapted starter honestly.
+
+- [#207](https://github.com/block/ghost/pull/207) [`27d5ebd`](https://github.com/block/ghost/commit/27d5ebdc795d1ed5a7468c823d48dc1c23f23936) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - `ghost init` gains `--body vessel-light`: install a full inhabited fingerprint package — answered signature dials, a materials tree with tokens and embedded fonts, annotated reference compositions, and its own checks. Init template payloads now ship as packed files in dist, so bodies can carry binary materials.
+
+- [#207](https://github.com/block/ghost/pull/207) [`27d5ebd`](https://github.com/block/ghost/commit/27d5ebdc795d1ed5a7468c823d48dc1c23f23936) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - The median floor gets one authored home: `anti-goal.median` rules become markdown headings with per-rule check references, so `ghost validate` warns on every flag orphaned by pruning. All init templates (`skeleton`, `minimal`, `composition`) now stamp the median node; `ghost checks init` copies the paired check from the packaged payload and skips it when the node is absent.
+
+- [#207](https://github.com/block/ghost/pull/207) [`27d5ebd`](https://github.com/block/ghost/commit/27d5ebdc795d1ed5a7468c823d48dc1c23f23936) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - `ghost init` now scaffolds the skeleton starter: value-free grammar nodes, unanswered signature dials, and the `anti-goal.median` floor — replacing the Morrow Ledger demo content. `ghost checks init` scaffolds a live median-tells check alongside the example. `steering` remains as an alias for the new `skeleton` template.
+
+### Patch Changes
+
+- [#207](https://github.com/block/ghost/pull/207) [`27d5ebd`](https://github.com/block/ghost/commit/27d5ebdc795d1ed5a7468c823d48dc1c23f23936) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Reframe the median as Ghost-stamped model truth and align Vessel's median check with heading anchors.
+
+- [#207](https://github.com/block/ghost/pull/207) [`27d5ebd`](https://github.com/block/ghost/commit/27d5ebdc795d1ed5a7468c823d48dc1c23f23936) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - `ghost review` now resolves package-relative `materials/…` locators to their repo-relative form before matching diff paths, so packages living below the repo root offer their value checks correctly.
+
 ## 0.20.0
 
 ### Minor Changes
