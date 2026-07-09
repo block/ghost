@@ -281,7 +281,7 @@ describe("ghost CLI", () => {
     expect(median.stdout).toContain(
       "This is the model's median, not your brand.",
     );
-    expect(median.stdout).toContain("<!-- rule:median-side-stripe -->");
+    expect(median.stdout).toContain("### Side-stripe");
 
     // The dials ship unanswered and forbid freehanding.
     const shape = await runCli(["pull", "signature.shape"], dir);
@@ -331,11 +331,15 @@ describe("ghost CLI", () => {
     expect(initOutput.written).toContain("manifest.yml");
     expect(initOutput.written).toContain("glossary.md");
     expect(initOutput.written).toContain("index.md");
+    expect(initOutput.written).toContain("anti-goal.median.md");
     expect(initOutput.written).not.toContain("principle.stance.md");
     expect(initOutput.written).not.toContain("decision.tradeoff.md");
 
-    const validate = await runCli(["validate"], dir);
+    const validate = await runCli(["validate", "--format", "json"], dir);
     expect(validate.code).toBe(0);
+    const report = JSON.parse(validate.stdout);
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(0);
   });
 
   it("keeps default and steering as aliases for the skeleton template", async () => {
@@ -370,10 +374,14 @@ describe("ghost CLI", () => {
     expect(initOutput.written).toContain("index.md");
     expect(initOutput.written).toContain("principle.composition.md");
     expect(initOutput.written).toContain("pattern.status-with-next-step.md");
+    expect(initOutput.written).toContain("anti-goal.median.md");
 
     // The scaffolded package is valid as written.
-    const validate = await runCli(["validate"], dir);
+    const validate = await runCli(["validate", "--format", "json"], dir);
     expect(validate.code).toBe(0);
+    const report = JSON.parse(validate.stdout);
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(0);
 
     // The ladder nodes surface in the gather menu with their kinds.
     const gather = await runCli(["gather", "--format", "json"], dir);
@@ -418,6 +426,83 @@ describe("ghost CLI", () => {
     expect(result.stderr).toContain("minimal");
     expect(result.stderr).toContain("composition");
     expect(result.stderr).toContain("skeleton");
+  });
+
+  it("installs the vessel-light body: full corpus, materials, checks", async () => {
+    const init = await runCli(
+      ["init", "--body", "vessel-light", "--format", "json"],
+      dir,
+    );
+    expect(init.code).toBe(0);
+    const { written } = JSON.parse(init.stdout) as { written: string[] };
+
+    // The body is the inhabited package: corpus + tells + registers +
+    // materials tree + its own checks. No .events tape.
+    expect(written).toContain("manifest.yml");
+    expect(written).toContain("anti-goal.median.md");
+    expect(written).toContain("anti-goal.tells.md");
+    expect(written).toContain("register.email.md");
+    expect(written).toContain("signature.shape.md");
+    expect(written).toContain("materials/tokens.css");
+    expect(written).toContain("materials/fonts/HKGrotesk-Regular.woff2");
+    expect(written).toContain("materials/ref/composition.form.html");
+    expect(written).toContain("checks/median-tells.md");
+    expect(written).toContain("checks/values.md");
+    expect(written.some((p) => p.includes(".events"))).toBe(false);
+
+    // Manifest id stays vessel-light: renaming it is step one of adapting
+    // the starter — an explicit human act, never pre-executed by init.
+    const manifest = await readFile(
+      join(dir, ".ghost", "manifest.yml"),
+      "utf-8",
+    );
+    expect(manifest).toContain("id: vessel-light");
+
+    // Fonts survive the packed payload byte-identically.
+    const [installed, source] = await Promise.all([
+      readFile(
+        join(dir, ".ghost", "materials", "fonts", "HKGrotesk-Regular.woff2"),
+      ),
+      readFile(
+        new URL(
+          "../../vessel-light/.ghost/materials/fonts/HKGrotesk-Regular.woff2",
+          import.meta.url,
+        ),
+      ),
+    ]);
+    expect(installed.equals(source)).toBe(true);
+
+    // The installed body validates clean, checks included.
+    const validate = await runCli(["validate", "--format", "json"], dir);
+    expect(validate.code).toBe(0);
+    const report = JSON.parse(validate.stdout);
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(0);
+  });
+
+  it("rejects unknown bodies and contradictory body flags", async () => {
+    const unknown = await runCli(["init", "--body", "nope"], dir, {
+      allowNoExit: true,
+    });
+    expect(unknown.code).toBe(2);
+    expect(unknown.stderr).toContain("Unknown init body 'nope'");
+    expect(unknown.stderr).toContain("vessel-light");
+
+    const both = await runCli(
+      ["init", "--body", "vessel-light", "--template", "minimal"],
+      dir,
+      { allowNoExit: true },
+    );
+    expect(both.code).toBe(2);
+    expect(both.stderr).toContain("mutually exclusive");
+
+    const withChecks = await runCli(
+      ["init", "--body", "vessel-light", "--with", "checks"],
+      dir,
+      { allowNoExit: true },
+    );
+    expect(withChecks.code).toBe(2);
+    expect(withChecks.stderr).toContain("already includes its own checks/");
   });
 
   it("uses GHOST_PACKAGE_DIR as the default fingerprint package directory for init", async () => {
@@ -831,13 +916,13 @@ a deliberate provocation past the fingerprint — surfaced only on request
     const gather = await runCli(["gather", "--format", "json"], dir);
     expect(gather.code).toBe(0);
     expect(JSON.parse(gather.stdout).coverage).toEqual({
-      nodes: 4,
+      nodes: 5,
       concrete: 1,
-      guards: 1,
+      guards: 2,
     });
     const markdown = await runCli(["gather"], dir);
     expect(markdown.stdout).toContain(
-      "4 nodes · 1 carry concrete material · 1 guards",
+      "5 nodes · 1 carry concrete material · 2 guards",
     );
 
     const steering = await runCli(
@@ -1526,6 +1611,54 @@ a deliberate provocation past the fingerprint — surfaced only on request
     });
   });
 
+  it("review resolves package-relative locators when the package sits below the repo root", async () => {
+    // Regression: exact-path `materials/…` locators were matched as raw text
+    // against repo-relative diff paths, so a package below the repo root
+    // (e.g. packages/vessel-light/.ghost) never matched them — its value
+    // checks were silently dropped from the packet.
+    const packageDir = join("nested", "app", ".ghost");
+    await runCli(["init", "--package", packageDir], dir);
+    await mkdir(join(dir, packageDir, "materials"), { recursive: true });
+    await writeFile(
+      join(dir, packageDir, "materials", "tokens.css"),
+      ":root{}\n",
+    );
+    await writeFile(
+      join(dir, packageDir, "asset.tokens.md"),
+      "---\ndescription: Tokens.\nmaterials:\n  - materials/tokens.css\n---\n\nTokens prose.\n",
+    );
+    await mkdir(join(dir, packageDir, "checks"), { recursive: true });
+    await writeFile(
+      join(dir, packageDir, "checks", "token-discipline.md"),
+      "---\nname: token-discipline\ndescription: Tokens hold.\nseverity: high\nreferences:\n  - asset.tokens\n---\n\nGrade token discipline.\n",
+    );
+    const touched = `${packageDir.replaceAll("\\", "/")}/materials/tokens.css`;
+    const diff = [
+      `diff --git a/${touched} b/${touched}`,
+      `--- a/${touched}`,
+      `+++ b/${touched}`,
+      "@@ -1 +1 @@",
+      "-old",
+      "+new",
+    ].join("\n");
+
+    const result = await runCli(
+      ["review", "--package", packageDir, "--diff=-", "--format", "json"],
+      dir,
+      { stdin: diff },
+    );
+
+    expect(result.code).toBe(0);
+    const packet = JSON.parse(result.stdout);
+    expect(packet.materialNodes.map((n: { id: string }) => n.id)).toContain(
+      "asset.tokens",
+    );
+    const check = packet.checks.find(
+      (c: { id: string }) => c.id === "token-discipline",
+    );
+    expect(check).toMatchObject({ offered: "matched" });
+  });
+
   it("review runs check probes as evidence and supports --no-probes", async () => {
     await runCli(["init", "--with", "checks"], dir);
     await writeFile(
@@ -1751,6 +1884,7 @@ a deliberate provocation past the fingerprint — surfaced only on request
     expect(add.code).toBe(0);
     const added = JSON.parse(add.stdout);
     expect(added.written).toEqual(["median-tells.md", "example.md.example"]);
+    expect(added.skipped).toEqual([]);
     await expect(
       readFile(join(dir, ".ghost", "checks", "example.md.example"), "utf-8"),
     ).resolves.toContain("references:");
@@ -1761,9 +1895,11 @@ a deliberate provocation past the fingerprint — surfaced only on request
       "utf-8",
     );
     expect(median).toContain("anti-goal.median");
-    expect(median).toContain("rule:median-hover-lift");
+    expect(median).toContain("anti-goal.median > Hover-lift");
     expect(median).toContain("prefers-reduced-motion");
-    expect(median).toContain("delete both together");
+    expect(median).toContain(
+      "`ghost validate` warns; delete the flag and its reference together.",
+    );
     expect(median).not.toContain("Vessel");
 
     // Running init twice is a usage error.
@@ -1780,6 +1916,53 @@ a deliberate provocation past the fingerprint — surfaced only on request
       (f: { rule: string }) => f.rule === "check-reference-unresolved",
     );
     expect(unresolved).toEqual([]);
+  });
+
+  it("checks init skips median tells when the median node is absent", async () => {
+    await runCli(["init", "--template", "minimal"], dir);
+    await rm(join(dir, ".ghost", "anti-goal.median.md"));
+
+    const add = await runCli(["checks", "init"], dir);
+    expect(add.code).toBe(0);
+    expect(add.stdout).toContain(
+      "skipped median-tells.md (no anti-goal.median node)",
+    );
+
+    await expect(
+      readFile(join(dir, ".ghost", "checks", "median-tells.md"), "utf-8"),
+    ).rejects.toThrow();
+
+    const validate = await runCli(["validate", "--format", "json"], dir);
+    expect(validate.code).toBe(0);
+    const report = JSON.parse(validate.stdout);
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(0);
+  });
+
+  it("validate warns when a pruned median heading orphans its paired check", async () => {
+    await runCli(["init"], dir);
+    await runCli(["checks", "init"], dir);
+    const path = join(dir, ".ghost", "anti-goal.median.md");
+    const median = await readFile(path, "utf-8");
+    await writeFile(
+      path,
+      median.replace(/### Side-stripe\n[\s\S]*?(?=\n### Cream surface)/, ""),
+    );
+
+    const validate = await runCli(["validate", "--format", "json"], dir);
+    expect(validate.code).toBe(0);
+    const report = JSON.parse(validate.stdout);
+    expect(report.warnings).toBe(1);
+    expect(report.issues).toEqual([
+      expect.objectContaining({
+        severity: "warning",
+        rule: "check-reference-heading-missing",
+        message: expect.stringContaining("anti-goal.median > Side-stripe"),
+      }),
+    ]);
+    expect(report.issues[0].message).toContain(
+      "if you pruned this rule from the node, delete its paired flag in the check too",
+    );
   });
 
   it("checks rejects unknown actions", async () => {

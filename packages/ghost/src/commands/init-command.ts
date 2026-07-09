@@ -3,6 +3,7 @@ import { UsageError } from "#ghost-core";
 import { initFingerprintPackage } from "../fingerprint.js";
 import { addChecksDir } from "../scan/check-scaffold.js";
 import { resolveGhostDirDefault } from "../scan/index.js";
+import { getInitBody } from "../scan/templates.js";
 import { failFromError } from "./errors.js";
 
 export function registerInitCommand(cli: CAC): void {
@@ -15,6 +16,10 @@ export function registerInitCommand(cli: CAC): void {
     .option(
       "--template <name>",
       "Init template to scaffold (default: skeleton)",
+    )
+    .option(
+      "--body <name>",
+      "Init body to install: a full inhabited package (e.g. vessel-light)",
     )
     .option(
       "--with <capabilities>",
@@ -35,17 +40,6 @@ export function registerInitCommand(cli: CAC): void {
           typeof opts.package === "string" ? opts.package : undefined;
         const ghostDir =
           exactPackage === undefined ? ghostDirFromEnv() : undefined;
-        const result = await initFingerprintPackage(
-          exactPackage ?? ghostDir,
-          process.cwd(),
-          {
-            ...(typeof opts.template === "string"
-              ? { template: opts.template }
-              : {}),
-            force: Boolean(opts.force),
-          },
-        );
-
         const withIds = parseWithCapabilities(opts.with);
         for (const id of withIds) {
           if (id !== "checks") {
@@ -54,6 +48,25 @@ export function registerInitCommand(cli: CAC): void {
             );
           }
         }
+        const body =
+          typeof opts.body === "string" ? getInitBody(opts.body) : undefined;
+        if (body?.includesChecks && withIds.includes("checks")) {
+          throw new UsageError(
+            `--with checks is redundant with --body ${body.name} — this body already includes its own checks/.`,
+          );
+        }
+
+        const result = await initFingerprintPackage(
+          exactPackage ?? ghostDir,
+          process.cwd(),
+          {
+            ...(typeof opts.template === "string"
+              ? { template: opts.template }
+              : {}),
+            ...(typeof opts.body === "string" ? { body: opts.body } : {}),
+            force: Boolean(opts.force),
+          },
+        );
         const addedChecks = withIds.includes("checks")
           ? await addChecksDir(result.paths.packageDir)
           : undefined;
@@ -65,7 +78,12 @@ export function registerInitCommand(cli: CAC): void {
                 dir: result.paths.dir,
                 written: result.written,
                 ...(addedChecks !== undefined
-                  ? { checks: { written: addedChecks.written } }
+                  ? {
+                      checks: {
+                        written: addedChecks.written,
+                        skipped: addedChecks.skipped,
+                      },
+                    }
                   : {}),
               },
               null,
@@ -83,6 +101,9 @@ export function registerInitCommand(cli: CAC): void {
             process.stdout.write("Added checks/:\n");
             for (const file of addedChecks.written) {
               process.stdout.write(`  checks/${file}\n`);
+            }
+            for (const file of addedChecks.skipped) {
+              process.stdout.write(`  skipped checks/${file}\n`);
             }
           }
         }

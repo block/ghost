@@ -3,14 +3,14 @@ import {
   GHOST_EVENTS_FILENAME,
   LEGACY_PULL_HISTORY_FILENAME,
 } from "./constants.js";
-import { createSkeletonTemplate } from "./skeleton-template.js";
+import { loadPackedPayload, loadPayloadFile } from "./packed-payloads.js";
 /**
  * A single seed file an `init` template writes, relative to the package dir.
  */
 export interface TemplateFile {
   /** Path relative to the package directory (e.g. "principle.voice.md"). */
   relativePath: string;
-  content: string;
+  content: string | Uint8Array;
 }
 /**
  * An `init` template: a pure description of the seed files a fresh node package
@@ -21,7 +21,7 @@ export interface TemplateFile {
 export interface GhostInitTemplate {
   name: string;
   description: string;
-  files(): TemplateFile[];
+  files(): TemplateFile[] | Promise<TemplateFile[]>;
 }
 function manifestFile(): TemplateFile {
   return {
@@ -52,7 +52,8 @@ const MINIMAL_TEMPLATE: GhostInitTemplate = {
   name: "minimal",
   description:
     "Minimal node package: manifest + glossary + a starter index node.",
-  files() {
+  async files() {
+    const medianFile = await medianTemplateFile();
     return [
       manifestFile(),
       gitignoreFile(),
@@ -87,6 +88,8 @@ evidence unless the node says the sample itself is normative.
 What this brand must never look, sound, or feel like — named generic patterns
 and rejected neighbors. Always-on, like a principle, but stated as the thing
 to steer away from.
+\`anti-goal.median\` is the model's floor, not the brand's taste. Gather
+anti-goals before styling anything greenfield.
 
 # asset
 
@@ -127,6 +130,7 @@ When a truth is narrower, state the condition in the prose — the situation whe
 it applies — never a filing destination.
 `,
       },
+      medianFile,
     ];
   },
 };
@@ -146,7 +150,8 @@ const COMPOSITION_TEMPLATE: GhostInitTemplate = {
   name: "composition",
   description:
     "Composition starter: minimal files + an invariants floor and a worked bound/open pattern.",
-  files() {
+  async files() {
+    const medianFile = await medianTemplateFile();
     return [
       manifestFile(),
       gitignoreFile(),
@@ -185,6 +190,8 @@ render travels with the prose.
 What this brand must never look, sound, or feel like — named generic patterns
 and rejected neighbors. Always-on, like a principle, but stated as the thing
 to steer away from.
+\`anti-goal.median\` is the model's floor, not the brand's taste. Gather
+anti-goals before styling anything greenfield.
 
 # asset
 
@@ -297,20 +304,116 @@ When a blessed render of this pattern exists, add an \`exemplar.*\` node with
 \`materials\` pointing at the screenshot and the implementation path.
 `,
       },
+      medianFile,
     ];
   },
 };
 
-const SKELETON_TEMPLATE = createSkeletonTemplate({
-  manifestFile,
-  gitignoreFile,
-});
+const SKELETON_FILE_ORDER = new Map(
+  [
+    "glossary.md",
+    "index.md",
+    "anti-goal.median.md",
+    "grammar.hierarchy.md",
+    "grammar.rhythm.md",
+    "grammar.surfaces.md",
+    "grammar.motion.md",
+    "grammar.color-roles.md",
+    "grammar.conversation.md",
+    "signature.shape.md",
+    "signature.palette.md",
+    "signature.type.md",
+    "signature.temperature.md",
+  ].map((path, index) => [path, index]),
+);
+
+const SKELETON_TEMPLATE: GhostInitTemplate = {
+  name: "skeleton",
+  description:
+    "Naked skeleton: the median floor + grammar law, with the signature dials left unanswered.",
+  async files() {
+    const skeletonFiles = [
+      ...(await loadPackedPayload("skeleton")),
+      await medianTemplateFile(),
+    ];
+    skeletonFiles.sort(
+      (a, b) =>
+        (SKELETON_FILE_ORDER.get(a.relativePath) ?? Number.MAX_SAFE_INTEGER) -
+          (SKELETON_FILE_ORDER.get(b.relativePath) ??
+            Number.MAX_SAFE_INTEGER) ||
+        a.relativePath.localeCompare(b.relativePath),
+    );
+    return [manifestFile(), gitignoreFile(), ...skeletonFiles];
+  },
+};
+
+async function medianTemplateFile(): Promise<TemplateFile> {
+  return {
+    relativePath: "anti-goal.median.md",
+    content: await loadPayloadFile("median", "anti-goal.median.md"),
+  };
+}
 
 const TEMPLATES = new Map<string, GhostInitTemplate>([
   [MINIMAL_TEMPLATE.name, MINIMAL_TEMPLATE],
   [COMPOSITION_TEMPLATE.name, COMPOSITION_TEMPLATE],
   [SKELETON_TEMPLATE.name, SKELETON_TEMPLATE],
 ]);
+
+/**
+ * An init body: a full inhabited fingerprint package — answered signature
+ * dials, materials, refs, and its own checks. Templates are shapes of
+ * emptiness awaiting the owner's truths; a body is the same anatomy with a
+ * real brand's values plugged in. Bodies keep their own manifest id (e.g.
+ * `vessel-light`) so an unadapted install stays honestly labeled — changing
+ * the id is step one of adapting the starter, an explicit human act.
+ */
+export interface GhostInitBody {
+  name: string;
+  description: string;
+  /** Whether the body payload ships its own `checks/` directory. */
+  includesChecks: boolean;
+  files(): Promise<TemplateFile[]>;
+}
+
+const VESSEL_LIGHT_BODY: GhostInitBody = {
+  name: "vessel-light",
+  description:
+    "Vessel's design language at full strength: corpus, tokens, fonts, refs, and checks.",
+  includesChecks: true,
+  async files() {
+    const payload = await loadPackedPayload("vessel-light");
+    payload.sort((a, b) => {
+      const ao = BODY_FILE_ORDER.get(a.relativePath);
+      const bo = BODY_FILE_ORDER.get(b.relativePath);
+      return (
+        (ao ?? Number.MAX_SAFE_INTEGER) - (bo ?? Number.MAX_SAFE_INTEGER) ||
+        a.relativePath.localeCompare(b.relativePath)
+      );
+    });
+    // The payload carries its own manifest.yml (id stays `vessel-light`);
+    // only the gitignore is generated locally.
+    return [gitignoreFile(), ...payload];
+  },
+};
+
+/** Listing order for the body scaffold output: anchors first, then the rest. */
+const BODY_FILE_ORDER = new Map<string, number>(
+  ["manifest.yml", "glossary.md", "index.md"].map((path, i) => [path, i]),
+);
+
+const BODIES = new Map<string, GhostInitBody>([
+  [VESSEL_LIGHT_BODY.name, VESSEL_LIGHT_BODY],
+]);
+
+/** Look up a registered init body by name. */
+export function getInitBody(name: string): GhostInitBody | undefined {
+  return BODIES.get(name);
+}
+
+export function listInitBodies(): string[] {
+  return [...BODIES.keys()];
+}
 
 export const DEFAULT_TEMPLATE_NAME = SKELETON_TEMPLATE.name;
 

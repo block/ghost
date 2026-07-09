@@ -86,7 +86,7 @@ and enforced in review, not repeated as the model's main example.
 ## 4. Draft The Nodes
 
 Write the smallest useful set of nodes, each a purpose-coherent prose truth with
-a one-line `description`, named `<kind>.<slug>.md` (or a bare slug when no kind is present). Ask three questions of each body: why (the stance), with what
+a one-line `description`, named `<kind>.<slug>.md` (or a bare slug when no kind is present). Ask three questions of each node body: why (the stance), with what
 (the materials), and how it is assembled (the patterns). These are drafting
 prompts, not fields.
 
