@@ -7,12 +7,10 @@ pre-commit:
     test:
       run: just test
 
+# Serial on purpose: `just check` (via check:packed-package) and `just build`
+# both rebuild packages/ghost/dist while `just test` runs the CLI tests against
+# dist/bin.js. Running them in parallel races on dist/ and fails flakily.
 pre-push:
-  parallel: true
   commands:
-    check:
-      run: just check
-    test:
-      run: just test
-    build:
-      run: just build
+    ci:
+      run: just ci
