@@ -258,6 +258,19 @@ body {
   color: var(--foreground);
   border-color: var(--input);
 }
+.button--link {
+  padding-inline: 4px;
+  background: transparent;
+  color: var(--foreground);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color var(--duration-fast) var(--ease-spring);
+}
+.button--link:hover {
+  background: transparent;
+  color: var(--muted-foreground);
+  box-shadow: none;
+}
 .button--size-xs {
   height: 24px;
   padding: 4px 8px;
