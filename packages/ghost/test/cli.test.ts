@@ -210,40 +210,114 @@ describe("ghost CLI", () => {
     expect(result.stderr).toContain("--format json");
   });
 
-  it("initializes the default steering fingerprint package", async () => {
+  const SKELETON_FILES = [
+    "manifest.yml",
+    ".gitignore",
+    "glossary.md",
+    "index.md",
+    "anti-goal.median.md",
+    "grammar.hierarchy.md",
+    "grammar.rhythm.md",
+    "grammar.surfaces.md",
+    "grammar.motion.md",
+    "grammar.color-roles.md",
+    "grammar.conversation.md",
+    "signature.shape.md",
+    "signature.palette.md",
+    "signature.type.md",
+    "signature.temperature.md",
+  ];
+
+  async function expectSkeletonPackage(written: string[]) {
+    // Exact file inventory: no anti-goal.tells, no register.*, no materials/.
+    expect([...written].sort()).toEqual([...SKELETON_FILES].sort());
+    expect(written).not.toContain("anti-goal.tells.md");
+    expect(written.some((f: string) => f.startsWith("register."))).toBe(false);
+    expect(written.some((f: string) => f.startsWith("materials/"))).toBe(false);
+    // Core init is fingerprint-only: checks are opt-in via --with / checks init.
+    expect(written).not.toContain("checks/example.md.example");
+
+    await expect(
+      readFile(join(dir, ".ghost", "manifest.yml"), "utf-8"),
+    ).resolves.toContain("schema: ghost.fingerprint-package/v1");
+
+    // The scaffolded package validates with zero errors AND zero warnings.
+    const validate = await runCli(["validate", "--format", "json"], dir);
+    expect(validate.code).toBe(0);
+    const report = JSON.parse(validate.stdout);
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(0);
+
+    // The gather menu carries every node with its kind.
+    const gather = await runCli(["gather", "--format", "json"], dir);
+    expect(gather.code).toBe(0);
+    const menu = JSON.parse(gather.stdout);
+    const byId = new Map(
+      menu.nodes.map((node: { id: string; kind?: string }) => [
+        node.id,
+        node.kind,
+      ]),
+    );
+    expect(byId.get("index")).toBeUndefined;
+    expect(byId.has("index")).toBe(true);
+    expect(byId.get("anti-goal.median")).toBe("anti-goal");
+    for (const slug of [
+      "hierarchy",
+      "rhythm",
+      "surfaces",
+      "motion",
+      "color-roles",
+      "conversation",
+    ]) {
+      expect(byId.get(`grammar.${slug}`)).toBe("grammar");
+    }
+    for (const slug of ["shape", "palette", "type", "temperature"]) {
+      expect(byId.get(`signature.${slug}`)).toBe("signature");
+    }
+
+    // The median floor survives intact: prune header + rule anchors.
+    const median = await runCli(["pull", "anti-goal.median"], dir);
+    expect(median.code).toBe(0);
+    expect(median.stdout).toContain(
+      "This is the model's median, not your brand.",
+    );
+    expect(median.stdout).toContain("### Side-stripe");
+
+    // The dials ship unanswered and forbid freehanding.
+    const shape = await runCli(["pull", "signature.shape"], dir);
+    expect(shape.code).toBe(0);
+    expect(shape.stdout).toContain("This dial is unanswered");
+    expect(shape.stdout).toContain("freehand");
+
+    // No Vessel strings anywhere in the scaffolded package.
+    const forbidden = [
+      "Vessel",
+      "HK Grotesk",
+      "999px",
+      "Morrow",
+      "amber",
+      "periwinkle",
+      "clay",
+      "orchid",
+      "sage",
+    ];
+    for (const file of written) {
+      const content = await readFile(join(dir, ".ghost", file), "utf-8");
+      for (const needle of forbidden) {
+        expect(content, `${file} must not contain "${needle}"`).not.toMatch(
+          new RegExp(`\\b${needle}\\b`, "i"),
+        );
+      }
+    }
+  }
+
+  it("initializes the default skeleton fingerprint package", async () => {
     const init = await runCli(["init", "--format", "json"], dir);
 
     expect(init.code).toBe(0);
     const initOutput = JSON.parse(init.stdout);
     expect(Object.keys(initOutput).sort()).toEqual(["dir", "written"]);
-    expect(initOutput.written).toContain("manifest.yml");
-    expect(initOutput.written).toContain("glossary.md");
-    expect(initOutput.written).toContain("index.md");
-    expect(initOutput.written).toContain("principle.stance.md");
-    expect(initOutput.written).toContain("principle.composition.md");
-    expect(initOutput.written).toContain(
-      "anti-goal.generic-generated-output.md",
-    );
-    expect(initOutput.written).toContain("pattern.status-with-next-step.md");
-    expect(initOutput.written).toContain("exemplar.annotated-reference.md");
-    expect(initOutput.written).toContain("asset.materials.md");
-    expect(initOutput.written).toContain("decision.tradeoff.md");
-    // Core init is fingerprint-only: checks are opt-in via --with / checks init.
-    expect(initOutput.written).not.toContain("checks/example.md.example");
-    await expect(
-      readFile(join(dir, ".ghost", "manifest.yml"), "utf-8"),
-    ).resolves.toContain("schema: ghost.fingerprint-package/v1");
-
-    const index = await readFile(join(dir, ".ghost", "index.md"), "utf-8");
-    expect(index).toContain(
-      "Everything in this starter package is demo content",
-    );
-    expect(index).toContain(
-      "replace the claims, paths, examples, and decisions",
-    );
-
-    const validate = await runCli(["validate"], dir);
-    expect(validate.code).toBe(0);
+    await expectSkeletonPackage(initOutput.written);
   });
 
   it("initializes the minimal fingerprint package", async () => {
@@ -257,26 +331,34 @@ describe("ghost CLI", () => {
     expect(initOutput.written).toContain("manifest.yml");
     expect(initOutput.written).toContain("glossary.md");
     expect(initOutput.written).toContain("index.md");
+    expect(initOutput.written).toContain("anti-goal.median.md");
     expect(initOutput.written).not.toContain("principle.stance.md");
     expect(initOutput.written).not.toContain("decision.tradeoff.md");
 
-    const validate = await runCli(["validate"], dir);
+    const validate = await runCli(["validate", "--format", "json"], dir);
     expect(validate.code).toBe(0);
+    const report = JSON.parse(validate.stdout);
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(0);
   });
 
-  it("keeps default as an alias for the steering template", async () => {
-    const init = await runCli(
-      ["init", "--template", "default", "--format", "json"],
-      dir,
-    );
+  it("keeps default and steering as aliases for the skeleton template", async () => {
+    for (const name of ["default", "steering"]) {
+      await rm(join(dir, ".ghost"), { recursive: true, force: true });
+      const init = await runCli(
+        ["init", "--template", name, "--format", "json"],
+        dir,
+      );
 
-    expect(init.code).toBe(0);
-    const initOutput = JSON.parse(init.stdout);
-    expect(initOutput.written).toContain("principle.stance.md");
-    expect(initOutput.written).toContain("decision.tradeoff.md");
+      expect(init.code).toBe(0);
+      const initOutput = JSON.parse(init.stdout);
+      expect([...initOutput.written].sort()).toEqual(
+        [...SKELETON_FILES].sort(),
+      );
 
-    const validate = await runCli(["validate"], dir);
-    expect(validate.code).toBe(0);
+      const validate = await runCli(["validate"], dir);
+      expect(validate.code).toBe(0);
+    }
   });
 
   it("initializes the composition starter template", async () => {
@@ -292,10 +374,14 @@ describe("ghost CLI", () => {
     expect(initOutput.written).toContain("index.md");
     expect(initOutput.written).toContain("principle.composition.md");
     expect(initOutput.written).toContain("pattern.status-with-next-step.md");
+    expect(initOutput.written).toContain("anti-goal.median.md");
 
     // The scaffolded package is valid as written.
-    const validate = await runCli(["validate"], dir);
+    const validate = await runCli(["validate", "--format", "json"], dir);
     expect(validate.code).toBe(0);
+    const report = JSON.parse(validate.stdout);
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(0);
 
     // The ladder nodes surface in the gather menu with their kinds.
     const gather = await runCli(["gather", "--format", "json"], dir);
@@ -317,55 +403,15 @@ describe("ghost CLI", () => {
     expect(pull.stdout).toContain("principle.composition");
   });
 
-  it("initializes the steering starter template", async () => {
+  it("initializes the skeleton starter template by name", async () => {
     const init = await runCli(
-      ["init", "--template", "steering", "--format", "json"],
+      ["init", "--template", "skeleton", "--format", "json"],
       dir,
     );
 
     expect(init.code).toBe(0);
     const initOutput = JSON.parse(init.stdout);
-    expect(initOutput.written).toContain("manifest.yml");
-    expect(initOutput.written).toContain("glossary.md");
-    expect(initOutput.written).toContain("index.md");
-    expect(initOutput.written).toContain("principle.stance.md");
-    expect(initOutput.written).toContain("principle.composition.md");
-    expect(initOutput.written).toContain(
-      "anti-goal.generic-generated-output.md",
-    );
-    expect(initOutput.written).toContain("pattern.status-with-next-step.md");
-    expect(initOutput.written).toContain("exemplar.annotated-reference.md");
-    expect(initOutput.written).toContain("asset.materials.md");
-    expect(initOutput.written).toContain("decision.tradeoff.md");
-    expect(initOutput.written).not.toContain("concept.scoped-direction.md");
-
-    const validate = await runCli(["validate"], dir);
-    expect(validate.code).toBe(0);
-
-    const gather = await runCli(["gather", "--format", "json"], dir);
-    expect(gather.code).toBe(0);
-    const menu = JSON.parse(gather.stdout);
-    const ids = menu.nodes.map((node: { id: string }) => node.id);
-    expect(ids).toContain("principle.stance");
-    expect(ids).toContain("principle.composition");
-    expect(ids).toContain("anti-goal.generic-generated-output");
-    expect(ids).toContain("pattern.status-with-next-step");
-    expect(ids).toContain("exemplar.annotated-reference");
-    expect(ids).toContain("asset.materials");
-    expect(ids).toContain("decision.tradeoff");
-
-    const antiGoal = menu.nodes.find(
-      (node: { id: string }) =>
-        node.id === "anti-goal.generic-generated-output",
-    );
-    expect(antiGoal.kind).toBe("anti-goal");
-    const decision = menu.nodes.find(
-      (node: { id: string }) => node.id === "decision.tradeoff",
-    );
-    expect(decision.kind).toBe("decision");
-    expect(menu.kinds.map((kind: { name: string }) => kind.name)).toContain(
-      "concept",
-    );
+    await expectSkeletonPackage(initOutput.written);
   });
 
   it("rejects an unknown init template with a usage error", async () => {
@@ -379,7 +425,84 @@ describe("ghost CLI", () => {
     expect(result.stderr).toContain("Unknown init template 'nope'");
     expect(result.stderr).toContain("minimal");
     expect(result.stderr).toContain("composition");
-    expect(result.stderr).toContain("steering");
+    expect(result.stderr).toContain("skeleton");
+  });
+
+  it("installs the vessel-light body: full corpus, materials, checks", async () => {
+    const init = await runCli(
+      ["init", "--body", "vessel-light", "--format", "json"],
+      dir,
+    );
+    expect(init.code).toBe(0);
+    const { written } = JSON.parse(init.stdout) as { written: string[] };
+
+    // The body is the inhabited package: corpus + tells + registers +
+    // materials tree + its own checks. No .events tape.
+    expect(written).toContain("manifest.yml");
+    expect(written).toContain("anti-goal.median.md");
+    expect(written).toContain("anti-goal.tells.md");
+    expect(written).toContain("register.email.md");
+    expect(written).toContain("signature.shape.md");
+    expect(written).toContain("materials/tokens.css");
+    expect(written).toContain("materials/fonts/HKGrotesk-Regular.woff2");
+    expect(written).toContain("materials/ref/composition.form.html");
+    expect(written).toContain("checks/median-tells.md");
+    expect(written).toContain("checks/values.md");
+    expect(written.some((p) => p.includes(".events"))).toBe(false);
+
+    // Manifest id stays vessel-light: renaming it is step one of adapting
+    // the starter — an explicit human act, never pre-executed by init.
+    const manifest = await readFile(
+      join(dir, ".ghost", "manifest.yml"),
+      "utf-8",
+    );
+    expect(manifest).toContain("id: vessel-light");
+
+    // Fonts survive the packed payload byte-identically.
+    const [installed, source] = await Promise.all([
+      readFile(
+        join(dir, ".ghost", "materials", "fonts", "HKGrotesk-Regular.woff2"),
+      ),
+      readFile(
+        new URL(
+          "../../vessel-light/.ghost/materials/fonts/HKGrotesk-Regular.woff2",
+          import.meta.url,
+        ),
+      ),
+    ]);
+    expect(installed.equals(source)).toBe(true);
+
+    // The installed body validates clean, checks included.
+    const validate = await runCli(["validate", "--format", "json"], dir);
+    expect(validate.code).toBe(0);
+    const report = JSON.parse(validate.stdout);
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(0);
+  });
+
+  it("rejects unknown bodies and contradictory body flags", async () => {
+    const unknown = await runCli(["init", "--body", "nope"], dir, {
+      allowNoExit: true,
+    });
+    expect(unknown.code).toBe(2);
+    expect(unknown.stderr).toContain("Unknown init body 'nope'");
+    expect(unknown.stderr).toContain("vessel-light");
+
+    const both = await runCli(
+      ["init", "--body", "vessel-light", "--template", "minimal"],
+      dir,
+      { allowNoExit: true },
+    );
+    expect(both.code).toBe(2);
+    expect(both.stderr).toContain("mutually exclusive");
+
+    const withChecks = await runCli(
+      ["init", "--body", "vessel-light", "--with", "checks"],
+      dir,
+      { allowNoExit: true },
+    );
+    expect(withChecks.code).toBe(2);
+    expect(withChecks.stderr).toContain("already includes its own checks/");
   });
 
   it("uses GHOST_PACKAGE_DIR as the default fingerprint package directory for init", async () => {
@@ -501,7 +624,7 @@ describe("ghost CLI", () => {
     expect(forced.code).toBe(0);
     await expect(
       readFile(join(dir, ".ghost", "index.md"), "utf-8"),
-    ).resolves.toContain("Everything in this starter package is demo content");
+    ).resolves.toContain("skeleton fingerprint");
   });
 
   it("does not guess arbitrary YAML files are validate.yml", async () => {
@@ -586,15 +709,17 @@ describe("ghost CLI", () => {
     const gather = await runCli(["gather", "--format", "json"], dir);
     expect(gather.code).toBe(0);
     const menu = JSON.parse(gather.stdout);
-    const principle = menu.kinds.find(
-      (k: { name: string }) => k.name === "principle",
+    const grammar = menu.kinds.find(
+      (k: { name: string }) => k.name === "grammar",
     );
-    expect(principle.purpose).toContain("Durable stance");
+    expect(grammar.purpose).toContain("decision logic");
 
     // Markdown renders the same legend above the node list.
     const markdown = await runCli(["gather"], dir);
     expect(markdown.stdout).toContain("Kinds:");
-    expect(markdown.stdout).toContain("- **principle** — Durable stance");
+    expect(markdown.stdout).toContain(
+      "- **grammar** — The brand's decision logic",
+    );
 
     // A missing glossary degrades to no legend, not an error.
     await rm(join(dir, ".ghost", "glossary.md"));
@@ -791,13 +916,13 @@ a deliberate provocation past the fingerprint — surfaced only on request
     const gather = await runCli(["gather", "--format", "json"], dir);
     expect(gather.code).toBe(0);
     expect(JSON.parse(gather.stdout).coverage).toEqual({
-      nodes: 4,
+      nodes: 5,
       concrete: 1,
-      guards: 1,
+      guards: 2,
     });
     const markdown = await runCli(["gather"], dir);
     expect(markdown.stdout).toContain(
-      "4 nodes · 1 carry concrete material · 1 guards",
+      "5 nodes · 1 carry concrete material · 2 guards",
     );
 
     const steering = await runCli(
@@ -1486,6 +1611,54 @@ a deliberate provocation past the fingerprint — surfaced only on request
     });
   });
 
+  it("review resolves package-relative locators when the package sits below the repo root", async () => {
+    // Regression: exact-path `materials/…` locators were matched as raw text
+    // against repo-relative diff paths, so a package below the repo root
+    // (e.g. packages/vessel-light/.ghost) never matched them — its value
+    // checks were silently dropped from the packet.
+    const packageDir = join("nested", "app", ".ghost");
+    await runCli(["init", "--package", packageDir], dir);
+    await mkdir(join(dir, packageDir, "materials"), { recursive: true });
+    await writeFile(
+      join(dir, packageDir, "materials", "tokens.css"),
+      ":root{}\n",
+    );
+    await writeFile(
+      join(dir, packageDir, "asset.tokens.md"),
+      "---\ndescription: Tokens.\nmaterials:\n  - materials/tokens.css\n---\n\nTokens prose.\n",
+    );
+    await mkdir(join(dir, packageDir, "checks"), { recursive: true });
+    await writeFile(
+      join(dir, packageDir, "checks", "token-discipline.md"),
+      "---\nname: token-discipline\ndescription: Tokens hold.\nseverity: high\nreferences:\n  - asset.tokens\n---\n\nGrade token discipline.\n",
+    );
+    const touched = `${packageDir.replaceAll("\\", "/")}/materials/tokens.css`;
+    const diff = [
+      `diff --git a/${touched} b/${touched}`,
+      `--- a/${touched}`,
+      `+++ b/${touched}`,
+      "@@ -1 +1 @@",
+      "-old",
+      "+new",
+    ].join("\n");
+
+    const result = await runCli(
+      ["review", "--package", packageDir, "--diff=-", "--format", "json"],
+      dir,
+      { stdin: diff },
+    );
+
+    expect(result.code).toBe(0);
+    const packet = JSON.parse(result.stdout);
+    expect(packet.materialNodes.map((n: { id: string }) => n.id)).toContain(
+      "asset.tokens",
+    );
+    const check = packet.checks.find(
+      (c: { id: string }) => c.id === "token-discipline",
+    );
+    expect(check).toMatchObject({ offered: "matched" });
+  });
+
   it("review runs check probes as evidence and supports --no-probes", async () => {
     await runCli(["init", "--with", "checks"], dir);
     await writeFile(
@@ -1704,25 +1877,92 @@ a deliberate provocation past the fingerprint — surfaced only on request
     expect(pull.stdout).toContain(":root{}");
   });
 
-  it("checks init scaffolds .ghost/checks/ with an example", async () => {
+  it("checks init scaffolds .ghost/checks/ with median tells and an example", async () => {
     await runCli(["init"], dir);
 
     const add = await runCli(["checks", "init", "--format", "json"], dir);
     expect(add.code).toBe(0);
     const added = JSON.parse(add.stdout);
-    expect(added.written).toEqual(["example.md.example"]);
+    expect(added.written).toEqual(["median-tells.md", "example.md.example"]);
+    expect(added.skipped).toEqual([]);
     await expect(
       readFile(join(dir, ".ghost", "checks", "example.md.example"), "utf-8"),
     ).resolves.toContain("references:");
+
+    // The live median check pairs with the skeleton's anti-goal.median node.
+    const median = await readFile(
+      join(dir, ".ghost", "checks", "median-tells.md"),
+      "utf-8",
+    );
+    expect(median).toContain("anti-goal.median");
+    expect(median).toContain("anti-goal.median > Hover-lift");
+    expect(median).toContain("prefers-reduced-motion");
+    expect(median).toContain(
+      "`ghost validate` warns; delete the flag and its reference together.",
+    );
+    expect(median).not.toContain("Vessel");
 
     // Running init twice is a usage error.
     const again = await runCli(["checks", "init"], dir);
     expect(again.code).toBe(2);
     expect(again.stderr).toContain("already exists");
 
-    // The scaffold validates cleanly (example.md.example is inert).
-    const validate = await runCli(["validate"], dir);
+    // The scaffold validates cleanly on the default skeleton: median-tells
+    // references resolve against anti-goal.median and the grammar nodes.
+    const validate = await runCli(["validate", "--format", "json"], dir);
     expect(validate.code).toBe(0);
+    const report = JSON.parse(validate.stdout);
+    const unresolved = report.issues.filter(
+      (f: { rule: string }) => f.rule === "check-reference-unresolved",
+    );
+    expect(unresolved).toEqual([]);
+  });
+
+  it("checks init skips median tells when the median node is absent", async () => {
+    await runCli(["init", "--template", "minimal"], dir);
+    await rm(join(dir, ".ghost", "anti-goal.median.md"));
+
+    const add = await runCli(["checks", "init"], dir);
+    expect(add.code).toBe(0);
+    expect(add.stdout).toContain(
+      "skipped median-tells.md (no anti-goal.median node)",
+    );
+
+    await expect(
+      readFile(join(dir, ".ghost", "checks", "median-tells.md"), "utf-8"),
+    ).rejects.toThrow();
+
+    const validate = await runCli(["validate", "--format", "json"], dir);
+    expect(validate.code).toBe(0);
+    const report = JSON.parse(validate.stdout);
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(0);
+  });
+
+  it("validate warns when a pruned median heading orphans its paired check", async () => {
+    await runCli(["init"], dir);
+    await runCli(["checks", "init"], dir);
+    const path = join(dir, ".ghost", "anti-goal.median.md");
+    const median = await readFile(path, "utf-8");
+    await writeFile(
+      path,
+      median.replace(/### Side-stripe\n[\s\S]*?(?=\n### Cream surface)/, ""),
+    );
+
+    const validate = await runCli(["validate", "--format", "json"], dir);
+    expect(validate.code).toBe(0);
+    const report = JSON.parse(validate.stdout);
+    expect(report.warnings).toBe(1);
+    expect(report.issues).toEqual([
+      expect.objectContaining({
+        severity: "warning",
+        rule: "check-reference-heading-missing",
+        message: expect.stringContaining("anti-goal.median > Side-stripe"),
+      }),
+    ]);
+    expect(report.issues[0].message).toContain(
+      "if you pruned this rule from the node, delete its paired flag in the check too",
+    );
   });
 
   it("checks rejects unknown actions", async () => {

@@ -181,7 +181,7 @@ action beats completeness...
   `materials`, a substantial fenced example, or a `## Skeleton`. You do not
   declare a separate type.
 
-## What a body answers
+## What a node body answers
 
 While drafting, ask three questions of every truth — *why* (the stance), *with
 what* (the materials), and *how it is assembled* (the patterns). These are
@@ -204,7 +204,7 @@ genuinely a different truth.
 
 ## Node prose stances
 
-Node prose is steering payload. A generic sentence in a body averages every
+Node prose is steering payload. A generic sentence in a node body averages every
 future generation toward the median, so hold drafts to these stances before the
 human sees them.
 
@@ -226,13 +226,13 @@ Everywhere else:
   fits a competitor's brand, it is retrieval-dead; rewrite it until it could
   belong to no one else.
 - **Cut unratified hedges.** "Generally," "where possible," and "consider" in a
-  body mean the human never picked a side. Get the ratification or cut the
+  node body mean the human never picked a side. Get the ratification or cut the
   sentence.
 - **Ban brand-deck filler.** "Elevate," "delight," "seamless," "best-in-class,"
   "empower." When a brand doc supplies these words, they are testimony to
   distill, never prose to keep.
 - **Settle the altitude on purpose.** Every truth is either claimed universal
-  or given its condition in the prose. A body that does neither was never
+  or given its condition in the prose. A node body that does neither was never
   curated for altitude; ask the human which it is.
 
 ## Score drafts before curation
@@ -244,7 +244,7 @@ dimension:
 | --- | --- |
 | Testimony | Can you quote the human words or artifact this node came from? |
 | Discrimination | Does the description fit only this brand? |
-| Force | Does the body decide something, or merely describe something? |
+| Force | Does the node body decide something, or merely describe something? |
 | Altitude | Is it universal on purpose, or given its condition? |
 | Residue | Is it free of starter-demo prose and brand-deck filler? |
 

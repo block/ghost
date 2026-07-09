@@ -86,7 +86,7 @@ and enforced in review, not repeated as the model's main example.
 ## 4. Draft The Nodes
 
 Write the smallest useful set of nodes, each a purpose-coherent prose truth with
-a one-line `description`, named `<kind>.<slug>.md` (or a bare slug when no kind is present). Ask three questions of each body: why (the stance), with what
+a one-line `description`, named `<kind>.<slug>.md` (or a bare slug when no kind is present). Ask three questions of each node body: why (the stance), with what
 (the materials), and how it is assembled (the patterns). These are drafting
 prompts, not fields.
 
@@ -133,6 +133,45 @@ ghost validate .ghost
 prefix is a declared glossary kind (undeclared → warning with a "did you
 mean" suggestion). Use ordinary Git review as the approval boundary: uncommitted
 edits are drafts; checked-in nodes are canonical.
+
+## Shapes Of A Useful Node
+
+The shapes below teach what steering prose looks like when it works. The
+examples use **Morrow Ledger**, a fictional bookkeeping product — teaching
+fiction for this recipe only, never content for a real corpus. Each shape is a
+pattern to imitate with the human's real truths.
+
+- **Stance as forced choices.** Not adjectives — decisions under pressure:
+  "Clarity beats momentum: write '3 invoices are 14+ days late', not 'Cash
+  flow needs attention.'" A stance earns its place when it rejects a plausible
+  wrong answer.
+- **Composition floor.** Hard invariants with numbers, holding unless a
+  narrower condition says otherwise: "Maximum three figures above the fold —
+  if there are four, demote one into details instead of shrinking type."
+- **Anti-goal as not-X-instead-Y.** The rejected default *and* its committed
+  replacement: "Not 'Revenue is up 24% 🎉' — instead 'July receipts are $4,820
+  higher than June; 2 invoices explain most of the change.'" A bare ban prunes
+  one path; the replacement commits another.
+- **Pattern as bound/open.** Say what is decided and what remains free:
+  "Bound: status line first, one sentence, ≤11 words; one primary next step
+  last. Open: evidence may be a table row or a two-item list." All bound is a
+  template; nothing bound is vibes.
+- **Annotated exemplar.** A concrete reference plus what it is normative for
+  and what is incidental: "Copy the square edge, measured evidence, and action
+  cost. Do not copy the exact amounts or dates." An unannotated exemplar
+  teaches its accidents as brand.
+- **Material inventory.** `materials` locates; prose explains meaning:
+  "`src/styles/tokens.css` should define the ink, ledger, amber, and paper
+  colors." Never duplicate API docs unless the API itself is the brand truth.
+- **Decision trace.** A worked tradeoff with the reversal condition: "We chose
+  visible evidence over shorter surfaces… Reverses when the evidence would
+  expose sensitive third-party details — then show the count only." Models
+  imitate reasoning as well as outputs.
+
+State a silence posture somewhere the agent always reads (usually `index.md`):
+when the fingerprint is silent, proceed provisionally from local conventions
+only when safe, and ask before brand-defining, irreversible, legal,
+privacy-sensitive, or high-risk choices.
 
 ## Never
 

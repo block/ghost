@@ -69,7 +69,7 @@
     "provenance": true
   },
   "scripts": {
-    "build": "rm -rf dist tsconfig.tsbuildinfo && tsc --build --force && chmod +x dist/bin.js && node ../../scripts/link-package-bin.mjs && cp -r src/skill-bundle dist/skill-bundle",
+    "build": "rm -rf dist tsconfig.tsbuildinfo && tsc --build --force && chmod +x dist/bin.js && node ../../scripts/link-package-bin.mjs && cp -r src/skill-bundle dist/skill-bundle && node ../../scripts/sync-init-payloads.mjs",
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {

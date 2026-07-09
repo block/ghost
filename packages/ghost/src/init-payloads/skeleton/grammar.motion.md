@@ -1,9 +1,5 @@
 ---
 description: "Motion doctrine — motion is evidence of state change, never decoration; a closed vocabulary of three duration roles and one ease; gather for any transition, animation, or hover treatment."
-materials:
-  - materials/tokens.css
-  - "**/*.css"
-  - "**/*.html"
 ---
 
 Motion is evidence of a state change. It confirms hover, press, reveal,
@@ -22,6 +18,7 @@ keyframes are off-language.
 Prefer opacity and small transform changes. If removing an animation does not
 reduce comprehension, the animation was decoration.
 
-Condition: marketing and editorial surfaces may stage entrances — scroll reveals and
-section transitions are part of editorial rhythm, still built from the three
-durations and the one ease. In product UI the same staging is decoration.
+Condition: marketing and editorial surfaces may stage entrances — scroll
+reveals and section transitions are part of editorial rhythm, still built
+from the three durations and the one ease. In product UI the same staging is
+decoration.

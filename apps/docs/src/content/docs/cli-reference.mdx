@@ -51,11 +51,28 @@ a finding (exit `1`).
 
 ### Initialize: `init`
 
-Scaffold a `.ghost/` package with the steering starter: a manifest, a starter `glossary.md`, a core `index.md` node, and demo nodes for stance, composition, anti-goals, patterns, exemplars, materials, and decisions. The demo content is there for inspiration and guidance. Replace it with real product truth before using it to steer generation. Use `--template minimal` when you only want the small manifest/glossary/index starter. Add truths by adding files (`principle.density.md`). Use
+Scaffold a `.ghost/` package. Every template and body includes `anti-goal.median`; the skeleton starter also includes a manifest, a `glossary.md` declaring the grammar/signature/register/anti-goal kinds, a core `index.md`, six grammar nodes of value-free decision logic, and four signature nodes as unanswered dials awaiting your brand's values. The median node is Ghost's measured knowledge of unsteered model behavior — model truth, not brand truth — stamped at init and owned (pruned, adapted) by you thereafter. Nothing in the skeleton is fiction: grammar and the median floor are safe to consume verbatim; the dials tell the agent to ask or flag, never freehand. Use `--template minimal` when you only want the small manifest/glossary/index starter. Add truths by adding files (`principle.density.md`). Use
 `--package <dir>` for an exact directory, or set `GHOST_PACKAGE_DIR` when a host
 wrapper stores Ghost files outside the default `.ghost`. Core `init` scaffolds
 the fingerprint only; pass `--with checks` to also add the checks directory in
 one move.
+
+Templates are shapes of emptiness — structures awaiting your truths. A
+**body** is the same anatomy inhabited: answered signature dials, a
+`materials/` tree (tokens, fonts, worked reference compositions), and its own
+`checks/`. Install one with `--body`:
+
+```bash
+ghost init --body vessel-light
+```
+
+`vessel-light` installs Vessel's design language at full strength — the
+fork-axis corpus, `materials/tokens.css` owning every literal value, embedded
+fonts, six annotated refs, and five checks, included automatically (no
+`--with checks` needed; combining them is an error). The manifest id stays
+`vessel-light` until you adapt the starter: renaming it is deliberately the
+first step of making the brand yours. `--body` and `--template` are mutually
+exclusive.
 
 <CliHelp tool="ghost" command="init" hideDescription />
 

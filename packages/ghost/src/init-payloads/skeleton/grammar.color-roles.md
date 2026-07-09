@@ -1,12 +1,8 @@
 ---
 description: "Semantic color roles and the rules that govern them — gather before choosing any color; roles not raw values, status is meaning, expression is register-gated and never on controls."
-materials:
-  - materials/tokens.css
-  - "**/*.css"
-  - "**/*.html"
 ---
 
-The token file is the source of truth. An agent may combine tokens, but it
+The token roles are the source of truth. An agent may combine roles, but it
 may not author around them. Raw color values are implementation detail, never
 product language.
 
@@ -21,9 +17,9 @@ brand accents, and they never moonlight as atmosphere, in any register.
 
 One view should not perform a color palette. If a status color is present,
 let the rest of the view stay on the base roles. Richness beyond this is
-register-gated: a closed expression set (`--expression-*`) exists, but its
-size, members, and volume ladder are a brand answer — see the palette
-signature — and each register caps how loud they may be.
+register-gated: a closed expression set (`--expression-*`) exists; its size
+and members are a dial — see the palette signature — and each register caps
+how loud they may be.
 
 The constant that holds across every register: expression never touches what
 you click. Buttons, inputs, and links stay on the base roles everywhere. A

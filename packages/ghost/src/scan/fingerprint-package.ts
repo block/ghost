@@ -33,7 +33,10 @@ import type { LintIssue, LintReport } from "./lint.js";
 import { resolveGitRoot } from "./package-paths.js";
 import {
   DEFAULT_TEMPLATE_NAME,
+  type GhostInitTemplate,
+  getInitBody,
   getInitTemplate,
+  listInitBodies,
   listInitTemplates,
 } from "./templates.js";
 
@@ -70,8 +73,14 @@ export interface LoadedFingerprintPackage {
 }
 
 export interface InitFingerprintPackageOptions {
-  /** Init template name (default: "steering"). */
+  /** Init template name (default: "skeleton"). Mutually exclusive with `body`. */
   template?: string;
+  /**
+   * Init body name (e.g. "vessel-light"): a full inhabited package with
+   * answered dials, materials, and its own checks. Mutually exclusive with
+   * `template`.
+   */
+  body?: string;
   force?: boolean;
 }
 
@@ -103,18 +112,36 @@ export async function initFingerprintPackage(
   cwd = process.cwd(),
   options: InitFingerprintPackageOptions = {},
 ): Promise<InitFingerprintPackageResult> {
-  const templateName = options.template ?? DEFAULT_TEMPLATE_NAME;
-  const template = getInitTemplate(templateName);
-  if (!template) {
+  if (options.body !== undefined && options.template !== undefined) {
     throw new UsageError(
-      `Unknown init template '${templateName}'. Available: ${listInitTemplates().join(", ")}.`,
+      "--body and --template are mutually exclusive. A template is a shape of emptiness; a body is a full inhabited package — pick one.",
     );
+  }
+
+  let source: Pick<GhostInitTemplate, "files">;
+  if (options.body !== undefined) {
+    const body = getInitBody(options.body);
+    if (!body) {
+      throw new UsageError(
+        `Unknown init body '${options.body}'. Available: ${listInitBodies().join(", ")}.`,
+      );
+    }
+    source = body;
+  } else {
+    const templateName = options.template ?? DEFAULT_TEMPLATE_NAME;
+    const template = getInitTemplate(templateName);
+    if (!template) {
+      throw new UsageError(
+        `Unknown init template '${templateName}'. Available: ${listInitTemplates().join(", ")}.`,
+      );
+    }
+    source = template;
   }
 
   const paths = resolveFingerprintPackage(dirArg, cwd);
   await mkdir(paths.packageDir, { recursive: true });
 
-  const files = template.files().map((file) => ({
+  const files = (await source.files()).map((file) => ({
     relativePath: file.relativePath,
     path: join(paths.packageDir, file.relativePath),
     content: file.content,
@@ -137,14 +164,17 @@ export async function initFingerprintPackage(
 
 async function writeInitFile(
   path: string,
-  content: string,
+  content: string | Uint8Array,
   force = false,
 ): Promise<void> {
   try {
-    await writeFile(path, content, {
-      encoding: "utf-8",
-      flag: force ? "w" : "wx",
-    });
+    await writeFile(
+      path,
+      content,
+      typeof content === "string"
+        ? { encoding: "utf-8", flag: force ? "w" : "wx" }
+        : { flag: force ? "w" : "wx" },
+    );
   } catch (err) {
     if (!force && isExistingPathError(err)) {
       throw new UsageError(
@@ -395,7 +425,7 @@ function lintCheckReferences(
         issues.push({
           severity: "warning",
           rule: "check-reference-unresolved",
-          message: `check reference '${raw}' does not resolve to a fingerprint node`,
+          message: `check reference '${raw}' does not resolve to a fingerprint node — if you pruned this rule from the node, delete its paired flag in the check too`,
           path: `checks/${check.id}.md.references`,
         });
         continue;
@@ -407,7 +437,7 @@ function lintCheckReferences(
         issues.push({
           severity: "warning",
           rule: "check-reference-heading-missing",
-          message: `check reference '${raw}' names a heading that was not found`,
+          message: `check reference '${raw}' names a heading that was not found — if you pruned this rule from the node, delete its paired flag in the check too`,
           path: `checks/${check.id}.md.references`,
         });
       }
