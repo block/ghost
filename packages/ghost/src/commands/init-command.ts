@@ -78,7 +78,12 @@ export function registerInitCommand(cli: CAC): void {
                 dir: result.paths.dir,
                 written: result.written,
                 ...(addedChecks !== undefined
-                  ? { checks: { written: addedChecks.written } }
+                  ? {
+                      checks: {
+                        written: addedChecks.written,
+                        skipped: addedChecks.skipped,
+                      },
+                    }
                   : {}),
               },
               null,
@@ -96,6 +101,9 @@ export function registerInitCommand(cli: CAC): void {
             process.stdout.write("Added checks/:\n");
             for (const file of addedChecks.written) {
               process.stdout.write(`  checks/${file}\n`);
+            }
+            for (const file of addedChecks.skipped) {
+              process.stdout.write(`  skipped checks/${file}\n`);
             }
           }
         }

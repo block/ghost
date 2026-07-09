@@ -4,81 +4,82 @@ description: "The model's median defaults this fingerprint refuses — gather fo
 
 This is the model's median, not your brand. Each rule is reject→replace.
 Delete every line your brand legitimately violates — `ghost validate` will
-surface any check the deletion orphans.
+warn on any check reference the deletion orphans — delete the paired flag too.
 
 These are not aesthetic opinions. Where a count is given, it is the measured
 convergence of 300 unsteered generations across three frontier models (the
 antimedian experiment): the defaults a model reaches for when nobody hands it
 a brand. An output showing several of these tells reads as generated,
 whatever else it does right. A deterministic floor rides alongside these
-rules in checks — contrast, reduced motion, sane z-index, no overshoot
-easing — verified at review, never steered in prose.
+rules in the paired check — mechanical tells like gradient-filled text,
+emoji as interface icons, em-dash pileups, and aphoristic cadence —
+verified at review, never steered in prose.
 
-<!-- rule:median-hover-lift -->
+### Hover-lift
 Reject hover-lift (`translateY` + growing shadow) as the default interaction
 → confirm with color and background change at the fingerprint's fast
 duration. (measured: 341)
 
-<!-- rule:median-indigo-accent -->
+### Indigo accent
 Reject the indigo/blue/purple default accent (`#4f46e5`, `#2563eb`,
 `#8b5cf6` family; purple/violet hue 260–310) → the fingerprint's declared
 palette; absent one, monochrome plus a single functional accent.
 
-<!-- rule:median-dark-theme -->
+### Dark theme
 Reject unprompted dark theme → the fingerprint's declared surface.
 Dark-to-look-cool and light-to-be-safe are the same retreat from a decision.
 (measured: 271)
 
-<!-- rule:median-gradients -->
+### Gradients
 Reject gradient page and section backgrounds and gradient-filled CTAs → flat
 surfaces in semantic roles.
 
-<!-- rule:median-side-stripe -->
+### Side-stripe
 Reject side-stripe borders (a thick colored border on one side of a rounded
 card) — the single most recognizable tell of AI-generated UI → a full
 hairline border, a 4–8% surface tint, or a leading glyph.
 
-<!-- rule:median-cream-surface -->
+### Cream surface
 Reject the cream/sand/beige default surface (warm off-white; token names
 like `--cream`, `--sand`, `--parchment` are the tell) → a true off-white,
 the brand's own hue, or a committed color; warmth via accent and type, not
 the ground.
 
-<!-- rule:median-glassmorphism -->
+### Glassmorphism
 Reject glassmorphism (decorative backdrop blur) → flat surfaces with real
 borders and the fingerprint's elevation tiers.
 
-<!-- rule:median-chat-bubbles -->
+### Chat bubbles
 Reject chat bubbles with initials-circle avatars for assistant turns →
 assistant text plain on the page surface; user turns marked compactly.
 
-<!-- rule:median-stock-copy -->
+### Stock copy
 Reject stock template copy ("Simple, transparent pricing") → headings that
 state what this product specifically does.
 
-<!-- rule:median-celebration -->
+### Celebration
 Reject celebration copy and UI (exclamation success, confetti language) →
 quiet factual confirmation.
 
-<!-- rule:median-nested-cards -->
+### Nested cards
 Reject nested cards and everything-in-cards → one surface level per region;
 interior hierarchy from spacing and type; spacing and alignment group
 without card overhead.
 
-<!-- rule:median-hero-metric -->
+### Hero metric
 Reject the hero-metric template (big number + small label + supporting stats
 as default proof) → evidence specific to the product, or nothing. A
 prominent metric showing real user data is fine.
 
-<!-- rule:median-every-button-primary -->
+### Every button primary
 Reject every button a primary button → one primary per view; the rest step
 down the fingerprint's emphasis ladder.
 
-<!-- rule:median-eyebrow-kicker -->
+### Eyebrow kicker
 Reject an eyebrow kicker on every section → at most one, where the register
 sanctions it; one named kicker is voice, every-section is AI grammar.
 
-<!-- rule:median-decorative-motion -->
+### Decorative motion
 Reject decorative looping animation (pulse/float/shimmer) and uniform
 fade-and-rise on every scrolled section → motion as evidence of state
 change; loops only for genuine loading; decoration never compensates for
