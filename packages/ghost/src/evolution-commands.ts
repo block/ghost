@@ -9,8 +9,30 @@ import {
   resolveTrackedFingerprint,
 } from "./core/index.js";
 
-async function loadLocalFingerprint() {
-  return loadComparableFingerprint(".ghost");
+const DEFAULT_SYNC_PATH = ".ghost-sync.json";
+
+async function loadLocalFingerprint(localPath?: string) {
+  return loadComparableFingerprint(localPath ?? ".ghost");
+}
+
+// resolveTracks gives ack/diverge the same escape hatch drift check already
+// has: an explicit --tracked path wins over ghost.config.* `tracks`, so stance
+// verbs work in every invocation pattern the drift gate accepts. Throws when
+// neither is available; the command's catch handler prints and exits 2.
+async function resolveTracks(opts: {
+  tracked?: string;
+  config?: string;
+}): Promise<Target> {
+  if (opts.tracked) {
+    return { type: "path", value: opts.tracked };
+  }
+  const config = await loadConfig(opts.config);
+  if (!config.tracks) {
+    throw new Error(
+      "No tracked fingerprint declared. Set `tracks` in ghost.config.ts or pass --tracked <path>.",
+    );
+  }
+  return config.tracks;
 }
 
 async function loadTrackedComparableFingerprint(
@@ -42,30 +64,28 @@ export function registerAckCommand(cli: CAC): void {
       default: "accepted",
     })
     .option("--reason <text>", "Reason for this acknowledgment")
+    .option("--local <path>", "Local fingerprint or bundle (default: .ghost)")
+    .option(
+      "--tracked <path>",
+      "Tracked/reference fingerprint or bundle (overrides config tracks)",
+    )
+    .option("--sync <path>", "Sync manifest path (default: ./.ghost-sync.json)")
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (opts) => {
       try {
-        const config = await loadConfig(opts.config);
-
-        if (!config.tracks) {
-          console.error(
-            "Error: No tracked fingerprint declared. Set `tracks` in ghost.config.ts.",
-          );
-          process.exit(2);
-        }
-
-        const trackedFingerprint = await loadTrackedComparableFingerprint(
-          config.tracks,
-        );
-        const localFingerprint = await loadLocalFingerprint();
+        const tracks = await resolveTracks(opts);
+        const trackedFingerprint =
+          await loadTrackedComparableFingerprint(tracks);
+        const localFingerprint = await loadLocalFingerprint(opts.local);
 
         const { manifest, comparison } = await acknowledge({
           local: localFingerprint,
           tracked: trackedFingerprint,
-          tracks: config.tracks,
+          tracks,
           dimension: opts.dimension,
           stance: opts.stance as DimensionStance,
           reason: opts.reason,
+          syncPath: opts.sync,
         });
 
         if (opts.format === "json") {
@@ -89,7 +109,7 @@ export function registerAckCommand(cli: CAC): void {
             );
           }
           console.log();
-          console.log("Written to .ghost-sync.json");
+          console.log(`Written to ${opts.sync ?? DEFAULT_SYNC_PATH}`);
         }
 
         process.exit(0);
@@ -159,30 +179,28 @@ export function registerDivergeCommand(cli: CAC): void {
       "-r, --reason <text>",
       "Why this dimension is intentionally diverging",
     )
+    .option("--local <path>", "Local fingerprint or bundle (default: .ghost)")
+    .option(
+      "--tracked <path>",
+      "Tracked/reference fingerprint or bundle (overrides config tracks)",
+    )
+    .option("--sync <path>", "Sync manifest path (default: ./.ghost-sync.json)")
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (dimension: string, opts) => {
       try {
-        const config = await loadConfig(opts.config);
-
-        if (!config.tracks) {
-          console.error(
-            "Error: No tracked fingerprint declared. Set `tracks` in ghost.config.ts.",
-          );
-          process.exit(2);
-        }
-
-        const trackedFingerprint = await loadTrackedComparableFingerprint(
-          config.tracks,
-        );
-        const localFingerprint = await loadLocalFingerprint();
+        const tracks = await resolveTracks(opts);
+        const trackedFingerprint =
+          await loadTrackedComparableFingerprint(tracks);
+        const localFingerprint = await loadLocalFingerprint(opts.local);
 
         const { manifest } = await acknowledge({
           local: localFingerprint,
           tracked: trackedFingerprint,
-          tracks: config.tracks,
+          tracks,
           dimension,
           stance: "diverging",
           reason: opts.reason,
+          syncPath: opts.sync,
         });
 
         const ack = manifest.dimensions[dimension];
@@ -198,7 +216,7 @@ export function registerDivergeCommand(cli: CAC): void {
             console.log(`  Reason: ${opts.reason}`);
           }
           console.log();
-          console.log("Updated .ghost-sync.json");
+          console.log(`Updated ${opts.sync ?? DEFAULT_SYNC_PATH}`);
         }
 
         process.exit(0);

@@ -13,31 +13,33 @@ import { compareFingerprints } from "#ghost-core";
 
 const SYNC_FILENAME = ".ghost-sync.json";
 
-function syncPath(cwd: string): string {
-  return resolve(cwd, SYNC_FILENAME);
+function syncPath(cwd: string, override?: string): string {
+  return resolve(cwd, override ?? SYNC_FILENAME);
 }
 
 /**
- * Read the sync manifest from .ghost-sync.json.
+ * Read the sync manifest from .ghost-sync.json (or an explicit path).
  * Returns null if no manifest exists.
  */
 export async function readSyncManifest(
   cwd: string = process.cwd(),
+  syncPathOverride?: string,
 ): Promise<SyncManifest | null> {
-  const path = syncPath(cwd);
+  const path = syncPath(cwd, syncPathOverride);
   if (!existsSync(path)) return null;
   const data = await readFile(path, "utf-8");
   return JSON.parse(data) as SyncManifest;
 }
 
 /**
- * Write the sync manifest to .ghost-sync.json.
+ * Write the sync manifest to .ghost-sync.json (or an explicit path).
  */
 export async function writeSyncManifest(
   manifest: SyncManifest,
   cwd: string = process.cwd(),
+  syncPathOverride?: string,
 ): Promise<string> {
-  const path = syncPath(cwd);
+  const path = syncPath(cwd, syncPathOverride);
   await writeFile(path, JSON.stringify(manifest, null, 2), "utf-8");
   return path;
 }
@@ -59,13 +61,15 @@ export async function acknowledge(opts: {
   reason?: string;
   tolerance?: number;
   cwd?: string;
+  /** Explicit sync manifest path (default: <cwd>/.ghost-sync.json). */
+  syncPath?: string;
 }): Promise<{ manifest: SyncManifest; comparison: FingerprintComparison }> {
   const cwd = opts.cwd ?? process.cwd();
   const comparison = compareFingerprints(opts.tracked, opts.local);
   const now = new Date().toISOString();
 
   // Load existing manifest to preserve previous acks
-  const existing = await readSyncManifest(cwd);
+  const existing = await readSyncManifest(cwd, opts.syncPath);
 
   const dimensions: Record<string, DimensionAck> = {};
 
@@ -99,7 +103,7 @@ export async function acknowledge(opts: {
     overallDistance: comparison.distance,
   };
 
-  await writeSyncManifest(manifest, cwd);
+  await writeSyncManifest(manifest, cwd, opts.syncPath);
 
   return { manifest, comparison };
 }

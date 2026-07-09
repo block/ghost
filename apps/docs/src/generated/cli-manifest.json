@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-17T18:35:34.326Z",
+  "generatedAt": "2026-07-09T21:11:25.823Z",
   "tools": [
     {
       "tool": "ghost",
@@ -482,6 +482,30 @@
               "negated": false
             },
             {
+              "rawName": "--local <path>",
+              "name": "local",
+              "description": "Local fingerprint or bundle (default: .ghost)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--tracked <path>",
+              "name": "tracked",
+              "description": "Tracked/reference fingerprint or bundle (overrides config tracks)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--sync <path>",
+              "name": "sync",
+              "description": "Sync manifest path (default: ./.ghost-sync.json)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
               "rawName": "--format <fmt>",
               "name": "format",
               "description": "Output format: cli or json",
@@ -541,6 +565,30 @@
               "rawName": "-r, --reason <text>",
               "name": "reason",
               "description": "Why this dimension is intentionally diverging",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--local <path>",
+              "name": "local",
+              "description": "Local fingerprint or bundle (default: .ghost)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--tracked <path>",
+              "name": "tracked",
+              "description": "Tracked/reference fingerprint or bundle (overrides config tracks)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--sync <path>",
+              "name": "sync",
+              "description": "Sync manifest path (default: ./.ghost-sync.json)",
               "default": null,
               "takesValue": true,
               "negated": false

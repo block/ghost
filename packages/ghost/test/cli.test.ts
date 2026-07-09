@@ -344,6 +344,80 @@ describe("ghost CLI", () => {
     expect(manifest.dimensions.typography.reason).toBe("editorial");
   });
 
+  it("ack and diverge accept --tracked/--local/--sync without a ghost config", async () => {
+    await mkdir(join(dir, "app", ".ghost"), { recursive: true });
+    await writeFile(
+      join(dir, "app", ".ghost", "fingerprint.md"),
+      fingerprintWithId("local"),
+    );
+    await writeFile(
+      join(dir, "tracked.fingerprint.md"),
+      fingerprintWithId("tracked"),
+    );
+
+    const ack = await runCli(
+      [
+        "ack",
+        "--tracked",
+        "tracked.fingerprint.md",
+        "--local",
+        "app/.ghost",
+        "--sync",
+        "app/.ghost-sync.json",
+        "--stance",
+        "aligned",
+        "--reason",
+        "baseline",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+    const diverge = await runCli(
+      [
+        "diverge",
+        "typography",
+        "--tracked",
+        "tracked.fingerprint.md",
+        "--local",
+        "app/.ghost",
+        "--sync",
+        "app/.ghost-sync.json",
+        "--reason",
+        "editorial",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+
+    expect(ack.code).toBe(0);
+    expect(JSON.parse(ack.stdout).trackedFingerprintId).toBe("tracked");
+    expect(diverge.code).toBe(0);
+    const manifest = JSON.parse(
+      await readFile(join(dir, "app", ".ghost-sync.json"), "utf-8"),
+    ) as Record<string, Record<string, Record<string, unknown>>>;
+    expect(manifest.tracks).toEqual({
+      type: "path",
+      value: "tracked.fingerprint.md",
+    });
+    expect(manifest.dimensions.typography.stance).toBe("diverging");
+    expect(manifest.dimensions.typography.reason).toBe("editorial");
+  });
+
+  it("ack without config or --tracked exits 2 with a --tracked hint", async () => {
+    await mkdir(join(dir, ".ghost"), { recursive: true });
+    await writeFile(
+      join(dir, ".ghost", "fingerprint.md"),
+      fingerprintWithId("local"),
+    );
+
+    const ack = await runCli(["ack", "--format", "json"], dir);
+
+    expect(ack.code).toBe(2);
+    expect(ack.stderr).toContain("--tracked");
+  });
+
   it("ack reads canonical fingerprint packages from config tracks", async () => {
     await writeCheckPackage(dir, { checks: false });
     await writeCheckPackage(join(dir, "tracked"), { checks: false });
