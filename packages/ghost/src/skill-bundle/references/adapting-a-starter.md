@@ -13,13 +13,13 @@ handoffs:
 vessel-light`) or the naked skeleton (`ghost init`) — into *your* brand's
 fingerprint without shipping a self-contradicting package.
 
-A starter is factored by rate of change under rebrand. Knowing which stratum a
+A starter is factored by rate of change under adaptation. Knowing which stratum a
 file belongs to tells you what to do with it:
 
 | Stratum | Files | On adaptation |
 | --- | --- | --- |
-| Grammar | `grammar.*` | Keep unchanged — value-free decision logic that survives any rebrand. |
-| Median floor | `anti-goal.median` | Prune, never rewrite — delete lines your brand legitimately violates. |
+| Grammar | `grammar.*` | Keep unchanged — value-free decision logic that survives any adaptation. |
+| Median floor | `anti-goal.median` | Prune, never rewrite — Ghost stamps this measured model truth into every initialized package; you own it after init. |
 | Signature | `signature.*` | Answer — each is a dial; restate it with your brand's answer. |
 | Values | `materials/tokens.css` | Edit — the single injection point for every literal value. |
 | Registers | `register.*` | Re-tune — conditions referencing signature ids; revisit after the dials change. |
@@ -34,14 +34,15 @@ itself.
 
 1. **Change the manifest id.** Edit `id:` in `manifest.yml` to your brand's
    name. This is deliberately first: it is the explicit act that marks the
-   fork as begun. Until it changes, the package honestly claims to be the
+   adaptation as begun. Until it changes, the package honestly claims to be the
    starter, and every consuming agent cites it as a starter default.
-2. **Prune `anti-goal.median`.** Read every rule; delete the lines your brand
-   legitimately violates (a brand built on gradients deletes the gradient
-   rule — that is the node working, not failing). Do not rewrite surviving
-   rules; they are the model's measured floor, not your taste. Then run
-   `ghost validate`: any check reference orphaned by a deletion surfaces as a
-   warning — delete the paired check flag too.
+2. **Prune `anti-goal.median`.** Each rule is a `###` heading section; delete
+   the whole section for every rule your brand legitimately violates (a brand
+   built on gradients deletes the Gradients section — that is the node working,
+   not failing). Do not rewrite surviving rules; they are the model's measured
+   floor, not your taste. Then run `ghost validate`: every check reference
+   orphaned by a pruned heading surfaces as its own warning — delete the paired
+   flag and its reference from the check.
 3. **Answer the signature dials.** Walk each `signature.*` node as a
    questionnaire item. Keep the fixed relationship (the part the node marks
    as worth keeping); replace the starter's answer — or the open question —
@@ -52,7 +53,7 @@ itself.
    palette, type sizes, durations, eases. Change the values; keep the role
    names. The role names are the grammar's vocabulary and the reason the
    grammar nodes survive untouched.
-5. **Regenerate the refs.** This is the step that decides whether the fork
+5. **Regenerate the refs.** This is the step that decides whether the adaptation
    succeeded. Exemplars dominate prose: a prose rule contradicted by a stale
    ref loses. Rebuild each `materials/ref/*.html` against the new tokens and
    answered dials, keep the annotation headers (`normative-for` /
@@ -75,8 +76,11 @@ itself.
 Work does not block on adaptation. Before the procedure runs (or midway
 through it), cite starter content honestly:
 
-- Grammar and surviving median rules: **Ghost-backed** — they hold for any
+- Grammar: **Ghost-backed** — value-free decision logic that holds for any
   brand.
+- Surviving median rules: **owner-backed after init** — Ghost stamps this
+  measured model truth into every initialized package; you own the pruning and
+  any adaptation thereafter.
 - The starter's signature values (a body) or your provisional choices (the
   skeleton): **Ghost-backed (starter default, unadapted)** or **provisional**
   — never plain brand truth. The manifest id tells you which state you are

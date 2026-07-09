@@ -57,7 +57,7 @@ Neither is correct. A concrete block node is a deliberate trade, not a leak.
   reasoning, sources…) earns **one short prose body**. This is what the method is
   for.
 - The **composer middle** (card, table, form, sidebar…) is a call to weigh. Give
-  it a body when its arrangement carries a stance worth matching.
+  it a prose body when its arrangement carries a stance worth matching.
 
 If a primitive ever seems to need stance guidance, that is a signal it is doing
 a composer's job. Promote the pattern into a node; do not write a body on the

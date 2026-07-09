@@ -10,8 +10,8 @@ kinds:
 # grammar
 
 The brand's decision logic: closed sets, role vocabularies, and assembly
-rules, stated in token roles and never in literal values. Grammar survives a
-rebrand unchanged — swap every value and these nodes still hold. Gather
+rules, stated in token roles and never in literal values. Grammar survives an
+adaptation unchanged — swap every value and these nodes still hold. Gather
 grammar before inventing structure.
 
 # signature

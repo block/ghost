@@ -12,7 +12,7 @@ closed sets the grammar enumerates. Imitate the refs when the task matches
 them — they are worked examples to copy from, not a framework to import.
 
 The corpus carries three trust tiers. Grammar and the median floor are law:
-safe to consume verbatim, unchanged by any rebrand. Signature nodes are
+safe to consume verbatim, unchanged by any adaptation. Signature nodes are
 dials awaiting your values: each states Vessel's current answer and stands
 until you replace it. Registers are conditions: editorial, email, and
 data-density each name the situation where parts of the default contract
