@@ -281,7 +281,7 @@ describe("ghost CLI", () => {
     expect(median.stdout).toContain(
       "This is the model's median, not your brand.",
     );
-    expect(median.stdout).toContain("<!-- rule:median-side-stripe -->");
+    expect(median.stdout).toContain("### Side-stripe");
 
     // The dials ship unanswered and forbid freehanding.
     const shape = await runCli(["pull", "signature.shape"], dir);
@@ -331,11 +331,15 @@ describe("ghost CLI", () => {
     expect(initOutput.written).toContain("manifest.yml");
     expect(initOutput.written).toContain("glossary.md");
     expect(initOutput.written).toContain("index.md");
+    expect(initOutput.written).toContain("anti-goal.median.md");
     expect(initOutput.written).not.toContain("principle.stance.md");
     expect(initOutput.written).not.toContain("decision.tradeoff.md");
 
-    const validate = await runCli(["validate"], dir);
+    const validate = await runCli(["validate", "--format", "json"], dir);
     expect(validate.code).toBe(0);
+    const report = JSON.parse(validate.stdout);
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(0);
   });
 
   it("keeps default and steering as aliases for the skeleton template", async () => {
@@ -370,10 +374,14 @@ describe("ghost CLI", () => {
     expect(initOutput.written).toContain("index.md");
     expect(initOutput.written).toContain("principle.composition.md");
     expect(initOutput.written).toContain("pattern.status-with-next-step.md");
+    expect(initOutput.written).toContain("anti-goal.median.md");
 
     // The scaffolded package is valid as written.
-    const validate = await runCli(["validate"], dir);
+    const validate = await runCli(["validate", "--format", "json"], dir);
     expect(validate.code).toBe(0);
+    const report = JSON.parse(validate.stdout);
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(0);
 
     // The ladder nodes surface in the gather menu with their kinds.
     const gather = await runCli(["gather", "--format", "json"], dir);
@@ -908,13 +916,13 @@ a deliberate provocation past the fingerprint — surfaced only on request
     const gather = await runCli(["gather", "--format", "json"], dir);
     expect(gather.code).toBe(0);
     expect(JSON.parse(gather.stdout).coverage).toEqual({
-      nodes: 4,
+      nodes: 5,
       concrete: 1,
-      guards: 1,
+      guards: 2,
     });
     const markdown = await runCli(["gather"], dir);
     expect(markdown.stdout).toContain(
-      "4 nodes · 1 carry concrete material · 1 guards",
+      "5 nodes · 1 carry concrete material · 2 guards",
     );
 
     const steering = await runCli(
@@ -1876,6 +1884,7 @@ a deliberate provocation past the fingerprint — surfaced only on request
     expect(add.code).toBe(0);
     const added = JSON.parse(add.stdout);
     expect(added.written).toEqual(["median-tells.md", "example.md.example"]);
+    expect(added.skipped).toEqual([]);
     await expect(
       readFile(join(dir, ".ghost", "checks", "example.md.example"), "utf-8"),
     ).resolves.toContain("references:");
@@ -1886,9 +1895,11 @@ a deliberate provocation past the fingerprint — surfaced only on request
       "utf-8",
     );
     expect(median).toContain("anti-goal.median");
-    expect(median).toContain("rule:median-hover-lift");
+    expect(median).toContain("anti-goal.median > Hover-lift");
     expect(median).toContain("prefers-reduced-motion");
-    expect(median).toContain("delete both together");
+    expect(median).toContain(
+      "`ghost validate` warns; delete the flag and its reference together.",
+    );
     expect(median).not.toContain("Vessel");
 
     // Running init twice is a usage error.
@@ -1905,6 +1916,53 @@ a deliberate provocation past the fingerprint — surfaced only on request
       (f: { rule: string }) => f.rule === "check-reference-unresolved",
     );
     expect(unresolved).toEqual([]);
+  });
+
+  it("checks init skips median tells when the median node is absent", async () => {
+    await runCli(["init", "--template", "minimal"], dir);
+    await rm(join(dir, ".ghost", "anti-goal.median.md"));
+
+    const add = await runCli(["checks", "init"], dir);
+    expect(add.code).toBe(0);
+    expect(add.stdout).toContain(
+      "skipped median-tells.md (no anti-goal.median node)",
+    );
+
+    await expect(
+      readFile(join(dir, ".ghost", "checks", "median-tells.md"), "utf-8"),
+    ).rejects.toThrow();
+
+    const validate = await runCli(["validate", "--format", "json"], dir);
+    expect(validate.code).toBe(0);
+    const report = JSON.parse(validate.stdout);
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(0);
+  });
+
+  it("validate warns when a pruned median heading orphans its paired check", async () => {
+    await runCli(["init"], dir);
+    await runCli(["checks", "init"], dir);
+    const path = join(dir, ".ghost", "anti-goal.median.md");
+    const median = await readFile(path, "utf-8");
+    await writeFile(
+      path,
+      median.replace(/### Side-stripe\n[\s\S]*?(?=\n### Cream surface)/, ""),
+    );
+
+    const validate = await runCli(["validate", "--format", "json"], dir);
+    expect(validate.code).toBe(0);
+    const report = JSON.parse(validate.stdout);
+    expect(report.warnings).toBe(1);
+    expect(report.issues).toEqual([
+      expect.objectContaining({
+        severity: "warning",
+        rule: "check-reference-heading-missing",
+        message: expect.stringContaining("anti-goal.median > Side-stripe"),
+      }),
+    ]);
+    expect(report.issues[0].message).toContain(
+      "if you pruned this rule from the node, delete its paired flag in the check too",
+    );
   });
 
   it("checks rejects unknown actions", async () => {

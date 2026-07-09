@@ -19,10 +19,7 @@ const INIT_PAYLOAD_ROOTS = [
 const BINARY_EXTENSIONS = new Set([".woff", ".woff2"]);
 
 export async function loadPackedPayload(name: string): Promise<TemplateFile[]> {
-  const payloadDir =
-    INIT_PAYLOAD_ROOTS.map((root) => join(root, name)).find((dir) =>
-      existsSync(dir),
-    ) ?? join(INIT_PAYLOAD_ROOTS[0], name);
+  const payloadDir = resolvePayloadDir(name);
   const files = await listPayloadFiles(payloadDir);
 
   return Promise.all(
@@ -30,6 +27,21 @@ export async function loadPackedPayload(name: string): Promise<TemplateFile[]> {
       relativePath: relative(payloadDir, path),
       content: await readPayloadFile(path),
     })),
+  );
+}
+
+export async function loadPayloadFile(
+  payload: string,
+  relativePath: string,
+): Promise<string> {
+  return readFile(join(resolvePayloadDir(payload), relativePath), "utf-8");
+}
+
+function resolvePayloadDir(name: string): string {
+  return (
+    INIT_PAYLOAD_ROOTS.map((root) => join(root, name)).find((dir) =>
+      existsSync(dir),
+    ) ?? join(INIT_PAYLOAD_ROOTS[0], name)
   );
 }
 

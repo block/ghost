@@ -6,6 +6,7 @@ references:
   - grammar.hierarchy
   - grammar.rhythm
   - grammar.surfaces
+  - anti-goal.median
 ---
 
 These assertions test relationships between token roles, not the values behind
