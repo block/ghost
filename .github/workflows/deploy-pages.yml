@@ -35,11 +35,11 @@ jobs:
       - name: Build Ghost CLI package
         run: pnpm --filter @design-intelligence/ghost build
 
-      - name: Build ghost-ui library
-        run: pnpm --filter @design-intelligence/vessel build:lib
+      - name: Build vessel-react library
+        run: pnpm --filter @design-intelligence/vessel-react build:lib
 
       - name: Build shadcn registry
-        run: pnpm --filter @design-intelligence/vessel build:registry
+        run: pnpm --filter @design-intelligence/vessel-react build:registry
 
       - name: Build docs site (base=/ghost/)
         env:
