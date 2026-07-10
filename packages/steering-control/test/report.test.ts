@@ -11,7 +11,7 @@ const FIXTURE = join(__dirname, "..", "fixtures", "metrics.sample.json");
 const cleanups: string[] = [];
 
 async function freshOutDir(): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), "steering-eval-report-"));
+  const dir = await mkdtemp(join(tmpdir(), "steering-control-report-"));
   cleanups.push(dir);
   return dir;
 }

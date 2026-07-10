@@ -91,7 +91,7 @@ edits and checks.
 | `packages/ghost` | yes: `@design-intelligence/ghost` | The public package. Ships the `ghost` CLI, node authoring, corpus validation, gather/pull/pulse, review packet assembly, and the unified skill bundle. Shared runtime lives in `packages/ghost/src/ghost-core`. |
 | `packages/vessel-react` | no | A standalone shadcn component registry plus `vessel-mcp` MCP server: the opinionated default reference body. Design-system-agnostic; nothing in Ghost requires it. |
 | `packages/vessel-light` | no | Vessel's design language as a portable `.ghost/` fingerprint package for agents writing raw HTML/CSS. No build, no dependencies. |
-| `packages/steering-eval` | no | Before/after evaluation harness: measures what handing an agent a `.ghost` fingerprint buys, as a deterministic `report.html`. |
+| `packages/steering-control` | no | Before/after evaluation harness: measures what handing an agent a `.ghost` fingerprint buys, as a deterministic `report.html`. |
 | `apps/docs` | no | Docs site. |
 
 ## CLI Commands

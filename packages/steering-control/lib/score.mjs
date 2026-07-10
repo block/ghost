@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseAsks } from "./asks.mjs";
+import { cellSameness } from "./sameness.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const defaultTellsPath = join(here, "..", "default-tells.json");
@@ -34,11 +35,11 @@ export function scoreAll(config) {
       const dir = join(config.out, arm, `ask-${ask.n}`);
       const htmlFiles = existingRunFiles(dir, ".html");
       if (htmlFiles.length === 0) continue;
-      const runScores = htmlFiles.map(
-        (file) =>
-          scoreHtml(readFileSync(join(dir, file), "utf8"), tells, {
-            discountTells: ask.discount,
-          }).score,
+      const htmls = htmlFiles.map((file) =>
+        readFileSync(join(dir, file), "utf8"),
+      );
+      const runScores = htmls.map(
+        (html) => scoreHtml(html, tells, { discountTells: ask.discount }).score,
       );
       const metas = existingRunFiles(dir, ".meta.json").map((file) =>
         JSON.parse(readFileSync(join(dir, file), "utf8")),
@@ -47,9 +48,8 @@ export function scoreAll(config) {
         arm,
         ask: ask.n,
         scores: summarize(runScores),
-        consistency: styleConsistency(
-          htmlFiles.map((file) => readFileSync(join(dir, file), "utf8")),
-        ),
+        consistency: styleConsistency(htmls),
+        sameness: cellSameness(htmls).mean,
         context: {
           tokensEstimate: mean(
             metas

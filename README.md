@@ -175,7 +175,7 @@ point at things that moved.
 | [`packages/ghost`](./packages/ghost) | The public `ghost` CLI, node authoring, fingerprint validation, gather/pull, review packet assembly, and the skill bundle. | yes: `@design-intelligence/ghost` |
 | [`packages/vessel-react`](./packages/vessel-react) | A standalone shadcn component registry plus `vessel-mcp` MCP server. | no |
 | [`packages/vessel-light`](./packages/vessel-light) | Vessel's design language as a portable `.ghost/` fingerprint for agents writing raw HTML/CSS. | no |
-| [`packages/steering-eval`](./packages/steering-eval) | Before/after evaluation harness: measures what a `.ghost` fingerprint buys as a self-contained `report.html`. | no |
+| [`packages/steering-control`](./packages/steering-control) | Before/after evaluation harness: measures what a `.ghost` fingerprint buys as a self-contained `report.html`. | no |
 | [`apps/docs`](./apps/docs) | Docs site. | no |
 
 ## Development

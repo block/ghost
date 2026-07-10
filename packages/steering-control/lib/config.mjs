@@ -122,7 +122,7 @@ function invalid(field) {
   fail(`missing/invalid field: ${field}\nExample: ${EXAMPLES[field]}`);
 }
 function fail(message) {
-  throw new Error(`steering-eval config error: ${message}`);
+  throw new Error(`steering-control config error: ${message}`);
 }
 function positiveInteger(value) {
   return Number.isInteger(value) && value > 0;

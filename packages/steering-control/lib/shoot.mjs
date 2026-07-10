@@ -31,7 +31,7 @@ function requireTool(name, purpose) {
   const probe = spawnSync(name, ["-version"], { encoding: "utf8" });
   if (probe.error?.code === "ENOENT") {
     console.error(
-      `steering-eval: ${name} is required for ${purpose}. Install ${name} and ensure it is on PATH.`,
+      `steering-control: ${name} is required for ${purpose}. Install ${name} and ensure it is on PATH.`,
     );
     process.exit(1);
   }
