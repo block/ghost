@@ -1,5 +1,5 @@
 <!-- ghost ref annotations
-  normative-for: register.data-density — the two smallest gap steps (--gap-xs, --gap-sm) as cell padding, mono tabular numerals right-aligned, muted-first hierarchy, hairline row borders with no zebra striping, small radius on the data surface, status as a text label in one functional color family, hover confirmation at --duration-fast. grammar.hierarchy — label + title header pairing, secondary export action stepping down the ladder.
+  normative-for: register.data-density — the two smallest gap steps (--gap-xs, --gap-sm) as cell padding, mono tabular numerals right-aligned, muted-first hierarchy, hairline row borders with no zebra striping, small radius on the data surface (surface--radius-sm), status as a text label in one functional color family, hover confirmation at --duration-fast. grammar.hierarchy — label + title header pairing, secondary export action stepping down the ladder.
   incidental: all customer names, emails, invoice ids, and amounts; the four-row count; the billing domain; the max content width.
 -->
 <!doctype html>
@@ -13,7 +13,7 @@
     <style>
       body { margin: 0; min-height: 100vh; padding: var(--page-container-side-gutter); }
       main { width: min(100%, calc(var(--page-container-side-gutter) * 56)); margin-inline: auto; }
-      .table-surface { overflow: hidden; border-radius: var(--radius-sm); }
+      .table-surface { overflow: hidden; }
       table { width: 100%; border-collapse: collapse; }
       th, td { padding: var(--gap-xs) var(--gap-sm); border-bottom: 1px solid var(--border); text-align: left; font-size: var(--text-body-size); line-height: 1.5; }
       th { color: var(--muted-foreground); font-weight: 500; }
@@ -36,7 +36,7 @@
         <button class="button button--secondary button--size-sm" type="button">Export CSV</button>
       </header>
 
-      <section class="surface surface--card surface--border table-surface" aria-label="Recent payments table">
+      <section class="surface surface--card surface--border surface--radius-sm table-surface" aria-label="Recent payments table">
         <table>
           <thead>
             <tr>

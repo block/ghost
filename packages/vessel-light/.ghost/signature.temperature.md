@@ -21,6 +21,13 @@ Destructive copy is direct because the risk is direct; softening the verb
 makes the interface less honest. Vessel never celebrates at the user. Trust
 comes from precision, restraint, and naming the truth plainly.
 
+The voice is a mechanical edit, not a mood — apply it as transformations:
+"Sorry, nothing here yet!" → "Nothing yet". "Awesome, your changes have been
+saved!" → "Changes saved". "Oops! Something went wrong" → "Payment failed —
+card expired". "You might want to consider updating your billing info" →
+"Update your billing info". Strip the apology, the applause, and the hedge;
+keep the fact and the fix.
+
 Vessel's current answer in motion: three durations — `--duration-fast`,
 `--duration-normal`, `--duration-slow` — and one ease, `--ease-spring`, which
 should feel resolved without feeling elastic. Hover confirms with color and

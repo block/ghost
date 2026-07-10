@@ -11,8 +11,8 @@ may not author around them. Raw color values are implementation detail, never
 product language.
 
 Author with semantic roles: `background`, `foreground`, `card`, `popover`,
-`primary`, `secondary`, `muted`, `accent`, `border`, `input`, `ring`, and the
-status roles. If a container needs a color, it first needs a role.
+`primary`, `secondary`, `muted`, `border`, `input`, `ring`, and the status
+roles. If a container needs a color, it first needs a role.
 
 The status roles — destructive, success, warning, info — exist only when
 meaning demands them. Destructive means destructive or error. Success means
