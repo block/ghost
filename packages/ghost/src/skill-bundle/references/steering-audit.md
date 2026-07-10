@@ -1,6 +1,6 @@
 ---
 name: steering-audit
-description: Audit a Ghost fingerprint for concrete steering coverage and guard routing.
+description: Audit a Ghost fingerprint for concrete steering coverage.
 ---
 
 # Recipe: Audit Steering Coverage
@@ -19,16 +19,13 @@ ghost pulse --format json
 
 If checks are installed and a diff exists, run `ghost review` too.
 
-## Headline the audit with concreteness + guards
+## Headline the audit with concreteness
 
 Report first:
 
 - **Concreteness coverage:** total nodes, concrete-material nodes, prose-only
   nodes. Concrete means non-empty `materials`, a fenced code block of at least 3
   lines, or a `## Skeleton` section.
-- **Guard routing:** how many guard nodes exist, whether they stay in default
-  gather, and whether `ghost review` can auto-offer matched guards via
-  materials.
 - **Pulse by concreteness:** concrete exposure/pull rate vs prose-only
   exposure/pull rate. This is the tuning instrument: if concrete nodes are not
   pulled, descriptions or task selection are failing.
@@ -39,8 +36,8 @@ Report first:
 | --- | --- | --- | --- |
 | Retrieval | strong / weak | descriptions, ids, `index` | sharpen descriptions or mention cold nodes in `index` |
 | Concreteness | strong / thin | materials, fenced examples, Skeletons | add concrete locators, exemplars, or opening structures |
-| Guards | routed / missing / vague | `posture: guard`, review packet | write not-X-instead-Y guards and material locators |
-| Consistency | clean / conflicting | concrete bodies vs rules/guards | update stale examples; examples average with rules |
+| Anti-goals | present / missing / vague | `anti-goal.*`, review packet | write not-X-instead-Y replacements and material locators |
+| Consistency | clean / conflicting | concrete bodies vs rules | update stale examples; examples average with rules |
 | Stance | present / missing | `index`, `principle.*` | write forced-choice principles |
 | Materials | present / missing | `materials`, inspect-pointers | point at real assets/components/tokens |
 | Exemplars | annotated / unannotated / missing | fenced samples, screenshots | say what to copy and what is incidental |

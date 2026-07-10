@@ -34,10 +34,12 @@ true, and an agent reads the relevant truths before building.
   Guidance stays in prose.
 - A node's **kind** comes from its filename prefix (`principle.density.md` →
   kind `principle`). A bare name (`voice.md`) has no kind.
-- The **glossary** declares the kind vocabulary, what each kind means, and optional consumption posture: `steady` by default, `posture: wild` for truths that require explicit request, or `posture: guard` for review-critical anti-goals with positive replacement.
-- The starter `index.md` node (id `index`) is the human-curated front door:
-  by convention it carries the non-negotiables and reading posture, and agents
-  pull it first.
+- The **glossary** declares the kind vocabulary and what each kind means.
+- The manifest's `cover` names the node `gather` inlines above the menu every
+  time. It carries essence, temperature, and brand-only refusals. Admission
+  test: a violation visible in one element belongs in that element's chapter;
+  visible in one view, in the composition chapter; visible only across the
+  whole body of work, on the cover.
 - There is **no hierarchy, no inheritance, no edges**. Directories are for browsing
   only; the model reads a flat menu.
 - **Checks** are optional review assertions in a flat `.ghost/checks/*.md`
@@ -62,27 +64,27 @@ ghost pulse         # summarize local gather/pull events while tuning
 
 `gather` does no selection. It emits the menu and you read the ask against it,
 then pull the truths you judge relevant. Its header includes a coverage line —
-total nodes, nodes carrying concrete material, and guards — so an all-prose or
-unrouted fingerprint is visible before generation.
+total nodes and nodes carrying concrete material — so an all-prose
+fingerprint is visible before generation.
 
 Prefer `ghost pull` over reading files directly: it emits the same prose,
 inlines small local materials by default, turns binary materials into
-inspect-pointers, orders the packet for steering (`index`, concrete nodes,
-prose rules, guards), extracts Skeletons dead last, and appends structured
+inspect-pointers, orders the packet for steering (cover when selected, concrete nodes,
+prose rules), extracts Skeletons dead last, and appends structured
 events to `.ghost/.events` for local tuning.
 
 `review` does no grading. It assembles an advisory packet: touched files,
-matched material-backed nodes, matched guard nodes, offered checks, probe
+matched material-backed nodes, offered checks, probe
 evidence, coverage gaps, and the diff. The host agent renders findings.
 
 ## CLI verbs
 
 | Verb | Purpose |
 |---|---|
-| `ghost init` | Scaffold `.ghost/` with the steering starter: manifest, glossary, `index.md`, and demo nodes for stance, composition, anti-goals, patterns, exemplars, materials, and decisions. `--template minimal` writes only the small manifest/glossary/index starter. `--with checks` also adds the checks directory. |
+| `ghost init` | Scaffold `.ghost/` with the skeleton starter: manifest, glossary, `brand.md`, foundation chapters, context nodes, and the cliche floor. `--template minimal` writes only the small manifest/glossary/index starter. `--with checks` also adds the checks directory. |
 | `ghost checks init` | Scaffold `.ghost/checks/` with an example review assertion. |
 | `ghost validate [file-or-dir]` | Validate manifest, nodes, material locators, check references, and glossary kind prefixes. |
-| `ghost gather [ask…] [--wild] [--format json]` | Emit the node menu for selection plus coverage line; log exposed ids. Default gather excludes wild kinds unless `--wild` is explicit. |
+| `ghost gather [ask…] [--format json]` | Emit the node menu for selection plus coverage line; log exposed ids. |
 | `ghost pull <id> [<id>…]` | Emit selected nodes' full bodies and materials in steering order; log selected/missed ids. |
 | `ghost review [--diff <path|->] [--base <ref>] [--format json] [--no-probes]` | Emit an advisory review packet for a diff (requires `.ghost/checks/`). |
 | `ghost export [--out <path>] [--no-checks] [--strict] [--format json]` | Package `.ghost/` as a portable brand artifact and report which material locators will not travel. |
@@ -109,11 +111,11 @@ against the unpacked package with `--package <dir>`.
 
 - Author or update the fingerprint: follow [references/capture.md](references/capture.md).
 - Author material-backed nodes: follow [references/blocks.md](references/blocks.md).
+- Choose which concrete code tiers the package carries: follow [references/concrete-tiers.md](references/concrete-tiers.md).
 - Choose the right human-agent authoring workflow: follow [references/authoring-scenarios.md](references/authoring-scenarios.md).
 - Adapt a starter (a body or the skeleton) to your brand: follow [references/adapting-a-starter.md](references/adapting-a-starter.md).
 - Gather applicable truths for a task: follow [references/recall.md](references/recall.md).
 - Shape a pre-generation brief: follow [references/brief.md](references/brief.md).
-- Explore deliberate provocations with wild nodes: follow [references/wild.md](references/wild.md).
 - Probe readiness before generating: follow [references/self-check.md](references/self-check.md).
 - Audit steering coverage: follow [references/steering-audit.md](references/steering-audit.md).
 - Understand the package shape: see [references/schema.md](references/schema.md).
@@ -128,7 +130,7 @@ conventions, but durable brand truth should be curated by the human.
 A silent fingerprint does not require stopping. Proceed from nearby product
 surfaces, local conventions, and ordinary reasoning when safe, and label that
 reasoning as provisional and non-Ghost-backed — unless the fingerprint itself
-declares a stricter silence posture (check the `index` node), which overrides
+declares a stricter silence posture (check the cover), which overrides
 this default. Ask a human before high-risk, irreversible, privacy, security,
 legal, or brand-defining choices.
 

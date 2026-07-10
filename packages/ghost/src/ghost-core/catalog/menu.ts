@@ -1,10 +1,5 @@
 import type { GhostCatalog } from "./types.js";
 
-export interface BuildCatalogMenuOptions {
-  /** Include kinds that declare `posture: wild`; default menus omit them. */
-  includeWild?: boolean;
-}
-
 /**
  * One entry in the gather menu: a node presented as `id` + `kind` +
  * `description` — the retrieval payload the agent selects against. The agent
@@ -22,12 +17,6 @@ export interface CatalogMenuEntry {
   concrete: boolean;
   /** True when this entry includes a Skeleton section. */
   hasSkeleton?: true;
-  /** Consumption posture for this menu entry. */
-  posture: "steady" | "wild" | "guard";
-  /** True when this entry pushes past the fingerprint rather than conforming to it. */
-  wild?: true;
-  /** True when this entry is review-critical guard posture. */
-  guard?: true;
 }
 
 /**
@@ -35,14 +24,10 @@ export interface CatalogMenuEntry {
  * sorted by id for stable output. A flat catalog — no anchor, no hierarchy;
  * the agent selects from it.
  */
-export function buildCatalogMenu(
-  catalog: GhostCatalog,
-  options: BuildCatalogMenuOptions = {},
-): CatalogMenuEntry[] {
+export function buildCatalogMenu(catalog: GhostCatalog): CatalogMenuEntry[] {
   const entries: CatalogMenuEntry[] = [];
 
   for (const node of catalog.nodes.values()) {
-    if (node.wild && !options.includeWild) continue;
     entries.push({
       id: node.id,
       ...(node.kind !== undefined ? { kind: node.kind } : {}),
@@ -52,9 +37,6 @@ export function buildCatalogMenu(
         : {}),
       concrete: node.concrete,
       ...(node.hasSkeleton ? { hasSkeleton: true as const } : {}),
-      posture: node.posture,
-      ...(node.wild ? { wild: true as const } : {}),
-      ...(node.guard ? { guard: true as const } : {}),
     });
   }
 

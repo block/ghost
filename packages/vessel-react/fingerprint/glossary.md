@@ -4,7 +4,6 @@ kinds:
   - name: primitive
   - name: pattern
   - name: anti-goal
-    posture: guard
 ---
 
 # contract

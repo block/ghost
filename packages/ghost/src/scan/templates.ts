@@ -23,10 +23,10 @@ export interface GhostInitTemplate {
   description: string;
   files(): TemplateFile[] | Promise<TemplateFile[]>;
 }
-function manifestFile(): TemplateFile {
+function manifestFile(cover?: string): TemplateFile {
   return {
     relativePath: "manifest.yml",
-    content: `schema: ${GHOST_FINGERPRINT_PACKAGE_SCHEMA}\nid: local\n`,
+    content: `schema: ${GHOST_FINGERPRINT_PACKAGE_SCHEMA}\nid: local\n${cover ? `cover: ${cover}\n` : ""}`,
   };
 }
 
@@ -55,7 +55,7 @@ const MINIMAL_TEMPLATE: GhostInitTemplate = {
   async files() {
     const medianFile = await medianTemplateFile();
     return [
-      manifestFile(),
+      manifestFile("index"),
       gitignoreFile(),
       {
         relativePath: "glossary.md",
@@ -65,9 +65,9 @@ kinds:
   - name: condition
   - name: exemplar
   - name: anti-goal
+  - name: cliche
   - name: asset
   - name: pattern
-#  - { name: provocation, posture: wild, purpose: a deliberate provocation past the fingerprint — surfaced only on request }
 ---
 
 # principle
@@ -88,8 +88,13 @@ evidence unless the node says the sample itself is normative.
 What this brand must never look, sound, or feel like — named generic patterns
 and rejected neighbors. Always-on, like a principle, but stated as the thing
 to steer away from.
-\`anti-goal.median\` is the model's floor, not the brand's taste. Gather
-anti-goals before styling anything greenfield.
+
+# cliche
+
+The defaults a generative model falls back on when no brand is steering it.
+These are nobody's brand. Each entry pairs the tired move with the honest
+replacement. Gather before styling anything greenfield; enforced by paired
+checks at review.
 
 # asset
 
@@ -153,7 +158,7 @@ const COMPOSITION_TEMPLATE: GhostInitTemplate = {
   async files() {
     const medianFile = await medianTemplateFile();
     return [
-      manifestFile(),
+      manifestFile("index"),
       gitignoreFile(),
       {
         relativePath: "glossary.md",
@@ -163,9 +168,9 @@ kinds:
   - name: condition
   - name: exemplar
   - name: anti-goal
+  - name: cliche
   - name: asset
   - name: pattern
-#  - { name: provocation, posture: wild, purpose: a deliberate provocation past the fingerprint — surfaced only on request }
 ---
 
 # principle
@@ -190,8 +195,13 @@ render travels with the prose.
 What this brand must never look, sound, or feel like — named generic patterns
 and rejected neighbors. Always-on, like a principle, but stated as the thing
 to steer away from.
-\`anti-goal.median\` is the model's floor, not the brand's taste. Gather
-anti-goals before styling anything greenfield.
+
+# cliche
+
+The defaults a generative model falls back on when no brand is steering it.
+These are nobody's brand. Each entry pairs the tired move with the honest
+replacement. Gather before styling anything greenfield; enforced by paired
+checks at review.
 
 # asset
 
@@ -312,25 +322,23 @@ When a blessed render of this pattern exists, add an \`exemplar.*\` node with
 const SKELETON_FILE_ORDER = new Map(
   [
     "glossary.md",
-    "index.md",
-    "anti-goal.median.md",
-    "grammar.hierarchy.md",
-    "grammar.rhythm.md",
-    "grammar.surfaces.md",
-    "grammar.motion.md",
-    "grammar.color-roles.md",
-    "grammar.conversation.md",
-    "signature.shape.md",
-    "signature.palette.md",
-    "signature.type.md",
-    "signature.temperature.md",
+    "brand.md",
+    "cliche.median.md",
+    "foundation.composition.md",
+    "foundation.color.md",
+    "foundation.type.md",
+    "foundation.controls.md",
+    "foundation.layout.md",
+    "foundation.motion.md",
+    "foundation.voice.md",
+    "context.conversation.md",
   ].map((path, index) => [path, index]),
 );
 
 const SKELETON_TEMPLATE: GhostInitTemplate = {
   name: "skeleton",
   description:
-    "Naked skeleton: the median floor + grammar law, with the signature dials left unanswered.",
+    "Naked skeleton: a brand cover, foundation chapters with open questions, and the cliche floor.",
   async files() {
     const skeletonFiles = [
       ...(await loadPackedPayload("skeleton")),
@@ -343,14 +351,14 @@ const SKELETON_TEMPLATE: GhostInitTemplate = {
             Number.MAX_SAFE_INTEGER) ||
         a.relativePath.localeCompare(b.relativePath),
     );
-    return [manifestFile(), gitignoreFile(), ...skeletonFiles];
+    return [manifestFile("brand"), gitignoreFile(), ...skeletonFiles];
   },
 };
 
 async function medianTemplateFile(): Promise<TemplateFile> {
   return {
-    relativePath: "anti-goal.median.md",
-    content: await loadPayloadFile("median", "anti-goal.median.md"),
+    relativePath: "cliche.median.md",
+    content: await loadPayloadFile("median", "cliche.median.md"),
   };
 }
 

@@ -4,7 +4,6 @@
 export {
   type AssembleCatalogInput,
   assembleCatalog,
-  type BuildCatalogMenuOptions,
   buildCatalogMenu,
   type CatalogMenuEntry,
   closestIds,
@@ -39,8 +38,6 @@ export {
   type GhostGlossaryDocument,
   GhostGlossaryFrontmatterSchema,
   type GhostGlossaryKind,
-  type GhostGlossaryKindPosture,
-  GhostGlossaryKindPostureSchema,
   type GhostGlossaryParseResult,
   parseGlossary,
 } from "./glossary.js";

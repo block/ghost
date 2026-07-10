@@ -42,8 +42,8 @@ Rules:
 
 - Do not add sections for every kind. Sections dilute instruction weight.
 - Treat `ghost pull` ordering as signal: stance first, concrete material next,
-  prose rules, guards late, Skeletons dead last.
+  prose rules, Skeletons dead last.
 - If a pulled Skeleton matches the surface, begin the artifact from it verbatim
   before filling.
-- Guards (`posture: guard`) are review-critical anti-goals: state the positive
-  replacement, not just the rejected pattern.
+- Anti-goals are review-critical: state the positive replacement, not just the
+  rejected pattern.

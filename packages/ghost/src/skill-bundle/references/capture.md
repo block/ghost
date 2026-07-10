@@ -19,14 +19,13 @@ Ghost treats the fingerprint package as canonical.
   glossary.md           # the kind vocabulary + what each kind means
   principle.trust.md    # a brand truth of kind `principle`
   pattern.invoice.md    # a pattern with an optional ## Skeleton
-  anti-goal.generic.md  # a guard when its kind declares posture: guard
+  anti-goal.generic.md  # a review-critical replacement rule
   voice.md              # a brand truth without a kind
 ```
 
 A **node** is a markdown file: a `description`, optional `materials`, and a
 prose body. The package is **flat** — no hierarchy, no inheritance, no edges. A
-node's kind comes from its filename prefix; the glossary declares the kinds and
-may declare consumption posture such as `posture: guard`.
+node's kind comes from its filename prefix; the glossary declares the kinds.
 
 ## Lead with an annotated exemplar over a complete artifact
 
@@ -119,18 +118,12 @@ Keep them short, specific, and attached to concrete objects whenever possible:
 Do not turn every observation into a rule. Stale or generic rules average
 against the exemplars and pull the packet back toward the median.
 
-## Write guards as replacement, not as blacklist
+## Write anti-goals as replacement, not as blacklist
 
-A guard is ordinary node prose whose kind declares `posture: guard` in
-`glossary.md`:
+An anti-goal is ordinary node prose whose kind the glossary defines as a
+review-critical replacement rule.
 
-```yaml
-kinds:
-  - name: anti-goal
-    posture: guard
-```
-
-A good guard states **not X; instead Y; recognize the switch by Z**. The
+A good anti-goal states **not X; instead Y; recognize the switch by Z**. The
 replacement matters because negation alone raises the salience of the rejected
 thing.
 
@@ -148,12 +141,12 @@ Instead: flat paper surfaces, one restrained accent, square alignment, and a
 next action backed by the number or source that justifies it.
 
 Recognize the switch: if removing the logo would make the surface look like any
-SaaS template, the guard failed even when every token is technically valid.
+SaaS template, the anti-goal failed even when every token is technically valid.
 ```
 
 The strongest anti-goal is silent: purged from exemplars, absent from starter
-structures, and enforced by a probe-backed check in review. Use guard prose to
-name the replacement; use checks and `probe:` commands to catch regressions.
+structures, and enforced by a probe-backed check in review. Use anti-goal prose
+to name the replacement; use checks and `probe:` commands to catch regressions.
 
 ## The node shape
 
@@ -210,9 +203,9 @@ human sees them.
 
 Two carve-outs come first, because they invert ordinary prose advice:
 
-- **Guards keep their negation.** "Not X; instead Y; recognize the switch by Z"
-  is the required guard form. Naming the rejected thing is the guard's job;
-  never "improve" a guard by stating only the replacement.
+- **Anti-goals keep their negation.** "Not X; instead Y; recognize the switch
+  by Z" is the required anti-goal form. Naming the rejected thing is the
+  anti-goal's job; never "improve" one by stating only the replacement.
 - **Invariants keep their absolutes.** "Never" and "always" are correct in an
   invariant when the hard line is real and human-ratified. Absolutes are lazy
   only when they stand in for an uncurated stance.
@@ -261,7 +254,7 @@ strongest form that fixes the observed failure.
 | --- | --- |
 | missing the truth | sharper `description` / `index` mention |
 | inventing values | `asset.*` node with materials and exact names |
-| producing generic output | `anti-goal.*` guard plus annotated `exemplar.*` |
+| producing generic output | `anti-goal.*` replacement plus annotated `exemplar.*` |
 | choosing the wrong structure | `pattern.*` with bound/open and a `## Skeleton` |
 | crossing hard lines | invariant prose plus a check, optionally with `probe:` |
 | applying guidance too broadly | condition in prose |
@@ -324,9 +317,7 @@ feed-back only; they are never gathered.
 Declare the kinds you will use in `glossary.md` — the frontmatter `kinds` list
 plus a `#` section per kind explaining its meaning and normative weight. Kinds
 are your choice; Ghost ships no fixed vocabulary. A node's filename prefix must
-match a declared kind (or the node has no kind). Use `posture: guard` for kinds
-whose nodes are review-critical replacements; use `posture: wild` only for
-truths that should stay opt-in.
+match a declared kind (or the node has no kind).
 
 The glossary is a dictionary of every term with defined meaning in the corpus.
 A root `voice.md` with a `voice` glossary entry declares the scope for future

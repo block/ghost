@@ -1,6 +1,6 @@
 ---
 name: schema
-description: The Ghost fingerprint package shape: flat nodes, derived concreteness, Skeletons, guards, probes, and checks.
+description: The Ghost fingerprint package shape: flat nodes, derived concreteness, Skeletons, probes, and checks.
 ---
 
 # Ghost Fingerprint Package Reference
@@ -9,8 +9,8 @@ Canonical package:
 
 ```text
 .ghost/
-  manifest.yml        ghost.fingerprint-package/v1: schema + id
-  glossary.md         kind vocabulary + meanings + optional posture
+  manifest.yml        ghost.fingerprint-package/v1: schema + id + optional cover
+  glossary.md         kind vocabulary + meanings
   materials/          bundled materials; never a node source
   <kind>.<slug>.md    a brand truth of a declared kind
   <slug>.md           a brand truth without a kind
@@ -20,25 +20,16 @@ Canonical package:
 Reserved at the root: `manifest.yml`, `glossary.md`, `materials/`, and
 `checks/`. Every other `*.md` is a node.
 
-## Glossary posture
+## Manifest
 
-A kind may declare posture. Omitted posture defaults to `steady`.
+`manifest.yml` declares `schema`, `id`, and optionally `cover`. `cover` is a
+node id. When present and resolved, `ghost gather` inlines that node above the
+menu on every invocation. Use it for what selection cannot reliably retrieve:
+essence, temperature, and brand-only refusals.
 
-```yaml
-kinds:
-  - name: principle
-  - name: anti-goal
-    posture: guard
-  - name: provocation
-    posture: wild
-```
-
-- `steady`: default, gathered normally.
-- `guard`: review-critical negative space. Stays in default gather, appears at
-  the tail of `ghost pull`, and is auto-offered by `ghost review` when its
-  materials match touched files.
-- `wild`: deliberate push beyond the fingerprint. Default gather excludes wild
-  kinds unless `--wild` is explicit.
+`ghost validate` enforces the cover contract: a missing referenced cover is an
+error, an undeclared cover is a warning, and a cover body past the one-screen
+budget (1500 bytes) is a warning.
 
 ## Nodes
 
@@ -110,10 +101,10 @@ probes are the same class as npm scripts; Git review is the boundary.
 
 ## Gather / Pull / Review
 
-- `ghost gather` emits the node menu, including coverage counts. Checks are
-  invisible.
+- `ghost gather` emits the cover above the node menu, then coverage counts.
+  Checks are invisible.
 - `ghost pull` emits selected nodes in steering order and inlines small local
   materials. Binary local materials become inspect-pointers.
 - `ghost review` matches diff files to local node materials, offers relevant
-  checks and matched guard nodes, embeds probe evidence, and emits a packet for
-  the host agent to judge.
+  checks, embeds probe evidence, and emits a packet for the host agent to
+  judge.

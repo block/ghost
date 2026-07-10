@@ -4,7 +4,6 @@ kinds:
   - name: signature
   - name: register
   - name: anti-goal
-    posture: guard
 ---
 
 # grammar

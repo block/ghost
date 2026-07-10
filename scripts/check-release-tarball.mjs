@@ -66,7 +66,7 @@ try {
     "package.json",
     "dist/bin.js",
     "dist/cli.js",
-    "dist/init-payloads/median/anti-goal.median.md",
+    "dist/init-payloads/median/cliche.median.md",
     "dist/init-payloads/median/median-tells.md",
     "dist/init-payloads/vessel-light/manifest.yml",
     "dist/init-payloads/vessel-light/materials/fonts/HKGrotesk-Regular.woff2",

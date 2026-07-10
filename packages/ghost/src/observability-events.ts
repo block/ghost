@@ -10,8 +10,6 @@ export type GatherObservabilityEvent = {
   ask?: string;
   menu: string[];
   materials?: string[];
-  wild?: boolean;
-  wildIds?: string[];
 };
 
 export type PullMiss = {
@@ -23,7 +21,6 @@ export type PullObservabilityEvent = {
   ts: string;
   event: "pull";
   ids: string[];
-  wildIds?: string[];
   missed?: PullMiss[];
   inlinedMaterials?: number;
   omittedMaterials?: number;

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-09T11:06:22.019Z",
+  "generatedAt": "2026-07-10T20:19:23.863Z",
   "tools": [
     {
       "tool": "ghost",
@@ -116,14 +116,6 @@
               "description": "Output format: markdown or json",
               "default": "markdown",
               "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--wild",
-              "name": "wild",
-              "description": "Include wild-posture nodes in the menu",
-              "default": null,
-              "takesValue": false,
               "negated": false
             }
           ]

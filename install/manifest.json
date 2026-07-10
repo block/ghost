@@ -13,10 +13,10 @@
     "references/blocks.md",
     "references/brief.md",
     "references/capture.md",
+    "references/concrete-tiers.md",
     "references/recall.md",
     "references/schema.md",
     "references/self-check.md",
-    "references/steering-audit.md",
-    "references/wild.md"
+    "references/steering-audit.md"
   ]
 }

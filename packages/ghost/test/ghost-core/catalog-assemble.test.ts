@@ -69,17 +69,4 @@ describe("assembleCatalog (flat catalog assembly)", () => {
     expect(catalog.nodes.get("pattern.shell")?.hasSkeleton).toBe(true);
     expect(catalog.nodes.get("principle.short")?.concrete).toBe(false);
   });
-
-  it("marks nodes wild from glossary posture input", () => {
-    const catalog = assembleCatalog({
-      placedNodes: [
-        placed("principle.trust", { kind: "principle" }),
-        placed("provocation.noise", { kind: "provocation" }),
-      ],
-      wildKinds: ["provocation"],
-    });
-
-    expect(catalog.nodes.get("principle.trust")?.wild).toBeUndefined();
-    expect(catalog.nodes.get("provocation.noise")?.wild).toBe(true);
-  });
 });

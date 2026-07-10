@@ -91,7 +91,9 @@ export function registerPullCommand(cli: CAC): void {
           (id) => catalog.nodes.get(id) as GhostCatalogNode,
         );
         const nodes =
-          opts.order === "given" ? givenNodes : orderPulledNodes(givenNodes);
+          opts.order === "given"
+            ? givenNodes
+            : orderPulledNodes(givenNodes, loaded.manifest.cover);
         const pulledNodes = await resolvePulledNodes(
           nodes,
           paths.packageDir,
@@ -100,15 +102,11 @@ export function registerPullCommand(cli: CAC): void {
         const counts = sumMaterialCounts(pulledNodes);
 
         if (opts.events !== false) {
-          const wildIds = nodes
-            .filter((node) => node.wild)
-            .map((node) => node.id);
           await appendGhostEvent(paths.packageDir, {
             event: "pull",
             ids: known,
             inlinedMaterials: counts.inlined,
             omittedMaterials: counts.omitted,
-            ...(wildIds.length > 0 ? { wildIds } : {}),
             ...(missed.length > 0 ? { missed } : {}),
           });
         }
@@ -138,9 +136,6 @@ export function registerPullCommand(cli: CAC): void {
                             : materials.materials.map(formatJsonMaterial),
                       }
                     : {}),
-                  posture: node.posture,
-                  ...(node.wild ? { wild: true as const } : {}),
-                  ...(node.guard ? { guard: true as const } : {}),
                   body: stripSkeletonSections(node.body),
                 })),
                 skeletons: pulledSkeletons(pulledNodes),
@@ -179,17 +174,25 @@ async function resolvePulledNodes(
   );
 }
 
-function orderPulledNodes(nodes: GhostCatalogNode[]): GhostCatalogNode[] {
+function orderPulledNodes(
+  nodes: GhostCatalogNode[],
+  coverId: string | undefined,
+): GhostCatalogNode[] {
   return nodes
-    .map((node, index) => ({ node, index, bucket: steeringBucket(node) }))
+    .map((node, index) => ({
+      node,
+      index,
+      bucket: steeringBucket(node, coverId),
+    }))
     .sort((a, b) => a.bucket - b.bucket || a.index - b.index)
     .map((entry) => entry.node);
 }
 
-function steeringBucket(node: GhostCatalogNode): number {
-  if (node.id === "index" || node.slug === "index") return 0;
-  if (node.guard) return 3;
-  if (node.wild) return 2;
+function steeringBucket(
+  node: GhostCatalogNode,
+  coverId: string | undefined,
+): number {
+  if (coverId !== undefined && node.id === coverId) return 0;
   if (node.concrete) return 1;
   return 2;
 }
@@ -264,9 +267,7 @@ function formatPullMarkdown(nodes: PulledNode[]): string {
   const sections: string[] = [];
   for (const { node, materials } of nodes) {
     const kind = node.kind ? ` _(${node.kind})_` : "";
-    const wild = node.wild ? " _(wild)_" : "";
-    const guard = node.guard ? " _(guard · review-critical)_" : "";
-    const lines = [`# \`${node.id}\`${kind}${wild}${guard}`];
+    const lines = [`# \`${node.id}\`${kind}`];
     if (node.description) lines.push("", `> ${node.description}`);
     lines.push("", stripSkeletonSections(node.body).trim());
     if (materials.materials.length > 0) {

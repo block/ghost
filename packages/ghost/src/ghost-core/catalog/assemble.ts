@@ -22,10 +22,6 @@ export interface PlacedNode {
 export interface AssembleCatalogInput {
   /** Local nodes located in the package files. */
   placedNodes?: PlacedNode[];
-  /** Kinds whose glossary kind declares `posture: wild`. */
-  wildKinds?: Iterable<string>;
-  /** Kinds whose glossary kind declares `posture: guard`. */
-  guardKinds?: Iterable<string>;
 }
 
 /**
@@ -35,8 +31,6 @@ export interface AssembleCatalogInput {
  */
 export function assembleCatalog(input: AssembleCatalogInput): GhostCatalog {
   const nodes = new Map<string, GhostCatalogNode>();
-  const wildKinds = new Set(input.wildKinds ?? []);
-  const guardKinds = new Set(input.guardKinds ?? []);
 
   for (const placed of input.placedNodes ?? []) {
     const fm = placed.doc.frontmatter;
@@ -44,12 +38,6 @@ export function assembleCatalog(input: AssembleCatalogInput): GhostCatalog {
       materials: fm.materials,
       body: placed.doc.body,
     });
-    const posture =
-      placed.kind !== undefined && wildKinds.has(placed.kind)
-        ? "wild"
-        : placed.kind !== undefined && guardKinds.has(placed.kind)
-          ? "guard"
-          : "steady";
     nodes.set(placed.id, {
       id: placed.id,
       ...(placed.kind !== undefined ? { kind: placed.kind } : {}),
@@ -58,9 +46,6 @@ export function assembleCatalog(input: AssembleCatalogInput): GhostCatalog {
       ...(fm.materials !== undefined ? { materials: fm.materials } : {}),
       concrete,
       hasSkeleton: extractSkeletonSections(placed.doc.body).length > 0,
-      posture,
-      ...(posture === "wild" ? { wild: true as const } : {}),
-      ...(posture === "guard" ? { guard: true as const } : {}),
       body: placed.doc.body,
     });
   }

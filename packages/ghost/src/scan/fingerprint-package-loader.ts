@@ -4,7 +4,6 @@ import {
   assembleCatalog,
   type GhostFingerprintPackageManifest,
   GhostFingerprintPackageManifestSchema,
-  parseGlossary,
   UsageError,
 } from "#ghost-core";
 import { isMissingPathError } from "../internal/fs.js";
@@ -37,12 +36,7 @@ export async function loadFingerprintPackage(
   // Per-node schema failures are collected as `invalid`.
   const { nodes: placedNodes, invalid } = await loadNodeFiles(paths.packageDir);
   const checkFiles = await loadCheckFiles(paths.packageDir);
-  const postureKinds = await readPostureGlossaryKinds(paths.glossary);
-  const catalog = assembleCatalog({
-    placedNodes,
-    wildKinds: postureKinds.wild,
-    guardKinds: postureKinds.guard,
-  });
+  const catalog = assembleCatalog({ placedNodes });
 
   return {
     manifest,
@@ -76,29 +70,6 @@ export function lintFingerprintPackageManifest(
     );
     return;
   }
-}
-
-async function readPostureGlossaryKinds(
-  glossaryPath: string,
-): Promise<{ wild: string[]; guard: string[] }> {
-  let raw: string;
-  try {
-    raw = await readFile(glossaryPath, "utf-8");
-  } catch (err) {
-    if (isMissingPathError(err)) return { wild: [], guard: [] };
-    throw err;
-  }
-
-  const result = parseGlossary(raw);
-  if (result.glossary === null) return { wild: [], guard: [] };
-  return {
-    wild: result.glossary.kinds
-      .filter((kind) => kind.posture === "wild")
-      .map((kind) => kind.name),
-    guard: result.glossary.kinds
-      .filter((kind) => kind.posture === "guard")
-      .map((kind) => kind.name),
-  };
 }
 
 function parseManifest(
