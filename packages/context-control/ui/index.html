@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>context-control</title>
+<style>
+  :root {
+    --bg: #101012;
+    --panel: #17171a;
+    --line: #2a2a30;
+    --ink: #e8e6e1;
+    --dim: #8a8894;
+    --accent: #ffd23e;
+    --danger: #ff5d5d;
+    --expected: #7ab8ff;
+    --mono: "SF Mono", ui-monospace, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 14px/1.5 var(--mono);
+  }
+  header {
+    display: flex; align-items: baseline; gap: 1.5rem;
+    padding: 0.9rem 1.4rem; border-bottom: 1px solid var(--line);
+    position: sticky; top: 0; background: var(--bg); z-index: 5;
+  }
+  header h1 { font-size: 14px; margin: 0; letter-spacing: 0.04em; }
+  header h1 b { color: var(--accent); font-weight: 600; }
+  nav { display: flex; gap: 0.25rem; }
+  nav button {
+    background: none; border: 1px solid transparent; color: var(--dim);
+    font: inherit; padding: 0.2rem 0.7rem; cursor: pointer; border-radius: 3px;
+  }
+  nav button.on { color: var(--ink); border-color: var(--line); background: var(--panel); }
+  #coverage { margin-left: auto; color: var(--dim); font-size: 12px; }
+  main { padding: 1.2rem 1.4rem 4rem; }
+  section.hidden, #drawer.hidden { display: none; }
+
+  /* viewer */
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 0.35rem 0.8rem 0.35rem 0; vertical-align: top; }
+  th { color: var(--dim); font-weight: 400; font-size: 12px; border-bottom: 1px solid var(--line); }
+  tr.node { cursor: pointer; }
+  tr.node:hover td { background: var(--panel); }
+  td.id { white-space: nowrap; color: var(--accent); }
+  td.kind { color: var(--dim); white-space: nowrap; }
+  .badge {
+    font-size: 10px; padding: 0 0.35rem; border-radius: 3px;
+    border: 1px solid currentColor; margin-left: 0.4rem;
+  }
+  .badge.mat { color: var(--dim); }
+  #drawer {
+    position: fixed; top: 0; right: 0; bottom: 0; width: min(680px, 90vw);
+    background: var(--panel); border-left: 1px solid var(--line);
+    padding: 1.2rem 1.4rem; overflow: auto; z-index: 10;
+    white-space: pre-wrap;
+  }
+  #drawer h2 { margin: 0 0 0.4rem; font-size: 14px; color: var(--accent); }
+  #drawer .close { float: right; cursor: pointer; color: var(--dim); background: none; border: 0; font: inherit; }
+
+  /* bench */
+  .bench-controls { display: flex; gap: 0.6rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  input[type="text"], input[type="number"], select {
+    background: var(--panel); border: 1px solid var(--line); color: var(--ink);
+    font: inherit; padding: 0.4rem 0.6rem; border-radius: 3px;
+  }
+  #ask { flex: 1; min-width: 320px; }
+  #trials { width: 4.5rem; }
+  button.run {
+    background: var(--accent); color: #101012; border: 0; font: inherit;
+    font-weight: 600; padding: 0.4rem 1rem; border-radius: 3px; cursor: pointer;
+  }
+  button.run:disabled { opacity: 0.4; cursor: wait; }
+  #suiteBtn { background: none; border: 1px solid var(--line); color: var(--dim); font: inherit; padding: 0.4rem 0.8rem; border-radius: 3px; cursor: pointer; }
+  .scores { display: flex; gap: 2rem; margin: 0.8rem 0 1rem; color: var(--dim); font-size: 12px; }
+  .scores b { color: var(--ink); font-size: 16px; display: block; }
+  .heat { border-collapse: collapse; }
+  .heat td, .heat th { padding: 0.15rem 0.4rem; font-size: 12px; }
+  .heat th.ask-col { max-width: 200px; font-size: 11px; color: var(--dim); vertical-align: bottom; }
+  .heat td.id { cursor: pointer; }
+  .cell {
+    width: 26px; height: 18px; border-radius: 2px; background: #222;
+    display: inline-block; text-align: center; font-size: 10px; line-height: 18px;
+    color: transparent;
+  }
+  .cell:hover { color: var(--ink); }
+  .cell.expected { outline: 1px solid var(--expected); }
+  .legend { color: var(--dim); font-size: 11px; margin: 0.6rem 0 1rem; }
+  .flag { color: var(--danger); font-size: 11px; }
+
+  /* replay */
+  .session { border: 1px solid var(--line); border-radius: 4px; padding: 0.8rem 1rem; margin-bottom: 0.8rem; }
+  .session .ts { color: var(--dim); font-size: 11px; }
+  .session .ask { color: var(--accent); }
+  .session .pull-line { margin-left: 1rem; }
+  .empty { color: var(--dim); padding: 2rem 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1><b>context-control</b> · selection is the unit</h1>
+  <nav>
+    <button type="button" data-tab="viewer" class="on">fingerprint</button>
+    <button type="button" data-tab="bench">bench</button>
+    <button type="button" data-tab="replay">replay</button>
+  </nav>
+  <span id="coverage"></span>
+</header>
+<main>
+  <section id="viewer">
+    <table>
+      <thead><tr><th>id</th><th>kind</th><th>description — the retrieval payload</th></tr></thead>
+      <tbody id="menuRows"></tbody>
+    </table>
+  </section>
+
+  <section id="bench" class="hidden">
+    <div class="bench-controls">
+      <input id="ask" type="text" placeholder="ask — e.g. a dense settings screen for notification preferences" />
+      <select id="model" title="model"></select>
+      <input id="trials" type="number" value="8" min="1" max="50" title="trials" />
+      <button type="button" class="run" id="runBtn">run</button>
+      <button type="button" id="suiteBtn" title="run every ask in asks.md">run suite</button>
+    </div>
+    <div class="legend">
+      Each column is one ask; each cell is the fraction of trials that selected the node.
+      Solid = confident description. Speckled = coin-flip. Empty row = invisible node.
+      Blue outline = in the ask's expected set. The cover is already in context and
+      is not part of the menu. Selection runs the ghost skill's recall protocol;
+      live agents additionally carry task
+      context (open files, prior turns) this bench does not.
+    </div>
+    <div id="benchScores" class="scores"></div>
+    <div id="heatWrap" style="overflow:auto"></div>
+  </section>
+
+  <section id="replay" class="hidden">
+    <div id="sessions"></div>
+  </section>
+</main>
+<div id="drawer" class="hidden"></div>
+
+<script>
+const state = { menu: [], asks: [], results: [] };
+
+const $ = (sel) => document.querySelector(sel);
+const api = (path, opts) => fetch(path, opts).then((r) => r.json());
+
+// --- tabs ---
+document.querySelectorAll("nav button").forEach((btn) => {
+  btn.onclick = () => {
+    for (const b of document.querySelectorAll("nav button")) {
+      b.classList.toggle("on", b === btn);
+    }
+    for (const tab of ["viewer", "bench", "replay"]) {
+      $(`#${tab}`).classList.toggle("hidden", tab !== btn.dataset.tab);
+    }
+    if (btn.dataset.tab === "replay") loadReplay();
+  };
+});
+
+// --- viewer ---
+async function loadMenu() {
+  const data = await api("/api/menu");
+  state.menu = data.nodes;
+  const c = data.coverage;
+  $("#coverage").textContent =
+    `${c.nodes} nodes · ${c.concrete} concrete` +
+    (c.undescribed ? ` · ${c.undescribed} undescribed` : "");
+  $("#menuRows").innerHTML = state.menu.map((n) => `
+    <tr class="node" data-id="${n.id}">
+      <td class="id">${n.id}${n.materials ? `<span class="badge mat">${n.materials} mat</span>` : ""}</td>
+      <td class="kind">${n.kind ?? ""}</td>
+      <td>${n.description ?? '<span style="color:var(--danger)">no description — invisible at selection time</span>'}</td>
+    </tr>`).join("");
+  document.querySelectorAll("tr.node").forEach((row) => {
+    row.onclick = () => openDrawer(row.dataset.id);
+  });
+}
+
+async function openDrawer(id) {
+  const drawer = $("#drawer");
+  drawer.classList.remove("hidden");
+  drawer.innerHTML = `<button class="close">close ×</button><h2>${id}</h2>loading pull…`;
+  drawer.querySelector(".close").onclick = () => drawer.classList.add("hidden");
+  const data = await api(`/api/pull?id=${encodeURIComponent(id)}`);
+  const node = data.nodes?.[0];
+  drawer.innerHTML = `<button class="close">close ×</button><h2>${id}</h2>` +
+    (node
+      ? `<p style="color:var(--dim)">${node.description ?? ""}</p><hr style="border:0;border-top:1px solid var(--line)" />${escapeHtml(node.body)}`
+      : `<p class="flag">pull returned nothing (${escapeHtml(JSON.stringify(data))})</p>`);
+  drawer.querySelector(".close").onclick = () => drawer.classList.add("hidden");
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[ch]));
+}
+
+// --- bench ---
+$("#runBtn").onclick = () => runBench([{ ask: $("#ask").value.trim() }]);
+$("#suiteBtn").onclick = async () => {
+  if (state.asks.length === 0) {
+    const data = await api("/api/asks");
+    state.asks = data.asks;
+  }
+  if (state.asks.length === 0) return alert("no asks.md loaded — pass --asks to context-control");
+  runBench(state.asks.map((a) => ({
+    ask: a.ask,
+    expected: a.expected,
+    poison: a.poison,
+  })));
+};
+
+async function runBench(asks) {
+  if (!asks[0]?.ask) return;
+  $("#runBtn").disabled = true;
+  const data = await api("/api/bench", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      asks,
+      model: $("#model").value,
+      trials: Number($("#trials").value) || 8,
+    }),
+  });
+  $("#runBtn").disabled = false;
+  state.results = data.results;
+  renderScores(data);
+  renderHeatmap(data.results);
+}
+
+function renderScores(data) {
+  const results = data.results;
+  const mean = (xs) => xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null;
+  const fmt = (x) => x === null || x === undefined || Number.isNaN(x) ? "—" : x.toFixed(2);
+  const cons = mean(results.map((r) => r.scores.consistency));
+  const prec = mean(results.filter((r) => r.scores.precision !== undefined).map((r) => r.scores.precision));
+  const rec = mean(results.filter((r) => r.scores.recall !== undefined).map((r) => r.scores.recall));
+  const poison = mean(results.filter((r) => r.scores.poisonRate !== undefined).map((r) => r.scores.poisonRate));
+  const unknownIds = results.reduce((sum, result) => sum + result.unknownIds.length, 0);
+  const cov = data.coverage;
+  $("#benchScores").innerHTML = `
+    <span><b>${fmt(cons)}</b>consistency</span>
+    <span><b>${fmt(prec)}</b>precision</span>
+    <span><b>${fmt(rec)}</b>recall</span>
+    <span><b>${fmt(poison)}</b>poison rate</span>
+    <span><b>${unknownIds}</b>unknown ids</span>
+    <span><b>${cov.selectedEver}/${cov.nodes}</b>nodes ever selected</span>
+    ${cov.dead.length ? `<span class="flag">dead: ${cov.dead.join(", ")}</span>` : ""}`;
+}
+
+function renderHeatmap(results) {
+  const asks = results.map((r) => r.ask);
+  const rows = state.menu.map((n) => {
+    const cells = results.map((r) => {
+      const rate = r.rates[n.id] ?? 0;
+      const expected = r.expected?.includes(n.id);
+      const bg = rate === 0 ? "#222" : `rgba(255, 210, 62, ${0.15 + rate * 0.85})`;
+      return `<td><span class="cell${expected ? " expected" : ""}" style="background:${bg}" title="${n.id} · ${Math.round(rate * 100)}%">${Math.round(rate * 100)}</span></td>`;
+    }).join("");
+    return `<tr><td class="id" style="color:var(--accent);white-space:nowrap" onclick="openDrawer('${n.id}')">${n.id}</td>${cells}</tr>`;
+  }).join("");
+  $("#heatWrap").innerHTML = `<table class="heat">
+    <thead><tr><th></th>${asks.map((a) => `<th class="ask-col" title="${escapeHtml(a)}">${escapeHtml(a.slice(0, 42))}${a.length > 42 ? "…" : ""}</th>`).join("")}</tr></thead>
+    <tbody>${rows}</tbody></table>`;
+}
+
+// --- replay ---
+async function loadReplay() {
+  const data = await api("/api/tape");
+  const wrap = $("#sessions");
+  if (data.sessions.length === 0) {
+    wrap.innerHTML = `<div class="empty">No events on the tape yet. Real gather/pull calls against this package will show up here — the field keeps the bench honest.</div>`;
+    return;
+  }
+  wrap.innerHTML = data.sessions.map((s) => {
+    const g = s.gather;
+    const head = g
+      ? `<div><span class="ts">${g.ts}</span> gather ${g.ask ? `— <span class="ask">${escapeHtml(g.ask)}</span>` : '<span class="flag">(no ask recorded)</span>'} · menu of ${g.menu.length}</div>`
+      : `<div><span class="flag">pulls with no preceding gather</span></div>`;
+    const pulls = s.pulls.map((p) =>
+      `<div class="pull-line"><span class="ts">${p.ts}</span> pull → ${p.ids.join(", ")}${p.missed?.length ? ` <span class="flag">missed: ${p.missed.join(", ")}</span>` : ""}</div>`
+    ).join("") || `<div class="pull-line" style="color:var(--dim)">no pulls followed — menu read, nothing selected</div>`;
+    return `<div class="session">${head}${pulls}</div>`;
+  }).join("");
+}
+
+async function loadModels() {
+  const data = await api("/api/models");
+  $("#model").innerHTML = data.models
+    .map((m) => `<option value="${m}">${m}</option>`)
+    .join("");
+}
+
+loadMenu();
+loadModels();
+</script>
+</body>
+</html>

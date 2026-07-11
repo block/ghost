@@ -87,17 +87,19 @@ writes, and decides.
 
 ```text
 .ghost/
-  manifest.yml          # schema + package id (the anchor)
+  manifest.yml          # schema + package id + optional cover id
   glossary.md           # your kind vocabulary + what each kind means
-  index.md              # the curated front door
+  brand.md              # example cover inlined by gather
   principle.trust.md    # a brand truth of kind `principle`
   asset.logo.md         # a truth that may point at concrete materials
   checks/               # optional review assertions; never nodes
 ```
 
-The fingerprint is a **flat set of nodes**. A node is one markdown file: a
-`description` in frontmatter, optional `materials`, and a brand truth in the
-prose body.
+The fingerprint is a **flat set of nodes**. The optional `cover:` in
+`manifest.yml` may name any node; `ghost gather` inlines it before the menu.
+The default skeleton calls that node `brand`, but the filename is not reserved.
+A node is one markdown file: a `description` in frontmatter, optional
+`materials`, and a brand truth in the prose body.
 
 ```markdown
 ---
@@ -175,7 +177,7 @@ point at things that moved.
 | [`packages/ghost`](./packages/ghost) | The public `ghost` CLI, node authoring, fingerprint validation, gather/pull, review packet assembly, and the skill bundle. | yes: `@design-intelligence/ghost` |
 | [`packages/vessel-react`](./packages/vessel-react) | A standalone shadcn component registry plus `vessel-mcp` MCP server. | no |
 | [`packages/vessel-light`](./packages/vessel-light) | Vessel's design language as a portable `.ghost/` fingerprint for agents writing raw HTML/CSS. | no |
-| [`packages/steering-eval`](./packages/steering-eval) | Before/after evaluation harness: measures what a `.ghost` fingerprint buys as a self-contained `report.html`. | no |
+| [`packages/steering-control`](./packages/steering-control) | Before/after evaluation harness: measures what a `.ghost` fingerprint buys as a self-contained `report.html`. | no |
 | [`apps/docs`](./apps/docs) | Docs site. | no |
 
 ## Development

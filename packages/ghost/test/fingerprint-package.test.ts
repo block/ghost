@@ -86,96 +86,30 @@ describe("split fingerprint package", () => {
     });
   });
 
-  it("parses glossary kind posture and defaults to steady", () => {
+  it("parses glossary kinds and their prose purposes", () => {
     const parsed = parseGlossary(`---
 kinds:
   - name: principle
-  - name: provocation
-    posture: wild
   - name: anti-goal
-    posture: guard
 ---
 
 # principle
 
 Floor.
 
-# provocation
-
-Provocation.
-
 # anti-goal
 
-Replacement guard.
+Replacement rule.
 `);
 
     expect(parsed.glossary?.kinds).toEqual([
-      { name: "principle", posture: "steady", purpose: "Floor." },
-      { name: "provocation", posture: "wild", purpose: "Provocation." },
-      { name: "anti-goal", posture: "guard", purpose: "Replacement guard." },
+      { name: "principle", purpose: "Floor." },
+      { name: "anti-goal", purpose: "Replacement rule." },
     ]);
     expect(parsed.glossary?.frontmatter.kinds).toEqual([
-      { name: "principle", posture: "steady" },
-      { name: "provocation", posture: "wild" },
-      { name: "anti-goal", posture: "guard" },
+      { name: "principle" },
+      { name: "anti-goal" },
     ]);
-  });
-
-  it("rejects invalid glossary posture values during validation", async () => {
-    await writeManifest(dir);
-    const raw = `---
-kinds:
-  - name: provocation
-    posture: loud
----
-
-# provocation
-
-Provocation.
-`;
-    await writeFile(join(dir, "glossary.md"), raw);
-
-    const parsed = parseGlossary(raw);
-    expect(parsed.glossary).toBeNull();
-    expect(parsed.errors[0]).toContain("Invalid option");
-
-    const report = await lintFingerprintPackage(dir);
-    expect(report.errors).toBe(1);
-    expect(report.issues[0]).toMatchObject({
-      severity: "error",
-      rule: "glossary-invalid",
-      path: "glossary.md",
-    });
-  });
-
-  it("marks nodes wild or guard when their glossary kind declares posture", async () => {
-    await writeManifest(dir);
-    await writeGlossary(dir, [
-      "principle",
-      { name: "provocation", posture: "wild" },
-      { name: "anti-goal", posture: "guard" },
-    ]);
-    await writeFile(
-      join(dir, "provocation.noise.md"),
-      "---\ndescription: Noise.\n---\n\nBreak the pattern.\n",
-    );
-    await writeFile(
-      join(dir, "anti-goal.generic.md"),
-      "---\ndescription: Generic.\n---\n\nNot vague; use concrete next steps.\n",
-    );
-    await writeFile(
-      join(dir, "principle.density.md"),
-      "---\ndescription: Density.\n---\n\nKeep density intentional.\n",
-    );
-
-    const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
-
-    expect(loaded.catalog.nodes.get("provocation.noise")?.wild).toBe(true);
-    expect(loaded.catalog.nodes.get("anti-goal.generic")?.guard).toBe(true);
-    expect(loaded.catalog.nodes.get("anti-goal.generic")?.posture).toBe(
-      "guard",
-    );
-    expect(loaded.catalog.nodes.get("principle.density")?.wild).toBeUndefined();
   });
 
   it("does not warn when a node kind is declared in the glossary", async () => {
@@ -189,7 +123,8 @@ Provocation.
     const report = await lintFingerprintPackage(dir);
 
     expect(report.errors).toBe(0);
-    expect(report.warnings).toBe(0);
+    // The only warning is the undeclared cover, never a kind complaint.
+    expect(report.warnings).toBe(1);
     expect(report.issues).not.toContainEqual(
       expect.objectContaining({ rule: "kind-undeclared" }),
     );
@@ -206,9 +141,48 @@ Provocation.
     const report = await lintFingerprintPackage(dir);
 
     expect(report.errors).toBe(0);
-    expect(report.warnings).toBe(0);
+    // The only warning is the undeclared cover, never a kind complaint.
+    expect(report.warnings).toBe(1);
     expect(report.issues).not.toContainEqual(
       expect.objectContaining({ rule: "kind-undeclared" }),
+    );
+  });
+
+  it("warns when a node has no description", async () => {
+    await writeManifest(dir);
+    await writeGlossary(dir, ["principle"]);
+    await writeFile(
+      join(dir, "principle.density.md"),
+      "---\n{}\n---\n\nUse density deliberately.\n",
+    );
+
+    const report = await lintFingerprintPackage(dir);
+
+    expect(report.errors).toBe(0);
+    // Undeclared cover + missing description.
+    expect(report.warnings).toBe(2);
+    expect(report.issues).toContainEqual(
+      expect.objectContaining({
+        severity: "warning",
+        rule: "node-description-missing",
+        path: "principle.density.md",
+      }),
+    );
+  });
+
+  it("does not warn about descriptions when every node has one", async () => {
+    await writeManifest(dir);
+    await writeGlossary(dir, ["principle"]);
+    await writeFile(
+      join(dir, "principle.density.md"),
+      "---\ndescription: Density stance.\n---\n\nUse density deliberately.\n",
+    );
+
+    const report = await lintFingerprintPackage(dir);
+
+    expect(report.errors).toBe(0);
+    expect(report.issues).not.toContainEqual(
+      expect.objectContaining({ rule: "node-description-missing" }),
     );
   });
 
@@ -223,14 +197,18 @@ Provocation.
     const report = await lintFingerprintPackage(dir);
 
     expect(report.errors).toBe(0);
-    expect(report.warnings).toBe(1);
-    expect(report.issues[0]).toMatchObject({
+    // Undeclared cover + undeclared kind.
+    expect(report.warnings).toBe(2);
+    const kindIssue = report.issues.find(
+      (issue) => issue.rule === "kind-undeclared",
+    );
+    expect(kindIssue).toMatchObject({
       severity: "warning",
       rule: "kind-undeclared",
       path: "principles.density.md",
       message: expect.stringContaining("`principles`"),
     });
-    expect(report.issues[0]?.message).toContain("Did you mean `principle`?");
+    expect(kindIssue?.message).toContain("Did you mean `principle`?");
   });
 
   it("does not warn about node kinds when no glossary is present", async () => {
@@ -243,7 +221,8 @@ Provocation.
     const report = await lintFingerprintPackage(dir);
 
     expect(report.errors).toBe(0);
-    expect(report.warnings).toBe(0);
+    // The only warning is the undeclared cover, never a kind complaint.
+    expect(report.warnings).toBe(1);
     expect(report.issues).not.toContainEqual(
       expect.objectContaining({ rule: "kind-undeclared" }),
     );
@@ -300,7 +279,8 @@ Provocation.
     const report = await lintFingerprintPackage(dir, dir);
 
     expect(report.errors).toBe(0);
-    expect(report.warnings).toBe(2);
+    // Undeclared cover + dead locator + orphaned material.
+    expect(report.warnings).toBe(3);
     expect(report.issues).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -382,19 +362,6 @@ Provocation.
     });
   });
 
-  it("flags the legacy haunts/ directory", async () => {
-    await writeManifest(dir);
-    await mkdir(join(dir, "haunts", "checks"), { recursive: true });
-
-    const report = await lintFingerprintPackage(dir);
-
-    expect(report.errors).toBe(1);
-    expect(report.issues[0]).toMatchObject({
-      rule: "check-invalid",
-      path: "haunts",
-    });
-  });
-
   it("gives index.md the uniform id `index` — no core mapping", async () => {
     await writeManifest(dir);
     await writeFile(
@@ -463,26 +430,13 @@ async function writeChecks(
   }
 }
 
-type TestGlossaryKind =
-  | string
-  | { name: string; posture?: "steady" | "wild" | "guard" };
-
-async function writeGlossary(
-  dir: string,
-  kinds: TestGlossaryKind[],
-): Promise<void> {
-  const normalized = kinds.map((kind) =>
-    typeof kind === "string" ? { name: kind } : kind,
-  );
+async function writeGlossary(dir: string, kinds: string[]): Promise<void> {
   await writeFile(
     join(dir, "glossary.md"),
-    `---\nkinds:\n${normalized
-      .map(
-        (kind) =>
-          `  - name: ${kind.name}${kind.posture ? `\n    posture: ${kind.posture}` : ""}`,
-      )
+    `---\nkinds:\n${kinds
+      .map((kind) => `  - name: ${kind}`)
       .join(
         "\n",
-      )}\n---\n\n${normalized.map((kind) => `# ${kind.name}\n\n${kind.name} purpose.`).join("\n\n")}\n`,
+      )}\n---\n\n${kinds.map((kind) => `# ${kind}\n\n${kind} purpose.`).join("\n\n")}\n`,
   );
 }

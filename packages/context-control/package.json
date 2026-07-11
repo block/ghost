@@ -1,0 +1,12 @@
+{
+  "name": "@design-intelligence/context-control",
+  "private": true,
+  "type": "module",
+  "version": "0.0.1",
+  "bin": {
+    "context-control": "./cli.mjs"
+  },
+  "scripts": {
+    "test": "vitest run"
+  }
+}

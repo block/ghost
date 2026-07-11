@@ -214,18 +214,16 @@ describe("ghost CLI", () => {
     "manifest.yml",
     ".gitignore",
     "glossary.md",
-    "index.md",
-    "anti-goal.median.md",
-    "grammar.hierarchy.md",
-    "grammar.rhythm.md",
-    "grammar.surfaces.md",
-    "grammar.motion.md",
-    "grammar.color-roles.md",
-    "grammar.conversation.md",
-    "signature.shape.md",
-    "signature.palette.md",
-    "signature.type.md",
-    "signature.temperature.md",
+    "brand.md",
+    "cliche.median.md",
+    "foundation.composition.md",
+    "foundation.color.md",
+    "foundation.type.md",
+    "foundation.controls.md",
+    "foundation.layout.md",
+    "foundation.motion.md",
+    "foundation.voice.md",
+    "context.conversation.md",
   ];
 
   async function expectSkeletonPackage(written: string[]) {
@@ -240,6 +238,9 @@ describe("ghost CLI", () => {
     await expect(
       readFile(join(dir, ".ghost", "manifest.yml"), "utf-8"),
     ).resolves.toContain("schema: ghost.fingerprint-package/v1");
+    await expect(
+      readFile(join(dir, ".ghost", "manifest.yml"), "utf-8"),
+    ).resolves.toContain("cover: brand");
 
     // The scaffolded package validates with zero errors AND zero warnings.
     const validate = await runCli(["validate", "--format", "json"], dir);
@@ -258,36 +259,35 @@ describe("ghost CLI", () => {
         node.kind,
       ]),
     );
-    expect(byId.get("index")).toBeUndefined;
-    expect(byId.has("index")).toBe(true);
-    expect(byId.get("anti-goal.median")).toBe("anti-goal");
+    expect(byId.get("brand")).toBeUndefined;
+    expect(byId.has("brand")).toBe(false);
+    expect(byId.get("cliche.median")).toBe("cliche");
     for (const slug of [
-      "hierarchy",
-      "rhythm",
-      "surfaces",
+      "composition",
+      "color",
+      "type",
+      "controls",
+      "layout",
       "motion",
-      "color-roles",
-      "conversation",
+      "voice",
     ]) {
-      expect(byId.get(`grammar.${slug}`)).toBe("grammar");
+      expect(byId.get(`foundation.${slug}`)).toBe("foundation");
     }
-    for (const slug of ["shape", "palette", "type", "temperature"]) {
-      expect(byId.get(`signature.${slug}`)).toBe("signature");
-    }
+    expect(byId.get("context.conversation")).toBe("context");
 
     // The median floor survives intact: prune header + rule anchors.
-    const median = await runCli(["pull", "anti-goal.median"], dir);
+    const median = await runCli(["pull", "cliche.median"], dir);
     expect(median.code).toBe(0);
     expect(median.stdout).toContain(
       "This is the model's median, not your brand.",
     );
     expect(median.stdout).toContain("### Side-stripe");
 
-    // The dials ship unanswered and forbid freehanding.
-    const shape = await runCli(["pull", "signature.shape"], dir);
-    expect(shape.code).toBe(0);
-    expect(shape.stdout).toContain("This dial is unanswered");
-    expect(shape.stdout).toContain("freehand");
+    // The open questions ship unanswered and forbid freehanding.
+    const layout = await runCli(["pull", "foundation.layout"], dir);
+    expect(layout.code).toBe(0);
+    expect(layout.stdout).toContain("Open — ask the human");
+    expect(layout.stdout).toContain("freehand");
 
     // No Vessel strings anywhere in the scaffolded package.
     const forbidden = [
@@ -331,7 +331,7 @@ describe("ghost CLI", () => {
     expect(initOutput.written).toContain("manifest.yml");
     expect(initOutput.written).toContain("glossary.md");
     expect(initOutput.written).toContain("index.md");
-    expect(initOutput.written).toContain("anti-goal.median.md");
+    expect(initOutput.written).toContain("cliche.median.md");
     expect(initOutput.written).not.toContain("principle.stance.md");
     expect(initOutput.written).not.toContain("decision.tradeoff.md");
 
@@ -374,7 +374,7 @@ describe("ghost CLI", () => {
     expect(initOutput.written).toContain("index.md");
     expect(initOutput.written).toContain("principle.composition.md");
     expect(initOutput.written).toContain("pattern.status-with-next-step.md");
-    expect(initOutput.written).toContain("anti-goal.median.md");
+    expect(initOutput.written).toContain("cliche.median.md");
 
     // The scaffolded package is valid as written.
     const validate = await runCli(["validate", "--format", "json"], dir);
@@ -623,8 +623,8 @@ describe("ghost CLI", () => {
 
     expect(forced.code).toBe(0);
     await expect(
-      readFile(join(dir, ".ghost", "index.md"), "utf-8"),
-    ).resolves.toContain("skeleton fingerprint");
+      readFile(join(dir, ".ghost", "brand.md"), "utf-8"),
+    ).resolves.toContain("This cover is unwritten");
   });
 
   it("does not guess arbitrary YAML files are validate.yml", async () => {
@@ -657,13 +657,13 @@ describe("ghost CLI", () => {
     expect(JSON.parse(lint.stdout).errors).toBe(0);
   });
 
-  it("initializes a bundle with manifest and starter index node", async () => {
+  it("initializes a bundle with manifest and starter brand cover", async () => {
     const init = await runCli(["init"], dir);
 
     expect(init.code).toBe(0);
     expect(init.stdout).toContain("manifest.yml");
     expect(init.stdout).toContain("glossary.md");
-    expect(init.stdout).toContain("index.md");
+    expect(init.stdout).toContain("brand.md");
     expect(init.stdout).not.toContain("cache/:");
     expect(init.stdout).not.toContain("memory/intent.md:");
     expect(
@@ -693,12 +693,122 @@ describe("ghost CLI", () => {
     const lint = await runCli(["validate"], dir);
     expect(lint.code).toBe(0);
 
-    // The seed node is the package-root index.md — id `index`, listed like any other.
+    // The seed cover is package-root brand.md, inlined and excluded from the menu.
     const gather = await runCli(["gather", "--format", "json"], dir);
     expect(gather.code).toBe(0);
     const slice = JSON.parse(gather.stdout);
-    expect(slice.nodes.some((n: { id: string }) => n.id === "index")).toBe(
-      true,
+    expect(slice.cover.id).toBe("brand");
+    expect(slice.nodes.some((n: { id: string }) => n.id === "brand")).toBe(
+      false,
+    );
+  });
+
+  it("gather inlines the declared cover and excludes it from the menu", async () => {
+    await runCli(["init"], dir);
+
+    const markdown = await runCli(["gather"], dir);
+    expect(markdown.code).toBe(0);
+    expect(markdown.stdout).toContain("## Cover — `brand`");
+    expect(markdown.stdout).toContain("This cover is unwritten.");
+    expect(markdown.stdout).toContain("9 nodes · 0 carry concrete material");
+    expect(markdown.stdout).not.toContain("- `brand`");
+
+    const json = await runCli(["gather", "--format", "json"], dir);
+    expect(json.code).toBe(0);
+    const payload = JSON.parse(json.stdout);
+    expect(payload.cover).toMatchObject({
+      id: "brand",
+      body: expect.stringContaining("This cover is unwritten."),
+    });
+    expect(payload.nodes.map((node: { id: string }) => node.id)).not.toContain(
+      "brand",
+    );
+    expect(payload.coverage).toEqual({
+      nodes: 9,
+      concrete: 0,
+      undescribed: 0,
+    });
+  });
+
+  it("gather degrades to the plain menu when the declared cover is missing", async () => {
+    await runCli(["init"], dir);
+    await writeFile(
+      join(dir, ".ghost", "manifest.yml"),
+      "schema: ghost.fingerprint-package/v1\nid: local\ncover: missing\n",
+    );
+
+    const markdown = await runCli(["gather"], dir);
+    expect(markdown.code).toBe(0);
+    expect(markdown.stdout).not.toContain("## Cover");
+    // With no resolvable cover, brand stays a selectable menu node.
+    expect(markdown.stdout).toContain("10 nodes · 0 carry concrete material");
+    expect(markdown.stdout).toContain("- `brand`");
+
+    const json = await runCli(["gather", "--format", "json"], dir);
+    expect(json.code).toBe(0);
+    const payload = JSON.parse(json.stdout);
+    expect(payload.cover).toBeUndefined();
+    expect(payload.nodes.map((node: { id: string }) => node.id)).toContain(
+      "brand",
+    );
+  });
+
+  it("validate reports cover declaration issues", async () => {
+    await runCli(["init"], dir);
+
+    await writeFile(
+      join(dir, ".ghost", "manifest.yml"),
+      "schema: ghost.fingerprint-package/v1\nid: local\ncover: missing\n",
+    );
+    const missing = await runCli(["validate", "--format", "json"], dir);
+    expect(missing.code).toBe(1);
+    let report = JSON.parse(missing.stdout);
+    expect(report.issues).toContainEqual(
+      expect.objectContaining({ severity: "error", rule: "cover-missing" }),
+    );
+
+    await writeFile(
+      join(dir, ".ghost", "manifest.yml"),
+      "schema: ghost.fingerprint-package/v1\nid: local\n",
+    );
+    const undeclared = await runCli(["validate", "--format", "json"], dir);
+    expect(undeclared.code).toBe(0);
+    report = JSON.parse(undeclared.stdout);
+    expect(report.issues).toContainEqual(
+      expect.objectContaining({
+        severity: "warning",
+        rule: "cover-undeclared",
+      }),
+    );
+
+    await writeFile(
+      join(dir, ".ghost", "manifest.yml"),
+      "schema: ghost.fingerprint-package/v1\nid: local\ncover: brand\n",
+    );
+    const brand = await readFile(join(dir, ".ghost", "brand.md"), "utf-8");
+    await writeFile(
+      join(dir, ".ghost", "brand.md"),
+      brand.replace("This cover is unwritten.", "x".repeat(1501)),
+    );
+    const oversized = await runCli(["validate", "--format", "json"], dir);
+    expect(oversized.code).toBe(0);
+    report = JSON.parse(oversized.stdout);
+    expect(report.issues).toContainEqual(
+      expect.objectContaining({
+        severity: "warning",
+        rule: "cover-oversized",
+      }),
+    );
+  });
+
+  it("pull sorts the cover before other requested nodes", async () => {
+    await runCli(["init"], dir);
+
+    const pull = await runCli(["pull", "foundation.layout", "brand"], dir);
+
+    expect(pull.code).toBe(0);
+    expect(pull.stdout.indexOf("# `brand`")).toBeLessThan(
+      pull.stdout.indexOf("# `foundation.layout`"),
     );
   });
 
@@ -709,17 +819,15 @@ describe("ghost CLI", () => {
     const gather = await runCli(["gather", "--format", "json"], dir);
     expect(gather.code).toBe(0);
     const menu = JSON.parse(gather.stdout);
-    const grammar = menu.kinds.find(
-      (k: { name: string }) => k.name === "grammar",
+    const foundation = menu.kinds.find(
+      (k: { name: string }) => k.name === "foundation",
     );
-    expect(grammar.purpose).toContain("decision logic");
+    expect(foundation.purpose).toContain("core elements");
 
     // Markdown renders the same legend above the node list.
     const markdown = await runCli(["gather"], dir);
     expect(markdown.stdout).toContain("Kinds:");
-    expect(markdown.stdout).toContain(
-      "- **grammar** — The brand's decision logic",
-    );
+    expect(markdown.stdout).toContain("- **foundation** — The core elements");
 
     // A missing glossary degrades to no legend, not an error.
     await rm(join(dir, ".ghost", "glossary.md"));
@@ -734,142 +842,6 @@ describe("ghost CLI", () => {
 
     expect(validate.code).toBe(0);
     expect(validate.stdout).toContain("0 error");
-  });
-
-  it("gather excludes wild nodes by default and includes marked wild nodes with --wild", async () => {
-    await runCli(["init", "--template", "minimal"], dir);
-    await writeFile(
-      join(dir, ".ghost", "glossary.md"),
-      `---
-kinds:
-  - name: principle
-  - name: provocation
-    posture: wild
----
-
-# principle
-
-Durable stance.
-
-# provocation
-
-a deliberate provocation past the fingerprint — surfaced only on request
-`,
-    );
-    await writeFile(
-      join(dir, ".ghost", "provocation.noise.md"),
-      "---\ndescription: Break the usual rhythm.\n---\n\nInterrupt the grid.\n",
-    );
-    await writeFile(
-      join(dir, ".ghost", "principle.trust.md"),
-      "---\ndescription: Trust.\n---\n\nReduce felt risk.\n",
-    );
-
-    const defaultJson = await runCli(
-      ["gather", "hero", "--format", "json"],
-      dir,
-    );
-    expect(defaultJson.code).toBe(0);
-    const defaultPayload = JSON.parse(defaultJson.stdout);
-    expect(
-      defaultPayload.nodes.map((node: { id: string }) => node.id),
-    ).not.toContain("provocation.noise");
-    expect(defaultPayload.wildAvailable).toBe(1);
-
-    const defaultMarkdown = await runCli(["gather", "hero"], dir);
-    expect(defaultMarkdown.stdout).not.toContain("`provocation.noise`");
-    expect(defaultMarkdown.stdout).toContain(
-      "1 wild node available via `--wild`",
-    );
-
-    const wildJson = await runCli(
-      ["gather", "hero", "--wild", "--format", "json"],
-      dir,
-    );
-    expect(wildJson.code).toBe(0);
-    const wildPayload = JSON.parse(wildJson.stdout);
-    const wildNode = wildPayload.nodes.find(
-      (node: { id: string }) => node.id === "provocation.noise",
-    );
-    expect(wildNode).toMatchObject({
-      kind: "provocation",
-      wild: true,
-    });
-    expect(wildPayload.wildAvailable).toBeUndefined();
-
-    const wildMarkdown = await runCli(["gather", "hero", "--wild"], dir);
-    expect(wildMarkdown.stdout).toContain(
-      "`provocation.noise` _(provocation)_ _(wild)",
-    );
-    expect(wildMarkdown.stdout).toContain(
-      "Wild nodes are marked `(wild)`: they push past the fingerprint",
-    );
-
-    const events = (await readFile(join(dir, ".ghost", ".events"), "utf-8"))
-      .trim()
-      .split("\n")
-      .map((line) => JSON.parse(line));
-    expect(events[0]).toMatchObject({
-      event: "gather",
-      wild: false,
-      wildIds: [],
-    });
-    expect(events[2]).toMatchObject({
-      event: "gather",
-      wild: true,
-      wildIds: ["provocation.noise"],
-    });
-  });
-
-  it("pull works for wild nodes and pulse reports wild usage", async () => {
-    await runCli(["init", "--template", "minimal"], dir);
-    await writeFile(
-      join(dir, ".ghost", "glossary.md"),
-      `---
-kinds:
-  - name: principle
-  - name: provocation
-    posture: wild
----
-
-# principle
-
-Durable stance.
-
-# provocation
-
-a deliberate provocation past the fingerprint — surfaced only on request
-`,
-    );
-    await writeFile(
-      join(dir, ".ghost", "provocation.noise.md"),
-      "---\ndescription: Break the usual rhythm.\n---\n\nInterrupt the grid.\n",
-    );
-
-    await runCli(["gather", "hero", "--wild"], dir);
-    const pull = await runCli(["pull", "provocation.noise"], dir);
-    expect(pull.code).toBe(0);
-    expect(pull.stdout).toContain("Interrupt the grid.");
-    expect(pull.stdout).toContain("_(wild)_");
-
-    const events = (await readFile(join(dir, ".ghost", ".events"), "utf-8"))
-      .trim()
-      .split("\n")
-      .map((line) => JSON.parse(line));
-    expect(events.at(-1)).toMatchObject({
-      event: "pull",
-      ids: ["provocation.noise"],
-      wildIds: ["provocation.noise"],
-    });
-
-    const pulse = await runCli(["pulse", "--format", "json"], dir);
-    expect(pulse.code).toBe(0);
-    expect(JSON.parse(pulse.stdout).wild).toEqual({ exposures: 1, pulls: 1 });
-
-    const md = await runCli(["pulse"], dir);
-    expect(md.stdout).toContain("## Wild usage");
-    expect(md.stdout).toContain("- Wild exposures: 1");
-    expect(md.stdout).toContain("- Wild pulls: 1");
   });
 
   it("announces the events tape once, on first write, on stderr only", async () => {
@@ -889,7 +861,7 @@ a deliberate provocation past the fingerprint — surfaced only on request
     expect(second.code).toBe(0);
     expect(second.stderr).not.toContain(".ghost/.events");
 
-    const pull = await runCli(["pull", "index"], dir);
+    const pull = await runCli(["pull", "brand"], dir);
     expect(pull.code).toBe(0);
     expect(pull.stderr).not.toContain(".ghost/.events");
   });
@@ -898,7 +870,7 @@ a deliberate provocation past the fingerprint — surfaced only on request
     await runCli(["init", "--template", "minimal"], dir);
     await writeFile(
       join(dir, ".ghost", "glossary.md"),
-      "---\nkinds:\n  - name: anti-goal\n    posture: guard\n  - name: asset\n  - name: principle\n---\n\n# anti-goal\n\nReview-critical replacement.\n\n# asset\n\nConcrete material.\n\n# principle\n\nRule.\n",
+      "---\nkinds:\n  - name: anti-goal\n  - name: asset\n  - name: principle\n---\n\n# anti-goal\n\nReview-critical replacement.\n\n# asset\n\nConcrete material.\n\n# principle\n\nRule.\n",
     );
     await writeFile(
       join(dir, ".ghost", "asset.tokens.md"),
@@ -913,43 +885,47 @@ a deliberate provocation past the fingerprint — surfaced only on request
       "---\ndescription: Generic replacement.\n---\n\nNot vague; instead exact.\n",
     );
 
+    // The seeded cover (`index`) is inlined above the menu, not counted in it.
     const gather = await runCli(["gather", "--format", "json"], dir);
     expect(gather.code).toBe(0);
     expect(JSON.parse(gather.stdout).coverage).toEqual({
-      nodes: 5,
+      nodes: 4,
       concrete: 1,
-      guards: 2,
+      undescribed: 0,
     });
     const markdown = await runCli(["gather"], dir);
-    expect(markdown.stdout).toContain(
-      "5 nodes · 1 carry concrete material · 2 guards",
+    expect(markdown.stdout).toContain("4 nodes · 1 carry concrete material");
+    // No undescribed nodes: the coverage line stays quiet about them.
+    expect(markdown.stdout).not.toContain("lack descriptions");
+
+    // A node without a description is invisible to selection — the coverage
+    // line says so, and validate warns on it.
+    await writeFile(
+      join(dir, ".ghost", "principle.mute.md"),
+      "---\n{}\n---\n\nUndescribed truth.\n",
     );
+    const gatherMute = await runCli(["gather"], dir);
+    expect(gatherMute.stdout).toContain(
+      "5 nodes · 1 carry concrete material · 1 lack descriptions",
+    );
+    const gatherMuteJson = await runCli(["gather", "--format", "json"], dir);
+    expect(JSON.parse(gatherMuteJson.stdout).coverage.undescribed).toBe(1);
 
     const steering = await runCli(
-      ["pull", "anti-goal.generic", "principle.rule", "asset.tokens"],
+      ["pull", "principle.rule", "asset.tokens"],
       dir,
     );
     expect(steering.code).toBe(0);
     expect(steering.stdout.indexOf("`asset.tokens`")).toBeLessThan(
       steering.stdout.indexOf("`principle.rule`"),
     );
-    expect(steering.stdout.indexOf("`principle.rule`")).toBeLessThan(
-      steering.stdout.indexOf("`anti-goal.generic`"),
-    );
 
     const given = await runCli(
-      [
-        "pull",
-        "anti-goal.generic",
-        "principle.rule",
-        "asset.tokens",
-        "--order",
-        "given",
-      ],
+      ["pull", "principle.rule", "asset.tokens", "--order", "given"],
       dir,
     );
-    expect(given.stdout.indexOf("`anti-goal.generic`")).toBeLessThan(
-      given.stdout.indexOf("`principle.rule`"),
+    expect(given.stdout.indexOf("`principle.rule`")).toBeLessThan(
+      given.stdout.indexOf("`asset.tokens`"),
     );
   });
 
@@ -1300,7 +1276,6 @@ a deliberate provocation past the fingerprint — surfaced only on request
       pulls: 1,
       abandonedGathers: 1,
       pullsPerGather: 0.5,
-      wild: { exposures: 0, pulls: 0 },
     });
     const trust = report.nodes.find(
       (node: { id: string }) => node.id === "principle.trust",
@@ -1325,20 +1300,21 @@ a deliberate provocation past the fingerprint — surfaced only on request
       hitRate: 0.5,
       coldNodes: [],
     });
+    // The cover (`index`) is inlined by gather, never exposed on the menu,
+    // so it accrues no exposures and never counts as cold.
     const noKind = report.kinds.find(
       (kind: { kind: string }) => kind.kind === "(no kind)",
     );
     expect(noKind).toMatchObject({
-      exposures: 4,
       pulls: 0,
       hitRate: 0,
-      coldNodes: ["index", "voice"],
+      coldNodes: ["voice"],
     });
+    expect(report.coldNodes).not.toContain("index");
 
     const md = await runCli(["pulse"], dir);
     expect(md.stdout).toContain("# Ghost Pulse");
     expect(md.stdout).toContain("## Kind hit rates");
-    expect(md.stdout).toContain("## Wild usage");
     expect(md.stdout).toContain("- Abandoned gathers: 1");
   });
 
@@ -1457,7 +1433,6 @@ a deliberate provocation past the fingerprint — surfaced only on request
       "references/blocks.md",
       "references/brief.md",
       "references/recall.md",
-      "references/wild.md",
       "references/self-check.md",
       "references/schema.md",
       "references/authoring-scenarios.md",
@@ -1699,11 +1674,11 @@ a deliberate provocation past the fingerprint — surfaced only on request
     expect(JSON.parse(skipped.stdout).checks[0].probe).toBeUndefined();
   });
 
-  it("review auto-offers matched guard nodes without check references", async () => {
+  it("review matches anti-goal nodes through materials like any node", async () => {
     await runCli(["init", "--with", "checks"], dir);
     await writeFile(
       join(dir, ".ghost", "glossary.md"),
-      "---\nkinds:\n  - name: anti-goal\n    posture: guard\n---\n\n# anti-goal\n\nReview-critical replacements.\n",
+      "---\nkinds:\n  - name: anti-goal\n---\n\n# anti-goal\n\nReview-critical replacements.\n",
     );
     await writeFile(
       join(dir, ".ghost", "anti-goal.generic-logo.md"),
@@ -1711,7 +1686,7 @@ a deliberate provocation past the fingerprint — surfaced only on request
     );
     await writeFile(
       join(dir, ".ghost", "checks", "unrelated.md"),
-      "---\nname: unrelated\ndescription: Always review unrelated posture.\nseverity: low\nreferences:\n  - missing.future\n---\n\nReview unrelated things.\n",
+      "---\nname: unrelated\ndescription: Always review unrelated things.\nseverity: low\nreferences:\n  - missing.future\n---\n\nReview unrelated things.\n",
     );
     const diff = [
       "diff --git a/brand/logo.svg b/brand/logo.svg",
@@ -1725,7 +1700,7 @@ a deliberate provocation past the fingerprint — surfaced only on request
     const result = await runCli(["review", "--diff=-"], dir, { stdin: diff });
 
     expect(result.code).toBe(0);
-    expect(result.stdout).toContain("## Matched guard nodes — review-critical");
+    expect(result.stdout).toContain("## Matched material-backed nodes");
     expect(result.stdout).toContain(
       "### `anti-goal.generic-logo` _(anti-goal)_",
     );
@@ -1889,13 +1864,13 @@ a deliberate provocation past the fingerprint — surfaced only on request
       readFile(join(dir, ".ghost", "checks", "example.md.example"), "utf-8"),
     ).resolves.toContain("references:");
 
-    // The live median check pairs with the skeleton's anti-goal.median node.
+    // The live median check pairs with the skeleton's cliche.median node.
     const median = await readFile(
       join(dir, ".ghost", "checks", "median-tells.md"),
       "utf-8",
     );
-    expect(median).toContain("anti-goal.median");
-    expect(median).toContain("anti-goal.median > Hover-lift");
+    expect(median).toContain("cliche.median");
+    expect(median).toContain("cliche.median > Hover-lift");
     expect(median).toContain("prefers-reduced-motion");
     expect(median).toContain(
       "`ghost validate` warns; delete the flag and its reference together.",
@@ -1908,7 +1883,7 @@ a deliberate provocation past the fingerprint — surfaced only on request
     expect(again.stderr).toContain("already exists");
 
     // The scaffold validates cleanly on the default skeleton: median-tells
-    // references resolve against anti-goal.median and the grammar nodes.
+    // references resolve against cliche.median.
     const validate = await runCli(["validate", "--format", "json"], dir);
     expect(validate.code).toBe(0);
     const report = JSON.parse(validate.stdout);
@@ -1920,12 +1895,12 @@ a deliberate provocation past the fingerprint — surfaced only on request
 
   it("checks init skips median tells when the median node is absent", async () => {
     await runCli(["init", "--template", "minimal"], dir);
-    await rm(join(dir, ".ghost", "anti-goal.median.md"));
+    await rm(join(dir, ".ghost", "cliche.median.md"));
 
     const add = await runCli(["checks", "init"], dir);
     expect(add.code).toBe(0);
     expect(add.stdout).toContain(
-      "skipped median-tells.md (no anti-goal.median node)",
+      "skipped median-tells.md (no cliche.median node)",
     );
 
     await expect(
@@ -1942,7 +1917,7 @@ a deliberate provocation past the fingerprint — surfaced only on request
   it("validate warns when a pruned median heading orphans its paired check", async () => {
     await runCli(["init"], dir);
     await runCli(["checks", "init"], dir);
-    const path = join(dir, ".ghost", "anti-goal.median.md");
+    const path = join(dir, ".ghost", "cliche.median.md");
     const median = await readFile(path, "utf-8");
     await writeFile(
       path,
@@ -1957,7 +1932,7 @@ a deliberate provocation past the fingerprint — surfaced only on request
       expect.objectContaining({
         severity: "warning",
         rule: "check-reference-heading-missing",
-        message: expect.stringContaining("anti-goal.median > Side-stripe"),
+        message: expect.stringContaining("cliche.median > Side-stripe"),
       }),
     ]);
     expect(report.issues[0].message).toContain(
@@ -1983,14 +1958,6 @@ a deliberate provocation past the fingerprint — surfaced only on request
     const result = await runCli(["review", "--diff=-"], dir, { stdin: "" });
     expect(result.code).toBe(2);
     expect(result.stderr).toContain("ghost checks init");
-  });
-
-  it("validate flags the legacy haunts/ directory", async () => {
-    await runCli(["init"], dir);
-    await mkdir(join(dir, ".ghost", "haunts", "checks"), { recursive: true });
-    const result = await runCli(["validate"], dir);
-    expect(result.code).toBe(1);
-    expect(result.stdout).toContain("no longer supported");
   });
 });
 

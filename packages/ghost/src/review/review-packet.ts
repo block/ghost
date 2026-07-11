@@ -34,7 +34,6 @@ export interface ReviewPacket {
   fingerprintId: string;
   touchedFiles: string[];
   materialNodes: PacketMaterialNode[];
-  guardNodes: PacketMaterialNode[];
   checks: PacketCheck[];
   gaps: CoverageGap[];
   diff: string;
@@ -69,10 +68,6 @@ export async function buildReviewPacket(
     (matched) => materialNodeFromMatch(fingerprint, matched),
   );
 
-  const guardNodes: PacketMaterialNode[] = resolution.guardNodes.map(
-    (matched) => materialNodeFromMatch(fingerprint, matched),
-  );
-
   const checks: PacketCheck[] = await Promise.all(
     resolution.offeredChecks.map(async (offered) => {
       const check = fingerprint.checks.get(offered.id);
@@ -103,7 +98,6 @@ export async function buildReviewPacket(
     fingerprintId: fingerprint.manifest.id,
     touchedFiles: resolution.touchedFiles.map((file) => file.path),
     materialNodes,
-    guardNodes,
     checks,
     gaps: resolution.gaps,
     diff: diffText,
@@ -150,21 +144,6 @@ export function formatReviewPacket(packet: ReviewPacket): string {
   if (packet.materialNodes.length > 0) {
     out.push("## Matched material-backed nodes");
     for (const node of packet.materialNodes) {
-      const kind = node.kind ? ` _(${node.kind})_` : "";
-      out.push(`### \`${node.id}\`${kind}`);
-      if (node.description) out.push(`_${node.description}_`, "");
-      out.push(node.prose, "");
-      out.push("Matched materials:");
-      for (const locator of node.matchedMaterials) out.push(`- \`${locator}\``);
-      out.push("Files:");
-      for (const file of node.files) out.push(`- \`${file}\``);
-      out.push("");
-    }
-  }
-
-  if (packet.guardNodes.length > 0) {
-    out.push("## Matched guard nodes — review-critical");
-    for (const node of packet.guardNodes) {
       const kind = node.kind ? ` _(${node.kind})_` : "";
       out.push(`### \`${node.id}\`${kind}`);
       if (node.description) out.push(`_${node.description}_`, "");

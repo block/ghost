@@ -10,9 +10,5 @@ export {
   type PlacedNode,
 } from "./assemble.js";
 export { closestIds } from "./closest.js";
-export {
-  type BuildCatalogMenuOptions,
-  buildCatalogMenu,
-  type CatalogMenuEntry,
-} from "./menu.js";
+export { buildCatalogMenu, type CatalogMenuEntry } from "./menu.js";
 export type { GhostCatalog, GhostCatalogNode } from "./types.js";

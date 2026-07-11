@@ -39,7 +39,7 @@ export async function addChecksDir(
   const skipped: string[] = [];
 
   await mkdir(checksDir, { recursive: true });
-  if (await exists(join(packageDir, "anti-goal.median.md"))) {
+  if (await exists(join(packageDir, "cliche.median.md"))) {
     await writeFile(
       join(checksDir, MEDIAN_TELLS_FILENAME),
       await loadPayloadFile("median", MEDIAN_TELLS_FILENAME),
@@ -47,7 +47,7 @@ export async function addChecksDir(
     );
     written.push(MEDIAN_TELLS_FILENAME);
   } else {
-    skipped.push(`${MEDIAN_TELLS_FILENAME} (no anti-goal.median node)`);
+    skipped.push(`${MEDIAN_TELLS_FILENAME} (no cliche.median node)`);
   }
 
   await writeFile(

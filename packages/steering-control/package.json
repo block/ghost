@@ -1,0 +1,12 @@
+{
+  "name": "@design-intelligence/steering-control",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "steering-control": "./cli.mjs"
+  },
+  "version": "0.1.0",
+  "scripts": {
+    "test": "vitest run"
+  }
+}

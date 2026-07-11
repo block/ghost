@@ -29,7 +29,7 @@ export function registerPulseCommand(cli: CAC): void {
 
         const paths = resolveFingerprintPackage(opts.package, process.cwd());
         const loaded = await loadFingerprintPackage(paths);
-        const menu = buildCatalogMenu(loaded.catalog, { includeWild: true });
+        const menu = buildCatalogMenu(loaded.catalog);
         const events = await readGhostEvents(paths.packageDir);
         const report = buildPulseReport(events, menu);
 
@@ -82,10 +82,6 @@ type PulseReport = {
   kinds: KindHitReport[];
   coldNodes: string[];
   misses: MissReport[];
-  wild: {
-    exposures: number;
-    pulls: number;
-  };
   concreteness: ConcretenessReport;
 };
 
@@ -108,8 +104,6 @@ function buildPulseReport(
 
   let gathers = 0;
   let pulls = 0;
-  let wildExposures = 0;
-  let wildPulls = 0;
   let abandonedGathers = 0;
   let activeGatherHasPull = false;
   let sawGather = false;
@@ -123,7 +117,6 @@ function buildPulseReport(
       for (const id of event.menu) {
         exposureCounts.set(id, (exposureCounts.get(id) ?? 0) + 1);
       }
-      wildExposures += event.wildIds?.length ?? 0;
       continue;
     }
 
@@ -132,7 +125,6 @@ function buildPulseReport(
     for (const id of event.ids) {
       pullCounts.set(id, (pullCounts.get(id) ?? 0) + 1);
     }
-    wildPulls += event.wildIds?.length ?? 0;
     for (const miss of event.missed ?? []) {
       recordMiss(missCounts, miss);
     }
@@ -212,10 +204,6 @@ function buildPulseReport(
       .sort(
         (a, b) => b.count - a.count || a.requested.localeCompare(b.requested),
       ),
-    wild: {
-      exposures: wildExposures,
-      pulls: wildPulls,
-    },
     concreteness,
   };
 }
@@ -322,14 +310,6 @@ function formatPulseMarkdown(report: PulseReport): string {
   } else {
     for (const id of report.coldNodes) lines.push(`- \`${id}\``);
   }
-
-  lines.push(
-    "",
-    "## Wild usage",
-    "",
-    `- Wild exposures: ${report.wild.exposures}`,
-    `- Wild pulls: ${report.wild.pulls}`,
-  );
 
   lines.push("", "## Misses", "");
   if (report.misses.length === 0) {

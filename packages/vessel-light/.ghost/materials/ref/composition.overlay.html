@@ -1,5 +1,5 @@
 <!-- ghost ref annotations
-  normative-for: grammar.surfaces — the interrupting end of the elevation set: the modal tier (scrim, --shadow-modal, --radius-surface, compact header, clear footer) and the popover tier (an anchored menu floating above the flow with --shadow-popover). The card tier's home is composition.form.html and composition.table.html; together the three refs cover the closed elevation set. grammar.hierarchy — one primary confirm, ghost escape, menu items as ghost-weight actions; the info tone carrying a state-meaning note. signature.shape — surface radius on both overlay surfaces.
+  normative-for: grammar.surfaces — the interrupting end of the elevation set: the modal tier (scrim, --shadow-modal, --radius-surface, compact header, clear footer) and the popover tier (an anchored menu floating above the flow with --shadow-popover). The card tier's home is composition.form.html and composition.table.html; together the three refs cover the closed elevation set. grammar.motion — the dialog reveal at --duration-normal with the one ease, opacity and small transform only. grammar.hierarchy — one primary confirm, ghost escape as button--icon close plus a cancel, menu items as ghost-weight actions; the info tone carrying a state-meaning note. signature.shape — surface radius on both overlay surfaces, the pill (--radius-control) on the icon close.
   incidental: showing the popover and the modal in the same frame (a demonstration convenience — in a live UI the menu closes when the dialog interrupts); all copy and counts; the 512px dialog width; the specific menu items.
 -->
 <!doctype html>
@@ -17,6 +17,9 @@
       .menu-item { justify-content: flex-start; width: 100%; height: 32px; padding: 6px 12px; }
       .scrim { position: fixed; inset: 0; display: grid; place-items: center; padding: 16px; }
       section[role="dialog"] { width: min(100%, 512px); }
+      /* dialog reveal: --duration-normal with the one ease, opacity + small transform */
+      section[role="dialog"] { animation: dialog-reveal var(--duration-normal) var(--ease-spring) both; }
+      @keyframes dialog-reveal { from { opacity: 0; transform: translateY(4px) scale(0.98); } }
     </style>
   </head>
   <body>
@@ -39,7 +42,10 @@
     <div class="scrim" role="presentation">
       <section class="surface surface--popover surface--pad-lg surface--radius-surface surface--border surface--elevation-modal stack stack--gap-lg" role="dialog" aria-modal="true" aria-labelledby="dialog-title" aria-describedby="dialog-description">
         <header class="stack stack--gap-sm">
-          <h2 class="text text--title" id="dialog-title">Publish fingerprint changes?</h2>
+          <div class="stack stack--row stack--justify-between stack--align-center stack--gap-md">
+            <h2 class="text text--title" id="dialog-title">Publish fingerprint changes?</h2>
+            <button class="button button--ghost button--icon" type="button" aria-label="Close">&#215;</button>
+          </div>
           <p class="text text--muted" id="dialog-description">This will make the selected brand truths available to agents working in this repo. Review the diff before confirming.</p>
         </header>
 

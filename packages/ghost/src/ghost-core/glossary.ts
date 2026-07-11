@@ -1,23 +1,12 @@
 import { z } from "zod";
 import { splitMarkdownFrontmatter } from "./markdown.js";
 
-export const GhostGlossaryKindPostureSchema = z.enum([
-  "steady",
-  "wild",
-  "guard",
-]);
-
-export type GhostGlossaryKindPosture = z.infer<
-  typeof GhostGlossaryKindPostureSchema
->;
-
 export const GhostGlossaryFrontmatterSchema = z
   .object({
     kinds: z.array(
       z
         .object({
           name: z.string().min(1),
-          posture: GhostGlossaryKindPostureSchema.default("steady"),
         })
         .passthrough(),
     ),
@@ -26,8 +15,6 @@ export const GhostGlossaryFrontmatterSchema = z
 
 export interface GhostGlossaryKind {
   name: string;
-  /** Consumption posture for nodes of this kind. */
-  posture: GhostGlossaryKindPosture;
   /** Prose purpose/normative weight for this kind, parsed from its section. */
   purpose: string;
 }
@@ -63,7 +50,6 @@ export function parseGlossary(raw: string): GhostGlossaryParseResult {
   const sections = parseMarkdownSections(normalizedBody);
   const kinds = result.data.kinds.map((kind) => ({
     name: kind.name,
-    posture: kind.posture,
     purpose: sections.get(normalizeHeading(kind.name)) ?? "",
   }));
 

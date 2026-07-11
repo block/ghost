@@ -65,6 +65,19 @@ const FORBIDDEN_PHRASES = [
   "judgement",
   "judging",
   "judged",
+  "consumption posture",
+  "posture: guard",
+  "posture: wild",
+  "posture: steady",
+  "wild posture",
+  "guard posture",
+  "steady posture",
+  "wild-posture",
+  "guard-posture",
+  "wild node",
+  "wild nodes",
+  "guard node",
+  "guard nodes",
 ];
 
 /**

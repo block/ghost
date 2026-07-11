@@ -19,14 +19,13 @@ Ghost treats the fingerprint package as canonical.
   glossary.md           # the kind vocabulary + what each kind means
   principle.trust.md    # a brand truth of kind `principle`
   pattern.invoice.md    # a pattern with an optional ## Skeleton
-  anti-goal.generic.md  # a guard when its kind declares posture: guard
+  anti-goal.generic.md  # a review-critical replacement rule
   voice.md              # a brand truth without a kind
 ```
 
 A **node** is a markdown file: a `description`, optional `materials`, and a
 prose body. The package is **flat** — no hierarchy, no inheritance, no edges. A
-node's kind comes from its filename prefix; the glossary declares the kinds and
-may declare consumption posture such as `posture: guard`.
+node's kind comes from its filename prefix; the glossary declares the kinds.
 
 ## Lead with an annotated exemplar over a complete artifact
 
@@ -89,6 +88,21 @@ safe before what to do. One calm next step. No "Oops," no exclamation points,
 no blame on the user or the network.
 ```
 
+## Write patterns as bound and open
+
+A pattern node binds part of a reusable structure and leaves the rest open.
+State both explicitly:
+
+- **Bound** — what the agent should not redecide: the structural moves fixed
+  regardless of task (what renders first, what appears exactly once, what may
+  never compete for attention).
+- **Open** — where the agent may choose, within limits (which evidence shape
+  fits, how tone flexes, where secondary content may go).
+
+If everything is bound, the node is a template, not a pattern. If nothing is
+bound, it is vibes, not steering. A pattern may also `Refines:` a broader
+principle by id; when the two conflict, the principle wins.
+
 ## Add Skeletons when the opening structure matters
 
 A `## Skeleton` section contains the literal opening structure the agent should
@@ -119,18 +133,12 @@ Keep them short, specific, and attached to concrete objects whenever possible:
 Do not turn every observation into a rule. Stale or generic rules average
 against the exemplars and pull the packet back toward the median.
 
-## Write guards as replacement, not as blacklist
+## Write anti-goals as replacement, not as blacklist
 
-A guard is ordinary node prose whose kind declares `posture: guard` in
-`glossary.md`:
+An anti-goal is ordinary node prose whose kind the glossary defines as a
+review-critical replacement rule.
 
-```yaml
-kinds:
-  - name: anti-goal
-    posture: guard
-```
-
-A good guard states **not X; instead Y; recognize the switch by Z**. The
+A good anti-goal states **not X; instead Y; recognize the switch by Z**. The
 replacement matters because negation alone raises the salience of the rejected
 thing.
 
@@ -148,12 +156,12 @@ Instead: flat paper surfaces, one restrained accent, square alignment, and a
 next action backed by the number or source that justifies it.
 
 Recognize the switch: if removing the logo would make the surface look like any
-SaaS template, the guard failed even when every token is technically valid.
+SaaS template, the anti-goal failed even when every token is technically valid.
 ```
 
 The strongest anti-goal is silent: purged from exemplars, absent from starter
-structures, and enforced by a probe-backed check in review. Use guard prose to
-name the replacement; use checks and `probe:` commands to catch regressions.
+structures, and enforced by a probe-backed check in review. Use anti-goal prose
+to name the replacement; use checks and `probe:` commands to catch regressions.
 
 ## The node shape
 
@@ -210,9 +218,9 @@ human sees them.
 
 Two carve-outs come first, because they invert ordinary prose advice:
 
-- **Guards keep their negation.** "Not X; instead Y; recognize the switch by Z"
-  is the required guard form. Naming the rejected thing is the guard's job;
-  never "improve" a guard by stating only the replacement.
+- **Anti-goals keep their negation.** "Not X; instead Y; recognize the switch
+  by Z" is the required anti-goal form. Naming the rejected thing is the
+  anti-goal's job; never "improve" one by stating only the replacement.
 - **Invariants keep their absolutes.** "Never" and "always" are correct in an
   invariant when the hard line is real and human-ratified. Absolutes are lazy
   only when they stand in for an uncurated stance.
@@ -259,14 +267,22 @@ strongest form that fixes the observed failure.
 
 | If the agent keeps... | Author... |
 | --- | --- |
-| missing the truth | sharper `description` / `index` mention |
+| missing the truth | sharper `description`; move universal truth to the cover |
 | inventing values | `asset.*` node with materials and exact names |
-| producing generic output | `anti-goal.*` guard plus annotated `exemplar.*` |
+| producing generic output | `anti-goal.*` replacement plus annotated `exemplar.*` |
 | choosing the wrong structure | `pattern.*` with bound/open and a `## Skeleton` |
 | crossing hard lines | invariant prose plus a check, optionally with `probe:` |
 | applying guidance too broadly | condition in prose |
 | making bad tradeoffs | `decision.*` trace |
 | producing correct but forgettable work | scoped `concept.*` |
+
+A `concept.*` node holds a one-time creative move — a launch hook, a
+campaign idea, a specific non-median leap the corpus would not have produced
+by recombining its other truths. Scope it explicitly to the task or surface
+it was written for, keep it distinct from invariants, and do not generalize
+it into permanent brand law. If it proves reusable later, promote it into an
+exemplar or pattern deliberately; do not let a one-off default into durable
+truth by accumulation.
 
 Ask while authoring:
 
@@ -298,19 +314,16 @@ ghost init            # scaffolds the steering starter
 ghost validate
 ```
 
-`ghost init` seeds the steering starter: the manifest, a starter `glossary.md`
-(with suggested kinds you keep, rename, or replace), the package-root
-`index.md`, and worked demo nodes for stance, composition, anti-goals, patterns,
-exemplars, materials, and decisions. Replace demo claims, paths, examples, and
-decisions with real product truth before using it to steer generation. Use
-`ghost init --template minimal` when you only want the small
-manifest/glossary/index starter.
+`ghost init` seeds the skeleton starter: the manifest, a starter
+`glossary.md`, a `brand.md` cover, foundation chapters with open questions, and
+the model cliche floor. Replace open questions with real product truth before
+using it to steer generation. Use `ghost init --template minimal` for a
+manifest, glossary, cover, and cliche floor.
 
-Write `index.md` as the human-curated front door: non-negotiables that apply to
-every task, what this fingerprint covers, how its kinds organize the corpus, and
-any stricter silence posture. It is an ordinary node mechanically, but by
-convention agents pull it first — anything that must never be missed belongs
-here.
+Write the manifest-declared cover as the human-curated front door:
+non-negotiables that apply to every task, what the fingerprint covers, and any
+stricter silence posture. `ghost gather` inlines it before the menu, so anything
+that must never be missed belongs there.
 
 Nodes may carry a `materials` list in frontmatter: repo-relative paths/globs or
 HTTPS URLs for the concrete materials the prose governs. Put brand-owned
@@ -324,9 +337,7 @@ feed-back only; they are never gathered.
 Declare the kinds you will use in `glossary.md` — the frontmatter `kinds` list
 plus a `#` section per kind explaining its meaning and normative weight. Kinds
 are your choice; Ghost ships no fixed vocabulary. A node's filename prefix must
-match a declared kind (or the node has no kind). Use `posture: guard` for kinds
-whose nodes are review-critical replacements; use `posture: wild` only for
-truths that should stay opt-in.
+match a declared kind (or the node has no kind).
 
 The glossary is a dictionary of every term with defined meaning in the corpus.
 A root `voice.md` with a `voice` glossary entry declares the scope for future

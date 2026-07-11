@@ -91,7 +91,7 @@ edits and checks.
 | `packages/ghost` | yes: `@design-intelligence/ghost` | The public package. Ships the `ghost` CLI, node authoring, corpus validation, gather/pull/pulse, review packet assembly, and the unified skill bundle. Shared runtime lives in `packages/ghost/src/ghost-core`. |
 | `packages/vessel-react` | no | A standalone shadcn component registry plus `vessel-mcp` MCP server: the opinionated default reference body. Design-system-agnostic; nothing in Ghost requires it. |
 | `packages/vessel-light` | no | Vessel's design language as a portable `.ghost/` fingerprint package for agents writing raw HTML/CSS. No build, no dependencies. |
-| `packages/steering-eval` | no | Before/after evaluation harness: measures what handing an agent a `.ghost` fingerprint buys, as a deterministic `report.html`. |
+| `packages/steering-control` | no | Before/after evaluation harness: measures what handing an agent a `.ghost` fingerprint buys, as a deterministic `report.html`. |
 | `apps/docs` | no | Docs site. |
 
 ## CLI Commands
@@ -100,7 +100,7 @@ Core workflow:
 
 | Command | Description |
 | --- | --- |
-| `ghost init` | Scaffold `.ghost/` with the skeleton starter: manifest, glossary, `index.md`, grammar nodes, and unanswered signature dials. `--template minimal` writes only the manifest/glossary/index starter; `--body vessel-light` installs a full inhabited fingerprint instead. `--with checks` also adds the checks directory. |
+| `ghost init` | Scaffold `.ghost/` with the skeleton starter: manifest, glossary, a `brand.md` cover, foundation chapters, context nodes, and the cliche floor. `--template minimal` writes a smaller cover-led starter; `--body vessel-light` installs a full inhabited fingerprint instead. `--with checks` also adds the checks directory. |
 | `ghost checks init` | Scaffold `.ghost/checks/` with an example review assertion. |
 | `ghost validate` | Validate the package: manifest shape, node validity, material locators, check references, and glossary kind prefixes. |
 | `ghost gather [ask…]` | Emit the fingerprint menu for the agent to select from. |

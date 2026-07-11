@@ -23,10 +23,10 @@ export interface GhostInitTemplate {
   description: string;
   files(): TemplateFile[] | Promise<TemplateFile[]>;
 }
-function manifestFile(): TemplateFile {
+function manifestFile(cover?: string): TemplateFile {
   return {
     relativePath: "manifest.yml",
-    content: `schema: ${GHOST_FINGERPRINT_PACKAGE_SCHEMA}\nid: local\n`,
+    content: `schema: ${GHOST_FINGERPRINT_PACKAGE_SCHEMA}\nid: local\n${cover ? `cover: ${cover}\n` : ""}`,
   };
 }
 
@@ -44,18 +44,18 @@ function gitignoreFile(): TemplateFile {
 
 /**
  * The minimal starter: a manifest, a package-level glossary declaring the
- * starter kind vocabulary, and a package-root `index.md` node. Additional
+ * starter kind vocabulary, and a package-root `index.md` cover. Additional
  * truths are plain markdown nodes; optional material locators live on the node
  * that explains them. Checks are opt-in via `ghost checks init`.
  */
 const MINIMAL_TEMPLATE: GhostInitTemplate = {
   name: "minimal",
   description:
-    "Minimal node package: manifest + glossary + a starter index node.",
+    "Minimal node package: manifest + glossary + a starter cover node.",
   async files() {
     const medianFile = await medianTemplateFile();
     return [
-      manifestFile(),
+      manifestFile("index"),
       gitignoreFile(),
       {
         relativePath: "glossary.md",
@@ -65,9 +65,9 @@ kinds:
   - name: condition
   - name: exemplar
   - name: anti-goal
+  - name: cliche
   - name: asset
   - name: pattern
-#  - { name: provocation, posture: wild, purpose: a deliberate provocation past the fingerprint — surfaced only on request }
 ---
 
 # principle
@@ -88,8 +88,13 @@ evidence unless the node says the sample itself is normative.
 What this brand must never look, sound, or feel like — named generic patterns
 and rejected neighbors. Always-on, like a principle, but stated as the thing
 to steer away from.
-\`anti-goal.median\` is the model's floor, not the brand's taste. Gather
-anti-goals before styling anything greenfield.
+
+# cliche
+
+The defaults a generative model falls back on when no brand is steering it.
+These are nobody's brand. Each entry pairs the tired move with the honest
+replacement. Gather before styling anything greenfield; enforced by paired
+checks at review.
 
 # asset
 
@@ -110,18 +115,18 @@ Replace this placeholder prose with two things:
 
 **The non-negotiables.** The handful of truths that apply to every task, every
 medium, no matter what else is gathered — hard invariants, the anti-goals, the
-one-sentence stance. This node is the only one an agent is told to always pull,
-so anything that must never be missed belongs here (stated briefly; link out to
-the full node by id for depth).
+one-sentence stance. Anything that must never be missed belongs here, stated
+briefly; link out to the full node by id for depth.
 
 **How to read the rest.** What this fingerprint covers, how its kinds organize
 the corpus, and where the fingerprint deliberately stays silent — including, if
 you want one, a stricter silence posture ("when this fingerprint is silent on X,
 ask a human") that overrides the default proceed-provisionally behavior.
 
-\`index\` is an ordinary node in every mechanical sense — everything below the
-\`---\` is its body; the frontmatter above is the retrieval description. Its
-privilege is pure convention: the recipes tell agents to pull it first.
+\`index\` is this package's manifest-declared cover: \`ghost gather\` inlines its
+body before the menu and excludes it from selection. Its privilege comes from
+\`cover: index\` in \`manifest.yml\`, not from the filename. You may rename it;
+update the manifest's \`cover\` id at the same time.
 
 The glossary declares the kind vocabulary. A node's kind comes from its
 filename prefix: \`principle.density.md\` has kind \`principle\` and slug
@@ -138,7 +143,7 @@ it applies — never a filing destination.
 /**
  * The composition starter: everything in `minimal`, plus a worked composition
  * ladder — an invariants floor (`principle.composition`), one bound/open
- * pattern, and an index that teaches the convention. For teams whose
+ * pattern, and a cover that teaches the convention. For teams whose
  * fingerprint must steer *what agents build*, not only what they say.
  *
  * The ladder is an authoring convention, not a schema: patterns state what is
@@ -153,7 +158,7 @@ const COMPOSITION_TEMPLATE: GhostInitTemplate = {
   async files() {
     const medianFile = await medianTemplateFile();
     return [
-      manifestFile(),
+      manifestFile("index"),
       gitignoreFile(),
       {
         relativePath: "glossary.md",
@@ -163,9 +168,9 @@ kinds:
   - name: condition
   - name: exemplar
   - name: anti-goal
+  - name: cliche
   - name: asset
   - name: pattern
-#  - { name: provocation, posture: wild, purpose: a deliberate provocation past the fingerprint — surfaced only on request }
 ---
 
 # principle
@@ -190,8 +195,13 @@ render travels with the prose.
 What this brand must never look, sound, or feel like — named generic patterns
 and rejected neighbors. Always-on, like a principle, but stated as the thing
 to steer away from.
-\`anti-goal.median\` is the model's floor, not the brand's taste. Gather
-anti-goals before styling anything greenfield.
+
+# cliche
+
+The defaults a generative model falls back on when no brand is steering it.
+These are nobody's brand. Each entry pairs the tired move with the honest
+replacement. Gather before styling anything greenfield; enforced by paired
+checks at review.
 
 # asset
 
@@ -312,25 +322,23 @@ When a blessed render of this pattern exists, add an \`exemplar.*\` node with
 const SKELETON_FILE_ORDER = new Map(
   [
     "glossary.md",
-    "index.md",
-    "anti-goal.median.md",
-    "grammar.hierarchy.md",
-    "grammar.rhythm.md",
-    "grammar.surfaces.md",
-    "grammar.motion.md",
-    "grammar.color-roles.md",
-    "grammar.conversation.md",
-    "signature.shape.md",
-    "signature.palette.md",
-    "signature.type.md",
-    "signature.temperature.md",
+    "brand.md",
+    "cliche.median.md",
+    "foundation.composition.md",
+    "foundation.color.md",
+    "foundation.type.md",
+    "foundation.controls.md",
+    "foundation.layout.md",
+    "foundation.motion.md",
+    "foundation.voice.md",
+    "context.conversation.md",
   ].map((path, index) => [path, index]),
 );
 
 const SKELETON_TEMPLATE: GhostInitTemplate = {
   name: "skeleton",
   description:
-    "Naked skeleton: the median floor + grammar law, with the signature dials left unanswered.",
+    "Naked skeleton: a brand cover, foundation chapters with open questions, and the cliche floor.",
   async files() {
     const skeletonFiles = [
       ...(await loadPackedPayload("skeleton")),
@@ -343,14 +351,14 @@ const SKELETON_TEMPLATE: GhostInitTemplate = {
             Number.MAX_SAFE_INTEGER) ||
         a.relativePath.localeCompare(b.relativePath),
     );
-    return [manifestFile(), gitignoreFile(), ...skeletonFiles];
+    return [manifestFile("brand"), gitignoreFile(), ...skeletonFiles];
   },
 };
 
 async function medianTemplateFile(): Promise<TemplateFile> {
   return {
-    relativePath: "anti-goal.median.md",
-    content: await loadPayloadFile("median", "anti-goal.median.md"),
+    relativePath: "cliche.median.md",
+    content: await loadPayloadFile("median", "cliche.median.md"),
   };
 }
 

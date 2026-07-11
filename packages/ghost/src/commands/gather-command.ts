@@ -34,7 +34,6 @@ export function registerGatherCommand(cli: CAC): void {
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
     })
-    .option("--wild", "Include wild-posture nodes in the menu")
     .action(async (askParts: string[] | undefined, opts) => {
       try {
         if (opts.format !== "markdown" && opts.format !== "json") {
@@ -46,22 +45,18 @@ export function registerGatherCommand(cli: CAC): void {
         const ask = normalizeAsk(askParts);
         const paths = resolveFingerprintPackage(opts.package, process.cwd());
         const loaded = await loadFingerprintPackage(paths);
-        const wildIds = [...loaded.catalog.nodes.values()]
-          .filter((node) => node.wild)
-          .map((node) => node.id)
-          .sort();
-        const includeWild = Boolean(opts.wild);
-        const menu = buildCatalogMenu(loaded.catalog, { includeWild });
-        const exposedWildIds = menu
-          .filter((entry) => entry.wild)
-          .map((entry) => entry.id);
+        const coverId = loaded.manifest.cover;
+        const coverNode = coverId
+          ? loaded.catalog.nodes.get(coverId)
+          : undefined;
+        const menu = buildCatalogMenu(loaded.catalog).filter(
+          (entry) => entry.id !== coverNode?.id,
+        );
         const kinds = await readMenuKinds(paths.glossary);
         await appendGhostEvent(paths.packageDir, {
           event: "gather",
           ...(ask ? { ask } : {}),
           menu: menu.map((entry) => entry.id),
-          wild: includeWild,
-          wildIds: exposedWildIds,
         });
 
         // Ghost does no selection. It emits the catalog; the agent reads the
@@ -72,12 +67,12 @@ export function registerGatherCommand(cli: CAC): void {
               {
                 kind: "menu",
                 ...(ask ? { ask } : {}),
+                ...(coverNode
+                  ? { cover: { id: coverNode.id, body: coverNode.body } }
+                  : {}),
                 coverage: menuCoverage(menu),
                 ...(kinds.length > 0 ? { kinds } : {}),
                 nodes: menu,
-                ...(wildIds.length > 0 && !includeWild
-                  ? { wildAvailable: wildIds.length }
-                  : {}),
               },
               null,
               2,
@@ -87,8 +82,9 @@ export function registerGatherCommand(cli: CAC): void {
           process.stdout.write(
             formatMenuMarkdown(menu, kinds, {
               ask,
-              wildAvailable: includeWild ? 0 : wildIds.length,
-              wildIncluded: includeWild && exposedWildIds.length > 0,
+              cover: coverNode
+                ? { id: coverNode.id, body: coverNode.body }
+                : undefined,
             }),
           );
         }
@@ -133,25 +129,38 @@ async function readMenuKinds(glossaryPath: string): Promise<MenuKind[]> {
 
 interface FormatMenuOptions {
   ask?: string;
-  wildAvailable?: number;
-  wildIncluded?: boolean;
+  cover?: {
+    id: string;
+    body: string;
+  };
 }
 
 function menuCoverage(menu: CatalogMenuEntry[]): {
   nodes: number;
   concrete: number;
-  guards: number;
+  undescribed: number;
 } {
   return {
     nodes: menu.length,
     concrete: menu.filter((entry) => entry.concrete).length,
-    guards: menu.filter((entry) => entry.guard).length,
+    // A node without a description is a bare id the agent cannot select
+    // against — surface the count where selection happens.
+    undescribed: menu.filter(
+      (entry) => !entry.description || entry.description.trim().length === 0,
+    ).length,
   };
 }
 
 function menuCoverageLine(menu: CatalogMenuEntry[]): string {
   const coverage = menuCoverage(menu);
-  return `${coverage.nodes} nodes · ${coverage.concrete} carry concrete material · ${coverage.guards} guards`;
+  const parts = [
+    `${coverage.nodes} nodes`,
+    `${coverage.concrete} carry concrete material`,
+  ];
+  if (coverage.undescribed > 0) {
+    parts.push(`${coverage.undescribed} lack descriptions`);
+  }
+  return parts.join(" · ");
 }
 
 function formatMenuMarkdown(
@@ -162,16 +171,22 @@ function formatMenuMarkdown(
   const lines: string[] = [
     options.ask ? `# Ghost Nodes — for: ${options.ask}` : "# Ghost Nodes",
     "",
-    "The fingerprint menu. Match the ask against these nodes and read the ones you judge relevant.",
-    menuCoverageLine(menu),
-    "",
   ];
-  if (options.wildIncluded) {
+  if (options.cover) {
     lines.push(
-      "Wild nodes are marked `(wild)`: they push past the fingerprint and require explicit open territory in the brief.",
+      `## Cover — \`${options.cover.id}\``,
+      "",
+      options.cover.body,
+      "",
+      "---",
       "",
     );
   }
+  lines.push(
+    "The fingerprint menu. Match the ask against these nodes and read the ones you judge relevant.",
+    menuCoverageLine(menu),
+    "",
+  );
   if (kinds.length > 0) {
     lines.push("Kinds:", "");
     for (const kind of kinds) {
@@ -181,9 +196,7 @@ function formatMenuMarkdown(
   }
   for (const entry of menu) {
     const kind = entry.kind ? ` _(${entry.kind})_` : "";
-    const wild = entry.wild ? " _(wild)_" : "";
-    const guard = entry.guard ? " _(guard)_" : "";
-    lines.push(`- \`${entry.id}\`${kind}${wild}${guard}`);
+    lines.push(`- \`${entry.id}\`${kind}`);
     if (entry.description) lines.push(`  - ${entry.description}`);
     if (entry.materials !== undefined) {
       lines.push(`  - materials: ${entry.materials}`);
@@ -193,12 +206,6 @@ function formatMenuMarkdown(
         `  - carries concrete material${entry.hasSkeleton ? " (Skeleton)" : ""}`,
       );
     }
-  }
-  if ((options.wildAvailable ?? 0) > 0) {
-    lines.push(
-      "",
-      `${options.wildAvailable} wild node${options.wildAvailable === 1 ? "" : "s"} available via \`--wild\`.`,
-    );
   }
   return `${lines.join("\n")}\n`;
 }

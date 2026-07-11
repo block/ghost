@@ -28,9 +28,13 @@ wants muted body or label, not a smaller custom font. If the prose needs
 emphasis, improve the sentence before adding a style.
 
 The control emphasis ladder is exactly five rungs: primary, secondary,
-outline, ghost, link. One primary action per view is the rule; everything
-else steps down the ladder. Primary is for the action the screen exists to
-complete — if two buttons both look primary, the hierarchy failed.
+outline, ghost, link. At most one primary action per view is the rule
+(`--primary-budget: 1`); everything else steps down the ladder. Primary is
+for the action the screen exists to complete — if two buttons both look
+primary, the hierarchy failed. And some views honestly earn none: a steady
+status view or an open comparison has no action the screen exists to
+complete, and promoting one anyway puts the system's thumb on the scale.
+Zero is a valid spend.
 Destructive is a meaning, not a rung: it is rare, it names the destructive
 act directly, and it is never borrowed for urgency, emphasis, or brand heat.
 
@@ -39,6 +43,12 @@ clear label, and a focused ring when the user engages. The focus ring is
 guidance, not decoration. Errors state facts next to the field that caused
 them — do not hide field errors in modals, toasts, or generic banners when
 the user needs to fix one input.
+
+Figures that will be compared or scanned — amounts, counts, dates in
+columns, any metric — set in tabular numerals (`--numeric-tabular`), with
+the unit tight to the number. Proportional figures in a data column wobble,
+and a wobbling column reads as sloppy arithmetic. Mono already carries this
+for machine detail; the rule extends to any numeric data in product UI.
 
 Balanced text is for headings and compact statements. Do not balance long
 body copy into jagged reading.

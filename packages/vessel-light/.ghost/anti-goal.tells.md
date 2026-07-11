@@ -4,7 +4,9 @@ description: "Failure modes specific to this brand's own signature — gather al
 
 These are the near-misses of Vessel's own signature: outputs that got close
 enough to cite the brand and still missed it. Each reject names its
-replacement.
+replacement. When a tell fires, the fix direction is always toward the
+token, the role, or deletion — never toward adding a compensating style on
+top of the miss.
 
 Reject rectangular buttons. A rectangular button is not a variant; it is a
 different design system → controls take `--radius-control`, the pill.
@@ -21,9 +23,8 @@ Vessel; it is a different brand.
 Reject custom shadows that sit near a tier → the exact tier — card, popover,
 or modal — chosen by interaction importance.
 
-Reject borrowing `--shadow-btn` or `--shadow-kbd` for layout → component
-shadows belong to the primitives that own them; layout elevation comes from
-the three tiers.
+Reject borrowing `--shadow-btn` for layout → component shadows belong to the
+primitives that own them; layout elevation comes from the three tiers.
 
 Reject editorial display type in product UI, and product type timidity in
 editorial → each register keeps its own vocabulary; a modal title is not a

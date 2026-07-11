@@ -79,7 +79,7 @@ says which.
 
 Counter-exemplars are as valuable as exemplars when they name the replacement.
 "We would never ship this; we would ship that instead" with artifacts attached
-usually yields a sharper guard than an hour of affirmative description. Avoid
+usually yields a sharper anti-goal than an hour of affirmative description. Avoid
 blacklist-only anti-goals: the rejected pattern should be purged from exemplars
 and enforced in review, not repeated as the model's main example.
 
@@ -114,9 +114,7 @@ Two authoring decisions replace any notion of hierarchy:
 
 - **Kind** — declare the kind vocabulary in `glossary.md` and name each node
   `<kind>.<slug>.md` so its normative weight is clear. The glossary defines what
-  each kind means and how strongly it binds. Use `posture: guard` for
-  review-critical replacement nodes, `posture: wild` for opt-in provocations,
-  and the default steady posture for ordinary truths. Kinds are your choice;
+  each kind means and how strongly it binds. Kinds are your choice;
   Ghost ships no fixed vocabulary.
 - **Altitude** — state a truth at the level it is actually true. Universal → state
   it plainly. Narrower → name the situation that activates it, in the prose. Never
@@ -168,10 +166,10 @@ pattern to imitate with the human's real truths.
   expose sensitive third-party details — then show the count only." Models
   imitate reasoning as well as outputs.
 
-State a silence posture somewhere the agent always reads (usually `index.md`):
-when the fingerprint is silent, proceed provisionally from local conventions
-only when safe, and ask before brand-defining, irreversible, legal,
-privacy-sensitive, or high-risk choices.
+State the silence posture on the manifest-declared cover, which `gather`
+inlines for every task: when the fingerprint is silent, proceed provisionally
+from local conventions only when safe, and ask before brand-defining,
+irreversible, legal, privacy-sensitive, or high-risk choices.
 
 ## Never
 

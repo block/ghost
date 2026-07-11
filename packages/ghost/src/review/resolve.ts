@@ -22,7 +22,7 @@ export interface OfferedCheck {
 }
 
 export interface CoverageGap {
-  kind: "unmatched-file" | "unguarded-material";
+  kind: "unmatched-file" | "unchecked-material";
   detail: string;
   files?: string[];
   nodes?: string[];
@@ -31,7 +31,6 @@ export interface CoverageGap {
 export interface ReviewResolution {
   touchedFiles: TouchedFile[];
   materialNodes: MatchedMaterialNode[];
-  guardNodes: MatchedMaterialNode[];
   offeredChecks: OfferedCheck[];
   gaps: CoverageGap[];
 }
@@ -116,15 +115,15 @@ export function resolveReview(
     });
   }
 
-  const unguarded = [...touchedMaterialNodes].filter(
+  const unchecked = [...touchedMaterialNodes].filter(
     (id) => !referencedMaterialNodes.has(id),
   );
-  if (unguarded.length > 0) {
+  if (unchecked.length > 0) {
     gaps.push({
-      kind: "unguarded-material",
+      kind: "unchecked-material",
       detail:
         "touched material-backed nodes have no check referencing them — review coverage is missing",
-      nodes: unguarded,
+      nodes: unchecked,
     });
   }
 
@@ -137,9 +136,6 @@ export function resolveReview(
   return {
     touchedFiles,
     materialNodes: matchedNodes,
-    guardNodes: matchedNodes.filter(
-      (node) => catalog.nodes.get(node.id)?.guard,
-    ),
     offeredChecks,
     gaps,
   };

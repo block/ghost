@@ -17,9 +17,9 @@ Voice rules:
 - Prefer short declarative sentences around the model: "The CLI does the
   deterministic work; your agent does the interpretation." Do not bury the
   boundary in hedging.
-- Use concrete artifact names: `.ghost/`, `manifest.yml`, `glossary.md`,
-  `index.md`, `checks/`, `ghost gather`, `ghost pull`. The docs earn trust by
-  naming the files and commands agents actually touch.
+- Use concrete artifact names: `.ghost/`, `manifest.yml`, `glossary.md`, the
+  manifest-declared cover, `checks/`, `ghost gather`, `ghost pull`. The docs earn
+  trust by naming the files and commands agents actually touch.
 - Say **brand truth**, **fingerprint**, **node**, **kind**, **materials**,
   **feed-forward**, **feed-back**, and **advisory review packet**
   consistently. Do not introduce synonyms such as brand DNA, style cache,
