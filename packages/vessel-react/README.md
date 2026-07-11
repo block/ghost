@@ -12,10 +12,39 @@ looking for the brand-fingerprint CLI and skill bundle, that's
 
 Vessel is Ghost's agnostic, agent-safe reference body: a coherent implementation
 vocabulary a product fingerprint can inhabit, not the brand truth for every
-Ghost consumer. Before changing its design-system direction, read the Phase 0
-invariants in [`../../docs/vessel-agent-safe-reference-system.md`](../../docs/vessel-agent-safe-reference-system.md).
-They define how Vessel relates to upstream shadcn, downstream product forks,
-Ghost, and Orbit-style LLM-safe design-system discipline.
+Ghost consumer. A consuming repo owns its product stance, flows, copy, trust
+obligations, and visual-language decisions through its own `.ghost/`
+fingerprint; Vessel supplies reusable materials and safe authoring paths, not
+universal brand law.
+
+Vessel is not latest shadcn with a logo, not an extracted product UI kit, and
+not a sealed design system. It follows shadcn's copy-and-own model: upstream
+syncs adopt mechanical improvements (accessibility, ARIA, keyboard behavior)
+and adapt useful anatomy through Vessel's own token contract, but reject
+generic visual decisions that widen the authoring surface (raw palette
+classes, arbitrary values, component-local theme hacks). Downstream product
+forks are evidence to mine for reusable discipline, never a source to copy
+wholesale.
+
+Two invariants govern changes to Vessel's design-system direction:
+
+- **Token contract.** `primitive values -> semantic roles -> narrow Vessel
+  extensions -> Tailwind utility bridge`. Primitive values are the only broad
+  place for literal color material; shared UI authors against semantic roles
+  first (`background`, `foreground`, `card`, `muted`, `accent`, `primary`,
+  `destructive`, `border`, `ring`, …); Vessel extensions stay narrow and
+  job-named (composer surfaces, message surfaces, tool/reasoning status).
+  Never reintroduce broad duplicate aliases (`background-alt`, `surface-card`).
+- **Escape hatches are governed, not banned.** Prefer variants, slots, and
+  tokens before `className`; promote a recurring override into a named Vessel
+  decision instead of repeating the override; keep arbitrary values and raw
+  palette utilities out of normal component source without a documented
+  reason; back hard rules with a check that can count or reject the unsafe
+  path, rather than relying on review prose alone.
+
+Registry metadata on high-impact items should name intent, when to use it,
+when not to, safe variants, common misuses, and token roles — decision
+metadata, not just source.
 
 This workspace carries a repo-local `.ghost/` fingerprint (a flat corpus of
 prose nodes plus checks) governing Vessel itself: the token contract,
