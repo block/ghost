@@ -10,9 +10,6 @@ import {
 /** Reserved package-root directory holding review checks. */
 export const GHOST_CHECKS_DIR = "checks";
 
-/** Pre-flat location for checks; detected only to warn on stale packages. */
-const LEGACY_HAUNTS_DIR = "haunts";
-
 const CHECK_ID_PATTERN = /^[a-z0-9][a-z0-9._-]*$/;
 
 export interface LoadedCheck {
@@ -37,8 +34,6 @@ export async function loadCheckFiles(
 ): Promise<LoadedCheckFiles> {
   const checks = new Map<string, LoadedCheck>();
   const invalid: LoadedCheckFiles["invalid"] = [];
-
-  await detectLegacyHauntsDir(packageDir, invalid);
 
   const checksDir = join(packageDir, GHOST_CHECKS_DIR);
   let entries: Array<{ name: string; isDirectory(): boolean }>;
@@ -94,22 +89,6 @@ export async function loadCheckFiles(
   }
 
   return { hasChecksDir: true, checks, invalid };
-}
-
-async function detectLegacyHauntsDir(
-  packageDir: string,
-  invalid: LoadedCheckFiles["invalid"],
-): Promise<void> {
-  try {
-    await readdir(join(packageDir, LEGACY_HAUNTS_DIR));
-  } catch {
-    return;
-  }
-  invalid.push({
-    file: LEGACY_HAUNTS_DIR,
-    message:
-      "the haunts/ directory is no longer supported; move haunts/checks/*.md to checks/ and delete haunts/",
-  });
 }
 
 function referencesFromFrontmatter(

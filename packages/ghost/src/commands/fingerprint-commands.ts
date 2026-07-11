@@ -7,7 +7,6 @@ import {
   resolveFingerprintPackage,
 } from "../fingerprint.js";
 import { detectFileKind, lintDetectedFileKind } from "../scan/file-kind.js";
-import { resolveGhostDirDefault } from "../scan/index.js";
 import { failFromError } from "./errors.js";
 import { registerInitCommand } from "./init-command.js";
 
@@ -32,10 +31,9 @@ export function registerFingerprintCommands(cli: CAC): void {
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (path: string | undefined, opts) => {
       try {
-        const ghostDir = ghostDirFromEnv();
         const exactPackage =
           typeof opts.package === "string" ? opts.package : undefined;
-        const packagePath = exactPackage ?? path ?? ghostDir;
+        const packagePath = exactPackage ?? path;
         const target = resolveFingerprintPackage(
           packagePath,
           process.cwd(),
@@ -62,10 +60,6 @@ export function registerFingerprintCommands(cli: CAC): void {
     });
 
   registerInitCommand(cli);
-}
-
-function ghostDirFromEnv(): string {
-  return resolveGhostDirDefault();
 }
 
 function writeLintReport(report: LintReport, format: unknown): void {
