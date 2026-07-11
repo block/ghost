@@ -13,7 +13,7 @@ let dir: string;
 beforeEach(() => {
   dir = join(
     tmpdir(),
-    `steering-eval-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    `steering-control-${Date.now()}-${Math.random().toString(36).slice(2)}`,
   );
   mkdirSync(dir, { recursive: true });
 });
@@ -49,7 +49,7 @@ function writeProject() {
   return loadConfig(dir);
 }
 
-describe("steering-eval", () => {
+describe("steering-control", () => {
   it("teaches config validation errors", () => {
     writeFileSync(
       join(dir, "eval.config.json"),
@@ -109,7 +109,7 @@ describe("steering-eval", () => {
   });
 
   it("hard-fails when a lock exists", () => {
-    const cli = resolve("packages/steering-eval/cli.mjs");
+    const cli = resolve("packages/steering-control/cli.mjs");
     writeProject();
     mkdirSync(join(dir, "out"), { recursive: true });
     writeFileSync(join(dir, "out", ".run.lock"), "{}\n");

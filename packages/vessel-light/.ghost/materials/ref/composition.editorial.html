@@ -1,5 +1,5 @@
 <!-- ghost ref annotations
-  normative-for: register.editorial — display-scale hero with the single sanctioned kicker (one per page — repeating it on every section is the median tell), --section-padding-vertical rhythm, the sanctioned full-bleed dark band via --surface-dark-*, the pull quote as visual punctuation, one primary action per page. signature.type — the editorial heading scale (--heading-display-*, --heading-section-*) used where the words are the composition, product text variants (title, label, body) inside the features. grammar.hierarchy — the inverse tone on the dark surface. signature.palette — the editorial volume: exactly two expression hues per page (periwinkle tinting the dark band, amber accenting the pull quote), controls monochrome.
+  normative-for: register.editorial — display-scale hero with the single sanctioned kicker (one per page — repeating it on every section is the median tell), --section-padding-vertical rhythm, the sanctioned full-bleed dark band via --surface-dark-*, the pull quote as visual punctuation, one primary action per page at button--size-lg. signature.type — the editorial heading scale (text--display for the hero, --heading-section-* and --heading-sub-* composed locally) used where the words are the composition, product text variants (title, label, body) inside the features. grammar.rhythm — the hero takes the largest gap step (stack--gap-xl) because display scale earns it. grammar.motion — the sanctioned editorial entrance: one staged reveal at --duration-slow with the one ease, opacity and small transform only. grammar.hierarchy — the inverse tone on the dark surface. signature.palette — the editorial volume: exactly two expression hues per page (periwinkle tinting the dark band, amber accenting the pull quote), controls monochrome.
   incidental: all copy; the specific hue assignments (any two of the five expression hues satisfy the budget); the three-feature grid count; content max-widths.
 -->
 <!doctype html>
@@ -14,11 +14,15 @@
       body { margin: 0; }
       .page { width: min(calc(100% - (var(--page-container-side-gutter) * 2)), var(--page-container-max-width)); margin-inline: auto; }
       .section { padding-block: var(--section-padding-vertical); }
-      .hero { min-height: calc(var(--section-padding-vertical) * 5); justify-content: center; }
+      .hero { min-height: calc(var(--section-padding-vertical) * 5); }
+      /* editorial entrance: one staged reveal, opacity + small transform, --duration-slow with the one ease */
+      .hero > * { animation: hero-enter var(--duration-slow) var(--ease-spring) both; }
+      @keyframes hero-enter { from { opacity: 0; transform: translateY(8px); } }
       .label-kicker { text-transform: uppercase; }
-      .display-heading { max-width: calc(var(--page-container-side-gutter) * 48); font-size: var(--heading-display-font-size); font-weight: var(--heading-display-font-weight); line-height: var(--heading-display-line-height); letter-spacing: var(--heading-display-letter-spacing); }
+      .display-heading { max-width: calc(var(--page-container-side-gutter) * 48); }
       .reading-line { max-width: calc(var(--page-container-side-gutter) * 32); font-size: var(--body-reading-size); line-height: var(--body-reading-line-height); letter-spacing: var(--body-reading-letter-spacing); }
       .section-heading { max-width: calc(var(--page-container-side-gutter) * 36); margin-bottom: var(--section-heading-margin-bottom); font-size: var(--heading-section-font-size); font-weight: var(--heading-section-font-weight); line-height: var(--heading-section-line-height); letter-spacing: var(--heading-section-letter-spacing); }
+      .note-heading { max-width: calc(var(--page-container-side-gutter) * 36); margin-bottom: var(--page-container-side-gutter); font-size: var(--heading-sub-font-size); font-weight: var(--heading-sub-font-weight); line-height: var(--heading-sub-line-height); letter-spacing: var(--heading-sub-letter-spacing); }
       /* expression budget: two hues per page — periwinkle tints the dark band, amber accents the pull quote */
       .dark-band { width: 100vw; margin-left: calc(50% - 50vw); background: color-mix(in srgb, var(--expression-2) 12%, var(--surface-dark)); color: var(--surface-dark-text); }
       .dark-inner { width: min(calc(100% - (var(--page-container-side-gutter) * 2)), var(--page-container-max-width)); margin-inline: auto; padding-block: var(--section-padding-vertical); }
@@ -31,11 +35,11 @@
   </head>
   <body>
     <main>
-      <section class="page section hero stack stack--gap-lg stack--align-start" aria-labelledby="hero-title">
+      <section class="page section hero stack stack--gap-xl stack--align-start stack--justify-center" aria-labelledby="hero-title">
         <p class="text text--label text--muted label-kicker">Independent review layer</p>
-        <h1 class="text display-heading" id="hero-title">Make every generated screen answer to the same brand memory.</h1>
+        <h1 class="text text--display display-heading" id="hero-title">Make every generated screen answer to the same brand memory.</h1>
         <p class="text reading-line text--muted">Vessel keeps interface materials plain, inspectable, and close to the repo so agents can preserve the feel behind the product, not just the surface.</p>
-        <a class="button button--primary" href="#material-system">Review materials</a>
+        <a class="button button--primary button--size-lg" href="#material-system">Review materials</a>
       </section>
 
       <section class="dark-band" id="material-system" aria-labelledby="system-title">
@@ -61,7 +65,8 @@
         </div>
       </section>
 
-      <section class="page section" aria-label="Editorial note">
+      <section class="page section" aria-labelledby="note-title">
+        <h2 class="text note-heading" id="note-title">Why authorship survives generation</h2>
         <blockquote class="pullquote">The interface should feel authored even when an agent produced the first pass.</blockquote>
       </section>
     </main>

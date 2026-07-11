@@ -37,7 +37,7 @@ Gathered, the agent selects the register the task belongs to.
 
 ## Protocol
 
-The demo is driven by `steering-eval` (`packages/steering-eval`), configured
+The demo is driven by `steering-control` (`packages/steering-control`), configured
 by `eval.config.json`. `ballast.md` is fixed and identical across arms
 (~77K words / ~100K tokens of realistic-shaped, irrelevant session context).
 Never edit it between runs.
@@ -45,16 +45,16 @@ Never edit it between runs.
 Per cell (arm × ask), for k = 1..5 — gather runs strictly serialized:
 
 ```bash
-node ../../steering-eval/cli.mjs prompt <arm> <ask-n> --run <k>
+node ../../steering-control/cli.mjs prompt <arm> <ask-n> --run <k>
 # hand the prompt file to a FRESH agent context; it writes run-<k>.html
 # (gather arm: the agent runs `ghost pull` itself mid-task — that IS the test)
-node ../../steering-eval/cli.mjs finish <arm> <ask-n> <k>
+node ../../steering-control/cli.mjs finish <arm> <ask-n> <k>
 ```
 
 Then, zero LLM calls, rebuildable from `out/` alone:
 
 ```bash
-node ../../steering-eval/cli.mjs shoot && node ../../steering-eval/cli.mjs score && node ../../steering-eval/cli.mjs report
+node ../../steering-control/cli.mjs shoot && node ../../steering-control/cli.mjs score && node ../../steering-control/cli.mjs report
 ```
 
 Fairness rules: B's dump goes up front (that is where the naive integration
@@ -78,11 +78,11 @@ stack is mandated by `register.email` — discount them there.
 
 ## Files
 
-- `eval.config.json` — the steering-eval configuration (arms, k, corpora)
+- `eval.config.json` — the steering-control configuration (arms, k, corpora)
 - `ballast.md` — the fixed context ballast
 - `asks.md` — the three asks, plus `expect:`/`poison:`/`discount:` harness
   metadata (stripped before generation; minimal, defensible sets only)
 - `run-arm.md` — per-arm assembly instructions for the driving agent
 - `median-tells.json` — the distilled tell list with antimedian evidence counts
-- `median-score.mjs` — the standalone scorer (steering-eval embeds the same
+- `median-score.mjs` — the standalone scorer (steering-control embeds the same
   tell-matching)

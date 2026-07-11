@@ -657,7 +657,7 @@ describe("ghost CLI", () => {
     expect(JSON.parse(lint.stdout).errors).toBe(0);
   });
 
-  it("initializes a bundle with manifest and starter index node", async () => {
+  it("initializes a bundle with manifest and starter brand cover", async () => {
     const init = await runCli(["init"], dir);
 
     expect(init.code).toBe(0);
@@ -1958,14 +1958,6 @@ describe("ghost CLI", () => {
     const result = await runCli(["review", "--diff=-"], dir, { stdin: "" });
     expect(result.code).toBe(2);
     expect(result.stderr).toContain("ghost checks init");
-  });
-
-  it("validate flags the legacy haunts/ directory", async () => {
-    await runCli(["init"], dir);
-    await mkdir(join(dir, ".ghost", "haunts", "checks"), { recursive: true });
-    const result = await runCli(["validate"], dir);
-    expect(result.code).toBe(1);
-    expect(result.stdout).toContain("no longer supported");
   });
 });
 

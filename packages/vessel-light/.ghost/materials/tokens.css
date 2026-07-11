@@ -61,35 +61,27 @@
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 
   --color-white: #ffffff;
-  --color-black: #000000;
 
-  --color-gray-50: #f5f5f5;
   --color-gray-100: #f0f0f0;
   --color-gray-200: #e8e8e8;
   --color-gray-300: #e5e5e5;
   --color-gray-400: #cccccc;
   --color-gray-500: #999999;
-  --color-gray-600: #666666;
-  --color-gray-700: #333333;
-  --color-gray-800: #232323;
   --color-gray-900: #1a1a1a;
 
-  --color-red-100: #ff6b6b;
   --color-red-200: #f94b4b;
-  --color-blue-100: #7cacff;
   --color-blue-200: #5c98f9;
-  --color-green-100: #a3d795;
   --color-green-200: #91cb80;
-  --color-yellow-100: #ffd966;
   --color-yellow-200: #fbcd44;
 
-  --radius: 20px;
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
+  /* Radius dials: --radius-surface on what contains, --radius-control on what
+     you click. Everything else derives from these two answers. */
   --radius-surface: 20px;
   --radius-control: 999px;
-  --radius-input: 999px;
+  --radius: var(--radius-surface);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-input: var(--radius-control);
 
   --gap-xs: 4px;
   --gap-sm: 8px;
@@ -98,8 +90,10 @@
   --gap-xl: 32px;
 
   --text-body-size: 14px;
+  --text-body-line-height: 1.625;
   --text-title-size: 18px;
   --text-headline-size: 24px;
+  --text-heading-letter-spacing: -0.025em;
 
   --control-height: 36px;
 
@@ -115,32 +109,23 @@
   --secondary-foreground: var(--foreground);
   --muted: var(--color-gray-100);
   --muted-foreground: var(--color-gray-500);
-  --accent: var(--color-gray-100);
-  --accent-foreground: var(--foreground);
   --destructive: var(--color-red-200);
   --destructive-foreground: var(--color-white);
   --success: var(--color-green-200);
-  --success-foreground: var(--color-gray-900);
   --warning: var(--color-yellow-200);
-  --warning-foreground: var(--color-gray-900);
   --info: var(--color-blue-200);
-  --info-foreground: var(--color-gray-900);
   --border: var(--color-gray-200);
   --input: var(--color-gray-300);
   --ring: var(--color-gray-400);
 
-  --dark-10: rgba(26, 26, 26, 0.1);
   --dark-40: rgba(26, 26, 26, 0.4);
-  --dark-04: rgba(26, 26, 26, 0.04);
 
-  --shadow-mini: 0 2px 8px rgba(76, 76, 76, 0.15);
-  --shadow-mini-inset: 0 1px 4px rgba(76, 76, 76, 0.1) inset;
+  /* Elevation is a closed set of three tiers (card, popover, modal);
+     --shadow-btn belongs to the button primitive, not the tiers. */
   --shadow-btn: 0 2px 8px rgba(76, 76, 76, 0.15);
   --shadow-card: 0 2px 8px rgba(76, 76, 76, 0.15);
-  --shadow-elevated: 0 3px 12px rgba(76, 76, 76, 0.22);
   --shadow-popover: 0 8px 30px rgba(0, 0, 0, 0.12);
   --shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.2);
-  --shadow-kbd: 0 2px 8px rgba(76, 76, 76, 0.15);
 
   --surface-dark: #0a0a0a;
   --surface-dark-text: #f5f5f5;
@@ -159,14 +144,7 @@
   --heading-sub-line-height: 1;
   --heading-sub-letter-spacing: -0.02em;
   --heading-sub-font-weight: 700;
-  --heading-card-font-size: clamp(20px, 2vw, 28px);
-  --heading-card-line-height: 1.1;
-  --heading-card-letter-spacing: -0.01em;
-  --heading-card-font-weight: 600;
 
-  --display-size: clamp(3rem, 12vw, 12rem);
-  --display-line-height: 0.85;
-  --display-letter-spacing: -0.05em;
   --body-reading-size: clamp(1rem, 1.3vw, 1.25rem);
   --body-reading-line-height: 1.65;
   --body-reading-letter-spacing: -0.01em;
@@ -185,58 +163,29 @@
   --section-heading-margin-bottom: 75px;
 
   --ease-spring: cubic-bezier(0.33, 1, 0.68, 1);
-  --duration-fast: 0.15s;
-  --duration-normal: 0.2s;
-  --duration-slow: 0.4s;
+  --duration-fast: 0.15s; /* hover and press — confirmation, not performance */
+  --duration-normal: 0.2s; /* reveals, fades, small state changes */
+  --duration-slow: 0.4s; /* spatial transitions only; editorial entrances */
+
+  /* Budgets — countable rules, checked per view, not moods.
+     A budget of one means at most one; zero is a valid spend. */
+  --primary-budget: 1; /* primary actions per view — and some views honestly earn none */
+  --expression-budget-product: 0; /* expression hues in product UI — charts only, never the chrome */
+  --expression-budget-email: 1; /* expressive moments per message, one hue */
+  --expression-budget-editorial: 2; /* expression hues per page, atmosphere allowed */
+
+  /* Numerals in data — tabular figures so columns align and deltas read. */
+  --numeric-tabular: "tnum" 1;
 
   /* Expression palette — the brand's five hues, volume-gated by register.
      Product: charts only. Data-density: one hue family for status.
      Email: exactly one expressive moment. Editorial: atmosphere, max two
-     hues per page. Never on interactive controls in any register. */
+     hues per page. Never on interactive controls in any register.
+     The refs demonstrate hues 1 and 2; hues 3-5 are declared inventory —
+     no register renders all five at once (see signature.palette). */
   --expression-1: #f6b44a; /* amber */
   --expression-2: #7585ff; /* periwinkle */
   --expression-3: #d76a6a; /* clay */
   --expression-4: #d185e0; /* orchid */
   --expression-5: #91cb80; /* sage */
-}
-
-.dark {
-  --background: var(--color-black);
-  --foreground: var(--color-white);
-  --card: var(--color-gray-800);
-  --card-foreground: var(--foreground);
-  --popover: var(--color-gray-800);
-  --popover-foreground: var(--foreground);
-  --primary: var(--color-white);
-  --primary-foreground: var(--color-black);
-  --secondary: var(--color-gray-700);
-  --secondary-foreground: var(--foreground);
-  --muted: var(--color-gray-800);
-  --muted-foreground: var(--color-gray-500);
-  --accent: var(--color-gray-800);
-  --accent-foreground: var(--foreground);
-  --destructive: var(--color-red-100);
-  --destructive-foreground: var(--color-black);
-  --success: var(--color-green-100);
-  --success-foreground: var(--color-black);
-  --warning: var(--color-yellow-100);
-  --warning-foreground: var(--color-black);
-  --info: var(--color-blue-100);
-  --info-foreground: var(--color-black);
-  --border: var(--color-gray-700);
-  --input: var(--color-gray-700);
-  --ring: var(--color-gray-400);
-
-  --dark-10: rgba(242, 242, 242, 0.1);
-  --dark-40: rgba(242, 242, 242, 0.4);
-  --dark-04: rgba(242, 242, 242, 0.04);
-
-  --shadow-mini: 0 2px 8px rgba(0, 0, 0, 0.4);
-  --shadow-mini-inset: 0 1px 4px rgba(0, 0, 0, 0.5) inset;
-  --shadow-btn: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.4);
-  --shadow-elevated: 0 3px 12px rgba(0, 0, 0, 0.5);
-  --shadow-popover: 0 8px 30px rgba(0, 0, 0, 0.4);
-  --shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.6);
-  --shadow-kbd: 0 2px 8px rgba(0, 0, 0, 0.4);
 }

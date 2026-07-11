@@ -147,7 +147,7 @@ async function askSection(outDir, ask, askTitle, cells) {
     .map((c) => {
       const s = c.scores;
       const con = c.consistency ?? {};
-      return `<tr><td>${esc(c.arm)}</td><td>${s.min} / ${s.median} / ${s.max}</td><td>${fmt(con.accentHue)}</td><td>${fmt(con.radius)}</td><td>${fmt(con.fontStack)}</td><td>${(c.context?.tokensEstimate ?? 0).toLocaleString("en-US")}</td></tr>`;
+      return `<tr><td>${esc(c.arm)}</td><td>${s.min} / ${s.median} / ${s.max}</td><td>${fmt(con.accentHue)}</td><td>${fmt(con.radius)}</td><td>${fmt(con.fontStack)}</td><td>${fmt(c.sameness)}</td><td>${(c.context?.tokensEstimate ?? 0).toLocaleString("en-US")}</td></tr>`;
     })
     .join("\n");
 
@@ -155,7 +155,7 @@ async function askSection(outDir, ask, askTitle, cells) {
 <h2>Ask ${ask} \u2014 ${esc(askTitle)}</h2>
 <div class="grid">${rows.join("\n")}</div>
 <table>
-<thead><tr><th>arm</th><th>tell score min/med/max</th><th>accent-hue consistency</th><th>radius</th><th>font</th><th>context tokens</th></tr></thead>
+<thead><tr><th>arm</th><th>tell score min/med/max</th><th>accent-hue consistency</th><th>radius</th><th>font</th><th>sameness</th><th>context tokens</th></tr></thead>
 <tbody>${tableRows}</tbody>
 </table>
 </section>`;
@@ -211,7 +211,7 @@ export async function renderReport(metricsJsonPath, outDir) {
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>steering-eval report</title>
+<title>steering-control report</title>
 <style>
 :root { color-scheme: light; }
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #111827; background: #ffffff; margin: 0; padding: 2rem; line-height: 1.5; max-width: 72rem; }
@@ -236,7 +236,7 @@ footer { margin-top: 3rem; border-top: 1px solid #e5e7eb; padding-top: 1.5rem; f
 </head>
 <body>
 <header>
-<h1>steering-eval report</h1>
+<h1>steering-control report</h1>
 <p class="dim">generated: ${esc(metrics.generatedAt ?? "unknown")}</p>
 <p class="dim">package: ${esc(metrics.config?.package ?? "unknown")} \u00b7 runs per cell: ${metrics.config?.runsPerCell ?? "?"}</p>
 <p class="honesty">${HONESTY_LINE}</p>
@@ -250,7 +250,7 @@ ${askSections.join("\n")}
 ${gatherTable(cells)}
 <footer>
 <p>Rebuild this report from <code>out/</code> alone:</p>
-<p><code>steering-eval shoot</code> \u00b7 <code>steering-eval score</code> \u00b7 <code>steering-eval report</code></p>
+<p><code>steering-control shoot</code> \u00b7 <code>steering-control score</code> \u00b7 <code>steering-control report</code></p>
 <p class="dim">${TOKEN_NOTE}</p>
 </footer>
 </body>

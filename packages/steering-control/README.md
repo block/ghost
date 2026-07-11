@@ -1,4 +1,4 @@
-# steering-eval
+# steering-control
 
 A before/after evaluation harness for Ghost fingerprints. It measures what
 handing an agent a `.ghost` fingerprint buys — output quality, run-to-run
@@ -28,7 +28,7 @@ a `.ghost/` fingerprint package, and an agent that drives the loop (Claude
 Code, goose, Cursor — anything that can read a prompt file and write HTML).
 
 ```bash
-npx steering-eval init        # writes eval.config.json + asks.md templates
+npx steering-control init        # writes eval.config.json + asks.md templates
 ```
 
 Fill in `eval.config.json`:
@@ -85,10 +85,10 @@ The harness assembles prompts and keeps books. **Your agent generates.**
 Per cell (arm × ask), for k = 1..runsPerCell:
 
 ```bash
-steering-eval prompt <arm> <ask-n> --run <k>   # writes out/<arm>/ask-<n>/run-<k>.prompt.md
+steering-control prompt <arm> <ask-n> --run <k>   # writes out/<arm>/ask-<n>/run-<k>.prompt.md
 # → hand the prompt file to a FRESH agent context; it writes run-<k>.html
 #   (gather arm: the agent runs `ghost pull` itself mid-task — that IS the test)
-steering-eval finish <arm> <ask-n> <k>         # slices the selection tape, records context sizes
+steering-control finish <arm> <ask-n> <k>         # slices the selection tape, records context sizes
 ```
 
 Gather-arm runs are strictly serialized — the harness hard-fails if a run
@@ -98,9 +98,9 @@ runs corrupt attribution.
 Then, zero LLM calls:
 
 ```bash
-steering-eval shoot     # screenshots every out/**/*.html via agent-browser (idempotent)
-steering-eval score     # out/metrics.json — distributions, consistency, retrieval
-steering-eval report    # out/report.html — self-contained, rebuildable from out/ alone
+steering-control shoot     # screenshots every out/**/*.html via agent-browser (idempotent)
+steering-control score     # out/metrics.json — distributions, consistency, retrieval
+steering-control report    # out/report.html — self-contained, rebuildable from out/ alone
 ```
 
 ## What the report shows

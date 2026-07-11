@@ -13,7 +13,7 @@ export function openRun(config, arm, askN, runK) {
   const lock = lockPath(config);
   if (existsSync(lock)) {
     console.error(
-      `steering-eval: run lock exists at ${lock}; finish or remove it before opening another run`,
+      `steering-control: run lock exists at ${lock}; finish or remove it before opening another run`,
     );
     process.exit(1);
   }

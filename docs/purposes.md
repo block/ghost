@@ -49,8 +49,9 @@ One resolution mechanism, read-only:
   material count. The agent reads the ask against descriptions and pulls the
   truths it judges relevant. Ghost does no NLP and no selection.
 
-The entrypoint node is `index.md` (id `index`): the human-curated front door. It
-is an ordinary node, listed in the menu like any other.
+The optional `cover` in `manifest.yml` names the human-curated front door.
+`ghost gather` inlines that node before the menu and excludes it from the
+selection list.
 
 Checks are **not** nodes and are **never gathered**. They live in `checks/`,
 bind to the prose they enforce via `references`, and are consumed only by

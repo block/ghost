@@ -28,7 +28,7 @@ try {
 }
 
 function usage(exitCode = 0) {
-  console.log(`usage: steering-eval <command> [args]
+  console.log(`usage: steering-control <command> [args]
 
 Commands:
   init

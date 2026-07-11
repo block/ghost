@@ -60,6 +60,6 @@ When you cannot answer the grounding questions:
 
 A genuinely silent fingerprint is an expected state, not a blocker. When it does
 not cover the task, say so plainly and proceed with provisional local reasoning
-when safe; label it non-Ghost-backed. If the fingerprint's `index` node declares
-a stricter silence posture, honor it over this default. Ask a human before
+when safe; label it non-Ghost-backed. If the fingerprint's cover declares a stricter
+silence posture, honor it over this default. Ask a human before
 high-risk or brand-defining choices.

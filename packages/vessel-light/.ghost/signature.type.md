@@ -16,11 +16,12 @@ in one view.
 Vessel's current answer: HK Grotesk. vessel-light ships it as its embedded
 voice — here, `tokens.css` is canonical.
 
-The heading scale is editorial: display, section, sub, and card each carry
-their own rhythm (`--heading-display-*`, `--heading-section-*`,
-`--heading-sub-*`, `--heading-card-*`). Display sizes use tight tracking and
-sub-1 line heights because the words behave like composition, not paragraph
-text.
+The heading scale is editorial: display, section, and sub each carry their
+own rhythm (`--heading-display-*`, `--heading-section-*`, `--heading-sub-*`).
+Display sizes use tight tracking and sub-1 line heights because the words
+behave like composition, not paragraph text. Card-level headings inside
+editorial features use the product `title` variant — the scale does not reach
+below sub.
 
 Labels are small, semibold, and tracked wide. They should feel precise, never
 loud. Body text keeps the established reading sizes with relaxed line height;
