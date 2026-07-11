@@ -166,10 +166,10 @@ pattern to imitate with the human's real truths.
   expose sensitive third-party details — then show the count only." Models
   imitate reasoning as well as outputs.
 
-State a silence posture somewhere the agent always reads (usually `index.md`):
-when the fingerprint is silent, proceed provisionally from local conventions
-only when safe, and ask before brand-defining, irreversible, legal,
-privacy-sensitive, or high-risk choices.
+State the silence posture on the manifest-declared cover, which `gather`
+inlines for every task: when the fingerprint is silent, proceed provisionally
+from local conventions only when safe, and ask before brand-defining,
+irreversible, legal, privacy-sensitive, or high-risk choices.
 
 ## Never
 

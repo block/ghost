@@ -2,7 +2,6 @@ import type { CAC } from "cac";
 import { UsageError } from "#ghost-core";
 import { initFingerprintPackage } from "../fingerprint.js";
 import { addChecksDir } from "../scan/check-scaffold.js";
-import { resolveGhostDirDefault } from "../scan/index.js";
 import { getInitBody } from "../scan/templates.js";
 import { failFromError } from "./errors.js";
 
@@ -38,8 +37,6 @@ export function registerInitCommand(cli: CAC): void {
         }
         const exactPackage =
           typeof opts.package === "string" ? opts.package : undefined;
-        const ghostDir =
-          exactPackage === undefined ? ghostDirFromEnv() : undefined;
         const withIds = parseWithCapabilities(opts.with);
         for (const id of withIds) {
           if (id !== "checks") {
@@ -57,7 +54,7 @@ export function registerInitCommand(cli: CAC): void {
         }
 
         const result = await initFingerprintPackage(
-          exactPackage ?? ghostDir,
+          exactPackage,
           process.cwd(),
           {
             ...(typeof opts.template === "string"
@@ -112,10 +109,6 @@ export function registerInitCommand(cli: CAC): void {
         failFromError(err);
       }
     });
-}
-
-function ghostDirFromEnv(): string {
-  return resolveGhostDirDefault();
 }
 
 function parseWithCapabilities(withOpt: unknown): string[] {

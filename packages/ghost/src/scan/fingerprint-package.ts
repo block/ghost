@@ -12,10 +12,10 @@ import {
   FINGERPRINT_INTENT_FILENAME,
   FINGERPRINT_INVENTORY_FILENAME,
   FINGERPRINT_MANIFEST_FILENAME,
-  FINGERPRINT_PACKAGE_DIR,
   GHOST_GLOSSARY_FILENAME,
 } from "./constants.js";
 import { loadFingerprintPackage } from "./fingerprint-package-loader.js";
+import { resolveGhostDirDefault } from "./package-paths.js";
 import {
   DEFAULT_TEMPLATE_NAME,
   type GhostInitTemplate,
@@ -78,11 +78,19 @@ export interface InitFingerprintPackageResult {
   written: string[];
 }
 
+/**
+ * Resolve the fingerprint package directory. `dirArg` (an explicit
+ * `--package <dir>`) always wins and is used exactly as given — it may be
+ * absolute or relative, unlike `GHOST_PACKAGE_DIR`. When `dirArg` is
+ * omitted, `GHOST_PACKAGE_DIR` is honored so every command — not just `init`
+ * and `validate` — respects a host-configured package location. Falls back
+ * to the default `.ghost` when neither is set.
+ */
 export function resolveFingerprintPackage(
   dirArg: string | undefined,
   cwd = process.cwd(),
 ): FingerprintPackagePaths {
-  const dir = resolve(cwd, dirArg ?? FINGERPRINT_PACKAGE_DIR);
+  const dir = resolve(cwd, dirArg ?? resolveGhostDirDefault());
   const packageDir = dir;
   return {
     dir,

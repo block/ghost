@@ -100,7 +100,7 @@ Core workflow:
 
 | Command | Description |
 | --- | --- |
-| `ghost init` | Scaffold `.ghost/` with the skeleton starter: manifest, glossary, `index.md`, grammar nodes, and unanswered signature dials. `--template minimal` writes only the manifest/glossary/index starter; `--body vessel-light` installs a full inhabited fingerprint instead. `--with checks` also adds the checks directory. |
+| `ghost init` | Scaffold `.ghost/` with the skeleton starter: manifest, glossary, a `brand.md` cover, foundation chapters, context nodes, and the cliche floor. `--template minimal` writes a smaller cover-led starter; `--body vessel-light` installs a full inhabited fingerprint instead. `--with checks` also adds the checks directory. |
 | `ghost checks init` | Scaffold `.ghost/checks/` with an example review assertion. |
 | `ghost validate` | Validate the package: manifest shape, node validity, material locators, check references, and glossary kind prefixes. |
 | `ghost gather [ask…]` | Emit the fingerprint menu for the agent to select from. |

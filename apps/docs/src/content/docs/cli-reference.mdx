@@ -43,7 +43,8 @@ Every command follows one contract, so an agent can branch on the exit code:
 | `3` | A command-specific refusal, currently only `skill install` when a skill is already present (pass `--force`). |
 
 A missing package is reported, not treated as a crash: `validate` records it as
-a finding (exit `1`).
+a finding (exit `1`). Getting a code you don't understand, or a command that
+refuses to run at all? See [Troubleshooting](/docs/troubleshooting).
 
 </DocSection>
 
@@ -51,7 +52,7 @@ a finding (exit `1`).
 
 ### Initialize: `init`
 
-Scaffold a `.ghost/` package. Every template and body includes `anti-goal.median`; the skeleton starter also includes a manifest, a `glossary.md` declaring the grammar/signature/register/anti-goal kinds, a core `index.md`, six grammar nodes of value-free decision logic, and four signature nodes as unanswered dials awaiting your brand's values. The median node is Ghost's measured knowledge of unsteered model behavior — model truth, not brand truth — stamped at init and owned (pruned, adapted) by you thereafter. Nothing in the skeleton is fiction: grammar and the median floor are safe to consume verbatim; the dials tell the agent to ask or flag, never freehand. Use `--template minimal` when you only want the small manifest/glossary/index starter. Add truths by adding files (`principle.density.md`). Use
+Scaffold a `.ghost/` package. The skeleton starter includes a manifest, a glossary, a `brand.md` cover, foundation chapters with open questions, a conversation context, and the model cliche floor. The cover and foundations tell the agent to ask rather than invent brand values. Use `--template minimal` for a smaller cover-led starter. Add truths by adding files (`principle.density.md`). Use
 `--package <dir>` for an exact directory, or set `GHOST_PACKAGE_DIR` when a host
 wrapper stores Ghost files outside the default `.ghost`. Core `init` scaffolds
 the fingerprint only; pass `--with checks` to also add the checks directory in
