@@ -5,7 +5,7 @@
 #   curl -fsSL https://raw.githubusercontent.com/block/ghost/main/install/install.sh | sh
 #
 # Flags (set via env or args):
-#   GHOST_AGENT=claude|cursor|codex|opencode    Target agent (default: auto-detect)
+#   GHOST_AGENT=claude|cursor|codex|opencode|goose    Target agent (default: auto-detect)
 #   GHOST_DEST=<path>                            Override install path
 #   GHOST_REF=<branch|sha|tag>                   Source ref (default: main)
 #   GHOST_SOURCE=<base-url>                      Override fetch base URL (for testing
@@ -14,8 +14,9 @@
 # What gets installed:
 #   <agent-skills-dir>/ghost/
 #     SKILL.md
-#     references/authoring-scenarios.md, brief.md, capture.md
-#     references/inventory.md, recall.md, schema.md, self-check.md
+#     references/adapting-a-starter.md, authoring-scenarios.md, blocks.md
+#     references/brief.md, capture.md, concrete-tiers.md, recall.md
+#     references/schema.md, self-check.md, steering-audit.md
 #
 # Exit codes:
 #   0  installed
@@ -75,6 +76,9 @@ detect_agent() {
   if [ -d "$HOME/.opencode/skills" ] || [ -d "$HOME/.opencode" ]; then
     echo "opencode"; return
   fi
+  if [ -d "$HOME/.agents/skills" ] || [ -d "$HOME/.goose" ] || [ -d "$HOME/.config/goose" ]; then
+    echo "goose"; return
+  fi
   echo "claude"
 }
 
@@ -84,6 +88,9 @@ agent_dest_dir() {
     cursor)   echo "$HOME/.cursor/skills" ;;
     codex)    echo "$HOME/.codex/skills" ;;
     opencode) echo "$HOME/.opencode/skills" ;;
+    # Goose's canonical writable global skills location is ~/.agents/skills —
+    # the agent-neutral path it scans first among global roots.
+    goose)    echo "$HOME/.agents/skills" ;;
     *) return 1 ;;
   esac
 }
@@ -95,9 +102,9 @@ fi
 # Validate agent up-front. `exit` inside $() doesn't propagate, so we
 # can't rely on agent_dest_dir to fail the script.
 case "$GHOST_AGENT" in
-  claude|cursor|codex|opencode) ;;
+  claude|cursor|codex|opencode|goose) ;;
   *)
-    echo "ghost install: unsupported agent '$GHOST_AGENT' (claude|cursor|codex|opencode)" >&2
+    echo "ghost install: unsupported agent '$GHOST_AGENT' (claude|cursor|codex|opencode|goose)" >&2
     exit 1 ;;
 esac
 

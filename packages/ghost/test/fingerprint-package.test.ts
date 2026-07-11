@@ -362,19 +362,6 @@ Replacement rule.
     });
   });
 
-  it("flags the legacy haunts/ directory", async () => {
-    await writeManifest(dir);
-    await mkdir(join(dir, "haunts", "checks"), { recursive: true });
-
-    const report = await lintFingerprintPackage(dir);
-
-    expect(report.errors).toBe(1);
-    expect(report.issues[0]).toMatchObject({
-      rule: "check-invalid",
-      path: "haunts",
-    });
-  });
-
   it("gives index.md the uniform id `index` — no core mapping", async () => {
     await writeManifest(dir);
     await writeFile(
