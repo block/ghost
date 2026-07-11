@@ -88,6 +88,21 @@ safe before what to do. One calm next step. No "Oops," no exclamation points,
 no blame on the user or the network.
 ```
 
+## Write patterns as bound and open
+
+A pattern node binds part of a reusable structure and leaves the rest open.
+State both explicitly:
+
+- **Bound** — what the agent should not redecide: the structural moves fixed
+  regardless of task (what renders first, what appears exactly once, what may
+  never compete for attention).
+- **Open** — where the agent may choose, within limits (which evidence shape
+  fits, how tone flexes, where secondary content may go).
+
+If everything is bound, the node is a template, not a pattern. If nothing is
+bound, it is vibes, not steering. A pattern may also `Refines:` a broader
+principle by id; when the two conflict, the principle wins.
+
 ## Add Skeletons when the opening structure matters
 
 A `## Skeleton` section contains the literal opening structure the agent should
@@ -260,6 +275,14 @@ strongest form that fixes the observed failure.
 | applying guidance too broadly | condition in prose |
 | making bad tradeoffs | `decision.*` trace |
 | producing correct but forgettable work | scoped `concept.*` |
+
+A `concept.*` node holds a one-time creative move — a launch hook, a
+campaign idea, a specific non-median leap the corpus would not have produced
+by recombining its other truths. Scope it explicitly to the task or surface
+it was written for, keep it distinct from invariants, and do not generalize
+it into permanent brand law. If it proves reusable later, promote it into an
+exemplar or pattern deliberately; do not let a one-off default into durable
+truth by accumulation.
 
 Ask while authoring:
 

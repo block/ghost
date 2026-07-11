@@ -169,6 +169,10 @@ An undeclared kind prefix is a warning with a "did you mean" suggestion, not a
 failure. Treat fingerprint edits as ordinary Git-reviewed changes: uncommitted
 edits are drafts; checked-in nodes are canonical.
 
+Hit something the loop above doesn't explain — an empty `gather`, a `review`
+that refuses to run, a stale example? See
+[Troubleshooting](/docs/troubleshooting).
+
 </DocSection>
 
 <DocSection title="How It Works (the model underneath)">
@@ -203,7 +207,7 @@ flat menu.
 Altitude lives in the prose: a universal truth is stated plainly; a narrower
 truth names the *situation* it applies in. The agent reads the condition and
 decides when the truth applies. Reserved at the package root: `manifest.yml`,
-`glossary.md`, and `checks/`; every other `*.md` is a node.
+`glossary.md`, `materials/`, and `checks/`; every other `*.md` is a node.
 
 A node may carry `materials`: repo-relative paths/globs or HTTPS
 URLs for the concrete materials the prose governs. `ghost gather` emits the menu;

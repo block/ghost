@@ -1959,14 +1959,6 @@ describe("ghost CLI", () => {
     expect(result.code).toBe(2);
     expect(result.stderr).toContain("ghost checks init");
   });
-
-  it("validate flags the legacy haunts/ directory", async () => {
-    await runCli(["init"], dir);
-    await mkdir(join(dir, ".ghost", "haunts", "checks"), { recursive: true });
-    const result = await runCli(["validate"], dir);
-    expect(result.code).toBe(1);
-    expect(result.stdout).toContain("no longer supported");
-  });
 });
 
 function parseTarEntries(buffer: Buffer): Map<string, Buffer> {

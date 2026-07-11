@@ -43,7 +43,8 @@ Every command follows one contract, so an agent can branch on the exit code:
 | `3` | A command-specific refusal, currently only `skill install` when a skill is already present (pass `--force`). |
 
 A missing package is reported, not treated as a crash: `validate` records it as
-a finding (exit `1`).
+a finding (exit `1`). Getting a code you don't understand, or a command that
+refuses to run at all? See [Troubleshooting](/docs/troubleshooting).
 
 </DocSection>
 
