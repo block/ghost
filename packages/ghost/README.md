@@ -54,17 +54,21 @@ flags.
 
 ```text
 .ghost/
-  manifest.yml          # schema + package id
+  manifest.yml          # schema + package id + optional cover id
   glossary.md           # your kind vocabulary + what each kind means
-  index.md              # the curated front door
+  brand.md              # example cover inlined by gather
   principle.trust.md    # a brand truth of kind `principle`
   asset.logo.md         # a truth that may point at concrete materials
   checks/               # optional review assertions; separate from your truths
 ```
 
-A node is markdown with a `description`, optional `materials`, and a prose
-body. `materials` is a list of paths or URLs pointing at the concrete stuff
-the truth is about.
+The optional `cover:` in `manifest.yml` may name any node; `ghost gather`
+inlines it before the menu. The default skeleton calls that node `brand`, but
+the filename is not reserved.
+
+A node is markdown with a `description`, optional `materials`, and a prose body.
+`materials` is a list of paths or URLs pointing at the concrete stuff the truth
+is about.
 
 Checks live under `.ghost/checks/` (scaffold with `ghost checks init`) and
 declare `references` to the truths they review. `ghost review` reads a diff,

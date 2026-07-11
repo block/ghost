@@ -1,66 +1,106 @@
 // The bench loop: one ask, N single-shot selection trials, scored.
-// Selection is the unit. No generation, ever — the moment this generates,
-// it is rebuilding steering-control.
+// Selection is the unit. No generation, ever.
 import { consistency, precisionRecall, selectionRates } from "./score.mjs";
 
-/**
- * Run one ask against the menu for `trials` independent single-shot calls.
- * Returns raw trial selections plus deterministic scores.
- */
-export async function runAsk({ model, ask, menu, trials = 5, expected }) {
+/** Run one ask against the gather output for independent selection trials. */
+export async function runAsk({
+  model,
+  ask,
+  menu,
+  cover,
+  trials = 5,
+  expected,
+  poison,
+}) {
   const known = new Set(menu.map((entry) => entry.id));
-  // Trials are independent single-shot calls by design, so fire them
-  // concurrently; real endpoints are latency-bound, not rate-bound here.
   const selections = await Promise.all(
     Array.from({ length: trials }, async (_, trial) => {
-      const ids = await model.select({ ask, menu, trial });
-      // Keep only ids that exist on the menu: a real model can hallucinate
-      // ids, and that miss is worth surfacing separately from selection.
+      const ids = await model.select({ ask, menu, cover, trial });
       return {
         ids: ids.filter((id) => known.has(id)),
-        hallucinated: ids.filter((id) => !known.has(id)),
+        unknownIds: ids.filter((id) => !known.has(id)),
       };
     }),
   );
-  const trialIds = selections.map((s) => s.ids);
+  const trialIds = selections.map((selection) => selection.ids);
   return {
     ask,
     model: model.name,
     trials: trialIds,
-    hallucinated: selections.flatMap((s) => s.hallucinated),
+    unknownIds: selections.flatMap((selection) => selection.unknownIds),
     expected: expected ?? null,
+    poison: poison ?? [],
     scores: {
       consistency: consistency(trialIds),
-      ...(expected ? { ...precisionRecall(trialIds, expected) } : {}),
+      ...(expected ? precisionRecall(trialIds, expected, poison ?? []) : {}),
     },
     rates: selectionRates(trialIds, menu),
   };
 }
 
 /**
- * Parse an asks.md file: numbered asks, each optionally followed by an
- * `expect:` line of comma/space separated node ids. Same numbered-family
- * format as steering-control's asks file.
+ * Parse the asks format shared with steering-control:
  *
- *   1. A dense settings screen for notification preferences
- *      expect: grammar.hierarchy, register.data-density
+ *   ## Ask 1 — billing settings page
+ *
+ *   Build a billing settings page. Single HTML file.
+ *
+ *   expect: foundation.composition, foundation.controls
+ *   poison: context.conversation
  */
-export function parseAsks(markdown) {
+export function parseAsks(markdown, { validateIds } = {}) {
   const asks = [];
   let current = null;
-  for (const line of markdown.split("\n")) {
-    const askMatch = line.match(/^(\d+)\.\s+(.*\S)\s*$/);
-    if (askMatch) {
-      current = { n: Number(askMatch[1]), ask: askMatch[2], expected: null };
-      asks.push(current);
+
+  const flush = () => {
+    if (!current) return;
+    current.ask = current.bodyLines.join("\n").trim();
+    delete current.bodyLines;
+    asks.push(current);
+  };
+
+  for (const line of markdown.split(/\r?\n/)) {
+    const heading = line.match(/^##\s+Ask\s+(\d+)\s+[—-]\s+(.+)\s*$/u);
+    if (heading) {
+      flush();
+      current = {
+        n: Number(heading[1]),
+        title: heading[2].trim(),
+        ask: "",
+        bodyLines: [],
+        expected: [],
+        poison: [],
+        discount: [],
+      };
       continue;
     }
-    const expectMatch = line.match(/^\s+expect:\s*(.*\S)\s*$/);
-    if (expectMatch && current) {
-      current.expected = expectMatch[1]
-        .split(/[,\s]+/)
-        .filter((id) => id.length > 0);
+    if (!current) continue;
+
+    const meta = line.match(/^\s*(expect|poison|discount):\s*(.*?)\s*$/u);
+    if (meta) {
+      const key = meta[1] === "expect" ? "expected" : meta[1];
+      current[key] = splitIds(meta[2]);
+      continue;
+    }
+    current.bodyLines.push(line);
+  }
+
+  flush();
+  if (validateIds) {
+    for (const ask of asks) {
+      for (const id of [...ask.expected, ...ask.poison]) {
+        if (!validateIds.has(id)) {
+          throw new Error(`ask ${ask.n} references unknown node id: ${id}`);
+        }
+      }
     }
   }
   return asks;
+}
+
+function splitIds(value) {
+  return value
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
 }

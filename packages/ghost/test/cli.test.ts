@@ -657,7 +657,7 @@ describe("ghost CLI", () => {
     expect(JSON.parse(lint.stdout).errors).toBe(0);
   });
 
-  it("initializes a bundle with manifest and starter index node", async () => {
+  it("initializes a bundle with manifest and starter brand cover", async () => {
     const init = await runCli(["init"], dir);
 
     expect(init.code).toBe(0);

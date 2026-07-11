@@ -17,14 +17,14 @@ for (const envFile of [".env", ".env.local"]) {
 
 const args = process.argv.slice(2);
 
-if (args[0] === "--help" || args[0] === "-h") {
+if (args.includes("--help") || args.includes("-h")) {
   console.log(`usage: context-control [options]
 
 Serves the context-control UI for a .ghost fingerprint package.
 
 Options:
   --package <dir>   fingerprint package directory (default: ./.ghost)
-  --asks <file>     asks.md with numbered asks + optional expect: lines
+  --asks <file>     asks.md shared with steering-control
   --port <n>        port (default: 4114)
   --ghost <bin>     ghost binary (default: repo dist build, else PATH)`);
   process.exit(0);
@@ -48,6 +48,10 @@ if (!existsSync(packageDir)) {
 
 const ghostBin = opts.ghost ? [opts.ghost] : defaultGhostBin();
 const port = Number(opts.port);
+if (!Number.isInteger(port) || port < 0 || port > 65535) {
+  console.error(`invalid port: ${opts.port}`);
+  process.exit(2);
+}
 await startServer({
   ghostBin,
   packageDir,

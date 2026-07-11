@@ -1,20 +1,41 @@
 # context-control demo asks
 
-Bench asks against the vessel-light fingerprint
-(`packages/vessel-light/.ghost`). Each numbered line is an ask; an indented
-`expect:` line names the node ids a good selector should pull for it.
+These asks target the default skeleton written by `ghost init`. The format is
+shared with steering-control. `expect:` names nodes a good selector should pull.
+`poison:` names nodes whose condition does not apply.
 
-1. A dense settings screen for notification preferences
-   expect: index, grammar.hierarchy, register.data-density, signature.type
+## Ask 1 — notification settings
 
-2. A marketing email announcing a new feature
-   expect: index, register.email, register.editorial, signature.palette
+Build a dense settings screen for notification preferences.
 
-3. An empty state for a search page with no results
-   expect: index, grammar.conversation, grammar.hierarchy
+expect: foundation.composition, foundation.controls, foundation.layout
+poison: context.conversation
 
-4. A pricing table comparing three plans
-   expect: index, grammar.rhythm, grammar.surfaces, register.data-density
+## Ask 2 — pricing landing page
 
-5. Motion for a modal opening and closing
-   expect: index, grammar.motion, signature.temperature
+Build a pricing landing page with a hero, three plan tiers, a customer quote,
+and a closing call to action.
+
+expect: foundation.composition, foundation.color, foundation.type, cliche.median
+poison: context.conversation
+
+## Ask 3 — assistant conversation
+
+Build an AI assistant thread with user turns, tool calls, and a prompt composer.
+
+expect: context.conversation, foundation.composition, foundation.controls
+
+## Ask 4 — payment receipt email
+
+Build a transactional payment receipt email with the amount, payment method,
+date, and invoice link.
+
+expect: foundation.layout, foundation.type, foundation.voice
+poison: context.conversation
+
+## Ask 5 — modal motion
+
+Define the motion for a modal opening and closing.
+
+expect: foundation.composition, foundation.motion
+poison: context.conversation

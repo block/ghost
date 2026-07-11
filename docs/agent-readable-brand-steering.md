@@ -37,7 +37,7 @@ The parts that help the agent decide what to read before generation:
 - filename/kind
 - `description`
 - glossary category
-- `index.md`
+- the manifest-declared cover
 - task-shaped language
 
 In Ghost, this is the `ghost gather` / `ghost pull` layer.
@@ -781,7 +781,7 @@ Context assembly answers:
 ```markdown
 ## Grounded in
 
-Pulled: `index`, `principle.checkout-trust`, `pattern.status-with-next-step`, `anti-goal.generic-ui`.
+Cover already in context: `brand`. Pulled: `principle.checkout-trust`, `pattern.status-with-next-step`, `anti-goal.generic-ui`.
 
 ## Non-negotiables
 
@@ -816,7 +816,7 @@ The fingerprint should make this easy:
 
 - keep nodes purpose-coherent;
 - make descriptions selectable;
-- put true global non-negotiables in `index`;
+- put true global non-negotiables on the cover;
 - distinguish hard rules from soft guidance;
 - label silence.
 
@@ -886,7 +886,7 @@ Both are valuable. They should not be stored with the same normative weight.
 
 | Bucket | What it is | Model mechanism | Best for |
 |---|---|---|---|
-| Retrieval handles | Descriptions, ids, glossary, index | Gets right context selected | Making truths findable |
+| Retrieval handles | Descriptions, ids, glossary, cover | Gets right context selected | Making truths findable |
 | Stance prose | Principles and tradeoffs | Shifts semantic prior | Decision-making in novel cases |
 | Inventory/materials | Tokens, components, HTML, CSS, SVG, JSON | Fixes knowledge gaps | Preventing invention |
 | Exemplars | Good outputs in context | Pattern continuation / few-shot shaping | Form, rhythm, code shape |

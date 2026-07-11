@@ -12,8 +12,8 @@
     --ink: #e8e6e1;
     --dim: #8a8894;
     --accent: #ffd23e;
-    --guard: #ff5d5d;
-    --wild: #7ab8ff;
+    --danger: #ff5d5d;
+    --expected: #7ab8ff;
     --mono: "SF Mono", ui-monospace, Menlo, monospace;
   }
   * { box-sizing: border-box; }
@@ -50,8 +50,6 @@
     font-size: 10px; padding: 0 0.35rem; border-radius: 3px;
     border: 1px solid currentColor; margin-left: 0.4rem;
   }
-  .badge.guard { color: var(--guard); }
-  .badge.wild { color: var(--wild); }
   .badge.mat { color: var(--dim); }
   #drawer {
     position: fixed; top: 0; right: 0; bottom: 0; width: min(680px, 90vw);
@@ -88,9 +86,9 @@
     color: transparent;
   }
   .cell:hover { color: var(--ink); }
-  .cell.expected { outline: 1px solid var(--wild); }
+  .cell.expected { outline: 1px solid var(--expected); }
   .legend { color: var(--dim); font-size: 11px; margin: 0.6rem 0 1rem; }
-  .flag { color: var(--guard); font-size: 11px; }
+  .flag { color: var(--danger); font-size: 11px; }
 
   /* replay */
   .session { border: 1px solid var(--line); border-radius: 4px; padding: 0.8rem 1rem; margin-bottom: 0.8rem; }
@@ -129,8 +127,9 @@
     <div class="legend">
       Each column is one ask; each cell is the fraction of trials that selected the node.
       Solid = confident description. Speckled = coin-flip. Empty row = invisible node.
-      Blue outline = in the ask's expected set. Selection runs the ghost skill's
-      recall protocol, as a real agent would; live agents additionally carry task
+      Blue outline = in the ask's expected set. The cover is already in context and
+      is not part of the menu. Selection runs the ghost skill's recall protocol;
+      live agents additionally carry task
       context (open files, prior turns) this bench does not.
     </div>
     <div id="benchScores" class="scores"></div>
@@ -168,13 +167,13 @@ async function loadMenu() {
   state.menu = data.nodes;
   const c = data.coverage;
   $("#coverage").textContent =
-    `${c.nodes} nodes · ${c.concrete} concrete · ${c.guards} guards` +
-    (data.wildAvailable ? ` · ${data.wildAvailable} wild hidden` : "");
+    `${c.nodes} nodes · ${c.concrete} concrete` +
+    (c.undescribed ? ` · ${c.undescribed} undescribed` : "");
   $("#menuRows").innerHTML = state.menu.map((n) => `
     <tr class="node" data-id="${n.id}">
-      <td class="id">${n.id}${n.guard ? '<span class="badge guard">guard</span>' : ""}${n.wild ? '<span class="badge wild">wild</span>' : ""}${n.materials ? `<span class="badge mat">${n.materials} mat</span>` : ""}</td>
+      <td class="id">${n.id}${n.materials ? `<span class="badge mat">${n.materials} mat</span>` : ""}</td>
       <td class="kind">${n.kind ?? ""}</td>
-      <td>${n.description ?? '<span style="color:var(--guard)">no description — invisible at selection time</span>'}</td>
+      <td>${n.description ?? '<span style="color:var(--danger)">no description — invisible at selection time</span>'}</td>
     </tr>`).join("");
   document.querySelectorAll("tr.node").forEach((row) => {
     row.onclick = () => openDrawer(row.dataset.id);
@@ -207,7 +206,11 @@ $("#suiteBtn").onclick = async () => {
     state.asks = data.asks;
   }
   if (state.asks.length === 0) return alert("no asks.md loaded — pass --asks to context-control");
-  runBench(state.asks.map((a) => ({ ask: a.ask, expected: a.expected })));
+  runBench(state.asks.map((a) => ({
+    ask: a.ask,
+    expected: a.expected,
+    poison: a.poison,
+  })));
 };
 
 async function runBench(asks) {
@@ -235,13 +238,16 @@ function renderScores(data) {
   const cons = mean(results.map((r) => r.scores.consistency));
   const prec = mean(results.filter((r) => r.scores.precision !== undefined).map((r) => r.scores.precision));
   const rec = mean(results.filter((r) => r.scores.recall !== undefined).map((r) => r.scores.recall));
+  const poison = mean(results.filter((r) => r.scores.poisonRate !== undefined).map((r) => r.scores.poisonRate));
+  const unknownIds = results.reduce((sum, result) => sum + result.unknownIds.length, 0);
   const cov = data.coverage;
   $("#benchScores").innerHTML = `
     <span><b>${fmt(cons)}</b>consistency</span>
     <span><b>${fmt(prec)}</b>precision</span>
     <span><b>${fmt(rec)}</b>recall</span>
+    <span><b>${fmt(poison)}</b>poison rate</span>
+    <span><b>${unknownIds}</b>unknown ids</span>
     <span><b>${cov.selectedEver}/${cov.nodes}</b>nodes ever selected</span>
-    <span><b>${cov.guardHitRate === null ? "—" : fmt(cov.guardHitRate)}</b>guard hit-rate</span>
     ${cov.dead.length ? `<span class="flag">dead: ${cov.dead.join(", ")}</span>` : ""}`;
 }
 
@@ -254,7 +260,7 @@ function renderHeatmap(results) {
       const bg = rate === 0 ? "#222" : `rgba(255, 210, 62, ${0.15 + rate * 0.85})`;
       return `<td><span class="cell${expected ? " expected" : ""}" style="background:${bg}" title="${n.id} · ${Math.round(rate * 100)}%">${Math.round(rate * 100)}</span></td>`;
     }).join("");
-    return `<tr><td class="id" style="color:var(--accent);white-space:nowrap" onclick="openDrawer('${n.id}')">${n.id}${n.guard ? ' <span class="badge guard">g</span>' : ""}</td>${cells}</tr>`;
+    return `<tr><td class="id" style="color:var(--accent);white-space:nowrap" onclick="openDrawer('${n.id}')">${n.id}</td>${cells}</tr>`;
   }).join("");
   $("#heatWrap").innerHTML = `<table class="heat">
     <thead><tr><th></th>${asks.map((a) => `<th class="ask-col" title="${escapeHtml(a)}">${escapeHtml(a.slice(0, 42))}${a.length > 42 ? "…" : ""}</th>`).join("")}</tr></thead>

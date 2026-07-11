@@ -1,17 +1,17 @@
 // Deterministic scoring over collected selections. No LLM judges here.
 
-/** Jaccard similarity of two id arrays. Empty ∩ empty = 1 (perfectly consistent). */
+/** Jaccard similarity of two id arrays. Empty ∩ empty = 1. */
 export function jaccard(a, b) {
   const setA = new Set(a);
   const setB = new Set(b);
   if (setA.size === 0 && setB.size === 0) return 1;
-  let inter = 0;
-  for (const id of setA) if (setB.has(id)) inter += 1;
-  const union = setA.size + setB.size - inter;
-  return union === 0 ? 1 : inter / union;
+  let intersection = 0;
+  for (const id of setA) if (setB.has(id)) intersection += 1;
+  const union = setA.size + setB.size - intersection;
+  return union === 0 ? 1 : intersection / union;
 }
 
-/** Mean pairwise Jaccard across all trials of one ask. 1 = identical every run. */
+/** Mean pairwise Jaccard across all trials of one ask. */
 export function consistency(trials) {
   if (trials.length < 2) return 1;
   let sum = 0;
@@ -25,23 +25,36 @@ export function consistency(trials) {
   return sum / pairs;
 }
 
-/** Precision/recall of the union of trial selections vs an expected id set. */
-export function precisionRecall(trials, expected) {
-  if (!expected || expected.length === 0) return null;
-  const union = new Set(trials.flat());
+/** Mean per-trial precision, recall, and poison-selection rate. */
+export function precisionRecall(trials, expected, poison = []) {
+  if (!expected || expected.length === 0) return {};
   const want = new Set(expected);
-  let hit = 0;
-  for (const id of union) if (want.has(id)) hit += 1;
+  const avoid = new Set(poison);
+  if (trials.length === 0) return {};
+  const perTrial = trials.map((trial) => {
+    const selected = new Set(trial);
+    let hits = 0;
+    for (const id of selected) if (want.has(id)) hits += 1;
+    return {
+      precision: selected.size === 0 ? 0 : hits / selected.size,
+      recall: hits / want.size,
+      poisonSelected: [...avoid].some((id) => selected.has(id)),
+    };
+  });
   return {
-    precision: union.size === 0 ? 0 : hit / union.size,
-    recall: hit / want.size,
+    precision: mean(perTrial.map((trial) => trial.precision)),
+    recall: mean(perTrial.map((trial) => trial.recall)),
+    ...(avoid.size > 0
+      ? {
+          poisonRate:
+            perTrial.filter((trial) => trial.poisonSelected).length /
+            perTrial.length,
+        }
+      : {}),
   };
 }
 
-/**
- * Per-node selection rate for one ask: fraction of trials that picked it.
- * This is the heatmap's cell value. 1 = solid column, ~0.5 = coin-flip.
- */
+/** Per-node selection rate for one ask. */
 export function selectionRates(trials, menu) {
   const counts = new Map(menu.map((entry) => [entry.id, 0]));
   for (const trial of trials) {
@@ -49,11 +62,13 @@ export function selectionRates(trials, menu) {
       if (counts.has(id)) counts.set(id, counts.get(id) + 1);
     }
   }
-  const n = Math.max(trials.length, 1);
-  return Object.fromEntries([...counts].map(([id, count]) => [id, count / n]));
+  const count = Math.max(trials.length, 1);
+  return Object.fromEntries(
+    [...counts].map(([id, selected]) => [id, selected / count]),
+  );
 }
 
-/** Suite-level rollup: dead nodes across all asks. */
+/** Suite-level rollup: nodes never selected across all asks. */
 export function suiteCoverage(results, menu) {
   const everSelected = new Set();
   for (const result of results) {
@@ -69,4 +84,10 @@ export function suiteCoverage(results, menu) {
     selectedEver: everSelected.size,
     dead,
   };
+}
+
+function mean(values) {
+  return values.length
+    ? values.reduce((sum, value) => sum + value, 0) / values.length
+    : 0;
 }

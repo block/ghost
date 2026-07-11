@@ -24,7 +24,7 @@ vocabulary and product brand truth. It does not define product-specific flows,
 copy, trust obligations, or business intent for consuming apps. New products
 should reference this package and the generated `public/r/registry.json`, then
 author their own brand fingerprint separately. It doubles as a living exemplar
-of the Ghost format — start at `.ghost/index.md`.
+of the Ghost format. Start with the cover declared in `.ghost/manifest.yml`.
 
 Agents should read this README, `.ghost/`,
 `public/r/registry.json`, `registry.json`, `.shadcn/skills.md`, and source files

@@ -252,7 +252,7 @@ strongest form that fixes the observed failure.
 
 | If the agent keeps... | Author... |
 | --- | --- |
-| missing the truth | sharper `description` / `index` mention |
+| missing the truth | sharper `description`; move universal truth to the cover |
 | inventing values | `asset.*` node with materials and exact names |
 | producing generic output | `anti-goal.*` replacement plus annotated `exemplar.*` |
 | choosing the wrong structure | `pattern.*` with bound/open and a `## Skeleton` |
@@ -291,19 +291,16 @@ ghost init            # scaffolds the steering starter
 ghost validate
 ```
 
-`ghost init` seeds the steering starter: the manifest, a starter `glossary.md`
-(with suggested kinds you keep, rename, or replace), the package-root
-`index.md`, and worked demo nodes for stance, composition, anti-goals, patterns,
-exemplars, materials, and decisions. Replace demo claims, paths, examples, and
-decisions with real product truth before using it to steer generation. Use
-`ghost init --template minimal` when you only want the small
-manifest/glossary/index starter.
+`ghost init` seeds the skeleton starter: the manifest, a starter
+`glossary.md`, a `brand.md` cover, foundation chapters with open questions, and
+the model cliche floor. Replace open questions with real product truth before
+using it to steer generation. Use `ghost init --template minimal` for a
+manifest, glossary, cover, and cliche floor.
 
-Write `index.md` as the human-curated front door: non-negotiables that apply to
-every task, what this fingerprint covers, how its kinds organize the corpus, and
-any stricter silence posture. It is an ordinary node mechanically, but by
-convention agents pull it first — anything that must never be missed belongs
-here.
+Write the manifest-declared cover as the human-curated front door:
+non-negotiables that apply to every task, what the fingerprint covers, and any
+stricter silence posture. `ghost gather` inlines it before the menu, so anything
+that must never be missed belongs there.
 
 Nodes may carry a `materials` list in frontmatter: repo-relative paths/globs or
 HTTPS URLs for the concrete materials the prose governs. Put brand-owned
