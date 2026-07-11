@@ -9,7 +9,8 @@ Today those decisions live in reviewers' heads: "that's not our voice," again,
 on every surface. The agent that built the thing never saw them. Ghost writes
 them down once, where the agent looks first.
 
-[Documentation](https://block.github.io/ghost/)
+[Documentation](https://block.github.io/ghost/) ·
+[Repo](https://github.com/block/ghost)
 
 ## Install
 
@@ -48,32 +49,10 @@ ghost pulse         # while tuning: see what agents reached for
 ```
 
 Run `ghost --help` for the core workflow and `ghost <command> --help` for
-flags.
-
-## Shape
-
-```text
-.ghost/
-  manifest.yml          # schema + package id + optional cover id
-  glossary.md           # your kind vocabulary + what each kind means
-  brand.md              # example cover inlined by gather
-  principle.trust.md    # a brand truth of kind `principle`
-  asset.logo.md         # a truth that may point at concrete materials
-  checks/               # optional review assertions; separate from your truths
-```
-
-The optional `cover:` in `manifest.yml` may name any node; `ghost gather`
-inlines it before the menu. The default skeleton calls that node `brand`, but
-the filename is not reserved.
-
-A node is markdown with a `description`, optional `materials`, and a prose body.
-`materials` is a list of paths or URLs pointing at the concrete stuff the truth
-is about.
-
-Checks live under `.ghost/checks/` (scaffold with `ghost checks init`) and
-declare `references` to the truths they review. `ghost review` reads a diff,
-matches touched files to node `materials`, offers relevant checks, and emits
-an advisory packet for the host agent to weigh.
+flags. The [CLI reference](https://block.github.io/ghost/docs/cli) covers
+every command; [Getting Started](https://block.github.io/ghost/docs/getting-started)
+covers the full model. Stuck? See
+[Troubleshooting](https://block.github.io/ghost/docs/troubleshooting).
 
 ## Library
 
