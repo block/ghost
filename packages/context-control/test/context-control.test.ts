@@ -1,4 +1,8 @@
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { initFingerprintPackage } from "../../ghost/src/scan/fingerprint-package.js";
 import { parseAsks } from "../lib/bench.mjs";
 import { parseIdReply } from "../lib/model.mjs";
 import {
@@ -28,28 +32,28 @@ describe("consistency", () => {
     expect(consistency([["a"]])).toBe(1);
   });
   it("averages pairwise jaccard", () => {
-    // pairs: (ab,ab)=1, (ab,a)=0.5, (ab,a)=0.5 -> wait, three trials
     const value = consistency([["a", "b"], ["a", "b"], ["a"]]);
     expect(value).toBeCloseTo((1 + 0.5 + 0.5) / 3);
   });
 });
 
 describe("precisionRecall", () => {
-  it("returns null with no expected set", () => {
-    expect(precisionRecall([["a"]], null)).toBeNull();
-    expect(precisionRecall([["a"]], [])).toBeNull();
+  it("returns no scores without an expected set", () => {
+    expect(precisionRecall([["a"]], null)).toEqual({});
+    expect(precisionRecall([["a"]], [])).toEqual({});
   });
-  it("scores the union of trials against expected", () => {
-    const pr = precisionRecall(
+  it("averages retrieval scores across trials", () => {
+    const scores = precisionRecall(
       [
         ["a", "x"],
         ["a", "b"],
       ],
       ["a", "b", "c"],
+      ["x"],
     );
-    // union = {a, x, b}; hits = a, b
-    expect(pr.precision).toBeCloseTo(2 / 3);
-    expect(pr.recall).toBeCloseTo(2 / 3);
+    expect(scores.precision).toBeCloseTo(0.75);
+    expect(scores.recall).toBeCloseTo(0.5);
+    expect(scores.poisonRate).toBe(0.5);
   });
 });
 
@@ -76,24 +80,68 @@ describe("suiteCoverage", () => {
 });
 
 describe("parseAsks", () => {
-  it("parses numbered asks with optional expect lines", () => {
+  it("parses the shared ask blocks and metadata", () => {
     const asks = parseAsks(
       [
-        "1. A dense settings screen",
-        "   expect: grammar.hierarchy, register.data-density",
-        "2. A marketing email header",
+        "## Ask 1 — dense settings",
         "",
-        "3. An empty state for search",
-        "   expect: grammar.conversation",
+        "Build a dense settings screen.",
+        "",
+        "expect: foundation.composition, foundation.controls",
+        "poison: context.conversation",
+        "",
+        "## Ask 2 — marketing email",
+        "",
+        "Build a marketing email header.",
+        "",
+        "discount: unprompted-dark-theme",
       ].join("\n"),
     );
-    expect(asks).toHaveLength(3);
-    expect(asks[0].expected).toEqual([
-      "grammar.hierarchy",
-      "register.data-density",
-    ]);
-    expect(asks[1].expected).toBeNull();
-    expect(asks[2].n).toBe(3);
+    expect(asks).toHaveLength(2);
+    expect(asks[0]).toMatchObject({
+      n: 1,
+      title: "dense settings",
+      ask: "Build a dense settings screen.",
+      expected: ["foundation.composition", "foundation.controls"],
+      poison: ["context.conversation"],
+    });
+    expect(asks[1].discount).toEqual(["unprompted-dark-theme"]);
+  });
+  it("rejects expected or poison ids outside the menu", () => {
+    expect(() =>
+      parseAsks("## Ask 1 — bad id\n\nBuild it.\n\nexpect: missing", {
+        validateIds: new Set(["known"]),
+      }),
+    ).toThrow("ask 1 references unknown node id: missing");
+  });
+});
+
+describe("demo asks", () => {
+  it("only expects selectable default-skeleton nodes", async () => {
+    const root = resolve(import.meta.dirname, "../../..");
+    const dir = await mkdtemp(join(tmpdir(), "context-control-test-"));
+    try {
+      const initialized = await initFingerprintPackage(
+        join(dir, ".ghost"),
+        root,
+      );
+      const nodeIds = new Set(
+        initialized.written
+          .filter((file) => file.endsWith(".md") && file !== "glossary.md")
+          .map((file) => file.slice(0, -3)),
+      );
+      nodeIds.delete("brand");
+      const parsed = parseAsks(
+        await readFile(
+          resolve(root, "packages/context-control/demo/asks.md"),
+          "utf-8",
+        ),
+        { validateIds: nodeIds },
+      );
+      expect(parsed.every((ask) => ask.ask.length > 0)).toBe(true);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
   });
 });
 
@@ -103,8 +151,8 @@ describe("parseIdReply", () => {
   });
   it("tolerates code fences and prose around the array", () => {
     expect(
-      parseIdReply('Here you go:\n```json\n["grammar.motion"]\n```'),
-    ).toEqual(["grammar.motion"]);
+      parseIdReply('Here you go:\n```json\n["foundation.motion"]\n```'),
+    ).toEqual(["foundation.motion"]);
   });
   it("drops non-string entries and returns [] for garbage", () => {
     expect(parseIdReply('["a", 3, null]')).toEqual(["a"]);

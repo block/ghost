@@ -89,10 +89,9 @@ export function fakeModel() {
 const SELECT_SYSTEM = `You are an agent selecting brand-fingerprint nodes for a task,
 following the ghost skill's recall recipe.
 
-You will get an ask and the ghost gather menu: every node's id, kind, and
-description. Ghost never selects for you; select against descriptions.
+You will get an ask, the cover already in context, and the ghost gather menu.
+Select only menu node ids against their descriptions. Do not select the cover.
 
-- Always include "index": it is the stance floor, read first every session.
 - Pull a small set: 3-5 nodes is normal; 10 is a bad selection unless the
   task is unusually broad.
 - Prefer nodes with concrete material for the surface being made.
@@ -101,14 +100,17 @@ description. Ghost never selects for you; select against descriptions.
 
 Respond with ONLY a JSON array of node id strings, nothing else.`;
 
-function selectUser(ask, menu) {
+function selectUser(ask, menu, cover) {
   const lines = menu.map((entry) => {
     const flags = [entry.materials ? `${entry.materials} materials` : null]
       .filter(Boolean)
       .join(", ");
     return `- ${entry.id}${entry.kind ? ` [${entry.kind}]` : ""}${flags ? ` (${flags})` : ""}: ${entry.description ?? "(no description)"}`;
   });
-  return `Ask: ${ask}\n\nMenu:\n${lines.join("\n")}`;
+  const coverLine = cover
+    ? `Cover already in context: ${cover.id}\n\n${cover.body}\n\n`
+    : "";
+  return `${coverLine}Ask: ${ask}\n\nMenu:\n${lines.join("\n")}`;
 }
 
 /** Parse a JSON id array out of a model reply, tolerating code fences. */
@@ -146,7 +148,7 @@ export function databricksModel({
   };
   return {
     name: `databricks:${endpoint}`,
-    async select({ ask, menu }) {
+    async select({ ask, menu, cover }) {
       const token = await getToken();
       const res = await fetch(
         `${host}/serving-endpoints/${endpoint}/invocations`,
@@ -159,7 +161,7 @@ export function databricksModel({
           body: JSON.stringify({
             messages: [
               { role: "system", content: SELECT_SYSTEM },
-              { role: "user", content: selectUser(ask, menu) },
+              { role: "user", content: selectUser(ask, menu, cover) },
             ],
             // Trial-to-trial variance is the signal being measured, so
             // sample at the endpoint's default temperature; do not pin 0.
@@ -178,19 +180,33 @@ export function databricksModel({
   };
 }
 
-/** Registry keyed by name so the server/UI can offer a model picker. */
+const MODEL_ADAPTERS = {
+  databricks: {
+    available: () => Boolean(process.env.DATABRICKS_HOST),
+    create: (name) => {
+      const endpoint = name.includes(":")
+        ? name.slice(name.indexOf(":") + 1)
+        : null;
+      return databricksModel(endpoint ? { endpoint } : {});
+    },
+  },
+  "fake-lexical": {
+    available: () => true,
+    create: () => fakeModel(),
+  },
+};
+
+/** Resolve a model name exposed by availableModels. */
 export function resolveModel(name = availableModels()[0]) {
-  if (name === "fake-lexical") return fakeModel();
-  if (name === "databricks" || name?.startsWith("databricks:")) {
-    const endpoint = name.includes(":") ? name.split(":")[1] : undefined;
-    return databricksModel(endpoint ? { endpoint } : {});
-  }
-  throw new Error(`unknown model: ${name}`);
+  const key = name?.startsWith("databricks:") ? "databricks" : name;
+  const adapter = MODEL_ADAPTERS[key];
+  if (!adapter) throw new Error(`unknown model: ${name}`);
+  return adapter.create(name);
 }
 
-/** First entry is the default. Databricks wins when a host is configured. */
+/** Available adapter names in default order. */
 export function availableModels() {
-  return process.env.DATABRICKS_HOST
-    ? ["databricks", "fake-lexical"]
-    : ["fake-lexical"];
+  return Object.entries(MODEL_ADAPTERS)
+    .filter(([, adapter]) => adapter.available())
+    .map(([name]) => name);
 }

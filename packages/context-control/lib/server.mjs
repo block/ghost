@@ -27,11 +27,23 @@ export function startServer({ ghostBin, packageDir, asksPath, port = 4114 }) {
         return json(res, { models: availableModels() });
       }
       if (url.pathname === "/api/asks") {
-        return json(res, { asks: await loadAsks(asksPath) });
+        const menu = (await gatherMenu({ ghostBin, packageDir })).nodes;
+        return json(res, {
+          asks: await loadAsks(asksPath, new Set(menu.map((node) => node.id))),
+        });
       }
       if (url.pathname === "/api/bench" && req.method === "POST") {
         const body = JSON.parse(await readBody(req));
-        const menu = (await gatherMenu({ ghostBin, packageDir })).nodes;
+        const trials = Number(body.trials ?? 5);
+        if (!Number.isInteger(trials) || trials < 1 || trials > 50) {
+          return json(
+            res,
+            { error: "trials must be an integer from 1 to 50" },
+            400,
+          );
+        }
+        const gathered = await gatherMenu({ ghostBin, packageDir });
+        const menu = gathered.nodes;
         const model = resolveModel(body.model);
         const asks = Array.isArray(body.asks) ? body.asks : [body];
         const results = [];
@@ -41,8 +53,10 @@ export function startServer({ ghostBin, packageDir, asksPath, port = 4114 }) {
               model,
               ask: item.ask,
               menu,
-              trials: body.trials ?? 5,
+              cover: gathered.cover,
+              trials,
               expected: item.expected ?? null,
+              poison: item.poison ?? [],
             }),
           );
         }
@@ -68,10 +82,12 @@ export function startServer({ ghostBin, packageDir, asksPath, port = 4114 }) {
   });
 }
 
-async function loadAsks(asksPath) {
+async function loadAsks(asksPath, validIds) {
   if (!asksPath) return [];
   try {
-    return parseAsks(await readFile(asksPath, "utf-8"));
+    return parseAsks(await readFile(asksPath, "utf-8"), {
+      validateIds: validIds,
+    });
   } catch (err) {
     if (err && err.code === "ENOENT") return [];
     throw err;

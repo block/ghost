@@ -15,8 +15,10 @@ selection time no matter how good its body is.
 
 ```bash
 pnpm --filter @design-intelligence/ghost build   # bench shells the real CLI
+tmp=$(mktemp -d)
+node packages/ghost/dist/bin.js init --package "$tmp/.ghost"
 node packages/context-control/cli.mjs \
-  --package packages/vessel-light/.ghost \
+  --package "$tmp/.ghost" \
   --asks packages/context-control/demo/asks.md
 # → http://127.0.0.1:4114
 ```
@@ -38,12 +40,12 @@ selection trials, and read the heatmap: nodes × asks, each cell the
 fraction of trials that selected the node. Solid column = confident
 description. Speckled = coin-flip. Empty row = dead node. Blue outline =
 the ask's expected set. Scores above the map: consistency (mean pairwise
-Jaccard), precision/recall vs expected sets, and nodes-ever-selected.
+Jaccard), mean per-trial precision and recall, poison-selection rate, unknown
+ids, and nodes ever selected.
 
-Selection runs as a real agent would: the system prompt is a replica of
-the ghost skill's recall and brief recipes (always include `index`, small
-pulls). There is no skill-less mode — the bench
-measures actual agent behavior. One caveat remains: a live agent also
+Selection runs as a real agent would: the system prompt includes the cover
+already in context and asks for a small pull from the menu. There is no
+skill-less mode. One caveat remains: a live agent also
 carries task context (open files, prior turns) that single-shot selection
 lacks.
 
@@ -54,19 +56,27 @@ nothing leaves the machine.
 
 ## Asks format
 
-Numbered asks, each optionally followed by an `expect:` line of node ids:
+Use the same ask blocks as steering-control. `expect:` lists nodes a good
+selector should pull. `poison:` lists nodes whose condition does not apply.
+`discount:` remains available to steering-control and is ignored here.
 
 ```markdown
-1. A dense settings screen for notification preferences
-   expect: grammar.hierarchy, register.data-density
+## Ask 1 — notification settings
+
+Build a dense settings screen for notification preferences.
+
+expect: foundation.composition, foundation.controls, foundation.layout
+poison: context.conversation
 ```
 
-Unlabeled asks still score consistency; expected sets add precision and
-recall.
+Asks without `expect:` still score consistency. Expected and poison sets add
+precision, recall, and poison rate. List only selectable menu ids. Do not list
+the manifest cover: gather has already placed it in context and removed it from
+the menu.
 
 ## Model adapters
 
-The contract is one function: `select({ ask, menu, trial }) -> ids`. Two
+The contract is one function: `select({ ask, menu, cover, trial }) -> ids`. Two
 adapters ship, selectable in the bench UI:
 
 - `fake-lexical` — deterministic lexical-overlap stub with per-trial
@@ -82,8 +92,7 @@ adapters ship, selectable in the bench UI:
   endpoint's default temperature — trial-to-trial variance is the signal
   being measured, so it is not pinned to 0.
 
-Add more providers in `lib/model.mjs` and register them in
-`resolveModel`/`availableModels`.
+Add providers to `MODEL_ADAPTERS` in `lib/model.mjs`.
 
 ## Layout
 
@@ -96,5 +105,5 @@ lib/score.mjs    # jaccard, consistency, precision/recall, rates, coverage
 lib/tape.mjs     # .ghost/.events parser + session grouping
 lib/server.mjs   # node:http JSON endpoints + static UI
 ui/index.html    # single-file UI, no build step
-demo/asks.md     # demo suite against packages/vessel-light/.ghost
+demo/asks.md     # demo suite against the default ghost init skeleton
 ```

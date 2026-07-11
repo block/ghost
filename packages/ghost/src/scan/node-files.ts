@@ -11,8 +11,7 @@ import {
  * Reserved package-root entries that are never nodes: the manifest (the
  * package anchor), the glossary, `materials/` (bundled materials), and
  * `checks/` (review checks — feed-back only, never generation context). The
- * list is closed. `haunts/` is the legacy pre-flat checks location, kept
- * reserved so stale packages do not misload its contents as nodes.
+ * list is closed.
  */
 const RESERVED_ROOT_ENTRIES = new Set<string>([
   FINGERPRINT_MANIFEST_FILENAME,
@@ -20,7 +19,6 @@ const RESERVED_ROOT_ENTRIES = new Set<string>([
   GHOST_GLOSSARY_FILENAME,
   GHOST_MATERIALS_DIR,
   "checks",
-  "haunts",
 ]);
 
 export interface LoadedNodeFiles {
