@@ -7,6 +7,8 @@ export const GHOST_NODE_SCHEMA = "ghost.node/v1" as const;
  * why / with-what / how-assembled are drafting prompts, never fields.
  */
 export interface GhostNodeFrontmatter {
+  /** Free-form descriptive properties parsed from node frontmatter. */
+  [key: string]: unknown;
   /**
    * One-line statement of what this node is and when to gather it — the
    * retrieval payload. Together with the node's id (its path) it is how an
