@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-10T20:19:23.863Z",
+  "generatedAt": "2026-07-14T04:00:29.832Z",
   "tools": [
     {
       "tool": "ghost",
@@ -117,6 +117,14 @@
               "default": "markdown",
               "takesValue": true,
               "negated": false
+            },
+            {
+              "rawName": "--run <id>",
+              "name": "run",
+              "description": "Attribute the tape event to this run id (default: GHOST_RUN_ID)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
             }
           ]
         },
@@ -169,6 +177,14 @@
               "default": true,
               "takesValue": false,
               "negated": true
+            },
+            {
+              "rawName": "--run <id>",
+              "name": "run",
+              "description": "Attribute the tape event to this run id (default: GHOST_RUN_ID)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
             }
           ]
         },

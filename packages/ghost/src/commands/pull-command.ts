@@ -11,7 +11,11 @@ import {
   transportMaterials,
 } from "#ghost-core";
 import { resolveFingerprintPackage } from "../fingerprint.js";
-import { appendGhostEvent, type PullMiss } from "../observability-events.js";
+import {
+  appendGhostEvent,
+  type PullMiss,
+  resolveRunId,
+} from "../observability-events.js";
 import {
   GHOST_EVENTS_FILENAME,
   GHOST_MATERIALS_DIR,
@@ -52,6 +56,10 @@ export function registerPullCommand(cli: CAC): void {
       default: "steering",
     })
     .option("--no-events", `Skip appending to .ghost/${GHOST_EVENTS_FILENAME}`)
+    .option(
+      "--run <id>",
+      "Attribute the tape event to this run id (default: GHOST_RUN_ID)",
+    )
     .action(async (ids: string[], opts) => {
       try {
         if (opts.format !== "markdown" && opts.format !== "json") {
@@ -102,8 +110,10 @@ export function registerPullCommand(cli: CAC): void {
         const counts = sumMaterialCounts(pulledNodes);
 
         if (opts.events !== false) {
+          const runId = resolveRunId(opts.run);
           await appendGhostEvent(paths.packageDir, {
             event: "pull",
+            ...(runId ? { run: runId } : {}),
             ids: known,
             inlinedMaterials: counts.inlined,
             omittedMaterials: counts.omitted,

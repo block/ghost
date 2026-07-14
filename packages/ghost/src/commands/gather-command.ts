@@ -7,7 +7,7 @@ import {
 } from "#ghost-core";
 import { resolveFingerprintPackage } from "../fingerprint.js";
 import { isMissingPathError } from "../internal/fs.js";
-import { appendGhostEvent } from "../observability-events.js";
+import { appendGhostEvent, resolveRunId } from "../observability-events.js";
 import { loadFingerprintPackage } from "../scan/fingerprint-package.js";
 import { failFromError } from "./errors.js";
 
@@ -34,6 +34,10 @@ export function registerGatherCommand(cli: CAC): void {
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
     })
+    .option(
+      "--run <id>",
+      "Attribute the tape event to this run id (default: GHOST_RUN_ID)",
+    )
     .action(async (askParts: string[] | undefined, opts) => {
       try {
         if (opts.format !== "markdown" && opts.format !== "json") {
@@ -53,8 +57,10 @@ export function registerGatherCommand(cli: CAC): void {
           (entry) => entry.id !== coverNode?.id,
         );
         const kinds = await readMenuKinds(paths.glossary);
+        const runId = resolveRunId(opts.run);
         await appendGhostEvent(paths.packageDir, {
           event: "gather",
+          ...(runId ? { run: runId } : {}),
           ...(ask ? { ask } : {}),
           menu: menu.map((entry) => entry.id),
         });

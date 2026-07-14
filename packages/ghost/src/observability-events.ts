@@ -7,6 +7,8 @@ const FIRST_WRITE_NOTICE = `ghost: logging selection events locally to .ghost/${
 export type GatherObservabilityEvent = {
   ts: string;
   event: "gather";
+  /** Caller-supplied run identifier (--run or GHOST_RUN_ID); attribution only. */
+  run?: string;
   ask?: string;
   menu: string[];
   materials?: string[];
@@ -20,6 +22,8 @@ export type PullMiss = {
 export type PullObservabilityEvent = {
   ts: string;
   event: "pull";
+  /** Caller-supplied run identifier (--run or GHOST_RUN_ID); attribution only. */
+  run?: string;
   ids: string[];
   missed?: PullMiss[];
   inlinedMaterials?: number;
@@ -33,6 +37,18 @@ export type GhostObservabilityEvent =
 export type NewGhostObservabilityEvent =
   | Omit<GatherObservabilityEvent, "ts">
   | Omit<PullObservabilityEvent, "ts">;
+
+/**
+ * Resolve the run identifier for event attribution: explicit --run flag
+ * wins, then GHOST_RUN_ID from the environment. Returns undefined when
+ * neither is set — the tape line then looks exactly as it does today.
+ */
+export function resolveRunId(flagValue?: unknown): string | undefined {
+  const fromFlag = typeof flagValue === "string" ? flagValue.trim() : "";
+  if (fromFlag) return fromFlag;
+  const fromEnv = process.env.GHOST_RUN_ID?.trim();
+  return fromEnv || undefined;
+}
 
 export async function appendGhostEvent(
   packageDir: string,

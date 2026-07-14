@@ -1064,6 +1064,37 @@ describe("ghost CLI", () => {
     expect(validate.code).toBe(0);
   });
 
+  it("stamps tape events with a run id from --run or GHOST_RUN_ID", async () => {
+    await runCli(["init"], dir);
+
+    // Explicit flag wins over the environment.
+    await runCli(["gather", "--run", "settings/2026-07-13T20-00-00Z"], dir, {
+      env: { GHOST_RUN_ID: "env-run" },
+    });
+    // Environment alone.
+    await runCli(["pull", "foundation.voice"], dir, {
+      env: { GHOST_RUN_ID: "settings/2026-07-13T20-00-00Z" },
+    });
+    // Neither: the line looks exactly as it does today.
+    await runCli(["gather"], dir, { env: { GHOST_RUN_ID: undefined } });
+
+    const events = (await readFile(join(dir, ".ghost", ".events"), "utf-8"))
+      .trim()
+      .split("\n")
+      .map((line) => JSON.parse(line));
+    expect(events[0]).toMatchObject({
+      event: "gather",
+      run: "settings/2026-07-13T20-00-00Z",
+    });
+    expect(events[1]).toMatchObject({
+      event: "pull",
+      run: "settings/2026-07-13T20-00-00Z",
+      ids: ["foundation.voice"],
+    });
+    expect(events[2].event).toBe("gather");
+    expect(events[2]).not.toHaveProperty("run");
+  });
+
   it("pull inlines material files and emits inspect-pointers for binary materials, oversize files, and URL locators", async () => {
     await runCli(["init", "--template", "minimal"], dir);
     await mkdir(join(dir, ".ghost", "materials"), { recursive: true });
