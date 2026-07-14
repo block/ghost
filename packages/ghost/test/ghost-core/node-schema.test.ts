@@ -52,6 +52,23 @@ describe("ghost.node/v1 schema", () => {
     expect(reparsed.node?.body).toBe(original.body);
   });
 
+  it("round-trips materials frontmatter through serialize/parse", () => {
+    const original: GhostNodeDocument = {
+      frontmatter: {
+        description: "Checkout trust signals.",
+        materials: [
+          "src/components/checkout/**",
+          "https://example.com/logo.svg",
+        ],
+      },
+      body: "Near payment, reduce felt risk.",
+    };
+    const reparsed = parseNode(serializeNode(original));
+    expect(reparsed.report.errors).toBe(0);
+    expect(reparsed.node?.frontmatter).toEqual(original.frontmatter);
+    expect(reparsed.node?.body).toBe(original.body);
+  });
+
   it("round-trips an empty-frontmatter node", () => {
     const original: GhostNodeDocument = {
       frontmatter: {},
