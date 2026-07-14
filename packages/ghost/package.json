@@ -1,6 +1,6 @@
 {
   "name": "@design-intelligence/ghost",
-  "version": "0.22.0",
+  "version": "0.22.1",
   "description": "Ghost CLI for the brand fingerprint: a portable steering packet of prose truths your agent reads before it builds, with advisory review after",
   "license": "Apache-2.0",
   "author": "Block, Inc.",

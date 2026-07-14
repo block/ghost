@@ -1,5 +1,11 @@
 # @design-intelligence/ghost
 
+## 0.22.1
+
+### Patch Changes
+
+- [#229](https://github.com/block/ghost/pull/229) [`e45fe48`](https://github.com/block/ghost/commit/e45fe4823757af90df4504aced8f5ba3677f03a6) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - serializeNode preserves the materials frontmatter field instead of dropping it.
+
 ## 0.22.0
 
 ### Minor Changes
