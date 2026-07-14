@@ -1,5 +1,35 @@
 # @design-intelligence/ghost
 
+## 0.22.1
+
+### Patch Changes
+
+- [#229](https://github.com/block/ghost/pull/229) [`e45fe48`](https://github.com/block/ghost/commit/e45fe4823757af90df4504aced8f5ba3677f03a6) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - serializeNode preserves the materials frontmatter field instead of dropping it.
+
+## 0.22.0
+
+### Minor Changes
+
+- [#221](https://github.com/block/ghost/pull/221) [`ff5206e`](https://github.com/block/ghost/commit/ff5206e191909ee3de5eac5adaa13a6230961fc7) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Adds a manifest `cover` field — gather inlines the named node above the menu, validate enforces it — and re-authors the skeleton starter in designer-native vocabulary: a brand cover, foundation chapters with open questions, context nodes, and a cliche floor paired with checks.
+
+- [#221](https://github.com/block/ghost/pull/221) [`ff5206e`](https://github.com/block/ghost/commit/ff5206e191909ee3de5eac5adaa13a6230961fc7) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Removes the glossary posture system. Glossary kinds no longer accept a posture key; `ghost gather` drops the `--wild` flag and lists every node; `ghost pull` orders packets as index, concrete nodes, then prose; `ghost review` reports matched material-backed nodes without a separate review-critical section and renames the `unguarded-material` coverage gap to `unchecked-material`; `ghost pulse` drops the wild usage section. Existing fingerprints keep working: an ignored `posture` key in `glossary.md` frontmatter is tolerated, and anti-goal nodes still gather, pull, and match in review through their materials like any node.
+
+- [#221](https://github.com/block/ghost/pull/221) [`ff5206e`](https://github.com/block/ghost/commit/ff5206e191909ee3de5eac5adaa13a6230961fc7) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - `ghost validate` warns on nodes without a `description` (rule `node-description-missing`), and the `ghost gather` coverage line reports how many nodes lack descriptions, since an undescribed node is invisible to agent selection.
+
+### Patch Changes
+
+- [#221](https://github.com/block/ghost/pull/221) [`ff5206e`](https://github.com/block/ghost/commit/ff5206e191909ee3de5eac5adaa13a6230961fc7) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Add the concrete-tiers skill recipe: choosing which concrete code tiers (tokens, skeletons, components, exemplars) a fingerprint carries, and justifying absences.
+
+- [#221](https://github.com/block/ghost/pull/221) [`ff5206e`](https://github.com/block/ghost/commit/ff5206e191909ee3de5eac5adaa13a6230961fc7) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Treat the manifest cover as inlined context instead of asking agents to select an `index` node.
+
+- [#221](https://github.com/block/ghost/pull/221) [`ff5206e`](https://github.com/block/ghost/commit/ff5206e191909ee3de5eac5adaa13a6230961fc7) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Document bound/open pattern authoring and `concept.*` nodes in the capture skill recipe; deduplicate the package README against the root README.
+
+- [#221](https://github.com/block/ghost/pull/221) [`ff5206e`](https://github.com/block/ghost/commit/ff5206e191909ee3de5eac5adaa13a6230961fc7) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Make `GHOST_PACKAGE_DIR` honored by every command, not just `init` and `validate`; support `goose` in the `install.sh` curl installer; and drop detection of the pre-flat legacy checks directory entirely.
+
+- [#216](https://github.com/block/ghost/pull/216) [`c95f58b`](https://github.com/block/ghost/commit/c95f58b91b36b4ac7421fd33d77b5f5ecadbcbb4) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Refresh the entrance docs: accurate skeleton/body init descriptions, a documented `ghost export`, and plainer language on the welcome path.
+
+- [#221](https://github.com/block/ghost/pull/221) [`ff5206e`](https://github.com/block/ghost/commit/ff5206e191909ee3de5eac5adaa13a6230961fc7) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Reconciles the vessel-light starter body: every token and primitive class is now demonstrated in a reference or removed, display type has one answer, and a closure check keeps the materials contract enforced.
+
 ## 0.21.0
 
 ### Minor Changes
