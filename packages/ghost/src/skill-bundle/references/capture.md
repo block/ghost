@@ -177,14 +177,18 @@ Near the moment of payment, reduce felt risk. Proximity of reassurance to the
 action beats completeness...
 ```
 
-- **`description`** is how an agent finds the node: a one-line "what this is and
-  when to gather it." `ghost gather` emits the menu of id, kind, description,
-  concrete coverage, and material count; the agent matches the ask against it.
+- **`description`** is how an agent finds the node: a compact retrieval payload
+  naming what the node governs, the observable condition under which it applies,
+  and what it contributes when useful. `ghost gather` emits id, kind,
+  description, concrete coverage, payload labels, and material count; the agent matches the ask
+  against applicability.
 - **Kind is the filename prefix** and must be a kind the glossary declares. A
   bare name (`voice.md`) has no kind.
 - **Altitude lives in the prose.** State a universal truth plainly; give a
-  narrower truth its **condition** — the situation it applies in — in the prose.
-  Never file a truth by destination (`for-emails.md`).
+  narrower truth its **condition** — the situation it applies in — in the prose
+  and usually in the description. Do not use broad universal imperatives unless
+  universal retrieval is intended. Never file a truth by destination
+  (`for-emails.md`).
 - **Concreteness is derived.** A node carries concrete material when it has
   `materials`, a substantial fenced example, or a `## Skeleton`. You do not
   declare a separate type.
@@ -200,8 +204,8 @@ machinery already scores:
 - **why** lands as stance prose — read first in `ghost pull`, weakest at
   moving output form on its own; it is the yardstick every later selection is
   measured against.
-- **with what** lands as `materials` and concreteness — drives pull ordering
-  and `ghost review` matching. See [blocks.md](blocks.md) for authoring
+- **with what** lands as `materials` and concreteness — affects pull packet
+  order and `ghost review` matching. See [blocks.md](blocks.md) for authoring
   material-backed nodes.
 - **how it is assembled** lands as patterns and `## Skeleton` sections — the
   strongest steering; Skeleton fences are extracted and emitted dead last so

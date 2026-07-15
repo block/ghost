@@ -22,7 +22,7 @@ product and offers a small set of next reads or tools.
   title, one short description. The hover state can darken the border and invert
   a title underline, but it should not become a whole animated tile.
 - Card copy explains the job of the destination, not the feature in abstract.
-  Prefer "Emit the fingerprint menu with gather" over "Powerful context
+  Prefer "Emit Available guidance with gather" over "Powerful context
   discovery."
 - Icons are thin-line Lucide symbols at the existing sizes and stroke widths.
   They support scanning; they are not illustrations.

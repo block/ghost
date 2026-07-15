@@ -48,13 +48,17 @@ Use the full lockup when recognition matters.
 
 - Identity is the filename minus `.md`.
 - Kind is the first dotted segment of the filename.
-- `description` is the retrieval payload shown by `ghost gather`.
+- `description` is the retrieval payload shown by `ghost gather`: what the node
+  governs, the observable condition under which it applies, and what it
+  contributes where useful. Avoid broad universal wording unless universal
+  retrieval is intended.
 - `materials` accepts repo-relative paths/globs plus absolute HTTPS URLs. It is
   a locator list, not guidance.
 
-Ghost derives whether a node carries concrete material from structure: non-empty
-`materials`, a fenced code block of at least 3 lines, or a `## Skeleton` section.
-This is reported in gather/pulse and used for pull ordering.
+Ghost derives whether a node carries concrete material from structure:
+non-empty `materials`, a fenced code block of at least 3 lines, or a
+`## Skeleton` section. `gather` reports these payload labels for clarity; they
+are not ranking signals.
 
 ## Skeleton convention
 
@@ -101,8 +105,8 @@ probes are the same class as npm scripts; Git review is the boundary.
 
 ## Gather / Pull / Review
 
-- `ghost gather` emits the cover above the node menu, then coverage counts.
-  Checks are invisible.
+- `ghost gather` emits the cover above Available guidance, then coverage counts.
+  The guidance list is complete, unfiltered, and unranked. Checks are invisible.
 - `ghost pull` emits selected nodes in steering order and inlines small local
   materials. Binary local materials become inspect-pointers.
 - `ghost review` matches diff files to local node materials, offers relevant

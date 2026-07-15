@@ -46,8 +46,8 @@ into folders is a browsing convenience only.
 One resolution mechanism, read-only:
 
 - **The menu.** `ghost gather` emits every node's id, kind, description, and
-  material count. The agent reads the ask against descriptions and pulls the
-  truths it judges relevant. Ghost does no NLP and no selection.
+  material count. The agent reads the ask against descriptions and pulls every
+  truth whose stated situation applies. Ghost does no NLP and no selection.
 
 The optional `cover` in `manifest.yml` names the human-curated front door.
 `ghost gather` inlines that node before the menu and excludes it from the

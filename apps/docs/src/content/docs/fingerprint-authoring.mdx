@@ -92,7 +92,7 @@ Node frontmatter carries only descriptive properties:
 
 | Property | What it does |
 | --- | --- |
-| `description` | A short summary of the node — the retrieval payload the menu shows. |
+| `description` | The retrieval payload the menu shows: what the node governs, the observable condition under which it applies, and what it contributes where useful. |
 | `materials` | Optional list of locators for the concrete materials the truth is about: repo-relative paths/globs or absolute HTTPS URLs. |
 | _passthrough_ | Free-form keys (`audience`, `stage`, …) are preserved for host tooling. |
 
@@ -115,7 +115,8 @@ plainly. A narrower truth names its **condition** in the prose — the *situatio
 it applies in ("when a surface must show many items at once, carry hierarchy with
 weight, not color"), never a destination or filing bucket ("for dashboards:").
 The agent reads the condition and decides when the truth applies; that
-interpretation is the agent's job, not the filename's.
+interpretation is the agent's job, not the filename's. Avoid broad universal
+imperatives unless universal retrieval is truly intended.
 
 </DocSection>
 
@@ -128,8 +129,8 @@ and *how it is assembled* (the patterns — layouts, flows, states, content
 patterns, behavior, visual arrangements). These are drafting prompts, never
 frontmatter fields, and a node may answer only one. Each answer lands as a
 steering dimension: stance prose is read first — weakest at moving output form
-on its own, but the yardstick every later selection is measured against; materials
-make a node concrete and drive pull ordering and review matching; patterns and
+on its own, but the yardstick every later selection is measured against;
+materials provide concrete payload and support review matching; patterns and
 Skeletons steer strongest, and Skeleton fences are extracted and emitted dead
 last so generation starts from them.
 

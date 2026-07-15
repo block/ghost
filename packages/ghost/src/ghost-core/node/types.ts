@@ -10,10 +10,9 @@ export interface GhostNodeFrontmatter {
   /** Free-form descriptive properties parsed from node frontmatter. */
   [key: string]: unknown;
   /**
-   * One-line statement of what this node is and when to gather it — the
-   * retrieval payload. Together with the node's id (its path) it is how an
-   * agent selects a node, exactly like a tool's name + description. The body is
-   * the node's "implementation"; the description is what makes it discoverable.
+   * Retrieval payload shown by gather: what the node governs, the observable
+   * condition under which it applies, and what it contributes where useful.
+   * Together with the node's id, it is how an agent decides applicability.
    * Optional, but strongly encouraged on any node worth anchoring a task at.
    */
   description?: string;

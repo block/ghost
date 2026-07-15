@@ -24,7 +24,7 @@ const cards: {
     name: "CLI reference",
     href: "/docs/cli",
     description:
-      "Emit the fingerprint menu with gather, read selected truths with pull, and tune with pulse.",
+      "Emit Available guidance with gather, pull selected truths with pull, and tune with pulse.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
   {
@@ -47,7 +47,7 @@ export default function GhostScanLanding() {
       <AnimatedPageHeader
         kicker="ghost gather"
         title="Context Before Building"
-        description="The deterministic handoff that emits the fingerprint menu — every truth's id, kind, and description — so your agent can select and pull the right context before it builds."
+        description="The deterministic handoff that emits Available guidance: every truth's id, kind, and description, so your agent can pull applicable context before it builds."
       />
 
       <div

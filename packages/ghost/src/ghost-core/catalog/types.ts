@@ -10,12 +10,14 @@ export interface GhostCatalogNode {
   kind?: string;
   /** Filename slug: bare name, or the part after the first dot. */
   slug: string;
-  /** One-line "what this is / when to gather it" — the retrieval payload. */
+  /** Retrieval payload shown in gather: what applies, when, and what it contributes. */
   description?: string;
   /** Optional material locators carried by the authored node. */
   materials?: string[];
-  /** True when the node carries materials, a substantial fence, or a Skeleton. */
+  /** True when the node carries a material locator, substantial fence, or Skeleton. */
   concrete: boolean;
+  /** True when the node body carries a fenced block of at least 3 lines. */
+  hasFencedExample: boolean;
   /** True when the node declares a `## Skeleton` section. */
   hasSkeleton: boolean;
   body: string;

@@ -1,6 +1,7 @@
 import {
   carriesConcreteMaterial,
   extractSkeletonSections,
+  hasSubstantialFencedExample,
 } from "../node/steering.js";
 import type { GhostNodeDocument } from "../node/types.js";
 import type { GhostCatalog, GhostCatalogNode } from "./types.js";
@@ -45,6 +46,7 @@ export function assembleCatalog(input: AssembleCatalogInput): GhostCatalog {
       ...(fm.description !== undefined ? { description: fm.description } : {}),
       ...(fm.materials !== undefined ? { materials: fm.materials } : {}),
       concrete,
+      hasFencedExample: hasSubstantialFencedExample(placed.doc.body),
       hasSkeleton: extractSkeletonSections(placed.doc.body).length > 0,
       body: placed.doc.body,
     });

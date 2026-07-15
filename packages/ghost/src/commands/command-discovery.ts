@@ -124,7 +124,8 @@ const COMMAND_DISCOVERY = [
     group: "core",
     defaultHelp: true,
     compactName: "gather [ask]",
-    summary: "Emit the fingerprint menu for the agent to select from.",
+    summary:
+      "Emit the complete guidance menu so the agent can pull applicable nodes.",
   },
   {
     name: "pull",

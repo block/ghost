@@ -19,9 +19,13 @@ export function carriesConcreteMaterial(input: {
 }): boolean {
   return (
     (input.materials?.length ?? 0) > 0 ||
-    hasThreeLineFence(input.body) ||
+    hasSubstantialFencedExample(input.body) ||
     extractSkeletonSections(input.body).length > 0
   );
+}
+
+export function hasSubstantialFencedExample(body: string): boolean {
+  return hasThreeLineFence(stripSkeletonSections(body));
 }
 
 export function hasThreeLineFence(body: string): boolean {

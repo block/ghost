@@ -1,9 +1,10 @@
 ---
-description: "The brand on one page — always in context; what this brand is, how it feels, and what only it refuses."
+description: "The brand on one page; what this brand is, how it feels, and what only it refuses."
 ---
 
-This cover is unwritten. It is the one page always in an agent's context, so
-it carries only what cannot be retrieved by task: what this brand is about,
+This cover is unwritten. Ghost gather always places this page in an agent's
+context; that is delivery status, not a claim that every sentence applies to
+every task. Use it for what cannot be retrieved by task: what this brand is about,
 in one paragraph, in the brand's own voice. The temperature its words and
 motion share. And the refusals only this brand makes — not generic don'ts
 (those live in each foundation's misuse list, and the model's cliches live

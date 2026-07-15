@@ -16,6 +16,7 @@ export {
   extractSkeletonFences,
   extractSkeletonSections,
   type FencedBlock,
+  hasSubstantialFencedExample,
   hasThreeLineFence,
   type SkeletonSection,
   stripSkeletonSections,
