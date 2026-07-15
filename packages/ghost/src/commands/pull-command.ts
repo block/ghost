@@ -285,7 +285,7 @@ function formatPullMarkdown(nodes: PulledNode[]): string {
       for (const material of materials.materials) {
         if (material.inlined !== undefined) {
           const info = material.path ?? material.locator;
-          lines.push("", `\`\`\`${info}`, material.inlined.trimEnd(), "```");
+          lines.push("", fencedMarkdown(material.inlined.trimEnd(), info));
         } else if (material.reason === "binary inspect-pointer") {
           lines.push(
             `- inspect: ${material.path ?? material.locator} — view this image before generating`,
@@ -310,11 +310,23 @@ function formatPullMarkdown(nodes: PulledNode[]): string {
     ];
     for (const skeleton of skeletons) {
       lines.push("", `## From \`${skeleton.nodeId}\``, "");
-      const info = skeleton.info ? skeleton.info : "";
-      lines.push(`\`\`\`${info}`, skeleton.content.trimEnd(), "```");
+      lines.push(fencedMarkdown(skeleton.content.trimEnd(), skeleton.info));
     }
     sections.push(lines.join("\n"));
   }
 
   return `${sections.join("\n\n---\n\n")}\n`;
+}
+
+function fencedMarkdown(content: string, info?: string): string {
+  const fence = "`".repeat(Math.max(3, longestBacktickRun(content) + 1));
+  return `${fence}${info ?? ""}\n${content}\n${fence}`;
+}
+
+function longestBacktickRun(content: string): number {
+  let longest = 0;
+  for (const match of content.matchAll(/`+/g)) {
+    longest = Math.max(longest, match[0].length);
+  }
+  return longest;
 }

@@ -2,9 +2,9 @@ import type { GhostCatalog } from "./types.js";
 
 /**
  * One entry in the gather menu: a node presented as `id` + `kind` +
- * `description` — the retrieval payload the agent selects against. The agent
- * matches a natural-language ask against these and reads what it judges
- * relevant; Ghost does no NLP and no selection.
+ * `description`, the retrieval payload the agent selects against. The agent
+ * matches a natural-language ask against these and pulls applicable nodes;
+ * Ghost does no NLP and no selection.
  */
 export interface CatalogMenuEntry {
   id: string;
@@ -13,8 +13,10 @@ export interface CatalogMenuEntry {
   description?: string;
   /** Count of material locators available after pulling this node. */
   materials?: number;
-  /** True when this entry carries concrete material by derived structure. */
+  /** True when this entry carries a material locator, fenced example, or Skeleton. */
   concrete: boolean;
+  /** True when this entry includes a substantial fenced example. */
+  hasFencedExample?: true;
   /** True when this entry includes a Skeleton section. */
   hasSkeleton?: true;
 }
@@ -36,6 +38,7 @@ export function buildCatalogMenu(catalog: GhostCatalog): CatalogMenuEntry[] {
         ? { materials: node.materials.length }
         : {}),
       concrete: node.concrete,
+      ...(node.hasFencedExample ? { hasFencedExample: true as const } : {}),
       ...(node.hasSkeleton ? { hasSkeleton: true as const } : {}),
     });
   }

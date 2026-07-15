@@ -32,8 +32,8 @@ through a short loop:
 ```bash
 ghost init        # scaffold .ghost/ with the skeleton starter
 ghost validate    # make sure the fingerprint is well-formed
-ghost gather <ask> # emit the menu for this task; your agent selects the truths it needs
-ghost pull <ids>   # read the selected truths' full bodies
+ghost gather <ask> # emit Available guidance; your agent selects applicable truths
+ghost pull <ids>   # pull selected truths' full bodies
 ghost pulse        # inspect the local signal while tuning the fingerprint
 ```
 
@@ -122,20 +122,22 @@ applies in, never a filename destination. For a fuller human-agent workflow, rea
 
 <DocSection title="Gather Context Before You Build">
 
-Before generating, gather the fingerprint menu. `gather` does no selection: it
-emits every node's id, kind, and description, and your agent reads the ask
-against it and pulls the truths it judges relevant:
+Before generating, gather Available guidance from the Ghost brand fingerprint.
+`gather` does no selection: it emits the complete, unfiltered, unranked list of
+node ids, kinds, and descriptions. Your agent reads the ask against
+applicability and pulls every node whose stated situation governs the work:
 
 ```bash
 ghost gather "checkout settings"
 ghost gather "checkout settings" --format json
-ghost pull principle.trust voice   # read the selected truths' full bodies
+ghost pull principle.trust voice   # pull selected truths' full bodies
 ```
 
 This is "the right context at the right time": the agent selects just-in-time
-against the actual task, then manifests the truths into whatever it is building.
-Run it before generation, so the agent builds with the brand in hand rather than
-discovering the gaps in review.
+against the actual task. Topic overlap alone is not applicability; if nothing
+applies, it should name the fingerprint's silence and avoid inventing
+Ghost-backed guidance. Run it before generation, so the agent builds with the
+brand in hand rather than discovering the gaps in review.
 
 Each `gather` and `pull` also adds a line to a private local log at
 `.ghost/.events`; it stays on your machine and never enters version control.

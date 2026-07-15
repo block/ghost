@@ -55,23 +55,26 @@ true, and an agent reads the relevant truths before building.
 ghost init          # scaffold .ghost/ with the steering starter
 ghost checks init   # opt in to review assertions
 ghost validate      # artifact shape + node/material/check validation
-ghost gather <ask>  # emit the fingerprint menu for this task
-ghost pull <ids>    # read selected node bodies and materials
+ghost gather <ask>  # emit Available guidance for this task
+ghost pull <ids>    # pull selected node bodies and materials
 ghost review        # assemble diff + matched material-backed nodes + checks
 ghost export        # package .ghost/ as a portable brand artifact
 ghost pulse         # summarize local gather/pull events while tuning
 ```
 
-`gather` does no selection. It emits the menu and you read the ask against it,
-then pull the truths you judge relevant. Its header includes a coverage line —
-total nodes and nodes carrying concrete material — so an all-prose
-fingerprint is visible before generation.
+`gather` does no selection. It emits the complete, unfiltered, unranked menu
+from the Ghost brand fingerprint. You read the ask against descriptions, then
+pull every applicable truth and skip inapplicable nodes. Topic overlap alone is
+not applicability. Its header includes a coverage line: total nodes and nodes
+carrying concrete material. `gather` labels materials, substantial fenced
+examples, and Skeletons separately, so an all-prose fingerprint is visible
+before generation.
 
 Prefer `ghost pull` over reading files directly: it emits the same prose,
 inlines small local materials by default, turns binary materials into
-inspect-pointers, orders the packet for steering (cover when selected, concrete nodes,
-prose rules), extracts Skeletons dead last, and appends structured
-events to `.ghost/.events` for local tuning.
+inspect-pointers, orders the packet for steering (cover when selected,
+concrete nodes, prose rules), extracts Skeletons dead last, and appends
+structured events to `.ghost/.events` for local tuning.
 
 `review` does no grading. It assembles an advisory packet: touched files,
 matched material-backed nodes, offered checks, probe
@@ -84,7 +87,7 @@ evidence, coverage gaps, and the diff. The host agent renders findings.
 | `ghost init` | Scaffold `.ghost/` with the skeleton starter: manifest, glossary, a `brand.md` cover, foundation chapters, context nodes, and the cliche floor. `--template minimal` writes a smaller cover-led starter. `--with checks` also adds the checks directory. |
 | `ghost checks init` | Scaffold `.ghost/checks/` with an example review assertion. |
 | `ghost validate [file-or-dir]` | Validate manifest, nodes, material locators, check references, and glossary kind prefixes. |
-| `ghost gather [ask…] [--format json]` | Emit the node menu for selection plus coverage line; log exposed ids. |
+| `ghost gather [ask…] [--format json]` | Emit the complete guidance menu plus coverage line; log exposed ids. |
 | `ghost pull <id> [<id>…]` | Emit selected nodes' full bodies and materials in steering order; log selected/missed ids. |
 | `ghost review [--diff <path|->] [--base <ref>] [--format json] [--no-probes]` | Emit an advisory review packet for a diff (requires `.ghost/checks/`). |
 | `ghost export [--out <path>] [--no-checks] [--strict] [--format json]` | Package `.ghost/` as a portable brand artifact and report which material locators will not travel. |
@@ -129,7 +132,7 @@ conventions, but durable brand truth should be curated by the human.
 
 A silent fingerprint does not require stopping. Proceed from nearby product
 surfaces, local conventions, and ordinary reasoning when safe, and label that
-reasoning as provisional and non-Ghost-backed — unless the fingerprint itself
+reasoning as provisional and non-Ghost-backed unless the fingerprint itself
 declares a stricter silence posture (check the cover), which overrides
 this default. Ask a human before high-risk, irreversible, privacy, security,
 legal, or brand-defining choices.

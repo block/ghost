@@ -65,8 +65,11 @@ describe("assembleCatalog (flat catalog assembly)", () => {
 
     expect(catalog.nodes.get("asset.tokens")?.concrete).toBe(true);
     expect(catalog.nodes.get("principle.sample")?.concrete).toBe(true);
+    expect(catalog.nodes.get("principle.sample")?.hasFencedExample).toBe(true);
     expect(catalog.nodes.get("pattern.shell")?.concrete).toBe(true);
+    expect(catalog.nodes.get("pattern.shell")?.hasFencedExample).toBe(false);
     expect(catalog.nodes.get("pattern.shell")?.hasSkeleton).toBe(true);
     expect(catalog.nodes.get("principle.short")?.concrete).toBe(false);
+    expect(catalog.nodes.get("principle.short")?.hasFencedExample).toBe(false);
   });
 });

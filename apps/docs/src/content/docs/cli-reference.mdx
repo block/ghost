@@ -127,10 +127,11 @@ ghost validate --format json
 
 ### Emit the menu: `gather`
 
-`gather` emits the **menu**: every node's id, kind, and description. It does no
-selection — the agent reads the ask against the menu and pulls the truths it
-judges relevant. There is no slice, no anchor, and no inheritance between nodes;
-the package is flat.
+`gather` emits **Available guidance** from the Ghost brand fingerprint: every
+node's id, kind, and description. It does no selection, filtering, or ranking.
+The agent reads the ask against applicability and pulls every node whose stated
+situation governs the work. There is no slice, no anchor, and no inheritance
+between nodes; the package is flat.
 
 <CliHelp tool="ghost" command="gather" hideDescription />
 
@@ -141,13 +142,17 @@ ghost gather "checkout confirmation email" --format json
 
 This is the pre-generation step, and "the right context at the right time": the
 agent selects just-in-time against the actual task, then manifests the truths
-into whatever it is building — product UI, marketing, email, a landing page.
+into whatever it is building: product UI, marketing, email, a landing page. If
+nothing applies, the agent should name the fingerprint's silence and avoid
+inventing Ghost-backed guidance.
 
 ### Read the selected truths: `pull`
 
-`pull` emits the named nodes' full prose bodies. It is how an agent reads the
-truths it selected from the menu — preferred over opening the files directly,
-because gather and pull append structured JSONL events to `.ghost/.events`.
+`pull` emits the named nodes' full prose bodies and materials. It is how an
+agent reads the truths it selected from the menu, preferred over opening the
+files directly because it inlines small materials, emits inspect-pointers,
+extracts Skeletons last, and appends structured JSONL events to
+`.ghost/.events`.
 
 That file is an events tape for the fingerprint's author: tweak a node's
 description, re-run the task, and `ghost pulse` shows whether the truth appeared

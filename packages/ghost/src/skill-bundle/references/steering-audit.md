@@ -25,10 +25,12 @@ Report first:
 
 - **Concreteness coverage:** total nodes, concrete-material nodes, prose-only
   nodes. Concrete means non-empty `materials`, a fenced code block of at least 3
-  lines, or a `## Skeleton` section.
-- **Pulse by concreteness:** concrete exposure/pull rate vs prose-only
-  exposure/pull rate. This is the tuning instrument: if concrete nodes are not
-  pulled, descriptions or task selection are failing.
+  lines, or a `## Skeleton` section. `ghost gather` also breaks out materials,
+  substantial fenced examples, and Skeletons as payload labels.
+- **Pulse by concreteness:** concrete-material exposure/pull rate vs prose-only
+  exposure/pull rate. In markdown this is the `Concrete material` row. This is
+  the tuning instrument: if concrete nodes are not pulled when applicable,
+  descriptions or task selection are failing.
 
 ## Corpus-level table
 

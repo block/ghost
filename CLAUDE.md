@@ -71,9 +71,9 @@ to implementation or assets the agent can inspect), and **how it is assembled**
 
 Altitude lives in the prose: a universal truth is stated plainly; a narrower
 truth names its **condition**, the situation it applies in, never a filing
-destination. `ghost gather` emits the whole menu (every node's id, kind,
-description, and material count); the agent selects just-in-time against the
-actual task. `ghost pull` emits selected node bodies and materials. `ghost
+destination. `ghost gather` emits the complete menu (every node's id, kind,
+description, material count, and payload labels); the agent pulls every node
+whose stated situation applies to the actual task. `ghost pull` emits selected node bodies and materials. `ghost
 review` reads a diff, matches touched files to node materials, offers relevant
 checks, and emits an advisory packet for the host agent to judge.
 
@@ -103,7 +103,7 @@ Core workflow:
 | `ghost init` | Scaffold `.ghost/` with the skeleton starter: manifest, glossary, a `brand.md` cover, foundation chapters, context nodes, and the cliche floor. `--template minimal` writes a smaller cover-led starter; `--body vessel-light` installs a full inhabited fingerprint instead. `--with checks` also adds the checks directory. |
 | `ghost checks init` | Scaffold `.ghost/checks/` with an example review assertion. |
 | `ghost validate` | Validate the package: manifest shape, node validity, material locators, check references, and glossary kind prefixes. |
-| `ghost gather [ask…]` | Emit the fingerprint menu for the agent to select from. |
+| `ghost gather [ask…]` | Emit the complete guidance menu so the agent can pull applicable nodes. |
 | `ghost pull <id> [<id>…]` | Emit selected nodes' bodies and materials; append the selection to the local `.ghost/.events` tape. |
 | `ghost review` | Emit an advisory review packet for a diff using material-backed nodes and checks (requires `.ghost/checks/`). |
 | `ghost pulse` | Summarize local gather/pull events from `.ghost/.events`. |

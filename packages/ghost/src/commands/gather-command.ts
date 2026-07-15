@@ -25,7 +25,7 @@ export function registerGatherCommand(cli: CAC): void {
   cli
     .command(
       "gather [...ask]",
-      "Emit the fingerprint menu — every node's id, kind, and description — for the agent to select from.",
+      "Emit the complete available guidance menu so the agent can pull applicable nodes.",
     )
     .option(
       "--package <dir>",
@@ -65,17 +65,35 @@ export function registerGatherCommand(cli: CAC): void {
           menu: menu.map((entry) => entry.id),
         });
 
-        // Ghost does no selection. It emits the catalog; the agent reads the
-        // ask against it and pulls the nodes it judges relevant.
+        // Ghost does no selection. It emits the complete catalog; the agent
+        // reads the ask against it and pulls the nodes whose described
+        // conditions apply.
         if (opts.format === "json") {
           process.stdout.write(
             `${JSON.stringify(
               {
                 kind: "menu",
                 ...(ask ? { ask } : {}),
+                source: {
+                  artifact: "Ghost brand fingerprint",
+                  list: "Available guidance",
+                },
+                contract: gatherContract(ask),
                 ...(coverNode
-                  ? { cover: { id: coverNode.id, body: coverNode.body } }
+                  ? {
+                      cover: {
+                        id: coverNode.id,
+                        body: coverNode.body,
+                        inContext: true,
+                        selectable: false,
+                      },
+                    }
                   : {}),
+                next: { command: "ghost pull <id> [<id>…]" },
+                silence: {
+                  ifNoneApply:
+                    "Name the fingerprint's silence, follow the cover silence posture when present, and do not invent Ghost-backed guidance.",
+                },
                 coverage: menuCoverage(menu),
                 ...(kinds.length > 0 ? { kinds } : {}),
                 nodes: menu,
@@ -141,16 +159,65 @@ interface FormatMenuOptions {
   };
 }
 
+interface GatherContract {
+  completeness: {
+    complete: true;
+    filtered: false;
+    ranked: false;
+    selectedByGhost: false;
+  };
+  selection: {
+    basis: "applicability";
+    instruction: string;
+    topicOverlapAloneIsApplicability: false;
+    addForCompleteness: false;
+    omitApplicableForCount: false;
+  };
+  noAsk: string;
+}
+
+function gatherContract(ask: string | undefined): GatherContract {
+  return {
+    completeness: {
+      complete: true,
+      filtered: false,
+      ranked: false,
+      selectedByGhost: false,
+    },
+    selection: {
+      basis: "applicability",
+      instruction: ask
+        ? "Pull every node whose description indicates its stated situation applies and whose truth, material, structure, or refusal governs the work; skip inapplicable nodes."
+        : "Bare gather is catalog inspection. Do not treat the menu as task grounding until an ask is supplied; when grounding a task, pull every applicable node and skip inapplicable nodes.",
+      topicOverlapAloneIsApplicability: false,
+      addForCompleteness: false,
+      omitApplicableForCount: false,
+    },
+    noAsk:
+      "Bare gather is catalog inspection and does not imply task grounding.",
+  };
+}
+
 function menuCoverage(menu: CatalogMenuEntry[]): {
   nodes: number;
   concrete: number;
+  payloads: {
+    materials: number;
+    fencedExamples: number;
+    skeletons: number;
+  };
   undescribed: number;
 } {
   return {
     nodes: menu.length,
     concrete: menu.filter((entry) => entry.concrete).length,
+    payloads: {
+      materials: menu.filter((entry) => entry.materials !== undefined).length,
+      fencedExamples: menu.filter((entry) => entry.hasFencedExample).length,
+      skeletons: menu.filter((entry) => entry.hasSkeleton).length,
+    },
     // A node without a description is a bare id the agent cannot select
-    // against — surface the count where selection happens.
+    // against; surface the count where selection happens.
     undescribed: menu.filter(
       (entry) => !entry.description || entry.description.trim().length === 0,
     ).length,
@@ -159,9 +226,14 @@ function menuCoverage(menu: CatalogMenuEntry[]): {
 
 function menuCoverageLine(menu: CatalogMenuEntry[]): string {
   const coverage = menuCoverage(menu);
+  const payloadParts = [
+    `${coverage.payloads.materials} with materials`,
+    `${coverage.payloads.fencedExamples} with substantial fenced examples`,
+    `${coverage.payloads.skeletons} with Skeletons`,
+  ];
   const parts = [
     `${coverage.nodes} nodes`,
-    `${coverage.concrete} carry concrete material`,
+    `${coverage.concrete} carry payloads (${payloadParts.join(", ")})`,
   ];
   if (coverage.undescribed > 0) {
     parts.push(`${coverage.undescribed} lack descriptions`);
@@ -174,25 +246,36 @@ function formatMenuMarkdown(
   kinds: MenuKind[],
   options: FormatMenuOptions = {},
 ): string {
-  const lines: string[] = [
-    options.ask ? `# Ghost Nodes — for: ${options.ask}` : "# Ghost Nodes",
-    "",
-  ];
+  const lines: string[] = ["# Ghost brand fingerprint", ""];
+  if (options.ask) lines.push(`Ask: ${options.ask}`, "");
   if (options.cover) {
     lines.push(
-      `## Cover — \`${options.cover.id}\``,
+      `## Cover in context: \`${options.cover.id}\``,
       "",
       options.cover.body,
+      "",
+      "Cover status: already in context; outside selection; do not pull again.",
       "",
       "---",
       "",
     );
   }
-  lines.push(
-    "The fingerprint menu. Match the ask against these nodes and read the ones you judge relevant.",
-    menuCoverageLine(menu),
-    "",
-  );
+  lines.push("## Available guidance", "", menuCoverageLine(menu), "");
+  if (options.ask) {
+    lines.push(
+      "Complete, unfiltered, unranked list from the fingerprint. Ghost has not selected nodes for this ask.",
+      "Pull every node whose description indicates its stated situation applies and whose truth, material, structure, or refusal governs the work. Skip inapplicable nodes. Topic overlap alone is not applicability. Do not add nodes for completeness or omit applicable nodes to meet a count.",
+      "Next: `ghost pull <id> [<id>…]`.",
+      "If nothing applies, name the fingerprint's silence, follow the cover silence posture, and do not invent Ghost-backed guidance.",
+      "",
+    );
+  } else {
+    lines.push(
+      "Complete, unfiltered, unranked list from the fingerprint. Bare gather is catalog inspection; Ghost has not grounded a task or selected nodes.",
+      "When grounding an ask, pull every applicable node with `ghost pull <id> [<id>…]`. Skip inapplicable nodes and do not invent Ghost-backed guidance when the fingerprint is silent.",
+      "",
+    );
+  }
   if (kinds.length > 0) {
     lines.push("Kinds:", "");
     for (const kind of kinds) {
@@ -207,11 +290,18 @@ function formatMenuMarkdown(
     if (entry.materials !== undefined) {
       lines.push(`  - materials: ${entry.materials}`);
     }
-    if (entry.concrete) {
-      lines.push(
-        `  - carries concrete material${entry.hasSkeleton ? " (Skeleton)" : ""}`,
-      );
+    const payloadTypes = formatPayloadTypes(entry);
+    if (payloadTypes.length > 0) {
+      lines.push(`  - payloads: ${payloadTypes.join(", ")}`);
     }
   }
   return `${lines.join("\n")}\n`;
+}
+
+function formatPayloadTypes(entry: CatalogMenuEntry): string[] {
+  const types: string[] = [];
+  if (entry.materials !== undefined) types.push("materials");
+  if (entry.hasFencedExample) types.push("substantial fenced example");
+  if (entry.hasSkeleton) types.push("Skeleton");
+  return types;
 }

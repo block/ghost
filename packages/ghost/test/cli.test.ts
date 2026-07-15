@@ -708,9 +708,11 @@ describe("ghost CLI", () => {
 
     const markdown = await runCli(["gather"], dir);
     expect(markdown.code).toBe(0);
-    expect(markdown.stdout).toContain("## Cover — `brand`");
+    expect(markdown.stdout).toContain("## Cover in context: `brand`");
     expect(markdown.stdout).toContain("This cover is unwritten.");
-    expect(markdown.stdout).toContain("9 nodes · 0 carry concrete material");
+    expect(markdown.stdout).toContain(
+      "9 nodes · 0 carry payloads (0 with materials, 0 with substantial fenced examples, 0 with Skeletons)",
+    );
     expect(markdown.stdout).not.toContain("- `brand`");
 
     const json = await runCli(["gather", "--format", "json"], dir);
@@ -719,6 +721,8 @@ describe("ghost CLI", () => {
     expect(payload.cover).toMatchObject({
       id: "brand",
       body: expect.stringContaining("This cover is unwritten."),
+      inContext: true,
+      selectable: false,
     });
     expect(payload.nodes.map((node: { id: string }) => node.id)).not.toContain(
       "brand",
@@ -726,6 +730,7 @@ describe("ghost CLI", () => {
     expect(payload.coverage).toEqual({
       nodes: 9,
       concrete: 0,
+      payloads: { materials: 0, fencedExamples: 0, skeletons: 0 },
       undescribed: 0,
     });
   });
@@ -741,7 +746,9 @@ describe("ghost CLI", () => {
     expect(markdown.code).toBe(0);
     expect(markdown.stdout).not.toContain("## Cover");
     // With no resolvable cover, brand stays a selectable menu node.
-    expect(markdown.stdout).toContain("10 nodes · 0 carry concrete material");
+    expect(markdown.stdout).toContain(
+      "10 nodes · 0 carry payloads (0 with materials, 0 with substantial fenced examples, 0 with Skeletons)",
+    );
     expect(markdown.stdout).toContain("- `brand`");
 
     const json = await runCli(["gather", "--format", "json"], dir);
@@ -891,10 +898,13 @@ describe("ghost CLI", () => {
     expect(JSON.parse(gather.stdout).coverage).toEqual({
       nodes: 4,
       concrete: 1,
+      payloads: { materials: 1, fencedExamples: 0, skeletons: 0 },
       undescribed: 0,
     });
     const markdown = await runCli(["gather"], dir);
-    expect(markdown.stdout).toContain("4 nodes · 1 carry concrete material");
+    expect(markdown.stdout).toContain(
+      "4 nodes · 1 carry payloads (1 with materials, 0 with substantial fenced examples, 0 with Skeletons)",
+    );
     // No undescribed nodes: the coverage line stays quiet about them.
     expect(markdown.stdout).not.toContain("lack descriptions");
 
@@ -906,7 +916,7 @@ describe("ghost CLI", () => {
     );
     const gatherMute = await runCli(["gather"], dir);
     expect(gatherMute.stdout).toContain(
-      "5 nodes · 1 carry concrete material · 1 lack descriptions",
+      "5 nodes · 1 carry payloads (1 with materials, 0 with substantial fenced examples, 0 with Skeletons) · 1 lack descriptions",
     );
     const gatherMuteJson = await runCli(["gather", "--format", "json"], dir);
     expect(JSON.parse(gatherMuteJson.stdout).coverage.undescribed).toBe(1);
@@ -926,6 +936,87 @@ describe("ghost CLI", () => {
     );
     expect(given.stdout.indexOf("`principle.rule`")).toBeLessThan(
       given.stdout.indexOf("`asset.tokens`"),
+    );
+  });
+
+  it("gather names payload types without ranking them", async () => {
+    await runCli(["init", "--template", "minimal"], dir);
+    await writeFile(
+      join(dir, ".ghost", "asset.tokens.md"),
+      [
+        "---",
+        "description: Token material.",
+        "materials:",
+        "  - materials/tokens.css",
+        "---",
+        "",
+        "Use tokens.",
+        "",
+      ].join("\n"),
+    );
+    await writeFile(
+      join(dir, ".ghost", "exemplar.copy.md"),
+      [
+        "---",
+        "description: Copy exemplar.",
+        "---",
+        "",
+        "```txt",
+        "one",
+        "two",
+        "three",
+        "```",
+        "",
+      ].join("\n"),
+    );
+    await writeFile(
+      join(dir, ".ghost", "pattern.card.md"),
+      [
+        "---",
+        "description: Card pattern.",
+        "---",
+        "",
+        "## Skeleton",
+        "",
+        "```tsx",
+        "<section>",
+        "  <header />",
+        "  <main />",
+        "</section>",
+        "```",
+        "",
+      ].join("\n"),
+    );
+
+    const json = await runCli(["gather", "card", "--format", "json"], dir);
+    expect(json.code).toBe(0);
+    const payload = JSON.parse(json.stdout);
+    expect(payload.coverage.payloads).toEqual({
+      materials: 1,
+      fencedExamples: 1,
+      skeletons: 1,
+    });
+    const exemplar = payload.nodes.find(
+      (node: { id: string }) => node.id === "exemplar.copy",
+    );
+    expect(exemplar).toMatchObject({
+      concrete: true,
+      hasFencedExample: true,
+    });
+    const pattern = payload.nodes.find(
+      (node: { id: string }) => node.id === "pattern.card",
+    );
+    expect(pattern).toMatchObject({
+      concrete: true,
+      hasSkeleton: true,
+    });
+    expect(pattern.hasFencedExample).toBeUndefined();
+
+    const markdown = await runCli(["gather", "card"], dir);
+    expect(markdown.stdout).toContain("payloads: substantial fenced example");
+    expect(markdown.stdout).toContain("payloads: Skeleton");
+    expect(markdown.stdout).not.toContain(
+      "payloads: substantial fenced example, Skeleton",
     );
   });
 
@@ -955,6 +1046,55 @@ describe("ghost CLI", () => {
     const validate = await runCli(["validate"], dir);
     expect(validate.code).toBe(0);
     expect(validate.stdout).toContain("skeleton-fence-count");
+  });
+
+  it("pull uses fences longer than inlined material and Skeleton backtick runs", async () => {
+    await runCli(["init", "--template", "minimal"], dir);
+    await mkdir(join(dir, "brand"), { recursive: true });
+    await writeFile(
+      join(dir, "brand", "example.md"),
+      [
+        "Before.",
+        "```ts",
+        "const value = `inside`;",
+        "```",
+        "````",
+        "four",
+        "````",
+        "After.",
+        "",
+      ].join("\n"),
+    );
+    await writeFile(
+      join(dir, ".ghost", "pattern.safe.md"),
+      [
+        "---",
+        "description: Fence safety.",
+        "materials:",
+        "  - brand/example.md",
+        "---",
+        "",
+        "Pattern prose.",
+        "",
+        "## Skeleton",
+        "",
+        "```md",
+        "Wrapper text",
+        "````",
+        "inner four",
+        "````",
+        "```",
+        "",
+      ].join("\n"),
+    );
+
+    const pull = await runCli(["pull", "pattern.safe"], dir);
+
+    expect(pull.code).toBe(0);
+    expect(pull.stdout).toContain("`````brand/example.md");
+    expect(pull.stdout).toContain("`````md");
+    expect(pull.stdout).toContain("````\nfour\n````");
+    expect(pull.stdout).toContain("````\ninner four\n````");
   });
 
   it("pull emits binary materials as inspect-pointers in markdown and JSON", async () => {
@@ -999,14 +1139,34 @@ describe("ghost CLI", () => {
     expect(gather.code).toBe(0);
     const menuPayload = JSON.parse(gather.stdout);
     expect(menuPayload.ask).toBe("checkout confirmation");
+    expect(menuPayload.source).toEqual({
+      artifact: "Ghost brand fingerprint",
+      list: "Available guidance",
+    });
+    expect(menuPayload.contract).toMatchObject({
+      completeness: {
+        complete: true,
+        filtered: false,
+        ranked: false,
+        selectedByGhost: false,
+      },
+      selection: {
+        basis: "applicability",
+        topicOverlapAloneIsApplicability: false,
+        addForCompleteness: false,
+        omitApplicableForCount: false,
+      },
+    });
+    expect(menuPayload.next.command).toBe("ghost pull <id> [<id>…]");
+    expect(menuPayload.silence.ifNoneApply).toContain("do not invent");
     expect(
       menuPayload.nodes.some((n: { id: string }) => n.id === "voice"),
     ).toBe(true);
 
     const gatherMarkdown = await runCli(["gather", "checkout", "hero"], dir);
-    expect(gatherMarkdown.stdout).toContain(
-      "# Ghost Nodes — for: checkout hero",
-    );
+    expect(gatherMarkdown.stdout).toContain("# Ghost brand fingerprint");
+    expect(gatherMarkdown.stdout).toContain("Ask: checkout hero");
+    expect(gatherMarkdown.stdout).toContain("## Available guidance");
 
     const pull = await runCli(["pull", "principle.trust", "voice"], dir);
     expect(pull.code).toBe(0);

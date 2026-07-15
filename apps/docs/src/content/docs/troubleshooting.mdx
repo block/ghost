@@ -26,15 +26,15 @@ do about each.
 
 <DocSection title="`ghost gather` returns nothing relevant">
 
-`gather` does no filtering or ranking; it always emits the whole menu. If your
-agent reads the menu and pulls nothing useful, the problem is retrieval, not
-missing coverage.
+`gather` does no filtering or ranking; it always emits the whole guidance menu.
+If your agent reads the menu and pulls nothing useful, the problem may be
+retrieval, applicability, or true fingerprint silence.
 
 - **Check the description, not the body.** An agent selects against a node's
   `description` alone. A vague description (`Our trust principles.`) is
   invisible at selection time no matter how good the prose underneath is.
-  Rewrite it as a task-shaped phrase: what moment, surface, or question should
-  make an agent realize this node applies.
+  Rewrite it as a task-shaped phrase: what the node governs, what observable
+  condition makes it apply, and what it contributes where useful.
 - **Check `ghost pulse`.** It shows whether a node appeared on the menu, got
   pulled, was missed by an id the agent tried and failed, or stayed cold
   every time. A cold node with real content is a description problem, not a
@@ -42,6 +42,9 @@ missing coverage.
 - **Don't add more nodes to fix a retrieval miss.** A weak description with a
   strong body is worse than a strong description with a thin body; the agent
   never reaches the body.
+- **Respect silence.** If no description indicates an applicable situation, name
+  the fingerprint's silence, follow the cover silence posture, and do not claim
+  provisional local reasoning as Ghost-backed.
 
 ```bash
 ghost gather "checkout settings" --format json

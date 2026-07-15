@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-14T04:00:29.832Z",
+  "generatedAt": "2026-07-15T12:11:34.119Z",
   "tools": [
     {
       "tool": "ghost",
@@ -96,11 +96,11 @@
           "tool": "ghost",
           "name": "gather",
           "rawName": "gather [...ask]",
-          "description": "Emit the fingerprint menu — every node's id, kind, and description — for the agent to select from.",
+          "description": "Emit the complete available guidance menu so the agent can pull applicable nodes.",
           "group": "core",
           "defaultHelp": true,
           "compactName": "gather [ask]",
-          "summary": "Emit the fingerprint menu for the agent to select from.",
+          "summary": "Emit the complete guidance menu so the agent can pull applicable nodes.",
           "options": [
             {
               "rawName": "--package <dir>",

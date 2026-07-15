@@ -73,6 +73,7 @@ export {
   type GhostNodeLintIssue,
   type GhostNodeLintReport,
   type GhostNodeLintSeverity,
+  hasSubstantialFencedExample,
   lintGhostNode,
   NodeIdSchema,
   NodeRefSchema,

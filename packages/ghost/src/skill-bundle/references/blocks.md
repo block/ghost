@@ -26,11 +26,10 @@ whatever keeps each node purpose-coherent.
 ## Where it sits
 
 A fingerprint declares stance. Block and material nodes ground that stance in
-concrete materials — they are what makes a node **concrete** in gather, pull
-ordering, and review matching. A realizing agent **reads** them and matches
-against them. Strip every block node and the fingerprint is still valid — it
-just gives the agent less to draw on, and prose-only steering is weak steering.
-The agent does the matching.
+concrete material: materials, substantial fenced examples, or Skeletons. A
+realizing agent **reads** them and matches against them. Strip every block node
+and the fingerprint is still valid — it just gives the agent less to draw on,
+and prose-only steering is weak steering. The agent does the matching.
 
 ## Concreteness is the grounding dial
 
@@ -90,10 +89,10 @@ not a swappable implementation detail.
 
 ## How a match runs
 
-The agent reads the fingerprint's stance, `gather`s the menu, ranks candidate
-block nodes by description, separates near-neighbors on *not when* and
-*never*, and assembles. The realizing surface authors the chosen blocks in its
-medium. The fingerprint never named a component; the agent bridged via documented
+The agent reads the fingerprint's stance, `gather`s the menu, pulls block nodes
+whose descriptions apply, separates near-neighbors on *not when* and *never*,
+and assembles. The realizing surface authors the chosen blocks in its medium.
+The fingerprint never named a component; the agent bridged via documented
 purpose.
 
 ## Curation rule

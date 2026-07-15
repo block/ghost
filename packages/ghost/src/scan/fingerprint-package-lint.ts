@@ -188,8 +188,8 @@ async function lintKindPrefixes(
 /**
  * The `description` is a node's entire retrieval payload: `gather` lists it as
  * the text the agent selects against. A node without one renders as a bare id
- * and is effectively invisible to selection, so `validate` makes that loud.
- * Warning, not error: an undescribed node is legal, just undiscoverable.
+ * and cannot show when it applies, so `validate` makes that loud. Warning,
+ * not error: an undescribed node is legal, just undiscoverable.
  */
 function lintNodeDescriptions(
   catalog: GhostCatalog,
@@ -203,7 +203,7 @@ function lintNodeDescriptions(
       severity: "warning",
       rule: "node-description-missing",
       message:
-        "node has no `description`, so `gather` lists it as a bare id the agent cannot select against; add a one-line description of what this truth is and when to pull it",
+        "node has no `description`, so `gather` lists it as a bare id without applicability context; add a one-line description of what this truth governs, when it applies, and what it contributes",
       path: `${node.id}.md`,
     });
   }
