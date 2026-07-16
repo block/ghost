@@ -80,6 +80,10 @@ structured events to `.ghost/.events` for local tuning.
 matched material-backed nodes, offered checks, probe
 evidence, coverage gaps, and the diff. The host agent renders findings.
 
+For visual work, do not stop at generation. Continue through material inspection,
+compact briefing, rendered verification, bounded repair, and grounded review in
+this same host-agent session.
+
 ## CLI verbs
 
 | Verb | Purpose |
@@ -118,6 +122,7 @@ against the unpacked package with `--package <dir>`.
 - Choose the right human-agent authoring workflow: follow [references/authoring-scenarios.md](references/authoring-scenarios.md).
 - Adapt a starter (a body or the skeleton) to your brand: follow [references/adapting-a-starter.md](references/adapting-a-starter.md).
 - Gather applicable truths for a task: follow [references/recall.md](references/recall.md).
+- Make a visual artifact end to end: follow [references/making.md](references/making.md).
 - Shape a pre-generation brief: follow [references/brief.md](references/brief.md).
 - Probe readiness before generating: follow [references/self-check.md](references/self-check.md).
 - Audit steering coverage: follow [references/steering-audit.md](references/steering-audit.md).

@@ -42,10 +42,18 @@ Report first:
 | Consistency | clean / conflicting | concrete bodies vs rules | update stale examples; examples average with rules |
 | Stance | present / missing | cover, `principle.*` | write forced-choice principles |
 | Materials | present / missing | `materials`, inspect-pointers | point at real assets/components/tokens |
-| Exemplars | annotated / unannotated / missing | fenced samples, screenshots | say what to copy and what is incidental |
+| Exemplars | annotated / unannotated / converging / missing | fenced samples, screenshots, repeated runs | say what to copy and what is incidental; tighten applicability when unrelated tasks converge |
 | Patterns | bound-open / loose / missing | `pattern.*`, Skeletons | state applies / bound / open and add a Skeleton when opening structure matters |
 | Checks | covered / partial / missing | checks/, probes, review packet | add checks/probes for high-risk invariants |
 | Silence posture | defined / missing | cover | say when to proceed provisionally or ask |
+
+## Exemplar convergence
+
+When auditing repeated runs, compare unrelated asks that pulled the same
+exemplar. If they reproduce the same composition, section order, or decorative
+treatment without the exemplar's stated condition requiring it, the exemplar is
+steering beyond its intent. The next move is to tighten applicability, add a
+shape-appropriate exemplar, or remove the exemplar.
 
 ## Task-level readiness
 
