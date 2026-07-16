@@ -55,6 +55,23 @@ describe("renderReport", () => {
     expect(html).toContain("#b91c1c");
   });
 
+  it("renders gather loop receipt fields and honest caption", async () => {
+    const outDir = await freshOutDir();
+    const html = await readFile(await renderReport(FIXTURE, outDir), "utf8");
+    expect(html).toContain("complete shipped Ghost consumer loop");
+    expect(html).toContain("agent-attested loop receipts");
+    for (const label of [
+      "receipts",
+      "mean repairs",
+      "rendered",
+      "review ran",
+    ]) {
+      expect(html).toContain(label);
+    }
+    expect(html).toContain("5/5");
+    expect(html).toContain("1.4");
+  });
+
   it("renders placeholders when no screenshots exist", async () => {
     const outDir = await freshOutDir();
     const html = await readFile(await renderReport(FIXTURE, outDir), "utf8");
