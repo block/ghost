@@ -1,23 +1,23 @@
 ---
-description: Always read first for docs-site work — non-negotiables, coverage, and silence posture for the Ghost docs surface.
+description: Always read first for docs-site work — non-negotiables, coverage, and silence posture for the ghost docs surface.
 materials:
   - apps/docs/src/app/page.tsx
   - apps/docs/src/content/docs/*.mdx
   - apps/docs/src/components/docs/**
 ---
 
-This fingerprint governs the Ghost docs site: the landing page, documentation
+This ghost package governs the ghost docs site: the landing page, documentation
 index, tool landings, MDX docs pages, and the small components that carry them.
 It does not govern Vessel as a reference component registry; Vessel has its own
-fingerprint under `packages/vessel-react/.ghost/`. When the docs consume Vessel
-materials, this fingerprint decides the docs' product stance and Vessel decides
+ghost package under `packages/vessel-react/.ghost/`. When the docs consume Vessel
+materials, this package decides the docs' product stance and Vessel decides
 the component-system contract.
 
 ## Non-negotiables
 
-- Ghost is **brand context for agents**, not a component library, lifecycle
+- ghost is **brand context for agents**, not a component library, lifecycle
   manager, design archive, or autonomous judge. Keep the docs centered on the
-  feed-forward act: the agent reads repo-local brand truth before it builds.
+  feed-forward act: the agent reads repo-local brand guidance before it builds.
 - Preserve the flat corpus model: `.ghost/` is a package of prose nodes;
   `manifest.yml`, `glossary.md`, and `checks/` are reserved; everything else is
   a node whose id comes from its filename. No hierarchy, inheritance, graph, or
@@ -47,7 +47,7 @@ pulls off the stance; match the annotated qualities, not every literal detail.
 
 ## Silence posture
 
-When this fingerprint is silent, proceed provisionally from nearby docs pages and
+When this package is silent, proceed provisionally from nearby docs pages and
 Vessel's token/component contract for routine implementation. Ask before
 changing product model vocabulary, introducing new visual metaphors, adding a new
 agent workflow, or making the docs sound more like marketing than instruction.

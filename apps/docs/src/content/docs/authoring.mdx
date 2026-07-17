@@ -1,22 +1,22 @@
 ---
-title: Fingerprint Authoring
-description: Co-author Ghost brand fingerprints through elicitation — human intent, shown material, agent synthesis, and Git review.
+title: Authoring
+description: Co-author ghost brand guidance through elicitation, human intent, shown material, agent synthesis, and Git review.
 kicker: Docs
 section: guide
 order: 20
-slug: fingerprint-authoring
+slug: authoring
 ---
 
 <DocSection title="The Authoring Model">
 
-A Ghost fingerprint is not a scan dump. It is a set of durable brand truths that
-a human and agent shape together — through **elicitation, not scanning**.
+A ghost package is not a scan dump. It is durable brand guidance that a
+human and agent shape together — through **elicitation, not scanning**.
 
 The human names the intent: what the brand should feel like, who it serves,
-which truths are universal, which hold only under a condition, and what should
+which guidance is universal, which guidance holds only under a condition, and what should
 not drift. The evidence is what the human says, shows, and points at — words,
 screenshots, links, exemplar products, brand docs, copy they love or hate. The
-agent synthesizes drafts, but ordinary Git review is where fingerprint edits
+agent synthesizes drafts, but ordinary Git review is where ghost package edits
 become canonical.
 
 Repo-bound reality — components, tokens, paths, building blocks — can be
@@ -34,11 +34,11 @@ human can articulate, show, or point at — and how the interview should run.
 | Scenario | Authoring posture |
 | --- | --- |
 | Net new brand | Stance-first. Elicit feel, audience, and early anti-goals before anything else exists to point at. |
-| Established brand, first fingerprint | Artifact-rich interview. The human can show a lot — shipped surfaces, brand docs, campaigns. Elicit which of it is intentional. |
+| Established brand, first ghost package | Artifact-rich interview. The human can show a lot — shipped surfaces, brand docs, campaigns. Elicit which of it is intentional. |
 | Strong opinions, weak articulation | Example-led. Work from exemplars and counter-exemplars ("this feels like us, this never would") toward the stance underneath. |
-| Brand doc or design-language deck exists | Distillation. The document is testimony, not truth: pull the claims that steer decisions, drop the filler, have the human ratify each survivor. |
+| Brand doc or design-language deck exists | Distillation. Treat the document as evidence: pull the claims that steer decisions, drop the filler, and have the human ratify each survivor. |
 | Rebrand, redesign, or migration | Transition-led. Capture current, target, and what must not be lost in between. |
-| Fork, white label, tenant variant | Shared base + local divergence. Keep common truths broad; scope divergence with conditions. |
+| Fork, white label, tenant variant | Shared base + local divergence. Keep shared guidance broad; scope divergence with conditions. |
 
 </DocSection>
 
@@ -47,22 +47,22 @@ human can articulate, show, or point at — and how the interview should run.
 Ask for it in plain English:
 
 ```text
-Set up the Ghost fingerprint for this repo.
+Set up ghost for this repo.
 ```
 
 1. **Interview** - ask what the brand should feel like, what it should never
    become, who it serves, and which surfaces or campaigns show it at its best.
    Counter-exemplars are as valuable as exemplars: "we would never ship this"
-   usually yields a sharper truth than an hour of affirmative description.
+   usually yields a sharper decision than an hour of affirmative description.
 2. **Work the material** - ask for what the human can show: screenshots,
    links, exemplar products, brand docs, past campaigns, a rejected design and
-   why it was rejected. Every artifact is testimony to curate, never truth by
-   itself.
+   why it was rejected. Treat every artifact as evidence to curate, not guidance
+   to copy.
 3. **Draft** - write the smallest useful node prose from what the human said
-   or showed, asking of each truth why, with what, and how it is assembled.
+   or showed, asking of each node why, with what, and how it is assembled.
 4. **Curate** - have the human keep, soften, reject, restate at a different
    altitude, or record important claims before treating them as durable.
-5. **Validate** - run Ghost validation and use Git review as the approval
+5. **Validate** - run ghost validation and use Git review as the approval
    boundary.
 
 ```bash
@@ -70,14 +70,14 @@ ghost validate
 ```
 
 Artifacts and brand docs are testimony only. They can seed a draft, but they do
-not establish brand truth by themselves — the human ratifies what is
+not establish brand guidance by themselves — the human ratifies what is
 intentional.
 
 </DocSection>
 
 <DocSection title="The Flat Node Set">
 
-The fingerprint is a **flat set of prose nodes** — no hierarchy, no inheritance,
+A `.ghost/` package is a **flat set of prose nodes** — no hierarchy, no inheritance,
 no edges. A node's identity is its file path with `.md` dropped
 (`marketing.email.md` is the node `marketing.email`). Its **kind** is the
 filename's first dotted segment (`principle.trust.md` → kind `principle`), and
@@ -93,7 +93,7 @@ Node frontmatter carries only descriptive properties:
 | Property | What it does |
 | --- | --- |
 | `description` | The retrieval payload the menu shows: what the node governs, the observable condition under which it applies, and what it contributes where useful. |
-| `materials` | Optional list of locators for the concrete materials the truth is about: repo-relative paths/globs or absolute HTTPS URLs. |
+| `materials` | Optional list of locators for the concrete materials the guidance is about: repo-relative paths/globs or absolute HTTPS URLs. |
 | _passthrough_ | Free-form keys (`audience`, `stage`, …) are preserved for host tooling. |
 
 `materials` is the single locator field. Components, patterns, logos, motion
@@ -104,17 +104,17 @@ its checks — see [Checks And Review](/docs/checks-and-review).
 
 The **glossary** (`glossary.md`) declares the kind vocabulary and what each
 kind means — its normative weight, so an agent knows how to read a node of
-that kind. Kinds are the author's choice; Ghost ships no fixed vocabulary.
+that kind. Kinds are the author's choice; ghost ships no fixed vocabulary.
 
 </DocSection>
 
 <DocSection title="Altitude And Conditions">
 
-State each truth at the altitude it is actually true. A universal truth is stated
-plainly. A narrower truth names its **condition** in the prose — the *situation*
-it applies in ("when a surface must show many items at once, carry hierarchy with
+State guidance at the altitude where it applies. Universal guidance is stated
+plainly. Narrower guidance names its **condition** in the prose — the *situation*
+where it applies ("when a surface must show many items at once, carry hierarchy with
 weight, not color"), never a destination or filing bucket ("for dashboards:").
-The agent reads the condition and decides when the truth applies; that
+The agent reads the condition and decides when the guidance applies; that
 interpretation is the agent's job, not the filename's. Avoid broad universal
 imperatives unless universal retrieval is truly intended.
 
@@ -122,7 +122,7 @@ imperatives unless universal retrieval is truly intended.
 
 <DocSection title="What A Body Answers">
 
-While drafting a node's prose body, ask three questions of every truth: *why*
+While drafting a node's prose body, ask three questions of every node: *why*
 (the stance — audience, goals, anti-goals, principles), *with what* (the
 materials — building blocks, files, routes, assets, exemplars, source links),
 and *how it is assembled* (the patterns — layouts, flows, states, content
@@ -138,7 +138,7 @@ last so generation starts from them.
 
 <DocSection title="Authoring For Steering">
 
-A useful fingerprint should help future agents choose, restrain, anchor, and
+Useful brand guidance should help future agents choose, restrain, anchor, and
 manifest. It should not only describe what exists or collect every available
 style detail.
 
@@ -147,7 +147,7 @@ Write node prose so generation decisions become explicit:
 - Name what generated work should preserve.
 - Block plausible defaults that would make the output feel generic or wrong.
 - Say which value wins when choices conflict.
-- State the condition under which a narrower truth applies.
+- State the condition under which a narrower guidance applies.
 - Capture broad brand intent.
 - Turn taste, trust, recovery, or disclosure into obligations.
 - Give repeatable layout, flow, state, content, behavior, or visual rules.
@@ -159,15 +159,15 @@ Write less like a brand book and more like a decision engine.
 
 <DocSection title="One Contract Per Package">
 
-One contract per package: a repo's `.ghost/` is the whole fingerprint. Reach for
-a second package only when a distinct product owns its own fingerprint — a
+One contract per package: a repo's `.ghost/` is the whole ghost package. Reach for
+a second package only when a distinct product owns its own ghost package — a
 separate app in a monorepo — and target it with `ghost --package <dir>`.
 
 </DocSection>
 
 <DocSection title="Ratification">
 
-Uncommitted or unmerged fingerprint edits are drafts. Checked-in Ghost node prose
+Uncommitted or unmerged ghost package edits are drafts. Checked-in ghost node prose
 is canonical.
 
 </DocSection>

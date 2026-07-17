@@ -2,9 +2,9 @@ import { MDXProvider } from "@mdx-js/react";
 import type { ComponentType, ReactNode } from "react";
 import type { DocsFrontmatter } from "@/content/docs-frontmatter";
 import { mdxComponents } from "@/mdx-components";
-import { AnimatedPageHeader } from "./animated-page-header";
 import { DocProse } from "./doc-prose";
 import { DocsPageLayout } from "./docs-page-layout";
+import { PageHeader } from "./page-header";
 
 interface DocsMdxRouteProps {
   frontmatter: DocsFrontmatter;
@@ -14,7 +14,7 @@ interface DocsMdxRouteProps {
 export function DocsMdxRoute({ frontmatter, Content }: DocsMdxRouteProps) {
   return (
     <DocsPageLayout>
-      <AnimatedPageHeader
+      <PageHeader
         kicker={frontmatter.kicker}
         title={frontmatter.title}
         description={frontmatter.description}

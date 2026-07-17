@@ -1,6 +1,6 @@
 ---
 title: CLI Reference
-description: The deterministic commands around the flat fingerprint lifecycle. Your agent does the reading, writing, and interpreting.
+description: The deterministic commands around the flat ghost package lifecycle. Your agent does the reading, writing, and interpreting.
 kicker: Docs
 section: guide
 order: 30
@@ -9,22 +9,22 @@ slug: cli
 
 <DocSection title="Overview">
 
-The CLI does the repeatable parts around the fingerprint lifecycle: scaffold a
-package, validate it, and emit the menu of brand truths. Your agent does the
-interpretation.
+ghost is the product; the `.ghost/` package is what the CLI carries. It scaffolds and
+validates the package, emits the complete menu of guidance, delivers selected
+nodes, and assembles review evidence. Your agent reads, writes, and decides.
 
 `ghost --help` shows the short core workflow. `ghost --help --all` shows the
 complete command index, and `ghost <command> --help` shows flags for one
 command.
 
-The canonical fingerprint is a `.ghost/` directory: a flat set of prose nodes.
+The canonical ghost package is a `.ghost/` directory: a flat set of prose nodes.
 
 ```text
 .ghost/
   manifest.yml        # schema + id
   glossary.md         # the kind vocabulary + what each kind means
-  <kind>.<slug>.md    # a brand truth of a declared kind (principle.density.md)
-  <slug>.md           # a brand truth without a kind (voice.md)
+  <kind>.<slug>.md    # guidance of a declared kind (principle.density.md)
+  <slug>.md           # guidance without a kind (voice.md)
   checks/             # optional review assertions; never nodes
 ```
 
@@ -52,13 +52,13 @@ refuses to run at all? See [Troubleshooting](/docs/troubleshooting).
 
 ### Initialize: `init`
 
-Scaffold a `.ghost/` package. The skeleton starter includes a manifest, a glossary, a `brand.md` cover, foundation chapters with open questions, a conversation context, and the model cliche floor. The cover and foundations tell the agent to ask rather than invent brand values. Use `--template minimal` for a smaller cover-led starter. Add truths by adding files (`principle.density.md`). Use
+Scaffold a `.ghost/` package. The skeleton starter includes a manifest, a glossary, a `brand.md` cover, foundation chapters with open questions, a conversation context, and the model cliche floor. The cover and foundations tell the agent to ask rather than invent brand values. Use `--template minimal` for a smaller cover-led starter. Add guidance by adding files (`principle.density.md`). Use
 `--package <dir>` for an exact directory, or set `GHOST_PACKAGE_DIR` when a host
-wrapper stores Ghost files outside the default `.ghost`. Core `init` scaffolds
-the fingerprint only; pass `--with checks` to also add the checks directory in
+wrapper stores ghost files outside the default `.ghost`. Core `init` scaffolds
+the package only; pass `--with checks` to also add the checks directory in
 one move.
 
-Templates are shapes of emptiness — structures awaiting your truths. A
+Templates are shapes of emptiness — structures awaiting your guidance. A
 **body** is the same anatomy inhabited: answered signature dials, a
 `materials/` tree (tokens, fonts, worked reference compositions), and its own
 `checks/`. Install one with `--body`:
@@ -81,7 +81,7 @@ exclusive.
 ghost init
 ghost init --template minimal
 ghost init --with checks
-ghost init --package product-fingerprint
+ghost init --package product-ghost
 GHOST_PACKAGE_DIR=.agents/ghost ghost init
 ```
 
@@ -99,7 +99,7 @@ ghost checks init
 ```
 
 To remove checks, delete the `.ghost/checks/` directory; like every
-fingerprint edit, ordinary Git review is the approval boundary.
+ghost package edit, ordinary Git review is the approval boundary.
 
 </DocSection>
 
@@ -127,7 +127,7 @@ ghost validate --format json
 
 ### Emit the menu: `gather`
 
-`gather` emits **Available guidance** from the Ghost brand fingerprint: every
+`gather` emits **Available guidance** from the ghost package: every
 node's id, kind, and description. It does no selection, filtering, or ranking.
 The agent reads the ask against applicability and pulls every node whose stated
 situation governs the work. There is no slice, no anchor, and no inheritance
@@ -141,24 +141,24 @@ ghost gather "checkout confirmation email" --format json
 ```
 
 This is the pre-generation step, and "the right context at the right time": the
-agent selects just-in-time against the actual task, then manifests the truths
-into whatever it is building: product UI, marketing, email, a landing page. If
-nothing applies, the agent should name the fingerprint's silence and avoid
-inventing Ghost-backed guidance.
+agent selects just-in-time against the actual task, then applies the guidance
+to whatever it is building: product UI, marketing, email, a landing page. If
+nothing applies, the agent should name the package's silence and avoid
+inventing ghost-backed guidance.
 
-### Read the selected truths: `pull`
+### Read the selected nodes: `pull`
 
 `pull` emits the named nodes' full prose bodies and materials. It is how an
-agent reads the truths it selected from the menu, preferred over opening the
+agent reads the guidance it selected from the menu, preferred over opening the
 files directly because it inlines small materials, emits inspect-pointers,
 extracts Skeletons last, and appends structured JSONL events to
 `.ghost/.events`.
 
-That file is an events tape for the fingerprint's author: tweak a node's
-description, re-run the task, and `ghost pulse` shows whether the truth appeared
+That file is an events tape for the package's author: tweak a node's
+description, re-run the task, and `ghost pulse` shows whether the node appeared
 on the menu, got pulled, was missed by name, or stayed cold. It is a dotfile
 (never a node), gitignored by the scaffold, and safe to delete at any time. The
-events tape is local tuning signal, not canonical fingerprint state.
+events tape is local tuning signal, not canonical ghost package state.
 
 <CliHelp tool="ghost" command="pull" hideDescription />
 
@@ -218,7 +218,7 @@ The packet contains:
   therefore always offered (`always`). Each check carries its prose and the
   referenced nodes' baseline prose.
 - **Coverage gaps**: touched files no node's materials claim, and material-backed
-  nodes no check guards — signals for tuning the fingerprint, not failures.
+  nodes no check guards — signals for tuning the package, not failures.
 
 Each check is one markdown file under `.ghost/checks/`:
 
@@ -234,18 +234,18 @@ references:
 Grade whether the change preserves the logo guidance in `asset.logo`.
 ```
 
-`references` binds the check to fingerprint node ids, optionally scoped to one
+`references` binds the check to node ids, optionally scoped to one
 section with a heading anchor (`asset.logo > Clearspace`); `validate` verifies
 every reference resolves. `severity` is one of `high`, `medium`, or `low` —
 advice for the reviewing agent, not an enforcement level.
 
 </DocSection>
 
-<DocSection title="Export The Fingerprint">
+<DocSection title="Export The ghost Package">
 
 ### Package a portable artifact: `export`
 
-`export` packages the fingerprint as a portable brand artifact: a tarball of
+`export` packages the `.ghost/` package as a portable brand artifact: a tarball of
 the `.ghost/` directory plus a stamped `export.yml` (schema, package id, CLI
 version, export time). The events tape stays out of the archive; pass
 `--no-checks` to leave the checks directory out too.
@@ -256,13 +256,13 @@ repo-relative paths that point outside the package and won't exist wherever
 the archive lands. Stranded entries are reported, not fatal; pass `--strict`
 to exit `2` when any exist.
 
-`export` refuses to package a fingerprint with validation errors. Run
+`export` refuses to package a ghost package with validation errors. Run
 `ghost validate` and fix them first.
 
 <CliHelp tool="ghost" command="export" hideDescription />
 
 ```bash
-ghost export                    # write <id>-fingerprint.tgz with an audit summary
+ghost export                    # write a tarball with an audit summary
 ghost export --out dist/brand.ghost.tgz
 ghost export --strict           # fail if any materials won't travel
 ghost export --format json      # audit as JSON for host tooling
@@ -274,8 +274,8 @@ ghost export --format json      # audit as JSON for host tooling
 
 ### Install the skill: `skill`
 
-Install the Ghost skill bundle so a host agent knows how to author and use the
-fingerprint.
+Install the ghost skill bundle so a host agent knows how to author and use
+ghost packages.
 
 <CliHelp tool="ghost" command="skill" hideDescription />
 

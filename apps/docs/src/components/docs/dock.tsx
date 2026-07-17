@@ -8,41 +8,24 @@ import {
   CommandItem,
   CommandList,
   cn,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
   useTheme,
 } from "@design-intelligence/vessel-react";
-import type { LucideIcon } from "lucide-react";
-import {
-  BookOpen,
-  Home,
-  Monitor,
-  Moon,
-  Rocket,
-  Search,
-  Sun,
-  Wrench,
-} from "lucide-react";
-import { motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 
-const nav: {
-  name: string;
-  path: string;
-  icon: LucideIcon;
-  activePath?: string;
-}[] = [
-  { name: "Home", path: "/", icon: Home },
-  {
-    name: "Start",
-    path: "/docs/getting-started",
-    activePath: "/docs",
-    icon: Rocket,
-  },
-  { name: "Tools", path: "/tools", icon: Wrench },
-];
+const nav = [
+  { name: "home", path: "/" },
+  { name: "docs", path: "/docs", activePath: "/docs" },
+] as const;
+
+const searchPages = [
+  { label: "home", path: "/" },
+  { label: "getting started", path: "/docs/getting-started" },
+  { label: "authoring", path: "/docs/authoring" },
+  { label: "checks and review", path: "/docs/checks-and-review" },
+  { label: "cli reference", path: "/docs/cli" },
+  { label: "troubleshooting", path: "/docs/troubleshooting" },
+] as const;
 
 export function Dock() {
   const { pathname } = useLocation();
@@ -51,9 +34,7 @@ export function Dock() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  useEffect(() => setMounted(true), []);
 
   const cycleTheme = useCallback(() => {
     if (theme === "light") setTheme("dark");
@@ -62,14 +43,14 @@ export function Dock() {
   }, [theme, setTheme]);
 
   useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "k" && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault();
         setSearchOpen((open) => !open);
       }
     };
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
   }, []);
 
   const isActive = useCallback(
@@ -80,180 +61,72 @@ export function Dock() {
     [pathname],
   );
 
+  const go = (path: string) => {
+    navigate(path);
+    setSearchOpen(false);
+  };
+
   return (
     <>
-      {/* Dock: bottom center, horizontal on all screens */}
       <nav
-        className="fixed bottom-6 left-1/2 z-50 flex items-center justify-center pb-[env(safe-area-inset-bottom)] pointer-events-none"
-        style={{
-          transform:
-            "translateX(calc(-50% - var(--removed-body-scroll-bar-size, 0px) / 2))",
-        }}
+        className="pointer-events-none fixed bottom-4 left-1/2 z-50 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center justify-center pb-[env(safe-area-inset-bottom)]"
+        aria-label="primary"
       >
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.5, duration: 0.6, ease: [0.33, 1, 0.68, 1] }}
-          className="flex items-center gap-1 rounded-full border bg-background/80 backdrop-blur-xl p-2 shadow-elevated pointer-events-auto"
-        >
+        <div className="doc-dock rounded-squircle pointer-events-auto flex items-stretch border border-[var(--doc-line)] bg-background">
           {nav.map((item) => (
-            <Tooltip key={item.path}>
-              <TooltipTrigger asChild>
-                <Link
-                  to={item.path}
-                  className={cn(
-                    "flex size-10 items-center justify-center rounded-full transition-all duration-200",
-                    isActive(item.path, item.activePath)
-                      ? "bg-foreground text-background"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted",
-                  )}
-                >
-                  <item.icon className="size-5" strokeWidth={1.75} />
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="top" sideOffset={8}>
-                {item.name}
-              </TooltipContent>
-            </Tooltip>
+            <Link
+              key={item.path}
+              to={item.path}
+              className={cn(
+                "flex min-h-9 items-center border-r border-[var(--doc-line)] px-[1.5ch] text-xs lowercase no-underline",
+                isActive(
+                  item.path,
+                  "activePath" in item ? item.activePath : item.path,
+                )
+                  ? "bg-[var(--doc-mark)] text-[var(--doc-on-mark)]"
+                  : "text-[var(--doc-middle)] hover:bg-[var(--doc-mark-soft)] hover:text-foreground",
+              )}
+            >
+              {item.name}
+            </Link>
           ))}
-
-          <div className="my-auto mx-1 w-px h-5 bg-border" />
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => setSearchOpen(true)}
-                className="flex size-10 items-center justify-center rounded-full text-muted-foreground transition-all duration-200 hover:text-foreground hover:bg-muted"
-              >
-                <Search className="size-5" strokeWidth={1.75} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="top" sideOffset={8}>
-              Search
-              <span className="ml-2 text-[10px] opacity-60">&#8984;K</span>
-            </TooltipContent>
-          </Tooltip>
-
-          <div className="my-auto mx-1 w-px h-5 bg-border" />
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={cycleTheme}
-                className="flex size-10 items-center justify-center rounded-full text-muted-foreground transition-all duration-200 hover:text-foreground hover:bg-muted"
-              >
-                {mounted && (
-                  <motion.div
-                    key={theme}
-                    initial={{ scale: 0.5, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    {theme === "system" ? (
-                      <Monitor className="size-[18px]" strokeWidth={1.75} />
-                    ) : theme === "dark" ? (
-                      <Moon className="size-[18px]" strokeWidth={1.75} />
-                    ) : (
-                      <Sun className="size-[18px]" strokeWidth={1.75} />
-                    )}
-                  </motion.div>
-                )}
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="top" sideOffset={8}>
-              {mounted
-                ? theme === "system"
-                  ? "System"
-                  : theme === "dark"
-                    ? "Dark"
-                    : "Light"
-                : "Theme"}
-            </TooltipContent>
-          </Tooltip>
-        </motion.div>
+          <button
+            type="button"
+            onClick={() => setSearchOpen(true)}
+            className="min-h-9 border-r border-[var(--doc-line)] px-[1.5ch] text-xs text-[var(--doc-middle)] hover:bg-[var(--doc-mark-soft)] hover:text-foreground"
+            aria-label="search documentation"
+          >
+            ⌘k
+          </button>
+          <button
+            type="button"
+            onClick={cycleTheme}
+            className="min-h-9 px-[1.5ch] text-xs lowercase text-[var(--doc-middle)] hover:bg-[var(--doc-mark-soft)] hover:text-foreground"
+            aria-label={`theme: ${mounted ? theme : "system"}. activate to change`}
+          >
+            {mounted ? (theme === "system" ? "auto" : theme) : "auto"}
+          </button>
+        </div>
       </nav>
 
-      {/* Search command palette */}
       <CommandDialog
         open={searchOpen}
         onOpenChange={setSearchOpen}
-        title="Search"
-        description="Jump to a page"
+        title="search"
+        description="jump to a page"
       >
-        <CommandInput placeholder="Search..." />
+        <CommandInput placeholder="search documentation…" />
         <CommandList>
-          <CommandEmpty>No matches.</CommandEmpty>
-
-          <CommandGroup heading="Pages">
-            <CommandItem
-              onSelect={() => {
-                navigate("/");
-                setSearchOpen(false);
-              }}
-            >
-              <Home className="mr-2 size-4" />
-              Home
-            </CommandItem>
-            <CommandItem
-              onSelect={() => {
-                navigate("/docs/getting-started");
-                setSearchOpen(false);
-              }}
-            >
-              <Rocket className="mr-2 size-4" />
-              Start
-            </CommandItem>
-            <CommandItem
-              onSelect={() => {
-                navigate("/tools");
-                setSearchOpen(false);
-              }}
-            >
-              <Wrench className="mr-2 size-4" />
-              Tools
-            </CommandItem>
-          </CommandGroup>
-
-          <CommandGroup heading="Reference">
-            <CommandItem
-              onSelect={() => {
-                navigate("/docs/cli");
-                setSearchOpen(false);
-              }}
-            >
-              <BookOpen className="mr-2 size-4" />
-              CLI Reference
-            </CommandItem>
-            <CommandItem
-              onSelect={() => {
-                navigate("/docs/checks-and-review");
-                setSearchOpen(false);
-              }}
-            >
-              <BookOpen className="mr-2 size-4" />
-              Checks And Review
-            </CommandItem>
-          </CommandGroup>
-
-          <CommandGroup heading="Tools">
-            <CommandItem
-              onSelect={() => {
-                navigate("/tools/scan");
-                setSearchOpen(false);
-              }}
-            >
-              <Wrench className="mr-2 size-4" />
-              ghost gather
-            </CommandItem>
-            <CommandItem
-              onSelect={() => {
-                navigate("/tools/drift");
-                setSearchOpen(false);
-              }}
-            >
-              <Wrench className="mr-2 size-4" />
-              ghost review
-            </CommandItem>
+          <CommandEmpty>no matches.</CommandEmpty>
+          <CommandGroup heading="pages">
+            {searchPages.map((page, index) => (
+              <CommandItem key={page.path} onSelect={() => go(page.path)}>
+                <span className="mr-[2ch] text-[var(--doc-middle)]">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                {page.label}
+              </CommandItem>
+            ))}
           </CommandGroup>
         </CommandList>
       </CommandDialog>

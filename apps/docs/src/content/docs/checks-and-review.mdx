@@ -1,6 +1,6 @@
 ---
 title: Checks And Review
-description: Opt in to review assertions with the checks directory, bind them to fingerprint nodes, and assemble advisory review packets from a diff.
+description: Opt in to review assertions with the checks directory, bind them to nodes, and assemble advisory review packets from a diff.
 kicker: Docs
 section: guide
 order: 25
@@ -11,19 +11,19 @@ slug: checks-and-review
 
 `gather` and `pull` are feed-forward: they ground your agent **before** it
 builds. Checks and `ghost review` are the optional feed-back half: **after** a
-change exists, they help the same agent review it against the truths you wrote
+change exists, they help the same agent review it against the guidance you wrote
 down.
 
 The division of labor stays the same. The CLI assembles deterministically — it
 reads a diff, matches touched files to node `materials`, and offers the relevant
-checks. Your agent weighs the packet and renders findings. Ghost grades nothing.
+checks. Your agent weighs the packet and renders findings. ghost grades nothing.
 
-This guide assumes you have a fingerprint; if not, start with
+This guide assumes you have a `.ghost/` package; if not, start with
 [Getting Started](/docs/getting-started). Exact flags and exit codes live in
 the [CLI Reference](/docs/cli).
 
 ```text
-Review this diff against the Ghost checks.
+Review this diff against the ghost checks.
 ```
 
 </DocSection>
@@ -45,14 +45,14 @@ ghost init --with checks   # or opt in at scaffold time
 
 `ghost validate` validates checks along with the rest of the package, and
 ordinary Git review is the approval boundary for check changes, same as any
-fingerprint edit.
+ghost package edit.
 
 </DocSection>
 
 <DocSection title="Authoring Checks">
 
 A check is one markdown file under `.ghost/checks/`: a review assertion
-bound to the fingerprint nodes it guards.
+bound to the nodes it guards.
 
 ```markdown
 ---
@@ -113,21 +113,21 @@ The advisory packet contains:
   material-backed nodes no check guards.
 
 The host agent takes it from there: weigh which checks apply, cite the
-fingerprint prose, and do not invent obligations the fingerprint never states.
+brand guidance, and do not invent obligations the package never states.
 
 </DocSection>
 
 <DocSection title="Gaps Are Tuning Signal, Not Failures">
 
 Coverage gaps are the review-side analog of `ghost pulse`: signals for the
-fingerprint's author, not errors.
+package's author, not errors.
 
 - **Unmatched files** — the diff touched something no node claims. Maybe that
-  surface deserves a truth, or maybe it is genuinely out of scope.
+  surface deserves guidance, or maybe it is genuinely out of scope.
 - **Unguarded materials** — a node points at concrete material, but no check
-  guards it. The truth feeds generation but nothing asserts it survives review.
+  guards it. The node feeds generation but nothing asserts it survives review.
 
-Grow coverage the same way you grow the fingerprint: one decision at a time,
+Grow coverage the same way you grow the brand guidance: one decision at a time,
 starting with the drift you keep catching by hand.
 
 </DocSection>

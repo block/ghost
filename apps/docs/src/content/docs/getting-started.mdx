@@ -1,53 +1,46 @@
 ---
 title: Getting Started
-description: Install Ghost, write your brand's truths as prose, and give your agent the right context before it builds.
+description: Install ghost, write your brand guidance as prose, and give your agent the right context before it builds.
 kicker: Docs
 section: guide
 order: 10
 slug: getting-started
 ---
 
-<DocSection title="What Ghost Does">
 
-<Callout variant="info" title="Just want a first win?">
+<BetaWarning />
 
-Start with [Five-Minute Ghost](/docs/quickstart): one file, one repeated
-decision, no vocabulary. This guide is the full loop for when you're ready to
-author a glossary and gather context end to end.
+<DocSection title="Your First Decision">
 
-</Callout>
+Start with the decision whose feedback you repeat most. Say it is about trust
+at checkout. Ask your agent:
 
-Ghost is your brand as a **portable steering packet**: its truths, its stance,
-its conditions, written as prose your agent reads **before** it makes anything.
-A truth is stated once, at the altitude where it holds, and the agent
-manifests it into whatever it is making: a screen, an email, a landing page, a
-sentence. The packet is agent-agnostic and travels with the repo. The public
-package is `@design-intelligence/ghost`, and it installs one CLI: `ghost`.
-
-The core loop grounds generation **before** your agent builds. An optional
-review side, the checks directory and `ghost review`, helps the same agent
-check its work **after**, but Ghost never grades output itself. You work
-through a short loop:
-
-```bash
-ghost init        # scaffold .ghost/ with the skeleton starter
-ghost validate    # make sure the fingerprint is well-formed
-ghost gather <ask> # emit Available guidance; your agent selects applicable truths
-ghost pull <ids>   # pull selected truths' full bodies
-ghost pulse        # inspect the local signal while tuning the fingerprint
+```text
+Set up ghost for this repo, starting with the checkout surface.
 ```
 
-When you want review assertions too, opt in with `ghost checks init` and
-run `ghost review` against a diff; [Checks And Review](/docs/checks-and-review)
-covers that side of the loop.
+Your agent scaffolds `.ghost/` and helps write one small file:
 
-Ghost never calls an LLM itself; your agent does the thinking, so there's no
-API key and no lock-in. The rest of this guide walks the loop; the **How It
-Works** section at the end covers the model underneath it.
+```markdown
+---
+description: Trust at the payment moment.
+---
+
+Near the moment of payment, reduce felt risk. Keep reassurance close to the
+action; proximity beats completeness. Do not introduce a new visual system here.
+```
+
+The file is the product: a decision checked into the repo where your agent can
+read it before building. Brief the next checkout task from ghost and the review
+comment becomes context the agent has up front.
+
+One decision can steer checkout, a receipt, a decline message, or another surface
+where payment creates risk. Grow the ghost package one repeated decision at a
+time.
 
 </DocSection>
 
-<DocSection title="Install Ghost">
+<DocSection title="Install ghost">
 
 ```bash
 npm install -D @design-intelligence/ghost
@@ -62,21 +55,35 @@ when you want the complete command index.
 Once the skill is installed, ask your agent in plain English:
 
 ```text
-Set up the Ghost fingerprint for this repo.
-Brief this work from the Ghost fingerprint.
+Set up ghost for this repo.
+Brief this work from ghost.
 ```
 
-The skill tells the agent what to read, what to write, and how to gather.
+The skill tells the agent what to read, what to write, and how to gather. ghost
+never calls an LLM itself, so there is no API key or agent lock-in.
+
+The packet is the product. The CLI carries it through the loop:
+
+```bash
+ghost init          # scaffold the .ghost package
+ghost validate      # check the package
+ghost gather <ask>  # show the complete guidance menu
+ghost pull <ids>    # deliver selected nodes
+ghost pulse         # inspect local usage while tuning
+```
+
+Add review assertions with `ghost checks init`, then run `ghost review` against
+a diff.
 
 </DocSection>
 
-<DocSection title="Author Your First Fingerprint">
+<DocSection title="Author Your First ghost Package">
 
-Start with one truth, not the whole brand. The hardest part is picking the first
+Start with one decision, not the whole brand. The hardest part is picking the first
 one, so pick the decision whose review feedback you keep repeating: the checkout
 you flag for trust, the voice you re-tone, the empty state you
-rewrite. Write that one down as a node, and grow the fingerprint decision
-by decision. One high-confidence truth beats an empty catalog.
+rewrite. Write that one down as a node, and grow the brand guidance
+node by node. One well-grounded node beats an empty catalog.
 
 The CLI scaffolds; your agent authors: interviewing you, working with the
 material you show it, drafting node prose, and asking you to curate the claims.
@@ -103,8 +110,8 @@ ghost init --body vessel-light
 The body's manifest keeps its own id (`vessel-light`) until you adapt it;
 renaming the id is the first step of making the brand yours.
 
-Each node's prose records a durable brand truth. While drafting, ask three
-questions of every truth: **why** (the stance: what this brand is, who it
+Each node's prose records durable brand guidance. While drafting, ask three
+questions of every node: **why** (the stance: what this brand is, who it
 serves, what must remain true), **with what** (the materials: building blocks,
 files, assets, and source links agents may inspect or use), and **how it is
 assembled** (the patterns that make it intentional: hierarchy, density,
@@ -113,16 +120,16 @@ restraint, repetition, trust, and flow).
 These are drafting prompts, never frontmatter fields. Node frontmatter carries
 only `description` plus free-form passthrough
 keys. A node's **kind** comes from its filename prefix (`principle.density.md` →
-kind `principle`), and the kinds are declared in `glossary.md`. When a truth is
+kind `principle`), and the kinds are declared in `glossary.md`. When guidance is
 narrower than universal, state its **condition** in the prose: the situation it
 applies in, never a filename destination. For a fuller human-agent workflow, read
-[Fingerprint Authoring](/docs/fingerprint-authoring).
+[Authoring](/docs/authoring).
 
 </DocSection>
 
-<DocSection title="Gather Context Before You Build">
+<DocSection id="gather-context-before-you-build" title="Gather Context Before You Build">
 
-Before generating, gather Available guidance from the Ghost brand fingerprint.
+Before generating, gather Available guidance from the ghost package.
 `gather` does no selection: it emits the complete, unfiltered, unranked list of
 node ids, kinds, and descriptions. Your agent reads the ask against
 applicability and pulls every node whose stated situation governs the work:
@@ -130,19 +137,21 @@ applicability and pulls every node whose stated situation governs the work:
 ```bash
 ghost gather "checkout settings"
 ghost gather "checkout settings" --format json
-ghost pull principle.trust voice   # pull selected truths' full bodies
+ghost pull principle.trust voice   # pull selected nodes' full bodies
 ```
 
 This is "the right context at the right time": the agent selects just-in-time
 against the actual task. Topic overlap alone is not applicability; if nothing
-applies, it should name the fingerprint's silence and avoid inventing
-Ghost-backed guidance. Run it before generation, so the agent builds with the
+applies, it should name the package's silence and avoid inventing
+ghost-backed guidance. Run it before generation, so the agent builds with the
 brand in hand rather than discovering the gaps in review.
+
+<GatherDemo />
 
 Each `gather` and `pull` also adds a line to a private local log at
 `.ghost/.events`; it stays on your machine and never enters version control.
 That one is for you: tweak a node's description, re-run the task, and `ghost
-pulse` shows whether the truth appeared on the menu, got pulled, was missed by
+pulse` shows whether the node appeared on the menu, got pulled, was missed by
 name, or stayed cold.
 
 ```bash
@@ -152,13 +161,13 @@ ghost pulse
 Read `pulse` as a tuning signal, not a score. A cold node may need a sharper
 `description`; a repeated miss may mean the id or glossary vocabulary is not
 what agents expect; an abandoned gather means the menu did not lead to a useful
-selection. The log is local tuning signal, not canonical fingerprint state.
+selection. The log is local tuning signal, not canonical ghost package state.
 
 </DocSection>
 
 <DocSection title="Validate">
 
-`ghost validate` checks that the fingerprint is well-formed: the manifest and
+`ghost validate` checks that the ghost package is well-formed: the manifest and
 each node parse, `materials` entries resolve, and every node's kind prefix is
 declared in the glossary.
 
@@ -168,7 +177,7 @@ ghost validate --format json
 ```
 
 An undeclared kind prefix is a warning with a "did you mean" suggestion, not a
-failure. Treat fingerprint edits as ordinary Git-reviewed changes: uncommitted
+failure. Treat ghost package edits as ordinary Git-reviewed changes: uncommitted
 edits are drafts; checked-in nodes are canonical.
 
 Hit something the loop above doesn't explain — an empty `gather`, a `review`
@@ -182,17 +191,17 @@ that refuses to run, a stale example? See
 You can run the whole loop above without this section; your agent handles the
 format. Read on when you want to understand how the folder of files is wired.
 
-The fingerprint is a **flat set of prose nodes**:
+The `.ghost/` package is a **flat set of prose nodes**:
 
 ```text
 .ghost/
   manifest.yml          # schema + package id + optional cover id
   glossary.md           # the kind vocabulary + what each kind means
   brand.md              # example cover inlined by gather
-  principle.trust.md    # a brand truth of kind `principle`
-  condition.density.md  # a brand truth of kind `condition`
-  asset.logo.md         # a truth that may point at concrete materials
-  voice.md              # a brand truth without a kind
+  principle.trust.md    # guidance of kind `principle`
+  condition.density.md  # guidance of kind `condition`
+  asset.logo.md         # guidance that points at concrete materials
+  voice.md              # guidance without a kind
   checks/               # optional review assertions; never a node
 ```
 
@@ -206,9 +215,9 @@ be a kind declared in `glossary.md`; a bare name (`voice.md`) has
 no kind. Folders are a human-browsing convenience only; the model reads a
 flat menu.
 
-Altitude lives in the prose: a universal truth is stated plainly; a narrower
-truth names the *situation* it applies in. The agent reads the condition and
-decides when the truth applies. Reserved at the package root: `manifest.yml`,
+Altitude lives in the prose. Universal guidance is stated plainly. Narrower
+guidance names the *situation* where it applies. The agent reads the condition
+and decides whether to use the node. Reserved at the package root: `manifest.yml`,
 `glossary.md`, `materials/`, and `checks/`; every other `*.md` is a node.
 
 A node may carry `materials`: repo-relative paths/globs or HTTPS
@@ -216,23 +225,6 @@ URLs for the concrete materials the prose governs. `ghost gather` emits the menu
 the agent selects and manifests. Checks are used by `ghost review`, never by
 generation.
 
-One contract per package: a repo's `.ghost/` is the whole fingerprint.
-
-</DocSection>
-
-<DocSection title="Project Status: Beta">
-
-<Callout variant="warning" title="Beta / pre-1.0">
-
-Ghost is pre-1.0 and under active development. The CLI, fingerprint schema,
-on-disk `.ghost/` package shape, and public JavaScript exports may
-change in breaking ways before a stable 1.0 release.
-
-Breaking changes may ship in minor versions while Ghost is pre-1.0. Patch
-versions are reserved for fixes that should not require migration. If you adopt
-Ghost today, expect some churn, pin the version you depend on, and review
-release notes before upgrading.
-
-</Callout>
+One contract per package: a repo's `.ghost/` is the whole ghost package.
 
 </DocSection>

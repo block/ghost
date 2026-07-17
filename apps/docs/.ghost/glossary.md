@@ -18,7 +18,7 @@ loosen them.
 
 # condition
 
-Situational truth. Use only when the stated situation holds, and do not treat the
+Situational guidance. Use only when the stated situation holds, and do not treat the
 condition as a destination bucket.
 
 # pattern
@@ -39,7 +39,7 @@ from.
 
 # asset
 
-Material truth about concrete tokens, components, type, motion, canvases, docs,
+Material guidance about concrete tokens, components, type, motion, canvases, docs,
 copy, code, or files. `materials` locates; prose explains what the files mean.
 
 # decision
@@ -49,5 +49,5 @@ choice would reverse.
 
 # voice
 
-Language and naming truth: the product vocabulary, cadence, metaphor, and copy
-boundaries that make the docs sound like Ghost rather than generic SaaS docs.
+Language and naming guidance: the product vocabulary, cadence, metaphor, and copy
+boundaries that make the docs sound like ghost rather than generic SaaS docs.

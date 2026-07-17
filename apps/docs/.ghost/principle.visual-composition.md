@@ -8,7 +8,7 @@ materials:
   - packages/vessel-react/src/styles/main.css
 ---
 
-The Ghost docs site should render like a stark technical artifact with one
+The ghost docs site should render like a stark technical artifact with one
 controlled spectral move, not a generic docs template.
 
 Hard floor:
@@ -35,4 +35,4 @@ Hard floor:
 
 When a pattern conflicts with this floor, the floor wins and the pattern is
 wrong. When Vessel tokens make a choice available but this floor rejects the
-output, choose the docs fingerprint.
+output, choose the docs package.

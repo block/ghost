@@ -9,7 +9,7 @@ slug: troubleshooting
 
 <DocSection title="Start Here">
 
-Every Ghost command follows one exit-code contract, so start by reading the
+Every ghost command follows one exit-code contract, so start by reading the
 code before reading the message:
 
 | Code | Meaning |
@@ -28,7 +28,7 @@ do about each.
 
 `gather` does no filtering or ranking; it always emits the whole guidance menu.
 If your agent reads the menu and pulls nothing useful, the problem may be
-retrieval, applicability, or true fingerprint silence.
+retrieval, applicability, or true package silence.
 
 - **Check the description, not the body.** An agent selects against a node's
   `description` alone. A vague description (`Our trust principles.`) is
@@ -43,8 +43,8 @@ retrieval, applicability, or true fingerprint silence.
   strong body is worse than a strong description with a thin body; the agent
   never reaches the body.
 - **Respect silence.** If no description indicates an applicable situation, name
-  the fingerprint's silence, follow the cover silence posture, and do not claim
-  provisional local reasoning as Ghost-backed.
+  the package's silence, follow the cover silence posture, and do not claim
+  provisional local reasoning as ghost-backed.
 
 ```bash
 ghost gather "checkout settings" --format json
@@ -66,7 +66,7 @@ is wrong.
   started using.
 - If you meant to introduce a new kind, add it to `glossary.md`'s `kinds`
   list along with a `#` section explaining its meaning and normative weight.
-  Declaring a kind with one user is fine; Ghost ships no fixed vocabulary.
+  Declaring a kind with one user is fine; ghost ships no fixed vocabulary.
 - If the file was never meant to carry a kind, drop the dotted prefix; a bare
   name (`voice.md`) has no kind and needs no glossary entry.
 
@@ -147,9 +147,9 @@ drift check declines a PR that changes a command surface without this step.
 
 </DocSection>
 
-<DocSection title="Fingerprint edits aren't taking effect">
+<DocSection title="ghost package edits aren't taking effect">
 
-Uncommitted or unmerged fingerprint edits are drafts; Ghost's tooling reads
+Uncommitted or unmerged ghost package edits are drafts; ghost's tooling reads
 whatever is on disk in your working tree, so a draft node does show up in
 `gather` immediately. What it means for edits to "take effect" is usually one
 of:
@@ -157,7 +157,7 @@ of:
 - **The agent already had a stale menu in context.** Re-run `ghost gather`
   after any edit; nothing caches the menu between calls.
 - **The team disagrees on what's canonical.** Ordinary Git review is the
-  approval boundary for fingerprint edits, same as any other code change.
+  approval boundary for ghost package edits, same as any other code change.
   Treat an unmerged branch's nodes as provisional until they land.
 
 </DocSection>
@@ -168,7 +168,7 @@ If none of the above matches what you're seeing, the fastest path is usually
 to ask your agent directly, since it already has the skill bundle installed:
 
 ```text
-Run ghost validate and ghost pulse, and tell me what's wrong with this fingerprint.
+Run ghost validate and ghost pulse, and tell me what's wrong with this ghost package.
 ```
 
 If that doesn't resolve it, open an issue with the exact command, its exit

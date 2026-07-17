@@ -7,7 +7,7 @@ materials:
 ---
 
 The home page is an argument, not a feature tour. It should make one memorable
-claim about why Ghost exists and then let the docs carry the details.
+claim about why ghost exists and then let the docs carry the details.
 
 **Bound:**
 
@@ -17,11 +17,11 @@ claim about why Ghost exists and then let the docs carry the details.
   few foreground highlights for key model words. The rhythm is editorial, not
   sales-led.
 - The story moves from problem to model to loop to payoff: agents can assemble
-  UI, but not preserve brand truth; Ghost captures flat prose nodes; the agent
+  UI, but not preserve brand guidance; ghost captures flat prose nodes; the agent
   gathers and pulls them; review makes drift visible.
 - Lists should clarify the model. If a list reads like benefits marketing,
   rewrite it as artifacts and mechanics.
-- End with a transfer claim: a brand truth that cannot be recalled or reviewed
+- End with a transfer claim: a brand guidance that cannot be recalled or reviewed
   against cannot be delegated.
 
 **Open:**

@@ -39,5 +39,5 @@ Material contract:
   or regenerated with `pnpm dump:cli-help` after CLI command/flag changes.
 
 The materials locate facts; this node does not make every existing choice a
-brand truth. If a component repeats a weak or legacy pattern, fix the pattern
+brand guidance. If a component repeats a weak or legacy pattern, fix the pattern
 instead of canonizing it here.

@@ -6,7 +6,7 @@ materials:
   - apps/docs/src/components/docs/doc-prose.tsx
 ---
 
-Ghost is not the generated AI SaaS docs site.
+ghost is not the generated AI SaaS docs site.
 
 Reject these defaults even when they are easy to build:
 
@@ -16,13 +16,13 @@ Reject these defaults even when they are easy to build:
   dashboard screenshot.
 - Mascots, emoji headings, playful empty-state illustrations, or robot metaphors.
 - Overpromising copy: "ship on-brand every time," "brand autopilot," "AI that
-  understands your design system," or any claim that makes Ghost sound like it
+  understands your design system," or any claim that makes ghost sound like it
   replaces taste, review, or human curation.
 - Decorative motion that exists only because the page felt static.
 - Dense nav chrome, sidebars on landing pages, or tool-index pages that feel like
   enterprise documentation portals.
 
 A technically correct output can still be off-brand if it looks like any AI tool
-could ship it. Ghost's docs win by being severe, specific, and a little haunted:
+could ship it. ghost's docs win by being severe, specific, and a little haunted:
 black-and-white, exact language, spectral geometry, and enough restraint that the
 one strange gesture actually lands.

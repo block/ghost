@@ -7,7 +7,7 @@ materials:
   - apps/docs/src/app/tools/drift/page.tsx
 ---
 
-Decision trace: Ghost could have led with review because drift detection is easy
+Decision trace: ghost could have led with review because drift detection is easy
 to understand. We choose feed-forward authoring and recall as the center because
 that is the product's real leverage: the agent should receive the decision before
 it builds.
@@ -20,8 +20,8 @@ What review is good for:
 
 Why review does not lead:
 
-- If the right truth was never gathered, review catches the failure late.
-- Calling review a gate makes Ghost sound like it judges brand fit
+- If the right guidance was never gathered, review catches the failure late.
+- Calling review a gate makes ghost sound like it judges brand fit
   deterministically, which it does not.
 - Teams adopt faster when the first win is one repeated decision written down and
   reused before generation.

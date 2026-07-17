@@ -27,7 +27,7 @@ export default defineConfig({
           [
             rehypeShiki,
             {
-              themes: { light: "github-light", dark: "github-dark" },
+              themes: { light: "min-light", dark: "min-dark" },
             },
           ],
         ],

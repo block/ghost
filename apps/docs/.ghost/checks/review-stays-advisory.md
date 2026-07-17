@@ -7,7 +7,7 @@ references:
   - decision.feed-forward-over-review
 ---
 
-Review docs copy for claims that Ghost review grades, approves, blocks, judges,
+Review docs copy for claims that ghost review grades, approves, blocks, judges,
 or guarantees brand fit. Flag wording that treats checks as generation input or
 turns advisory review packets into CI gates.
 

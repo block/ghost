@@ -9,30 +9,29 @@ export function DocProse({
   return (
     <div
       className={cn(
-        "pb-24",
-        // Headings
-        "[&_h2]:font-display [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:tracking-tight [&_h2]:mt-12 [&_h2]:mb-4",
-        "[&_h3]:font-display [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:tracking-tight [&_h3]:mt-8 [&_h3]:mb-3",
-        // Paragraphs
-        "[&_p]:text-muted-foreground [&_p]:leading-relaxed [&_p]:mb-4",
-        // Links
-        "[&_a]:text-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a]:decoration-border-strong hover:[&_a]:decoration-foreground",
-        // Lists
-        "[&_ul]:text-muted-foreground [&_ul]:leading-relaxed [&_ul]:mb-4 [&_ul]:pl-6 [&_ul]:list-disc",
-        "[&_ol]:text-muted-foreground [&_ol]:leading-relaxed [&_ol]:mb-4 [&_ol]:pl-6 [&_ol]:list-decimal",
-        "[&_li]:mb-1.5",
-        // Code inline
-        "[&_:not(pre)>code]:rounded [&_:not(pre)>code]:bg-muted [&_:not(pre)>code]:px-1.5 [&_:not(pre)>code]:py-0.5 [&_:not(pre)>code]:text-sm [&_:not(pre)>code]:font-mono",
-        // Code blocks
-        "[&_pre]:rounded-lg [&_pre]:border [&_pre]:border-border-card [&_pre]:bg-muted/50 [&_pre]:p-4 [&_pre]:mb-4 [&_pre]:overflow-x-auto [&_pre]:text-sm [&_pre]:leading-relaxed [&_pre]:font-mono",
-        // Tables
-        "[&_table]:w-full [&_table]:mb-4 [&_table]:text-sm",
-        "[&_th]:text-left [&_th]:font-semibold [&_th]:text-foreground [&_th]:border-b [&_th]:border-border-strong [&_th]:pb-2 [&_th]:pr-4",
-        "[&_td]:text-muted-foreground [&_td]:border-b [&_td]:border-border-card [&_td]:py-2.5 [&_td]:pr-4 [&_td]:align-top",
-        // Horizontal rules
-        "[&_hr]:my-8 [&_hr]:border-border-card",
-        // Strong
-        "[&_strong]:text-foreground [&_strong]:font-semibold",
+        "doc-prose doc-section-stack pb-28 font-mono text-[0.8125rem] leading-5 text-foreground",
+        // Headings: hierarchy through weight and rhythm, not scale.
+        "[&_h2]:mt-10 [&_h2]:mb-4 [&_h2]:font-mono [&_h2]:text-[0.8125rem] [&_h2]:font-bold [&_h2]:leading-5 [&_h2]:lowercase",
+        "[&_h3]:mt-8 [&_h3]:mb-4 [&_h3]:max-w-[54ch] [&_h3]:font-mono [&_h3]:text-[0.8125rem] [&_h3]:font-bold [&_h3]:leading-5",
+        // Reading measure.
+        "[&_p]:mb-4 [&_p]:max-w-[54ch] [&_p]:text-foreground",
+        // Links use the single highlighter gesture.
+        "[&_a]:text-inherit [&_a]:underline [&_a]:underline-offset-[0.24ch] [&_a]:[text-decoration-skip-ink:none] hover:[&_a]:bg-[var(--doc-mark)] hover:[&_a]:text-[var(--doc-on-mark)] hover:[&_a]:no-underline",
+        // Hanging bullets and compact ordered lists.
+        "[&_ul]:mb-4 [&_ul]:max-w-[54ch] [&_ul]:list-none [&_ul]:pl-[2ch]",
+        "[&_ul_li]:relative [&_ul_li]:before:absolute [&_ul_li]:before:-ml-[2ch] [&_ul_li]:before:content-['•_']",
+        "[&_ol]:mb-4 [&_ol]:max-w-[54ch] [&_ol]:list-decimal [&_ol]:pl-[4ch]",
+        "[&_li]:mb-1",
+        // Inline code is a soft annotation, not a pill.
+        "[&_:not(pre)>code]:bg-[var(--doc-mark-soft)] [&_:not(pre)>code]:px-[0.5ch] [&_:not(pre)>code]:font-mono [&_:not(pre)>code]:text-[inherit]",
+        // Machine artifacts: square, transparent, hairline-bound.
+        "[&_pre]:mb-6 [&_pre]:max-w-[76ch] [&_pre]:overflow-x-auto [&_pre]:border [&_pre]:border-[var(--doc-line)] [&_pre]:bg-transparent [&_pre]:p-4 [&_pre]:px-[2ch] [&_pre]:font-mono [&_pre]:text-[0.8125rem] [&_pre]:leading-5",
+        // Tables read as listings, with rows instead of containers.
+        "[&_table]:mb-6 [&_table]:w-full [&_table]:max-w-[76ch] [&_table]:border-collapse [&_table]:text-[0.8125rem]",
+        "[&_th]:border-b [&_th]:border-[var(--doc-line)] [&_th]:py-2 [&_th]:pr-[2ch] [&_th]:text-left [&_th]:font-bold [&_th]:text-foreground",
+        "[&_td]:border-b [&_td]:border-[var(--doc-line)] [&_td]:py-2 [&_td]:pr-[2ch] [&_td]:align-top [&_td]:text-foreground",
+        "[&_hr]:my-8 [&_hr]:border-[var(--doc-line)]",
+        "[&_strong]:font-bold [&_strong]:text-foreground",
         className,
       )}
       {...props}
