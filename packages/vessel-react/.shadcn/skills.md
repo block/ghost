@@ -1,8 +1,8 @@
-# Ghost UI — Agent Skills
+# ghost UI — Agent Skills
 
 ## Overview
 
-Ghost UI is an agent-safe reference system built on shadcn/ui with:
+ghost UI is an agent-safe reference system built on shadcn/ui with:
 - **Semantic authoring contract**: prefer shadcn roles like `background`, `foreground`, `card`, `popover`, `muted`, `accent`, `primary`, `destructive`, `border`, `input`, and `ring`
 - **Pill-forward geometry**: 999px border-radius on buttons, inputs, and pills, with contained surfaces using named radius roles
 - **System font stack**: consumers bring their own typeface; Vessel stays brand-agnostic

@@ -1,12 +1,12 @@
 import type { CAC } from "cac";
 import { buildCatalogMenu, type CatalogMenuEntry } from "#ghost-core";
-import { resolveFingerprintPackage } from "../fingerprint.js";
 import {
   type GhostObservabilityEvent,
   type PullMiss,
   readGhostEvents,
 } from "../observability-events.js";
-import { loadFingerprintPackage } from "../scan/fingerprint-package.js";
+import { resolveGhostPackage } from "../package.js";
+import { loadGhostPackage } from "../scan/fingerprint-package.js";
 import { failFromError } from "./errors.js";
 
 export function registerPulseCommand(cli: CAC): void {
@@ -14,7 +14,7 @@ export function registerPulseCommand(cli: CAC): void {
     .command("pulse", "Summarize local gather/pull events from .ghost/.events.")
     .option(
       "--package <dir>",
-      "Use this fingerprint package directory (default: ./.ghost)",
+      "Use this ghost package directory (default: ./.ghost)",
     )
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
@@ -27,8 +27,8 @@ export function registerPulseCommand(cli: CAC): void {
           return;
         }
 
-        const paths = resolveFingerprintPackage(opts.package, process.cwd());
-        const loaded = await loadFingerprintPackage(paths);
+        const paths = resolveGhostPackage(opts.package, process.cwd());
+        const loaded = await loadGhostPackage(paths);
         const menu = buildCatalogMenu(loaded.catalog);
         const events = await readGhostEvents(paths.packageDir);
         const report = buildPulseReport(events, menu);
@@ -256,7 +256,7 @@ function recordMiss(
 
 function formatPulseMarkdown(report: PulseReport): string {
   const lines: string[] = [
-    "# Ghost Pulse",
+    "# ghost Pulse",
     "",
     `- Events: ${report.events}`,
     `- Gathers: ${report.gathers}`,

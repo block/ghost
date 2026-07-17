@@ -1,14 +1,14 @@
 # context-control
 
-A local UI for testing the selection half of Ghost's loop. steering-control
-measures what a fingerprint buys downstream of generation; context-control
-measures whether the right truths even make it into context. Selection is
+A local UI for testing the selection half of ghost's loop. steering-control
+measures what a ghost package buys downstream of generation; context-control
+measures whether the right guidance even makes it into context. Selection is
 the unit. No generation, ever.
 
 `ghost gather` does no filtering: the menu is always the whole catalog, and
 selection happens in the model's head against each node's `description`.
 So what this bench actually tests is whether descriptions are good enough
-retrieval payloads — a truth with a vague description is invisible at
+retrieval payloads — a node with a vague description is invisible at
 selection time no matter how good its body is.
 
 ## Run
@@ -29,7 +29,7 @@ else `ghost` on PATH).
 
 ## Screens
 
-**fingerprint** — the catalog rendered as the selection surface the model
+**package** — the catalog rendered as the selection surface the model
 sees: id, kind, description, material count, coverage line. Click a node to
 see its real `ghost pull` output in a drawer. Review descriptions as
 retrieval payloads, not file contents; a node with no description is flagged

@@ -2,8 +2,8 @@
 description: Start here — what the Vessel fingerprint covers and how to read it.
 ---
 
-Vessel is Ghost's reference body: an agnostic, agent-safe shadcn-compatible
-component registry that a product's own Ghost fingerprint can inhabit. This
+Vessel is ghost's reference body: an agnostic, agent-safe shadcn-compatible
+component registry that a product's own ghost fingerprint can inhabit. This
 fingerprint governs Vessel the workspace — its token contract, authoring
 discipline, registry shape, and the boundary between reference vocabulary and
 product brand truth.

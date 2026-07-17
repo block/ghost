@@ -4,7 +4,7 @@ import type { GhostCatalog } from "./types.js";
  * One entry in the gather menu: a node presented as `id` + `kind` +
  * `description`, the retrieval payload the agent selects against. The agent
  * matches a natural-language ask against these and pulls applicable nodes;
- * Ghost does no NLP and no selection.
+ * ghost does no NLP and no selection.
  */
 export interface CatalogMenuEntry {
   id: string;

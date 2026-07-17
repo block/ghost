@@ -5,7 +5,7 @@ out/<arm>/<ask-n>/run-<k>.html.
 
 ## Arm A — naked
 1. Load ballast.md.
-2. Give the ask. No fingerprint anywhere.
+2. Give the ask. No ghost package anywhere.
 
 ## Arm B — dump
 1. Concatenate every node in packages/vessel-light/.ghost/*.md (bodies, in

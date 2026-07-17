@@ -3,12 +3,12 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { promisify } from "node:util";
 import type { CAC } from "cac";
-import { resolveFingerprintPackage } from "../fingerprint.js";
+import { resolveGhostPackage } from "../package.js";
 import {
   buildReviewPacket,
   formatReviewPacket,
 } from "../review/review-packet.js";
-import { loadFingerprintPackage } from "../scan/fingerprint-package.js";
+import { loadGhostPackage } from "../scan/fingerprint-package.js";
 import { failFromError } from "./errors.js";
 
 const execFileAsync = promisify(execFile);
@@ -21,7 +21,7 @@ export function registerReviewCommand(cli: CAC): void {
     )
     .option(
       "--package <dir>",
-      "Use this fingerprint package directory (default: ./.ghost)",
+      "Use this ghost package directory (default: ./.ghost)",
     )
     .option("--base <ref>", "Git ref to diff against (default: HEAD)")
     .option("--diff <path>", "Read diff from a file, or '-' for stdin")
@@ -39,9 +39,9 @@ export function registerReviewCommand(cli: CAC): void {
           return;
         }
 
-        const paths = resolveFingerprintPackage(opts.package, process.cwd());
-        const fingerprint = await loadFingerprintPackage(paths);
-        if (!fingerprint.hasChecksDir) {
+        const paths = resolveGhostPackage(opts.package, process.cwd());
+        const ghostPackage = await loadGhostPackage(paths);
+        if (!ghostPackage.hasChecksDir) {
           console.error(
             "No checks directory. Run `ghost checks init` to add review assertions.",
           );
@@ -52,7 +52,7 @@ export function registerReviewCommand(cli: CAC): void {
           base: opts.base,
           diff: opts.diff,
         });
-        const packet = await buildReviewPacket(fingerprint, diffText, {
+        const packet = await buildReviewPacket(ghostPackage, diffText, {
           packageDir: paths.packageDir,
           runProbes: opts.probes !== false,
           cwd: process.cwd(),

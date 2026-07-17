@@ -2,7 +2,7 @@
 description: "The brand on one page; what this brand is, how it feels, and what only it refuses."
 ---
 
-This cover is unwritten. Ghost gather always places this page in an agent's
+This cover is unwritten. ghost gather always places this page in an agent's
 context; that is delivery status, not a claim that every sentence applies to
 every task. Use it for what cannot be retrieved by task: what this brand is about,
 in one paragraph, in the brand's own voice. The temperature its words and

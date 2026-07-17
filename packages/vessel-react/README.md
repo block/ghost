@@ -1,20 +1,20 @@
 # vessel
 
-**Reference design system for the Ghost project. 100 components, shadcn registry, not published to npm.**
+**Reference design system for the ghost project. 100 components, shadcn registry, not published to npm.**
 
-`vessel` is the reference component system Ghost uses to exercise registry
+`vessel` is the reference component system ghost uses to exercise registry
 and agent-integration workflows. It's distributed as a generated shadcn registry
 (`public/r/registry.json`) for drop-in consumption, not as an npm package. If you're
-looking for the brand-fingerprint CLI and skill bundle, that's
+looking for the ghost CLI and skill bundle, that's
 [`@design-intelligence/ghost`](../ghost).
 
 ## Registry convention
 
-Vessel is Ghost's agnostic, agent-safe reference body: a coherent implementation
-vocabulary a product fingerprint can inhabit, not the brand truth for every
-Ghost consumer. A consuming repo owns its product stance, flows, copy, trust
+Vessel is ghost's agnostic, agent-safe reference body: a coherent implementation
+vocabulary a product's ghost package can inhabit, not the brand guidance for every
+ghost consumer. A consuming repo owns its product stance, flows, copy, trust
 obligations, and visual-language decisions through its own `.ghost/`
-fingerprint; Vessel supplies reusable materials and safe authoring paths, not
+package; Vessel supplies reusable materials and safe authoring paths, not
 universal brand law.
 
 Vessel is not latest shadcn with a logo, not an extracted product UI kit, and
@@ -46,14 +46,14 @@ Registry metadata on high-impact items should name intent, when to use it,
 when not to, safe variants, common misuses, and token roles — decision
 metadata, not just source.
 
-This workspace carries a repo-local `.ghost/` fingerprint (a flat corpus of
+This workspace carries a repo-local `.ghost/` package (a flat corpus of
 prose nodes plus checks) governing Vessel itself: the token contract,
 agent-safety discipline, registry shape, and the boundary between reference
-vocabulary and product brand truth. It does not define product-specific flows,
+vocabulary and product brand guidance. It does not define product-specific flows,
 copy, trust obligations, or business intent for consuming apps. New products
 should reference this package and the generated `public/r/registry.json`, then
-author their own brand fingerprint separately. It doubles as a living exemplar
-of the Ghost format. Start with the cover declared in `.ghost/manifest.yml`.
+author their own ghost package separately. It doubles as a living exemplar
+of the ghost format. Start with the cover declared in `.ghost/manifest.yml`.
 
 Agents should read this README, `.ghost/`,
 `public/r/registry.json`, `registry.json`, `.shadcn/skills.md`, and source files
@@ -76,7 +76,7 @@ That distinction helps generators pick relevant references instead of treating e
 - **Components** — 52 UI primitives (Radix-based) + 48 AI elements (chat, streaming, agent UI) + theme + hooks.
 - **Tokens** — `src/styles/` CSS custom properties consumed by the registry and components.
 - **Registry** — `public/r/registry.json`, generated shadcn-compatible catalogue for consumption. Source entries live in `registry.json`; rebuilt by `just build-registry`.
-- **Ghost reference context** — `.ghost/`, used as reference-registry context by consuming products.
+- **ghost reference context** — `.ghost/`, used as reference-registry context by consuming products.
 - **Agent context** — `.shadcn/skills.md`, generated from the registry and component sources for AI assistants.
 
 ## Use

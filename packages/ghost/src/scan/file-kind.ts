@@ -1,6 +1,6 @@
 import { parse as parseYaml } from "yaml";
 import {
-  GhostFingerprintPackageManifestSchema,
+  GhostPackageManifestSchema,
   lintGhostCheck,
   lintGhostNode,
 } from "#ghost-core";
@@ -8,7 +8,7 @@ import { GHOST_MATERIALS_DIR } from "./constants.js";
 import type { LintReport } from "./lint.js";
 
 export type DetectedFileKind =
-  | "fingerprint-manifest"
+  | "package-manifest"
   | "check"
   | "material"
   | "node"
@@ -25,10 +25,10 @@ export function detectFileKind(path: string, raw: string): DetectedFileKind {
   const lowerPath = path.toLowerCase();
   const filename = lowerPath.split(/[\\/]/).pop() ?? lowerPath;
   if (filename === "manifest.yml") {
-    return "fingerprint-manifest";
+    return "package-manifest";
   }
   if (filename === "manifest.yaml") {
-    return "fingerprint-manifest";
+    return "package-manifest";
   }
   if (new RegExp(`(^|[\\\\/])${GHOST_MATERIALS_DIR}[\\\\/]`).test(lowerPath)) {
     return "material";
@@ -42,8 +42,8 @@ export function detectFileKind(path: string, raw: string): DetectedFileKind {
   if (filename.endsWith(".md")) {
     return "node";
   }
-  if (/^\s*schema:\s*ghost\.fingerprint-package\/v1\b/m.test(raw)) {
-    return "fingerprint-manifest";
+  if (/^\s*schema:\s*ghost\.(?:package|fingerprint-package)\/v1\b/m.test(raw)) {
+    return "package-manifest";
   }
   return "unsupported";
 }
@@ -52,8 +52,8 @@ export function lintDetectedFileKind(
   kind: DetectedFileKind,
   raw: string,
 ): LintReport {
-  return kind === "fingerprint-manifest"
-    ? lintFingerprintManifestFile(raw)
+  return kind === "package-manifest"
+    ? lintPackageManifestFile(raw)
     : kind === "check"
       ? lintGhostCheck(raw)
       : kind === "material"
@@ -67,17 +67,11 @@ function emptyLintReport(): LintReport {
   return { issues: [], errors: 0, warnings: 0, info: 0 };
 }
 
-function lintFingerprintManifestFile(raw: string): LintReport {
+function lintPackageManifestFile(raw: string): LintReport {
   try {
-    return zodLintReport(
-      GhostFingerprintPackageManifestSchema.safeParse(parseYaml(raw)),
-    );
+    return zodLintReport(GhostPackageManifestSchema.safeParse(parseYaml(raw)));
   } catch (err) {
-    return yamlErrorReport(
-      "fingerprint-manifest-not-yaml",
-      "manifest.yml",
-      err,
-    );
+    return yamlErrorReport("package-manifest-not-yaml", "manifest.yml", err);
   }
 }
 
@@ -110,7 +104,7 @@ function lintUnsupportedFile(): LintReport {
         severity: "error",
         rule: "unsupported-artifact",
         message:
-          "File is not a recognized Ghost artifact. Use manifest.yml, a checks/*.md check, or a *.md node.",
+          "File is not a recognized ghost artifact. Use manifest.yml, a checks/*.md check, or a *.md node.",
       },
     ],
     errors: 1,

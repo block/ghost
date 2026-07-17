@@ -6,9 +6,9 @@ export type GhostCheckMarkdownSeverity =
   (typeof GHOST_CHECK_SEVERITIES)[number];
 
 /**
- * A Ghost check: markdown + frontmatter, evaluated by an agent — never run by
- * Ghost. Shape-compatible with the established `.agents/checks` format, plus the
- * Ghost addition `source:` (the fingerprint prose the check enforces). Every
+ * A ghost check: markdown + frontmatter, evaluated by an agent — never run by
+ * ghost. Shape-compatible with the established `.agents/checks` format, plus the
+ * ghost addition `source:` (the fingerprint prose the check enforces). Every
  * check is offered to the reviewer; the agent judges relevance.
  */
 export interface GhostCheckFrontmatter {

@@ -1,4 +1,4 @@
-import { GHOST_FINGERPRINT_PACKAGE_SCHEMA } from "#ghost-core";
+import { GHOST_PACKAGE_SCHEMA } from "#ghost-core";
 import {
   GHOST_EVENTS_FILENAME,
   LEGACY_PULL_HISTORY_FILENAME,
@@ -26,13 +26,13 @@ export interface GhostInitTemplate {
 function manifestFile(cover?: string): TemplateFile {
   return {
     relativePath: "manifest.yml",
-    content: `schema: ${GHOST_FINGERPRINT_PACKAGE_SCHEMA}\nid: local\n${cover ? `cover: ${cover}\n` : ""}`,
+    content: `schema: ${GHOST_PACKAGE_SCHEMA}\nid: local\n${cover ? `cover: ${cover}\n` : ""}`,
   };
 }
 
 /**
  * Keep events tapes out of version control: they are disposable
- * per-machine signals for authors iterating on the fingerprint, never canonical
+ * per-machine signals for authors iterating on the package, never canonical
  * state.
  */
 function gitignoreFile(): TemplateFile {
@@ -108,7 +108,7 @@ Reusable composition or product pattern whose purpose is distinguishable from ne
       {
         relativePath: "index.md",
         content: `---
-description: Always read first — the non-negotiables and how to read this fingerprint.
+description: Always read first — the non-negotiables and how to read this package.
 ---
 
 Replace this placeholder prose with two things:
@@ -118,9 +118,9 @@ medium, no matter what else is gathered — hard invariants, the anti-goals, the
 one-sentence stance. Anything that must never be missed belongs here, stated
 briefly; link out to the full node by id for depth.
 
-**How to read the rest.** What this fingerprint covers, how its kinds organize
-the corpus, and where the fingerprint deliberately stays silent — including, if
-you want one, a stricter silence posture ("when this fingerprint is silent on X,
+**How to read the rest.** What this package covers, how its kinds organize
+the corpus, and where the package deliberately stays silent — including, if
+you want one, a stricter silence posture ("when this package is silent on X,
 ask a human") that overrides the default proceed-provisionally behavior.
 
 \`index\` is this package's manifest-declared cover: \`ghost gather\` inlines its
@@ -144,7 +144,7 @@ it applies — never a filing destination.
  * The composition starter: everything in `minimal`, plus a worked composition
  * ladder — an invariants floor (`principle.composition`), one bound/open
  * pattern, and a cover that teaches the convention. For teams whose
- * fingerprint must steer *what agents build*, not only what they say.
+ * package must steer *what agents build*, not only what they say.
  *
  * The ladder is an authoring convention, not a schema: patterns state what is
  * bound (do not redecide) and what is open (the generator's call), and every
@@ -221,10 +221,10 @@ them.
       {
         relativePath: "index.md",
         content: `---
-description: Start here — how this fingerprint steers composition, from patterns down to principles.
+description: Start here — how this package steers composition, from patterns down to principles.
 ---
 
-This fingerprint steers what gets built, not only what gets said. It is
+This package steers what gets built, not only what gets said. It is
 organized as a ladder of binding depth:
 
 1. **Patterns** (\`pattern.*\`) are mostly-decided compositions. When an ask
@@ -257,7 +257,7 @@ opinions before trusting them.
 description: The composition floor — hard layout invariants that hold for every screen, whether or not a pattern matches the ask.
 ---
 
-These invariants apply to everything built against this fingerprint. Patterns
+These invariants apply to everything built against this package. Patterns
 narrow them; nothing loosens them. Each is written as a refusal or a limit with
 a number, because a stance an agent can check is a stance that steers.
 
@@ -369,7 +369,7 @@ const TEMPLATES = new Map<string, GhostInitTemplate>([
 ]);
 
 /**
- * An init body: a full inhabited fingerprint package — answered signature
+ * An init body: a full inhabited ghost package — answered signature
  * dials, materials, refs, and its own checks. Templates are shapes of
  * emptiness awaiting the owner's truths; a body is the same anatomy with a
  * real brand's values plugged in. Bodies keep their own manifest id (e.g.
@@ -391,6 +391,15 @@ const VESSEL_LIGHT_BODY: GhostInitBody = {
   includesChecks: true,
   async files() {
     const payload = await loadPackedPayload("vessel-light");
+    const manifest = payload.find(
+      (file) => file.relativePath === "manifest.yml",
+    );
+    if (manifest && typeof manifest.content === "string") {
+      manifest.content = manifest.content.replace(
+        /^schema:\s*ghost\.fingerprint-package\/v1\s*$/m,
+        `schema: ${GHOST_PACKAGE_SCHEMA}`,
+      );
+    }
     payload.sort((a, b) => {
       const ao = BODY_FILE_ORDER.get(a.relativePath);
       const bo = BODY_FILE_ORDER.get(b.relativePath);

@@ -5,10 +5,10 @@ import {
   type CatalogMenuEntry,
   parseGlossary,
 } from "#ghost-core";
-import { resolveFingerprintPackage } from "../fingerprint.js";
 import { isMissingPathError } from "../internal/fs.js";
 import { appendGhostEvent, resolveRunId } from "../observability-events.js";
-import { loadFingerprintPackage } from "../scan/fingerprint-package.js";
+import { resolveGhostPackage } from "../package.js";
+import { loadGhostPackage } from "../scan/fingerprint-package.js";
 import { failFromError } from "./errors.js";
 
 /**
@@ -29,7 +29,7 @@ export function registerGatherCommand(cli: CAC): void {
     )
     .option(
       "--package <dir>",
-      "Use this fingerprint package directory (default: ./.ghost)",
+      "Use this ghost package directory (default: ./.ghost)",
     )
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
@@ -47,8 +47,8 @@ export function registerGatherCommand(cli: CAC): void {
         }
 
         const ask = normalizeAsk(askParts);
-        const paths = resolveFingerprintPackage(opts.package, process.cwd());
-        const loaded = await loadFingerprintPackage(paths);
+        const paths = resolveGhostPackage(opts.package, process.cwd());
+        const loaded = await loadGhostPackage(paths);
         const coverId = loaded.manifest.cover;
         const coverNode = coverId
           ? loaded.catalog.nodes.get(coverId)
@@ -65,7 +65,7 @@ export function registerGatherCommand(cli: CAC): void {
           menu: menu.map((entry) => entry.id),
         });
 
-        // Ghost does no selection. It emits the complete catalog; the agent
+        // ghost does no selection. It emits the complete catalog; the agent
         // reads the ask against it and pulls the nodes whose described
         // conditions apply.
         if (opts.format === "json") {
@@ -75,7 +75,7 @@ export function registerGatherCommand(cli: CAC): void {
                 kind: "menu",
                 ...(ask ? { ask } : {}),
                 source: {
-                  artifact: "Ghost brand fingerprint",
+                  artifact: "ghost package",
                   list: "Available guidance",
                 },
                 contract: gatherContract(ask),
@@ -92,7 +92,7 @@ export function registerGatherCommand(cli: CAC): void {
                 next: { command: "ghost pull <id> [<id>…]" },
                 silence: {
                   ifNoneApply:
-                    "Name the fingerprint's silence, follow the cover silence posture when present, and do not invent Ghost-backed guidance.",
+                    "Name the package's silence, follow the cover silence posture when present, and do not invent ghost-backed guidance.",
                 },
                 coverage: menuCoverage(menu),
                 ...(kinds.length > 0 ? { kinds } : {}),
@@ -187,7 +187,7 @@ function gatherContract(ask: string | undefined): GatherContract {
     selection: {
       basis: "applicability",
       instruction: ask
-        ? "Pull every node whose description indicates its stated situation applies and whose truth, material, structure, or refusal governs the work; skip inapplicable nodes."
+        ? "Pull every node whose description indicates its stated situation applies and whose guidance, material, structure, or refusal governs the work; skip inapplicable nodes."
         : "Bare gather is catalog inspection. Do not treat the menu as task grounding until an ask is supplied; when grounding a task, pull every applicable node and skip inapplicable nodes.",
       topicOverlapAloneIsApplicability: false,
       addForCompleteness: false,
@@ -246,7 +246,7 @@ function formatMenuMarkdown(
   kinds: MenuKind[],
   options: FormatMenuOptions = {},
 ): string {
-  const lines: string[] = ["# Ghost brand fingerprint", ""];
+  const lines: string[] = ["# ghost package", ""];
   if (options.ask) lines.push(`Ask: ${options.ask}`, "");
   if (options.cover) {
     lines.push(
@@ -263,16 +263,16 @@ function formatMenuMarkdown(
   lines.push("## Available guidance", "", menuCoverageLine(menu), "");
   if (options.ask) {
     lines.push(
-      "Complete, unfiltered, unranked list from the fingerprint. Ghost has not selected nodes for this ask.",
-      "Pull every node whose description indicates its stated situation applies and whose truth, material, structure, or refusal governs the work. Skip inapplicable nodes. Topic overlap alone is not applicability. Do not add nodes for completeness or omit applicable nodes to meet a count.",
+      "Complete, unfiltered, unranked list from the ghost package. ghost has not selected nodes for this ask.",
+      "Pull every node whose description indicates its stated situation applies and whose guidance, material, structure, or refusal governs the work. Skip inapplicable nodes. Topic overlap alone is not applicability. Do not add nodes for completeness or omit applicable nodes to meet a count.",
       "Next: `ghost pull <id> [<id>…]`.",
-      "If nothing applies, name the fingerprint's silence, follow the cover silence posture, and do not invent Ghost-backed guidance.",
+      "If nothing applies, name the package's silence, follow the cover silence posture, and do not invent ghost-backed guidance.",
       "",
     );
   } else {
     lines.push(
-      "Complete, unfiltered, unranked list from the fingerprint. Bare gather is catalog inspection; Ghost has not grounded a task or selected nodes.",
-      "When grounding an ask, pull every applicable node with `ghost pull <id> [<id>…]`. Skip inapplicable nodes and do not invent Ghost-backed guidance when the fingerprint is silent.",
+      "Complete, unfiltered, unranked list from the ghost package. Bare gather is catalog inspection; ghost has not grounded a task or selected nodes.",
+      "When grounding an ask, pull every applicable node with `ghost pull <id> [<id>…]`. Skip inapplicable nodes and do not invent ghost-backed guidance when the ghost package is silent.",
       "",
     );
   }

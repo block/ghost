@@ -1,7 +1,7 @@
 {
   "$schema": "ghost.install-manifest/v1",
   "name": "ghost",
-  "description": "Ghost recipes \u2014 create, author, and gather the repo-local brand fingerprint bundle.",
+  "description": "ghost recipes \u2014 create, author, and gather the repo-local ghost package.",
   "version": "0.1.0",
   "source": {
     "package": "packages/ghost/src/skill-bundle"

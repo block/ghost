@@ -23,7 +23,7 @@ type SupportedAgent = (typeof SUPPORTED_AGENTS)[number];
 
 export function registerSkillCommand(cli: CAC): void {
   cli
-    .command("skill <action>", "Install the unified Ghost skill bundle.")
+    .command("skill <action>", "Install the unified ghost skill bundle.")
     .option(
       "--dest <path>",
       "Install destination (default: detected agent skills directory + /ghost)",
@@ -32,7 +32,7 @@ export function registerSkillCommand(cli: CAC): void {
       "--agent <name>",
       "Agent destination to use when --dest is omitted: claude, cursor, codex, opencode, goose",
     )
-    .option("--force", "Overwrite an existing installed Ghost skill")
+    .option("--force", "Overwrite an existing installed ghost skill")
     .action(async (action: string, opts) => {
       try {
         if (action !== "install") {

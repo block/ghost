@@ -48,7 +48,7 @@ export const GhostNodeFrontmatterSchema = z
       .optional(),
   })
   // Passthrough, not strict: authors may add free-form descriptive keys
-  // (e.g. `audience`, `stage`) that describe what the node is. Ghost does not
+  // (e.g. `audience`, `stage`) that describe what the node is. ghost does not
   // gate on them — they ride along as part of the node's descriptive surface.
   .passthrough();
 

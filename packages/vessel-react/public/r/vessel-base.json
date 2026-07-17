@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "vessel-base",
-  "title": "Ghost UI",
+  "title": "ghost UI",
   "author": "block",
   "description": "ghost design language",
   "dependencies": ["tw-animate-css", "clsx", "tailwind-merge"],

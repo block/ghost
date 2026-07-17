@@ -1,6 +1,6 @@
 ---
 name: concrete-tiers
-description: Decide which concrete code tiers a fingerprint carries — tokens, skeletons, components, exemplars — and justify every absence.
+description: Decide which concrete code tiers a ghost package carries — tokens, skeletons, components, exemplars — and justify every absence.
 handoffs:
   - label: Audit what the package carries today
     command: ghost gather
@@ -10,10 +10,10 @@ handoffs:
 # Recipe: Choose The Concrete Code Tiers
 
 **Goal:** decide, deliberately, which tiers of concrete code material a
-fingerprint carries — and be able to say why any tier is absent. Absence
+package carries — and be able to say why any tier is absent. Absence
 should be a decision, not a default.
 
-Prose states a truth; concrete code makes it the cheapest continuation. A
+Prose states guidance; concrete code makes it the cheapest continuation. A
 package can carry code at four tiers, and each does a different job during
 generation:
 
@@ -30,7 +30,7 @@ Two properties decide whether a tier steers, and they are not the same thing:
   skeleton one block, an exemplar one whole surface.
 - **Delivery** — whether the material is guaranteed to reach the agent.
   Skeleton blocks live in node bodies, so `ghost pull` delivers them with the
-  truth. Files behind `materials:` locators reach only agents that spend a
+  guidance. Files behind `materials:` locators reach only agents that spend a
   turn reading them. A tier the agent never sees contributes nothing;
   presence in the package is not presence in context.
 
@@ -57,15 +57,15 @@ The other three tiers are earned by the package's shape:
 
 ## Every tier is a copy that can drift
 
-Each tier repeats the token truth, and a stale copy steers harder than the
+Each tier repeats the token decision, and a stale copy steers harder than the
 prose that corrects it. A hardcoded value in an exemplar where a token
 exists is a lie waiting for a rename. Before adding a tier, accept its
 maintenance bill; after any token change, sweep every tier for stranded
 literals.
 
-A tier can also fight the package's stance. A package whose truth is
+A tier can also fight the package's stance. A package whose guidance is
 "compose each surface fresh from the tokens" contradicts itself by shipping
-a component kit; a package whose truth is "compose from the grammar, the
+a component kit; a package whose guidance is "compose from the grammar, the
 refs are examples not a framework" hardens toward template convergence if
 every pattern carries a mandatory skeleton. When a tier and the stance
 conflict, the stance wins — that absence is the package expressing itself.

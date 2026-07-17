@@ -1,7 +1,7 @@
-# Ghost
+# ghost
 
-**Ghost is your brand, packed for agents.** A `.ghost/` folder of plain-prose
-truths (your stance, your voice, your trust moves) checked into the repo and
+**ghost is your brand, packed for agents.** A `.ghost/` folder of plain-prose
+guidance (your stance, your voice, your trust moves) checked into the repo and
 read by any agent before it makes anything: a screen, an email, an empty
 state, a sentence.
 
@@ -14,7 +14,7 @@ state, a sentence.
 ```
 
 Today those decisions live in reviewers' heads: "that's not our voice," again,
-on every surface. The agent that built the thing never saw them. Ghost writes
+on every surface. The agent that built the thing never saw them. ghost writes
 them down once, where the agent looks first.
 
 One portable packet; Claude Code, Codex, Cursor, and Goose all read the same
@@ -31,18 +31,18 @@ npx ghost skill install
 
 ## Use It
 
-Ghost is **bring-your-own-agent**. Install the skill bundle so Claude Code,
+ghost is **bring-your-own-agent**. Install the skill bundle so Claude Code,
 Codex, Cursor, Goose, or another host agent knows how to author and use the
-fingerprint, then ask in plain English:
+ghost package, then ask in plain English:
 
 ```text
-Set up the Ghost fingerprint for this repo.
+Set up the ghost package for this repo.
 Write down the decision I keep repeating about checkout.
-Brief this work from the Ghost fingerprint.
-Review this diff against the Ghost checks.
+Brief this work from the ghost package.
+Review this diff against the ghost checks.
 ```
 
-Ghost never calls an LLM itself; your agent does the thinking. No API key,
+ghost never calls an LLM itself; your agent does the thinking. No API key,
 no lock-in.
 
 ## The Loop
@@ -50,15 +50,15 @@ no lock-in.
 ```bash
 ghost init          # scaffold .ghost/ with the skeleton starter
 ghost checks init   # opt in to review assertions
-ghost validate      # make sure the fingerprint is well-formed
-ghost gather <ask>  # before building: list every truth relevant to this task
-ghost pull <ids>    # read the picked truths' full bodies
-ghost review        # during review: match a diff to truths and checks
-ghost export        # package the fingerprint as a portable artifact
+ghost validate      # make sure the package is well-formed
+ghost gather <ask>  # before building: list all available guidance
+ghost pull <ids>    # read the picked nodes' full bodies
+ghost review        # during review: match a diff to guidance and checks
+ghost export        # bundle the guidance as a portable artifact
 ghost pulse         # while tuning: see what agents reached for
 ```
 
-Ghost keeps a private local log of what agents reached for; `ghost pulse`
+ghost keeps a private local log of what agents reached for; `ghost pulse`
 reads it so you can tune descriptions. It stays on your machine and never
 enters version control.
 
@@ -74,15 +74,15 @@ generation starts from the model's average again. The work that compounds is
 architectural: decide where that average serves, decide where the brand must
 win, and put those decisions where the agent reads before it makes.
 
-Ghost is that artifact: a fingerprint checked into the repo, carrying the
-truths, the materials they point at, and the conditions they hold under.
+ghost is that artifact: a `.ghost/` package checked into the repo, carrying the
+guidance, the materials they point at, and the conditions they hold under.
 Buttons stay buttons. The moments that carry your brand get your stance
 instead of the default. The few author it once. Every agent it travels to
 builds from it.
 
 ## How It Works
 
-A fingerprint is a small folder of prose. The CLI computes; your agent reads,
+A ghost package is a small folder of prose. The CLI computes; your agent reads,
 writes, and decides.
 
 ```text
@@ -90,16 +90,16 @@ writes, and decides.
   manifest.yml          # schema + package id + optional cover id
   glossary.md           # your kind vocabulary + what each kind means
   brand.md              # example cover inlined by gather
-  principle.trust.md    # a brand truth of kind `principle`
-  asset.logo.md         # a truth that may point at concrete materials
+  principle.trust.md    # guidance of kind `principle`
+  asset.logo.md         # guidance that points at concrete materials
   checks/               # optional review assertions; never nodes
 ```
 
-The fingerprint is a **flat set of nodes**. The optional `cover:` in
+The package is a **flat set of nodes**. The optional `cover:` in
 `manifest.yml` may name any node; `ghost gather` inlines it before the menu.
 The default skeleton calls that node `brand`, but the filename is not reserved.
 A node is one markdown file: a `description` in frontmatter, optional
-`materials`, and a brand truth in the prose body.
+`materials`, and a brand guidance in the prose body.
 
 ```markdown
 ---
@@ -114,7 +114,7 @@ constrained or when brand presence should recede.
 ```
 
 `materials` is a list of paths or URLs pointing at the concrete stuff the
-truth is about: repo-relative paths/globs or absolute HTTPS URLs. Components,
+guidance is about: repo-relative paths/globs or absolute HTTPS URLs. Components,
 patterns, logos, motion files, illustrations, and external asset libraries all
 use the same field. Guidance stays in prose; `materials` only says where the
 material is.
@@ -147,12 +147,12 @@ output never enters generation context.
 
 The packet is the product; the CLI is the courier. Everything above
 (gather, pull, review, checks, the local log) is machinery around the
-fingerprint, and the fingerprint outlives all of it.
+brand guidance, and the guidance outlives all of it.
 
 ## Portable by Design
 
-The fingerprint travels. It is agent-agnostic (every host agent reads the same
-packet), medium-agnostic (the same truths steer a screen, a page, an email, a
+The package travels. It is agent-agnostic (every host agent reads the same
+packet), medium-agnostic (the same guidance steers a screen, a page, an email, a
 sentence), and repo-native (it moves with a clone, a fork, a new hire's first
 checkout). When you need it as a standalone artifact:
 
@@ -166,7 +166,7 @@ point at things that moved.
 ## Project Status: Beta
 
 > [!WARNING]
-> Ghost is pre-1.0 and under active development. The CLI, fingerprint schema,
+> ghost is pre-1.0 and under active development. The CLI, package schema,
 > on-disk `.ghost/` package shape, and public JavaScript exports may change in
 > breaking ways before a stable 1.0 release.
 
@@ -174,10 +174,10 @@ point at things that moved.
 
 | Path | Role | Published? |
 | ---- | ---- | --- |
-| [`packages/ghost`](./packages/ghost) | The public `ghost` CLI, node authoring, fingerprint validation, gather/pull, review packet assembly, and the skill bundle. | yes: `@design-intelligence/ghost` |
+| [`packages/ghost`](./packages/ghost) | The public `ghost` CLI, node authoring, package validation, gather/pull, review packet assembly, and the skill bundle. | yes: `@design-intelligence/ghost` |
 | [`packages/vessel-react`](./packages/vessel-react) | A standalone shadcn component registry plus `vessel-mcp` MCP server. | no |
-| [`packages/vessel-light`](./packages/vessel-light) | Vessel's design language as a portable `.ghost/` fingerprint for agents writing raw HTML/CSS. | no |
-| [`packages/steering-control`](./packages/steering-control) | Before/after evaluation harness: measures what a `.ghost` fingerprint buys as a self-contained `report.html`. | no |
+| [`packages/vessel-light`](./packages/vessel-light) | Vessel's design language as a portable `.ghost/` package for agents writing raw HTML/CSS. | no |
+| [`packages/steering-control`](./packages/steering-control) | Before/after evaluation harness: measures what a `.ghost` package buys as a self-contained `report.html`. | no |
 | [`apps/docs`](./apps/docs) | Docs site. | no |
 
 ## Development

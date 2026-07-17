@@ -1,9 +1,9 @@
 ---
 name: brief
-description: Build a compact pre-generation packet from pulled Ghost truths.
+description: Build a compact pre-generation packet from pulled ghost guidance.
 ---
 
-# Recipe: Brief Work From Ghost Fingerprint
+# Recipe: Brief Work From ghost Package
 
 A brief is an ephemeral steering packet for the generating pass. It is not a new
 schema and is never written back into `.ghost/`.
@@ -15,8 +15,8 @@ schema and is never written back into `.ghost/`.
 3. Note gather payload labels where present: `materials`, substantial fenced
    examples, or a `## Skeleton`. If there is no concrete material for this
    surface, the readiness ceiling is **Yellow**.
-4. If no node applies, name the fingerprint's silence, follow the cover silence
-   posture, and keep provisional reasoning separate from Ghost-backed claims.
+4. If no node applies, name the package's silence, follow the cover silence
+   posture, and keep provisional reasoning separate from ghost-backed claims.
 
 ## The packet: five sections only
 
@@ -36,7 +36,7 @@ Return this shape:
 - matching pulled Skeleton, or "none pulled"
 
 ## Silent / provisional
-- what Ghost does not cover and what local evidence carries
+- what ghost does not cover and what local evidence carries
 ```
 
 Rules:

@@ -11,7 +11,7 @@ export interface ParsedMarkdown {
  * `---\n<yaml>\n---\n<body>`. Returns `frontmatter: null` when there is no
  * leading frontmatter block (callers report it as an error).
  *
- * Shared by every Ghost markdown+frontmatter artifact (checks, nodes): one
+ * Shared by every ghost markdown+frontmatter artifact (checks, nodes): one
  * envelope, one splitter.
  */
 export function splitMarkdownFrontmatter(raw: string): ParsedMarkdown {

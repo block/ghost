@@ -83,11 +83,19 @@ export {
   serializeNode,
   stripSkeletonSections,
 } from "./node/index.js";
-// --- Fingerprint package manifest (ghost.fingerprint-package/v1) ---
-export type { GhostFingerprintPackageManifest } from "./package-manifest.js";
+// --- ghost package manifest ---
+export type {
+  /** @deprecated Use `GhostPackageManifest`. */
+  GhostFingerprintPackageManifest,
+  GhostPackageManifest,
+} from "./package-manifest.js";
 export {
+  /** @deprecated Use `GHOST_PACKAGE_SCHEMA`. */
   GHOST_FINGERPRINT_PACKAGE_SCHEMA,
+  GHOST_PACKAGE_SCHEMA,
+  /** @deprecated Use `GhostPackageManifestSchema`. */
   GhostFingerprintPackageManifestSchema,
+  GhostPackageManifestSchema,
 } from "./package-manifest.js";
 // --- Skill bundle loader ---
 export type { SkillBundleFile } from "./skill-bundle-loader.js";

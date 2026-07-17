@@ -16,6 +16,7 @@ const PACKAGE_NAME = "@design-intelligence/ghost";
 const PUBLIC_IMPORTS = [
   "@design-intelligence/ghost",
   "@design-intelligence/ghost/cli",
+  "@design-intelligence/ghost/package",
   "@design-intelligence/ghost/fingerprint",
   "@design-intelligence/ghost/scan",
   "@design-intelligence/ghost/core",

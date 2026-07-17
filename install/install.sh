@@ -1,5 +1,5 @@
 #!/bin/sh
-# Ghost — install the unified brand-fingerprint skill bundle.
+# ghost — install the unified brand-guidance skill bundle.
 #
 # Usage:
 #   curl -fsSL https://raw.githubusercontent.com/block/ghost/main/install/install.sh | sh
@@ -143,7 +143,7 @@ fetch() {
   $DL_CMD "$url"
 }
 
-printf 'Ghost — installing %s skill bundle\n' "$GHOST_AGENT"
+printf 'ghost — installing %s skill bundle\n' "$GHOST_AGENT"
 printf '  source: %s\n' "$GHOST_SOURCE"
 printf '  dest:   %s\n' "$GHOST_DEST"
 printf '\n'
@@ -198,8 +198,8 @@ printf '\nInstalled %d files to %s\n' "$count" "$GHOST_DEST"
 printf '\n'
 printf 'Next:\n'
 printf '  cd <your-repo>\n'
-printf '  Tell your agent: "Set up the Ghost fingerprint for this repo"\n'
+printf '  Tell your agent: "Set up the ghost package for this repo"\n'
 printf '\n'
-printf 'The agent will use .ghost/ as the checked-in brand fingerprint: a flat\n'
+printf 'The agent will use .ghost/ as the checked-in ghost package: a flat\n'
 printf 'corpus of prose nodes it gathers and pulls before building, validates\n'
 printf 'with ghost validate, and can review diffs against with ghost review.\n'

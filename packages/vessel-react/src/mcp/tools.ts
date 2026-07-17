@@ -13,7 +13,7 @@ const REGISTRY_URL = "https://block.github.io/ghost/r/registry.json";
 export function registerTools(server: McpServer): void {
   server.tool(
     "search_components",
-    "Search Ghost UI components by name, category, or AI filter",
+    "Search ghost UI components by name, category, or AI filter",
     {
       query: z
         .string()
@@ -43,7 +43,7 @@ export function registerTools(server: McpServer): void {
 
   server.tool(
     "get_component",
-    "Get full metadata and source code for a Ghost UI component",
+    "Get full metadata and source code for a ghost UI component",
     {
       name: z.string().describe("Component name from the registry"),
     },
@@ -73,7 +73,7 @@ export function registerTools(server: McpServer): void {
 
   server.tool(
     "get_install_command",
-    "Generate a shadcn install command for Ghost UI components",
+    "Generate a shadcn install command for ghost UI components",
     {
       components: z
         .array(z.string())
@@ -89,7 +89,7 @@ export function registerTools(server: McpServer): void {
 
   server.tool(
     "list_categories",
-    "List all Ghost UI component categories with counts",
+    "List all ghost UI component categories with counts",
     {},
     async () => {
       const categories = getCategoriesWithCounts();
@@ -106,7 +106,7 @@ export function registerTools(server: McpServer): void {
 
   server.tool(
     "get_theme",
-    "Get CSS variables for a Ghost UI theme preset",
+    "Get CSS variables for a ghost UI theme preset",
     {
       name: z.string().describe("Theme preset name"),
     },

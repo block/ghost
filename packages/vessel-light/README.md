@@ -1,6 +1,6 @@
 # vessel-light
 
-vessel-light is Vessel's design language as a locked-and-loaded `.ghost/` fingerprint for agents writing raw HTML/CSS. No package. No build. No dependencies. Copy the fingerprint into a repo, hand it to `ghost`, and make the agent style with the same tokens, primitives, and worked compositions Vessel uses.
+vessel-light is Vessel's design language as a locked-and-loaded `.ghost/` package for agents writing raw HTML/CSS. No install. No build. No dependencies. Copy the package into a repo, hand it to `ghost`, and make the agent style with the same tokens, primitives, and worked compositions Vessel uses.
 
 ## Copy
 

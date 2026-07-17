@@ -25,7 +25,7 @@ Pruning a rule from `cliche.median` orphans its paired reference here —
 
 Flag `transform` with `translateY` inside a `:hover` rule on cards,
 buttons, or list items, especially paired with a shadow increase. Hover
-confirmation in this fingerprint is color and background change, not lift.
+confirmation in this package is color and background change, not lift.
 (`cliche.median > Hover-lift`)
 
 Flag accent values in the indigo/blue/purple default family (`#4f46e5`,

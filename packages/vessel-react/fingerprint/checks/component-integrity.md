@@ -1,6 +1,6 @@
 ---
 name: Component integrity
-description: Flags variant sprawl, one-off forks of vendored components, hierarchy violations, and app truth hardening into the shared UI layer.
+description: Flags variant sprawl, one-off forks of vendored components, hierarchy violations, and app guidance hardening into the shared UI layer.
 severity: medium
 references:
   - primitive.controls
@@ -29,8 +29,8 @@ forks split the system.
 
 Flag product-specific copy, business flows, or app-only assumptions being
 hardcoded into the shared `ui/` or `ai-elements/` layer as if universal.
-Product truth belongs in app-level components and this repo's own
-fingerprint nodes, not in the reference layer.
+Product guidance belongs in app-level components and this repo's own
+guidance nodes, not in the reference layer.
 
 Flag interactive elements missing their accessibility contract when the
 vendored component provided one: focus-visible rings removed, `aria-invalid`

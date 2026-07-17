@@ -1,7 +1,7 @@
 # steering-control
 
-A before/after evaluation harness for Ghost fingerprints. It measures what
-handing an agent a `.ghost` fingerprint buys — output quality, run-to-run
+A before/after evaluation harness for ghost packages. It measures what
+handing an agent a `.ghost` package buys — output quality, run-to-run
 consistency, retrieval precision — as a ratio of the context tokens spent.
 
 It produces one artifact: a self-contained `report.html` with screenshot
@@ -15,16 +15,16 @@ the report.
 | Arm | Context the generating agent sees | Claim it tests |
 | --- | --- | --- |
 | `naked` | ballast + ask | baseline: median model output, no brand |
-| `dump` | full fingerprint prose up front + ballast + ask | the naive "paste the brand guide in the system prompt" |
-| `gather` | ballast + `ghost gather` menu + agent-selected `ghost pull`s near the ask | Ghost's actual loop |
-| `dump-growth` | dump of this fingerprint **plus** extra corpora + ballast + ask | how dumping degrades as the corpus grows, while the gather menu grows one line per node |
+| `dump` | full package prose up front + ballast + ask | the naive "paste the brand guide in the system prompt" |
+| `gather` | ballast + `ghost gather` menu + agent-selected `ghost pull`s near the ask | ghost's actual loop |
+| `dump-growth` | dump of this package **plus** extra corpora + ballast + ask | how dumping degrades as the corpus grows, while the gather menu grows one line per node |
 
-Fresh context per run. The `naked` arm must never see the fingerprint.
+Fresh context per run. The `naked` arm must never see the ghost package.
 
 ## Setup
 
 You need: Node 20+, the `ghost` CLI on PATH (or set `ghostBin` in config),
-a `.ghost/` fingerprint package, and an agent that drives the loop (Claude
+a `.ghost/` package, and an agent that drives the loop (Claude
 Code, goose, Cursor — anything that can read a prompt file and write HTML).
 
 ```bash
@@ -51,7 +51,7 @@ Fill in `eval.config.json`:
 }
 ```
 
-- `package` — the fingerprint under test.
+- `package` — the ghost package under test.
 - `asks` — a markdown file of numbered asks (see format below).
 - `ballast` — fixed, realistic-shaped irrelevant context, identical across
   arms. It exists to create window pressure. Never edit it between runs.

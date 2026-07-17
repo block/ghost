@@ -1,17 +1,14 @@
 import type { CAC } from "cac";
 import { UsageError } from "#ghost-core";
-import { initFingerprintPackage } from "../fingerprint.js";
+import { initGhostPackage } from "../package.js";
 import { addChecksDir } from "../scan/check-scaffold.js";
 import { getInitBody } from "../scan/templates.js";
 import { failFromError } from "./errors.js";
 
 export function registerInitCommand(cli: CAC): void {
   cli
-    .command("init", "Create a root .ghost node fingerprint package")
-    .option(
-      "--package <dir>",
-      "Exact fingerprint package directory to initialize",
-    )
+    .command("init", "Create a root .ghost package of nodes")
+    .option("--package <dir>", "Exact ghost package directory to initialize")
     .option(
       "--template <name>",
       "Init template to scaffold (default: skeleton)",
@@ -24,7 +21,7 @@ export function registerInitCommand(cli: CAC): void {
       "--with <capabilities>",
       "Comma-separated capabilities to add after scaffolding (e.g. checks)",
     )
-    .option("--force", "Overwrite existing Ghost fingerprint files")
+    .option("--force", "Overwrite existing ghost package files")
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (opts) => {
       try {
@@ -53,17 +50,13 @@ export function registerInitCommand(cli: CAC): void {
           );
         }
 
-        const result = await initFingerprintPackage(
-          exactPackage,
-          process.cwd(),
-          {
-            ...(typeof opts.template === "string"
-              ? { template: opts.template }
-              : {}),
-            ...(typeof opts.body === "string" ? { body: opts.body } : {}),
-            force: Boolean(opts.force),
-          },
-        );
+        const result = await initGhostPackage(exactPackage, process.cwd(), {
+          ...(typeof opts.template === "string"
+            ? { template: opts.template }
+            : {}),
+          ...(typeof opts.body === "string" ? { body: opts.body } : {}),
+          force: Boolean(opts.force),
+        });
         const addedChecks = withIds.includes("checks")
           ? await addChecksDir(result.paths.packageDir)
           : undefined;
@@ -89,7 +82,7 @@ export function registerInitCommand(cli: CAC): void {
           );
         } else {
           process.stdout.write(
-            `Initialized Ghost fingerprint package: ${result.paths.dir}\n`,
+            `Initialized ghost package: ${result.paths.dir}\n`,
           );
           for (const relativePath of result.written) {
             process.stdout.write(`  ${relativePath}\n`);

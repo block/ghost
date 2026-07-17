@@ -3,7 +3,7 @@ import { getRegistryRaw, getSkills } from "./data.js";
 
 export function registerResources(server: McpServer): void {
   server.resource(
-    "Ghost UI Registry",
+    "ghost UI Registry",
     "ghost://registry",
     { mimeType: "application/json" },
     async () => ({
@@ -18,7 +18,7 @@ export function registerResources(server: McpServer): void {
   );
 
   server.resource(
-    "Ghost UI Skills",
+    "ghost UI Skills",
     "ghost://skills",
     { mimeType: "text/markdown" },
     async () => ({

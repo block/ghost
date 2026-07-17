@@ -16,12 +16,12 @@ import { isMissingPathError } from "../internal/fs.js";
 import type { LoadedCheck } from "./check-files.js";
 import { GHOST_GLOSSARY_FILENAME, GHOST_MATERIALS_DIR } from "./constants.js";
 import {
-  type FingerprintPackagePaths,
-  resolveFingerprintPackage,
+  type GhostPackagePaths,
+  resolveGhostPackage,
 } from "./fingerprint-package.js";
 import {
-  lintFingerprintPackageManifest,
-  loadFingerprintPackage,
+  lintGhostPackageManifest,
+  loadGhostPackage,
 } from "./fingerprint-package-loader.js";
 import type { LintIssue, LintReport } from "./lint.js";
 import { resolveGitRoot } from "./package-paths.js";
@@ -31,11 +31,11 @@ import { resolveGitRoot } from "./package-paths.js";
  * deterministic kind-prefix lint enabled by glossary.md. The catalog is flat;
  * loading collects malformed nodes so they can be surfaced as structured issues.
  */
-export async function lintFingerprintPackage(
+export async function lintGhostPackage(
   dirArg: string | undefined,
   cwd = process.cwd(),
 ): Promise<LintReport> {
-  const paths = resolveFingerprintPackage(dirArg, cwd);
+  const paths = resolveGhostPackage(dirArg, cwd);
   const issues: LintIssue[] = [];
 
   const manifestRaw = await readRequired(
@@ -49,7 +49,7 @@ export async function lintFingerprintPackage(
     const beforeManifestErrors = issues.filter(
       (issue) => issue.severity === "error",
     ).length;
-    lintFingerprintPackageManifest(manifestRaw, issues);
+    lintGhostPackageManifest(manifestRaw, issues);
     const manifestHasErrors =
       issues.filter((issue) => issue.severity === "error").length >
       beforeManifestErrors;
@@ -57,7 +57,7 @@ export async function lintFingerprintPackage(
     // catalog pass: load + validate the node catalog.
     try {
       const { manifest, catalog, checks, invalid, invalidChecks } =
-        await loadFingerprintPackage(paths);
+        await loadGhostPackage(paths);
       // node pass: a node that failed its own schema was skipped while loading
       // the catalog; surface it here so a malformed node is loud, not silent.
       issues.push(
@@ -130,7 +130,7 @@ function lintCover(
       severity: "warning",
       rule: "cover-undeclared",
       message:
-        'no cover declared in manifest.yml — fingerprints steer better with one node guaranteed in context; add "cover: <node-id>"',
+        'no cover declared in manifest.yml — ghost packages steer better with one node guaranteed in context; add "cover: <node-id>"',
       path: "manifest.yml.cover",
     });
     return;
@@ -159,7 +159,7 @@ function lintCover(
 }
 
 async function lintKindPrefixes(
-  paths: FingerprintPackagePaths,
+  paths: GhostPackagePaths,
   catalog: GhostCatalog,
   issues: LintIssue[],
 ): Promise<void> {
@@ -203,7 +203,7 @@ function lintNodeDescriptions(
       severity: "warning",
       rule: "node-description-missing",
       message:
-        "node has no `description`, so `gather` lists it as a bare id without applicability context; add a one-line description of what this truth governs, when it applies, and what it contributes",
+        "node has no `description`, so `gather` lists it as a bare id without applicability context; add a one-line description of what this guidance governs, when it applies, and what it contributes",
       path: `${node.id}.md`,
     });
   }
@@ -229,7 +229,7 @@ function lintSkeletonSections(
 }
 
 async function lintMaterialLocators(
-  paths: FingerprintPackagePaths,
+  paths: GhostPackagePaths,
   catalog: GhostCatalog,
   issues: LintIssue[],
   cwd: string,
@@ -311,7 +311,7 @@ function lintCheckReferences(
         issues.push({
           severity: "warning",
           rule: "check-reference-unresolved",
-          message: `check reference '${raw}' does not resolve to a fingerprint node — if you pruned this rule from the node, delete its paired flag in the check too`,
+          message: `check reference '${raw}' does not resolve to a ghost package node — if you pruned this rule from the node, delete its paired flag in the check too`,
           path: `checks/${check.id}.md.references`,
         });
         continue;
@@ -358,12 +358,15 @@ async function readRequired(
     issues.push({
       severity: "error",
       rule: "package-artifact-missing",
-      message: `Fingerprint package is missing ${label}.`,
+      message: `ghost package is missing ${label}.`,
       path: label,
     });
     return undefined;
   }
 }
+
+/** @deprecated Use `lintGhostPackage`. */
+export const lintFingerprintPackage = lintGhostPackage;
 
 function finalize(issues: LintIssue[]): LintReport {
   return {

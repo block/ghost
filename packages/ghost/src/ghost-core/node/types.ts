@@ -17,7 +17,7 @@ export interface GhostNodeFrontmatter {
    */
   description?: string;
   /**
-   * Optional locators for the concrete materials this truth is about: repo-relative
+   * Optional locators for the concrete materials this guidance is about: repo-relative
    * paths/globs and absolute https URLs. Guidance stays in prose; this list is
    * only where the agent or review harness can find the material.
    */

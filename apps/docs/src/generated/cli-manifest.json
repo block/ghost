@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-15T12:11:34.119Z",
+  "generatedAt": "2026-07-17T03:34:39.594Z",
   "tools": [
     {
       "tool": "ghost",
@@ -8,16 +8,16 @@
           "tool": "ghost",
           "name": "validate",
           "rawName": "validate [file]",
-          "description": "Validate the Ghost fingerprint package — manifest shape, node validity, material locators, check references, and glossary kind prefixes. Defaults to .ghost.",
+          "description": "Validate the ghost package: manifest shape, node validity, material locators, check references, and glossary kind prefixes. Defaults to .ghost.",
           "group": "core",
           "defaultHelp": true,
           "compactName": "validate",
-          "summary": "Validate the fingerprint: artifact shape + node validity.",
+          "summary": "Validate the ghost package: artifact shape + node validity.",
           "options": [
             {
               "rawName": "--package <dir>",
               "name": "package",
-              "description": "Use this fingerprint package directory (default: ./.ghost)",
+              "description": "Use this ghost package directory (default: ./.ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -36,16 +36,16 @@
           "tool": "ghost",
           "name": "init",
           "rawName": "init",
-          "description": "Create a root .ghost node fingerprint package",
+          "description": "Create a root .ghost package of nodes",
           "group": "core",
           "defaultHelp": true,
           "compactName": "init",
-          "summary": "Scaffold a .ghost/ fingerprint: manifest, glossary, and a node.",
+          "summary": "Scaffold a .ghost/ package: manifest, glossary, and a node.",
           "options": [
             {
               "rawName": "--package <dir>",
               "name": "package",
-              "description": "Exact fingerprint package directory to initialize",
+              "description": "Exact ghost package directory to initialize",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -77,7 +77,7 @@
             {
               "rawName": "--force",
               "name": "force",
-              "description": "Overwrite existing Ghost fingerprint files",
+              "description": "Overwrite existing ghost package files",
               "default": null,
               "takesValue": false,
               "negated": false
@@ -105,7 +105,7 @@
             {
               "rawName": "--package <dir>",
               "name": "package",
-              "description": "Use this fingerprint package directory (default: ./.ghost)",
+              "description": "Use this ghost package directory (default: ./.ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -141,7 +141,7 @@
             {
               "rawName": "--package <dir>",
               "name": "package",
-              "description": "Use this fingerprint package directory (default: ./.ghost)",
+              "description": "Use this ghost package directory (default: ./.ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -201,7 +201,7 @@
             {
               "rawName": "--package <dir>",
               "name": "package",
-              "description": "Use this fingerprint package directory (default: ./.ghost)",
+              "description": "Use this ghost package directory (default: ./.ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -229,7 +229,7 @@
             {
               "rawName": "--package <dir>",
               "name": "package",
-              "description": "Use this fingerprint package directory (default: ./.ghost)",
+              "description": "Use this ghost package directory (default: ./.ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -280,11 +280,11 @@
           "tool": "ghost",
           "name": "export",
           "rawName": "export",
-          "description": "Package the fingerprint as a portable brand artifact with a locator audit.",
+          "description": "Package the ghost package as a portable brand artifact with a locator audit.",
           "group": "core",
           "defaultHelp": true,
           "compactName": "export",
-          "summary": "Package the fingerprint as a portable brand artifact.",
+          "summary": "Package the ghost package as a portable brand artifact.",
           "options": [
             {
               "rawName": "--out <path>",
@@ -313,7 +313,7 @@
             {
               "rawName": "--package <dir>",
               "name": "package",
-              "description": "Use this fingerprint package directory (default: ./.ghost)",
+              "description": "Use this ghost package directory (default: ./.ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -341,7 +341,7 @@
             {
               "rawName": "--package <dir>",
               "name": "package",
-              "description": "Use this fingerprint package directory (default: ./.ghost)",
+              "description": "Use this ghost package directory (default: ./.ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -380,11 +380,11 @@
           "tool": "ghost",
           "name": "skill",
           "rawName": "skill <action>",
-          "description": "Install the unified Ghost skill bundle.",
+          "description": "Install the unified ghost skill bundle.",
           "group": "core",
           "defaultHelp": true,
           "compactName": "skill install",
-          "summary": "Install the Ghost skill bundle.",
+          "summary": "Install the ghost skill bundle.",
           "options": [
             {
               "rawName": "--dest <path>",
@@ -405,7 +405,7 @@
             {
               "rawName": "--force",
               "name": "force",
-              "description": "Overwrite an existing installed Ghost skill",
+              "description": "Overwrite an existing installed ghost skill",
               "default": null,
               "takesValue": false,
               "negated": false

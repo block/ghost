@@ -18,7 +18,7 @@ export function assemblePrompt(config, arm, askN, runK) {
         brand += `\n\n${dumpPackage(extra)}`;
       }
     }
-    segments.push(section("Brand fingerprint", brand));
+    segments.push(section("Brand guidance", brand));
   } else if (arm === "gather") {
     const [ghostCmd, ...ghostPre] = config.ghostBin.split(/\s+/u);
     menu = execFileSync(
@@ -33,7 +33,7 @@ export function assemblePrompt(config, arm, askN, runK) {
       ],
       { encoding: "utf8" },
     );
-    segments.push(section("Ghost gather menu", menu.trim()));
+    segments.push(section("ghost gather menu", menu.trim()));
     segments.push(
       section("Selection instructions", gatherInstructions(config)),
     );
@@ -94,7 +94,7 @@ function findAsk(config, askN) {
 function gatherInstructions(config) {
   return [
     "Read the menu above against the ask.",
-    "Select only the Ghost node ids that are relevant.",
+    "Select only the ghost node ids that are relevant.",
     `Before generating, run: ${config.ghostBin} pull <ids> --package ${config.package}`,
     "Use the pulled node bodies as steering context, then generate the artifact.",
   ].join("\n");

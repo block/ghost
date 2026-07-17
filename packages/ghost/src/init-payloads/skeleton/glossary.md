@@ -34,6 +34,6 @@ checks at review.
 The cover node (`brand.md`, declared in the manifest) is the one page always
 in context: what the brand is, its temperature, and the refusals only it
 makes. The ghost skill's `adapting-a-starter` recipe is the procedure for
-growing this skeleton into a real fingerprint: write the cover, answer each
+growing this skeleton into a real ghost package: write the cover, answer each
 chapter's open question, prune the cliches your chapters absorb, then add
 materials and refs.

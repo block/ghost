@@ -5,20 +5,20 @@ import type {
 } from "./types.js";
 
 /**
- * Parse a well-formed Ghost check into a typed document. Assumes the input has
+ * Parse a well-formed ghost check into a typed document. Assumes the input has
  * already passed `lintGhostCheck` (throws on missing required frontmatter).
  */
 export function loadGhostCheck(raw: string): GhostCheckDocument {
   const { frontmatter, body } = parseCheckMarkdown(raw);
   if (frontmatter === null) {
-    throw new Error("Ghost check is missing a YAML frontmatter block.");
+    throw new Error("ghost check is missing a YAML frontmatter block.");
   }
 
   const name = frontmatter.name;
   const description = frontmatter.description;
   const severity = frontmatter.severity;
   if (typeof name !== "string" || typeof description !== "string") {
-    throw new Error("Ghost check frontmatter is missing name or description.");
+    throw new Error("ghost check frontmatter is missing name or description.");
   }
 
   const tools = Array.isArray(frontmatter.tools)

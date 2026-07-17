@@ -57,7 +57,7 @@ if (!baseItem) {
   baseItem = {
     name: "vessel-base",
     type: "registry:base",
-    title: "Ghost UI",
+    title: "ghost UI",
     description: "ghost design language",
     author: "block",
     style: "ghost",

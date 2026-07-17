@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Walk the cac command registry from each built Ghost tool and emit a
+// Walk the cac command registry from each built ghost tool and emit a
 // JSON manifest of commands, flags, and descriptions per tool. The docs
 // site renders this manifest via <CliHelp tool="…" command="…" />, so
 // the CLIs are the single source of truth — adding a flag to a bin.ts

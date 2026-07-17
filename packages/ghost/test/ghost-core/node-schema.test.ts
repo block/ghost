@@ -39,7 +39,7 @@ describe("ghost.node/v1 schema", () => {
   });
 
   it("passes through free-form descriptive keys (e.g. audience)", () => {
-    // Authors may add descriptive keys; Ghost does not gate on them.
+    // Authors may add descriptive keys; ghost does not gate on them.
     expect(lintGhostNode(node("audience: enterprise")).errors).toBe(0);
   });
 

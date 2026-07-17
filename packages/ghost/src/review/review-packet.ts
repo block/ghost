@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import type { GhostCatalogNode } from "#ghost-core";
 import { GHOST_MATERIALS_DIR } from "../scan/constants.js";
-import type { LoadedFingerprintPackage } from "../scan/fingerprint-package.js";
+import type { LoadedGhostPackage } from "../scan/fingerprint-package.js";
 import { resolveGitRoot } from "../scan/package-paths.js";
 import { type BaselineProse, resolveBaseline } from "./baseline.js";
 import { type ProbeEvidence, runProbe } from "./probes.js";
@@ -31,6 +31,8 @@ export interface PacketCheck {
 }
 
 export interface ReviewPacket {
+  packageId: string;
+  /** @deprecated Use `packageId`. */
   fingerprintId: string;
   touchedFiles: string[];
   materialNodes: PacketMaterialNode[];
@@ -40,7 +42,7 @@ export interface ReviewPacket {
 }
 
 export interface BuildReviewPacketOptions {
-  /** Absolute path of the fingerprint package directory (default: cwd/.ghost). */
+  /** Absolute path of the ghost package directory (default: cwd/.ghost). */
   packageDir?: string;
   runProbes?: boolean;
   cwd?: string;
@@ -48,14 +50,14 @@ export interface BuildReviewPacketOptions {
 }
 
 export async function buildReviewPacket(
-  fingerprint: LoadedFingerprintPackage,
+  ghostPackage: LoadedGhostPackage,
   diffText: string,
   options: BuildReviewPacketOptions = {},
 ): Promise<ReviewPacket> {
   const cwd = options.cwd ?? process.cwd();
   const resolution = resolveReview(
-    fingerprint.catalog,
-    fingerprint.checks,
+    ghostPackage.catalog,
+    ghostPackage.checks,
     diffText,
     {
       repoRoot: await resolveGitRoot(cwd),
@@ -65,12 +67,12 @@ export async function buildReviewPacket(
   );
 
   const materialNodes: PacketMaterialNode[] = resolution.materialNodes.map(
-    (matched) => materialNodeFromMatch(fingerprint, matched),
+    (matched) => materialNodeFromMatch(ghostPackage, matched),
   );
 
   const checks: PacketCheck[] = await Promise.all(
     resolution.offeredChecks.map(async (offered) => {
-      const check = fingerprint.checks.get(offered.id);
+      const check = ghostPackage.checks.get(offered.id);
       const probeCommand = check?.doc.frontmatter.probe;
       const probe =
         options.runProbes !== false && probeCommand !== undefined
@@ -87,7 +89,7 @@ export async function buildReviewPacket(
         prose: check?.doc.body.trim() ?? "",
         baseline:
           check?.references
-            .map((ref) => resolveBaseline(ref, fingerprint.catalog))
+            .map((ref) => resolveBaseline(ref, ghostPackage.catalog))
             .filter((ref): ref is BaselineProse => ref !== null) ?? [],
         ...(probe ? { probe } : {}),
       };
@@ -95,7 +97,8 @@ export async function buildReviewPacket(
   );
 
   return {
-    fingerprintId: fingerprint.manifest.id,
+    packageId: ghostPackage.manifest.id,
+    fingerprintId: ghostPackage.manifest.id,
     touchedFiles: resolution.touchedFiles.map((file) => file.path),
     materialNodes,
     checks,
@@ -105,10 +108,10 @@ export async function buildReviewPacket(
 }
 
 function materialNodeFromMatch(
-  fingerprint: LoadedFingerprintPackage,
+  ghostPackage: LoadedGhostPackage,
   matched: { id: string; locators: string[]; files: string[] },
 ): PacketMaterialNode {
-  const node = fingerprint.catalog.nodes.get(matched.id) as GhostCatalogNode;
+  const node = ghostPackage.catalog.nodes.get(matched.id) as GhostCatalogNode;
   return {
     id: node.id,
     ...(node.kind !== undefined ? { kind: node.kind } : {}),
@@ -124,14 +127,14 @@ function materialNodeFromMatch(
 
 export function formatReviewPacket(packet: ReviewPacket): string {
   const out: string[] = [];
-  out.push(`# Ghost review — fingerprint \`${packet.fingerprintId}\``, "");
+  out.push(`# ghost review — package \`${packet.packageId}\``, "");
   out.push(
-    "You are reviewing a diff against a Ghost fingerprint. The command has",
+    "You are reviewing a diff against ghost package guidance. The command has",
     "assembled the touched files, matched material-backed nodes, offered",
     "checks, and optional probe evidence. Probes are repo-owned shell commands",
     "with the same trust class as npm scripts; git review is the boundary.",
     "Weigh which checks apply. Do not invent obligations that are not grounded",
-    "in the fingerprint prose or check text.",
+    "in the ghost package guidance or check text.",
     "",
   );
 
@@ -181,7 +184,7 @@ export function formatReviewPacket(packet: ReviewPacket): string {
       }
       if (check.probe) {
         out.push(
-          "Probe evidence (shell run by Ghost; evidence only, not a pass/fail verdict):",
+          "Probe evidence (shell run by ghost; evidence only, not a pass/fail verdict):",
           `- command: \`${check.probe.command}\``,
           `- exit code: ${check.probe.exitCode ?? "unknown"}${check.probe.timedOut ? " (timed out)" : ""}`,
           "- stdout:",

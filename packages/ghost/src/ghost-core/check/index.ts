@@ -1,6 +1,6 @@
 /**
  * Public surface for `ghost.check/v1` — markdown + frontmatter checks an agent
- * evaluates (Ghost never runs them). Every check is offered to the reviewer;
+ * evaluates (ghost never runs them). Every check is offered to the reviewer;
  * the agent judges relevance against the diff and the grounded prose. A check's
  * optional `source:` names the fingerprint prose it enforces.
  */

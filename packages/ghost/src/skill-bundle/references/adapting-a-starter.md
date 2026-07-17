@@ -1,17 +1,17 @@
 ---
 name: adapting-a-starter
-description: Transplant a starter fingerprint — a body like vessel-light or the naked skeleton — into your own brand, one procedure from manifest id to regenerated refs.
+description: Transplant a starter ghost package — a body like vessel-light or the naked skeleton — into your own brand, one procedure from manifest id to regenerated refs.
 handoffs:
   - label: Validate the adapted package
     command: ghost validate --format json
-    prompt: Does the adapted fingerprint validate, and did any pruned rule orphan a check reference?
+    prompt: Does the adapted package validate, and did any pruned rule orphan a check reference?
 ---
 
-# Recipe: Adapt A Starter Fingerprint
+# Recipe: Adapt A Starter Package
 
 **Goal:** turn an installed starter — a full body (`ghost init --body
 vessel-light`) or the naked skeleton (`ghost init`) — into *your* brand's
-fingerprint without shipping a self-contradicting package.
+brand guidance without shipping a self-contradicting package.
 
 The naked skeleton is factored by what must happen during adaptation:
 
@@ -26,7 +26,7 @@ The naked skeleton is factored by what must happen during adaptation:
 
 Do the steps **in order and in one sitting** where possible. A half-adapted
 package is worse than an unadapted one: stale refs steer harder than any prose
-you rewrote, so stopping before refs and checks are current ships a fingerprint
+you rewrote, so stopping before refs and checks are current ships a package
 that contradicts itself.
 
 ## The procedure
@@ -64,7 +64,7 @@ that contradicts itself.
    stale ref loses. Rebuild each ref against the new values and chapter answers,
    keep any annotation headers current, and make each ref demonstrate its closed
    sets completely. If the starter shipped no refs, generate them now — a
-   fingerprint with no exemplars steers at half strength.
+   package with no exemplars steers at half strength.
 8. **Rewrite checks and near-miss nodes.** For each answered foundation chapter,
    name the failure mode one step away from the answer and its replacement. Put
    pre-generation guidance in nodes and review assertions in `checks/`; never
@@ -81,11 +81,11 @@ Work does not block on adaptation. Before the procedure runs (or midway through
 it), cite starter content honestly:
 
 - Cover scaffolding and unanswered foundation sections: **provisional** — never
-  plain brand truth.
-- Foundation usage rules: **Ghost-backed starter structure** until the human
+  plain brand guidance.
+- Foundation usage rules: **ghost-backed starter structure** until the human
   answers the open sections and edits the misuse lists.
-- Surviving median rules: **owner-backed after init** — Ghost stamps this
-  measured model truth into every initialized package; you own the pruning and
+- Surviving median rules: **owner-backed after init** — ghost stamps this
+  measured model behavior into every initialized package; you own the pruning and
   any adaptation thereafter.
 - Context nodes: **conditional** — read only when their situation matches, and
   revisit them after the foundation answers change.
@@ -94,7 +94,7 @@ it), cite starter content honestly:
 
 ## Never
 
-- Never leave cover scaffolding in a real fingerprint.
+- Never leave cover scaffolding in a real ghost package.
 - Never present your provisional value as the brand's answer.
 - Never leave stale refs alongside new values — regenerate or delete; a stale
   exemplar outweighs rewritten prose.

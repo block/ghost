@@ -7,9 +7,9 @@ import {
 } from "./types.js";
 
 /**
- * Lint a Ghost check markdown file (`ghost.check/v1`): required frontmatter
+ * Lint a ghost check markdown file (`ghost.check/v1`): required frontmatter
  * (`name`, `description`, `severity`), an optional `source:` provenance pointer,
- * and a non-empty body. Ghost never executes the check — this only validates
+ * and a non-empty body. ghost never executes the check — this only validates
  * that it is well-formed.
  */
 export function lintGhostCheck(raw: string): GhostCheckLintReport {
