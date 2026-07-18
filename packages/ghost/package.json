@@ -1,6 +1,6 @@
 {
   "name": "@design-intelligence/ghost",
-  "version": "0.24.0",
+  "version": "1.0.0",
   "description": "ghost CLI for portable .ghost/ packages of brand guidance your agent reads before it builds, with advisory review after",
   "license": "Apache-2.0",
   "author": "Block, Inc.",
