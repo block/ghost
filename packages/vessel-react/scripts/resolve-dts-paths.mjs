@@ -4,8 +4,8 @@
  * real relative paths. tsc leaves the aliases verbatim; consumers can't
  * resolve them because they don't have the same tsconfig `paths`.
  *
- * Tiny in-tree alternative to the `tsc-alias` npm package (which we can't
- * reliably install through the Block artifactory right now).
+ * Tiny in-tree alternative to the `tsc-alias` npm package, avoiding an
+ * extra runtime dependency.
  */
 
 import { readdir, readFile, writeFile } from "node:fs/promises";

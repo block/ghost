@@ -89,9 +89,9 @@ jobs:
             echo "artifact_url=$artifact_url"
           } >> "$GITHUB_OUTPUT"
 
-      # Mirror block/sessh: mint a scoped token for the OSS Homebrew tap and
-      # trigger its bump-formula workflow so `brew install block/tap/ghost`
-      # tracks releases automatically. block -> block, no Square refs. Gated on
+      # Mint a scoped token for the OSS Homebrew tap and trigger its
+      # bump-formula workflow so `brew install block/tap/ghost` tracks releases
+      # automatically. Gated on
       # an actual publish and on the BLOCK_HOMEBREW_TAP_* secrets (GitHub App
       # installed on this repo), so forks and unconfigured environments skip it
       # cleanly instead of failing the release.

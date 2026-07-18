@@ -8,14 +8,9 @@
 //   deliberately imperfect — it produces the speckle pattern the heatmap
 //   exists to expose. Use it to exercise the UI loop.
 //
-// - databricks: a real LLM behind a Databricks serving endpoint with an
-//   OpenAI-compatible chat API. This is the model actually under test:
-//   it sees the ask plus the menu (id, kind, description — exactly the
+// - openai-compatible: a real LLM behind an OpenAI-compatible chat API.
+//   It sees the ask plus the menu (id, kind, description — exactly the
 //   selection surface `ghost gather` emits) and returns node ids.
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
-
-const execFileAsync = promisify(execFile);
 
 const STOPWORDS = new Set([
   "a",
@@ -127,52 +122,47 @@ export function parseIdReply(text) {
   }
 }
 
-/**
- * Databricks serving-endpoint adapter (OpenAI-compatible chat API).
- * Auth comes from the `databricks` CLI's cached OAuth token; the host
- * comes from DATABRICKS_HOST. Nothing is stored.
- */
-export function databricksModel({
-  host = process.env.DATABRICKS_HOST,
-  endpoint = process.env.CONTEXT_CONTROL_ENDPOINT ?? "goose",
+/** OpenAI-compatible chat adapter configured entirely through public env vars. */
+export function openAICompatibleModel({
+  baseUrl = process.env.CONTEXT_CONTROL_BASE_URL,
+  apiKey = process.env.CONTEXT_CONTROL_API_KEY,
+  model = process.env.CONTEXT_CONTROL_MODEL,
 } = {}) {
-  if (!host) throw new Error("databricks model needs DATABRICKS_HOST");
-  let tokenPromise = null;
-  const getToken = () => {
-    tokenPromise ??= execFileAsync("databricks", [
-      "auth",
-      "token",
-      "--host",
-      host,
-    ]).then(({ stdout }) => JSON.parse(stdout).access_token);
-    return tokenPromise;
-  };
+  if (!baseUrl) {
+    throw new Error("openai-compatible model needs CONTEXT_CONTROL_BASE_URL");
+  }
+  if (!apiKey) {
+    throw new Error("openai-compatible model needs CONTEXT_CONTROL_API_KEY");
+  }
+  if (!model) {
+    throw new Error("openai-compatible model needs CONTEXT_CONTROL_MODEL");
+  }
   return {
-    name: `databricks:${endpoint}`,
+    name: "openai-compatible",
     async select({ ask, menu, cover }) {
-      const token = await getToken();
       const res = await fetch(
-        `${host}/serving-endpoints/${endpoint}/invocations`,
+        `${baseUrl.replace(/\/$/, "")}/chat/completions`,
         {
           method: "POST",
           headers: {
-            authorization: `Bearer ${token}`,
+            authorization: `Bearer ${apiKey}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
+            model,
             messages: [
               { role: "system", content: SELECT_SYSTEM },
               { role: "user", content: selectUser(ask, menu, cover) },
             ],
-            // Trial-to-trial variance is the signal being measured, so
-            // sample at the endpoint's default temperature; do not pin 0.
+            // Trial-to-trial variance is the signal being measured, so sample at
+            // the endpoint's default temperature rather than pinning it to zero.
             max_tokens: 1024,
           }),
         },
       );
       if (!res.ok) {
         throw new Error(
-          `databricks ${endpoint}: ${res.status} ${await res.text()}`,
+          `openai-compatible model: ${res.status} ${await res.text()}`,
         );
       }
       const data = await res.json();
@@ -182,14 +172,14 @@ export function databricksModel({
 }
 
 const MODEL_ADAPTERS = {
-  databricks: {
-    available: () => Boolean(process.env.DATABRICKS_HOST),
-    create: (name) => {
-      const endpoint = name.includes(":")
-        ? name.slice(name.indexOf(":") + 1)
-        : null;
-      return databricksModel(endpoint ? { endpoint } : {});
-    },
+  "openai-compatible": {
+    available: () =>
+      Boolean(
+        process.env.CONTEXT_CONTROL_BASE_URL &&
+          process.env.CONTEXT_CONTROL_API_KEY &&
+          process.env.CONTEXT_CONTROL_MODEL,
+      ),
+    create: () => openAICompatibleModel(),
   },
   "fake-lexical": {
     available: () => true,
@@ -199,10 +189,9 @@ const MODEL_ADAPTERS = {
 
 /** Resolve a model name exposed by availableModels. */
 export function resolveModel(name = availableModels()[0]) {
-  const key = name?.startsWith("databricks:") ? "databricks" : name;
-  const adapter = MODEL_ADAPTERS[key];
+  const adapter = MODEL_ADAPTERS[name];
   if (!adapter) throw new Error(`unknown model: ${name}`);
-  return adapter.create(name);
+  return adapter.create();
 }
 
 /** Available adapter names in default order. */

@@ -4,7 +4,7 @@ import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { initFingerprintPackage } from "../../ghost/src/scan/fingerprint-package.js";
 import { parseAsks } from "../lib/bench.mjs";
-import { parseIdReply } from "../lib/model.mjs";
+import { openAICompatibleModel, parseIdReply } from "../lib/model.mjs";
 import {
   consistency,
   jaccard,
@@ -142,6 +142,21 @@ describe("demo asks", () => {
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
+  });
+});
+
+describe("openAICompatibleModel", () => {
+  it("requires portable endpoint configuration", () => {
+    expect(() => openAICompatibleModel({})).toThrow("CONTEXT_CONTROL_BASE_URL");
+    expect(() =>
+      openAICompatibleModel({ baseUrl: "https://models.example.com/v1" }),
+    ).toThrow("CONTEXT_CONTROL_API_KEY");
+    expect(() =>
+      openAICompatibleModel({
+        baseUrl: "https://models.example.com/v1",
+        apiKey: "test-key",
+      }),
+    ).toThrow("CONTEXT_CONTROL_MODEL");
   });
 });
 
