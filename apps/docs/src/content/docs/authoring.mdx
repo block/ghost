@@ -64,6 +64,30 @@ choices become guidance.
 
 </DocSection>
 
+<DocSection title="Distill New Evidence">
+
+Use the same workflow to create a package from supplied evidence or update an
+existing one. After initialization when needed, validate the current package,
+gather its menu, and pull any nodes the new evidence may affect.
+
+```bash
+ghost validate
+ghost gather "incorporate new artifacts" --format json
+ghost pull <potentially-affected-node-ids>
+```
+
+Inspect each supplied artifact. Treat observations as evidence, not guidance.
+Read affected node bodies before proposing edits. Compare the evidence to the
+current nodes, propose the smallest useful change, and show the human any
+contradiction. The answer may be no change, a material locator, an existing-node
+edit, a new node, or a removal.
+
+Ask the human to accept, correct, narrow, reject, mark legacy, or defer each
+proposal. Write only confirmed changes, then run `ghost validate` and present
+the package diff for Git review.
+
+</DocSection>
+
 <DocSection title="The Flat Node Set">
 
 A `.ghost/` package is a **flat set of prose nodes**. It has no hierarchy,
