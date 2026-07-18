@@ -1,6 +1,6 @@
 ---
 title: CLI Reference
-description: The deterministic commands around the flat ghost package lifecycle. Your agent does the reading, writing, and interpreting.
+description: Commands that support how agents author, gather, apply, and review brand guidance from a ghost package.
 kicker: Docs
 section: guide
 order: 30
@@ -9,9 +9,11 @@ slug: cli
 
 <DocSection title="Overview">
 
-ghost is the product; the `.ghost/` package is what the CLI carries. It scaffolds and
-validates the package, emits the complete menu of guidance, delivers selected
-nodes, and assembles review evidence. Your agent reads, writes, and decides.
+A `.ghost/` package holds the brand guidance your agent uses while making.
+Your agent authors the guidance, selects what applies, interprets it, and uses
+it in the work. The CLI handles the repeatable operations: scaffolding and
+validation, the complete guidance menu, selected-node delivery, and review
+evidence.
 
 `ghost --help` shows the short core workflow. `ghost --help --all` shows the
 complete command index, and `ghost <command> --help` shows flags for one
@@ -38,13 +40,13 @@ Every command follows one contract, so an agent can branch on the exit code:
 | Code | Meaning |
 | --- | --- |
 | `0` | Success. |
-| `1` | The command ran but the result is unhappy: `validate` found issues, or an unexpected error was thrown. |
+| `1` | The command ran but reported problems: `validate` found issues, or an unexpected error was thrown. |
 | `2` | The command was called wrong: a bad flag or argument, a missing package for a command that needs one (`gather`), a `pull` with no known ids, or `review` without a checks directory. |
 | `3` | A command-specific refusal, currently only `skill install` when a skill is already present (pass `--force`). |
 
-A missing package is reported, not treated as a crash: `validate` records it as
-a finding (exit `1`). Getting a code you don't understand, or a command that
-refuses to run at all? See [Troubleshooting](/docs/troubleshooting).
+`validate` records a missing package as a finding and exits `1`. See
+[Troubleshooting](/docs/troubleshooting) for commands that exit with an
+unexpected code.
 
 </DocSection>
 
@@ -52,28 +54,27 @@ refuses to run at all? See [Troubleshooting](/docs/troubleshooting).
 
 ### Initialize: `init`
 
-Scaffold a `.ghost/` package. The skeleton starter includes a manifest, a glossary, a `brand.md` cover, foundation chapters with open questions, a conversation context, and the model cliche floor. The cover and foundations tell the agent to ask rather than invent brand values. Use `--template minimal` for a smaller cover-led starter. Add guidance by adding files (`principle.density.md`). Use
-`--package <dir>` for an exact directory, or set `GHOST_PACKAGE_DIR` when a host
-wrapper stores ghost files outside the default `.ghost`. Core `init` scaffolds
-the package only; pass `--with checks` to also add the checks directory in
-one move.
+Scaffold a `.ghost/` package. The default starter includes a manifest,
+glossary, `brand.md` cover, foundation nodes with open questions, and context
+for the authoring conversation. These prompts tell the agent to ask rather than
+invent brand values. Use `--template minimal` for a smaller starter. Add
+guidance with files such as `principle.density.md`. Use `--package <dir>` for an
+exact directory, or set `GHOST_PACKAGE_DIR` when a host wrapper stores ghost
+files outside `.ghost`. Pass `--with checks` to add the checks directory.
 
-Templates are shapes of emptiness — structures awaiting your guidance. A
-**body** is the same anatomy inhabited: answered signature dials, a
-`materials/` tree (tokens, fonts, worked reference compositions), and its own
-`checks/`. Install one with `--body`:
+A template provides files and prompts for guidance you still need to author. A
+**body** provides a worked ghost package with guidance, a `materials/` tree,
+reference compositions, and its own `checks/`. Install one with `--body`:
 
 ```bash
 ghost init --body vessel-light
 ```
 
-`vessel-light` installs Vessel's design language at full strength — the
-fork-axis corpus, `materials/tokens.css` owning every literal value, embedded
-fonts, six annotated refs, and five checks, included automatically (no
-`--with checks` needed; combining them is an error). The manifest id stays
-`vessel-light` until you adapt the starter: renaming it is deliberately the
-first step of making the brand yours. `--body` and `--template` are mutually
-exclusive.
+`vessel-light` includes guidance, `materials/tokens.css`, embedded fonts, six
+annotated references, and five checks. The checks install automatically, so do
+not combine `--body vessel-light` with `--with checks`. The manifest id stays
+`vessel-light` until you adapt the starter; rename it when the package becomes
+your own. `--body` and `--template` are mutually exclusive.
 
 <CliHelp tool="ghost" command="init" hideDescription />
 
@@ -88,9 +89,9 @@ GHOST_PACKAGE_DIR=.agents/ghost ghost init
 ### Manage checks: `checks`
 
 **Checks** are optional review assertions in a flat `.ghost/checks/`
-directory. They are feed-back only — they never leak into generation context,
-and they are never emitted by `gather` or `pull`. They are consumed by
-`ghost review`.
+directory. They are used only after a change exists. `gather` and `pull` never
+emit them as generation context; `ghost review` uses them when assembling
+review evidence.
 
 <CliHelp tool="ghost" command="checks" hideDescription />
 
@@ -127,11 +128,10 @@ ghost validate --format json
 
 ### Emit the menu: `gather`
 
-`gather` emits **Available guidance** from the ghost package: every
-node's id, kind, and description. It does no selection, filtering, or ranking.
-The agent reads the ask against applicability and pulls every node whose stated
-situation governs the work. There is no slice, no anchor, and no inheritance
-between nodes; the package is flat.
+`gather` emits **Available guidance** from the ghost package: each node's id,
+kind, and description. The command returns the complete menu without selecting,
+filtering, or ranking nodes. The agent reads the ask and pulls each node whose
+stated situation governs the work. Nodes do not inherit from one another.
 
 <CliHelp tool="ghost" command="gather" hideDescription />
 
@@ -140,25 +140,21 @@ ghost gather "checkout confirmation email"
 ghost gather "checkout confirmation email" --format json
 ```
 
-This is the pre-generation step, and "the right context at the right time": the
-agent selects just-in-time against the actual task, then applies the guidance
-to whatever it is building: product UI, marketing, email, a landing page. If
-nothing applies, the agent should name the package's silence and avoid
-inventing ghost-backed guidance.
+Run this before generation. The agent selects against the actual task, then
+applies the guidance to whatever it is building: product UI, marketing, email,
+or a landing page. If nothing applies, say that the package has no guidance
+for the task. Do not invent ghost-backed guidance.
 
 ### Read the selected nodes: `pull`
 
-`pull` emits the named nodes' full prose bodies and materials. It is how an
-agent reads the guidance it selected from the menu, preferred over opening the
-files directly because it inlines small materials, emits inspect-pointers,
-extracts Skeletons last, and appends structured JSONL events to
-`.ghost/.events`.
+`pull` emits the selected nodes' prose and materials. It inlines small local
+materials, emits pointers for files the agent must inspect separately, and
+appends structured JSONL events to `.ghost/.events`.
 
-That file is an events tape for the package's author: tweak a node's
-description, re-run the task, and `ghost pulse` shows whether the node appeared
-on the menu, got pulled, was missed by name, or stayed cold. It is a dotfile
-(never a node), gitignored by the scaffold, and safe to delete at any time. The
-events tape is local tuning signal, not canonical ghost package state.
+The local log helps package authors tune retrieval. Change a description,
+re-run the task, and use `ghost pulse` to see whether the agent saw and selected
+the node. The scaffold gitignores `.ghost/.events`, and you can delete it at
+any time.
 
 <CliHelp tool="ghost" command="pull" hideDescription />
 
@@ -170,7 +166,7 @@ ghost pull voice --no-events
 
 ### Read the local signal: `pulse`
 
-`pulse` summarizes the events tape: gathers, pulls, abandoned gathers,
+`pulse` summarizes the local log: gathers, pulls, abandoned gathers,
 exposure-normalized hit rates, cold nodes, and unknown ids the agent tried to
 pull.
 
@@ -189,15 +185,15 @@ A mixed pull partially succeeds: known ids are emitted, unknown ids warn with cl
 
 ### Assemble a review packet: `review`
 
-Where `gather` and `pull` are feed-forward, `review` is feed-back. It reads a
-diff, matches touched files to node `materials` (repo-relative locators only),
-offers the relevant checks, and emits an **advisory packet** for the host agent
-to weigh. The command grades nothing; the agent renders findings.
+`gather` and `pull` provide guidance before the agent makes. `review` supports
+the agent after a change exists. It reads a diff, matches touched files to node
+`materials` (repo-relative locators only), offers the relevant checks, and emits
+review evidence for the agent to weigh. The command grades nothing; the agent
+renders findings.
 
 `review` requires the checks directory (`ghost checks init`). Without it, the
 command exits `2` with a pointer to add it. For the authoring model behind
-checks — how to write them and how routing works — see
-[Checks And Review](/docs/checks-and-review).
+checks and routing, see [Checks And Review](/docs/checks-and-review).
 
 <CliHelp tool="ghost" command="review" hideDescription />
 
@@ -211,14 +207,12 @@ ghost review --format json      # raw JSON packet for host tooling
 The packet contains:
 
 - **Touched files** parsed from the diff.
-- **Matched material-backed nodes**: every node whose `materials` locators match
-  a touched file, with its full prose and which locators matched.
-- **Offered checks**: checks whose `references` point at a matched node
-  (`matched`), plus checks that reference no material-backed node at all and are
-  therefore always offered (`always`). Each check carries its prose and the
-  referenced nodes' baseline prose.
-- **Coverage gaps**: touched files no node's materials claim, and material-backed
-  nodes no check guards — signals for tuning the package, not failures.
+- **Matched material-backed nodes:** nodes whose `materials` locators match a
+  touched file, including their prose and matched locators.
+- **Offered checks:** checks routed through a matched node (`matched`) and checks
+  with no material-backed references (`always`).
+- **Coverage gaps:** touched files no node claims and material-backed nodes no
+  check guards.
 
 Each check is one markdown file under `.ghost/checks/`:
 
@@ -236,8 +230,8 @@ Grade whether the change preserves the logo guidance in `asset.logo`.
 
 `references` binds the check to node ids, optionally scoped to one
 section with a heading anchor (`asset.logo > Clearspace`); `validate` verifies
-every reference resolves. `severity` is one of `high`, `medium`, or `low` —
-advice for the reviewing agent, not an enforcement level.
+every reference resolves. `severity` is one of `high`, `medium`, or `low`. It
+advises the reviewing agent but does not enforce a result.
 
 </DocSection>
 
@@ -245,16 +239,15 @@ advice for the reviewing agent, not an enforcement level.
 
 ### Package a portable artifact: `export`
 
-`export` packages the `.ghost/` package as a portable brand artifact: a tarball of
-the `.ghost/` directory plus a stamped `export.yml` (schema, package id, CLI
-version, export time). The events tape stays out of the archive; pass
-`--no-checks` to leave the checks directory out too.
+`export` creates a tarball of the `.ghost/` directory plus a stamped
+`export.yml` with the schema, package id, CLI version, and export time. The
+local log stays out of the archive. Pass `--no-checks` to omit the checks
+directory.
 
-The export also audits every node's `materials` entry and reports which ones
-travel with the archive (bundled files and URLs) and which are **stranded**:
-repo-relative paths that point outside the package and won't exist wherever
-the archive lands. Stranded entries are reported, not fatal; pass `--strict`
-to exit `2` when any exist.
+The export audits every node's `materials` entries. Bundled files and URLs
+travel with the archive. Repo-relative paths outside the package are
+**stranded** because the destination may not contain them. Pass `--strict` to
+exit `2` when any are stranded.
 
 `export` refuses to package a ghost package with validation errors. Run
 `ghost validate` and fix them first.

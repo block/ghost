@@ -1,6 +1,6 @@
 ---
 title: Getting Started
-description: Install ghost, write your brand guidance as prose, and give your agent the right context before it builds.
+description: Install ghost, record one brand decision, and give it to your agent before the next task.
 kicker: Docs
 section: guide
 order: 10
@@ -30,9 +30,8 @@ Near the moment of payment, reduce felt risk. Keep reassurance close to the
 action; proximity beats completeness. Do not introduce a new visual system here.
 ```
 
-The file is the product: a decision checked into the repo where your agent can
-read it before building. Brief the next checkout task from ghost and the review
-comment becomes context the agent has up front.
+The decision now lives in the repo. Brief the next checkout task from ghost so
+the agent receives that context before starting work.
 
 One decision can steer checkout, a receipt, a decline message, or another surface
 where payment creates risk. Grow the ghost package one repeated decision at a
@@ -59,10 +58,11 @@ Set up ghost for this repo.
 Brief this work from ghost.
 ```
 
-The skill tells the agent what to read, what to write, and how to gather. ghost
-never calls an LLM itself, so there is no API key or agent lock-in.
+The skill teaches the agent how to author the package, gather applicable
+guidance, and use it while making. The CLI handles the repeatable work without
+calling an LLM, so there is no API key or agent lock-in.
 
-The packet is the product. The CLI carries it through the loop:
+The commands support that agent workflow:
 
 ```bash
 ghost init          # scaffold the .ghost package
@@ -79,29 +79,24 @@ a diff.
 
 <DocSection title="Author Your First ghost Package">
 
-Start with one decision, not the whole brand. The hardest part is picking the first
-one, so pick the decision whose review feedback you keep repeating: the checkout
-you flag for trust, the voice you re-tone, the empty state you
-rewrite. Write that one down as a node, and grow the brand guidance
-node by node. One well-grounded node beats an empty catalog.
+Start with the decision whose review feedback you keep repeating: the checkout
+you flag for trust, the voice you re-tone, or the empty state you rewrite. Write
+it as one node, then add guidance when another repeated decision appears.
 
-The CLI scaffolds; your agent authors: interviewing you, working with the
-material you show it, drafting node prose, and asking you to curate the claims.
-`ghost init` writes a starter you adapt: a glossary, a `brand.md` cover,
-foundation chapters with open questions, and the model cliche floor. Answering
-the questions is how the starter becomes your brand. Prefer a bare start?
-`ghost init --template minimal` writes a smaller cover-led starter. The full
-starter anatomy is in the [CLI reference](/docs/cli).
+Your agent interviews you, works with the material you show it, drafts node
+prose, and asks you to curate the claims. `ghost init` handles the repeatable
+setup by writing a starter you adapt: a glossary, a `brand.md` cover, and
+foundation nodes with open questions. Answer the questions with your brand's
+decisions. Use `ghost init --template minimal` for a smaller starter. The
+[CLI reference](/docs/cli) lists the generated files.
 
 ```bash
 ghost init
 ghost validate
 ```
 
-Prefer starting from a working brand instead of an empty anatomy? Install a
-**body**, the same skeleton with a real brand's values plugged in: answered
-dials, a `materials/` tree with tokens and fonts, worked reference
-compositions, and its own checks:
+To start from a worked package, install a **body**. It includes brand guidance,
+a `materials/` tree with tokens and fonts, reference compositions, and checks:
 
 ```bash
 ghost init --body vessel-light
@@ -129,10 +124,10 @@ applies in, never a filename destination. For a fuller human-agent workflow, rea
 
 <DocSection id="gather-context-before-you-build" title="Gather Context Before You Build">
 
-Before generating, gather Available guidance from the ghost package.
-`gather` does no selection: it emits the complete, unfiltered, unranked list of
-node ids, kinds, and descriptions. Your agent reads the ask against
-applicability and pulls every node whose stated situation governs the work:
+Before generating, ask your agent to gather guidance from the ghost package.
+`gather` emits the complete, unfiltered, unranked list of node ids, kinds, and
+descriptions. The agent reads the ask against that menu and pulls every node
+whose stated situation governs the work:
 
 ```bash
 ghost gather "checkout settings"
@@ -140,28 +135,23 @@ ghost gather "checkout settings" --format json
 ghost pull principle.trust voice   # pull selected nodes' full bodies
 ```
 
-This is "the right context at the right time": the agent selects just-in-time
-against the actual task. Topic overlap alone is not applicability; if nothing
-applies, it should name the package's silence and avoid inventing
-ghost-backed guidance. Run it before generation, so the agent builds with the
-brand in hand rather than discovering the gaps in review.
+The agent selects against the task before starting work. Topic overlap alone
+does not make a node applicable. If no node applies, say that the package has
+no guidance for the task. Do not invent ghost-backed guidance.
 
 <GatherDemo />
 
-Each `gather` and `pull` also adds a line to a private local log at
-`.ghost/.events`; it stays on your machine and never enters version control.
-That one is for you: tweak a node's description, re-run the task, and `ghost
-pulse` shows whether the node appeared on the menu, got pulled, was missed by
-name, or stayed cold.
+Each `gather` and `pull` adds a line to `.ghost/.events`, a local log ignored by
+Git. Change a description, re-run the task, and use `ghost pulse` to see whether
+the agent saw and selected the node.
 
 ```bash
 ghost pulse
 ```
 
-Read `pulse` as a tuning signal, not a score. A cold node may need a sharper
-`description`; a repeated miss may mean the id or glossary vocabulary is not
-what agents expect; an abandoned gather means the menu did not lead to a useful
-selection. The log is local tuning signal, not canonical ghost package state.
+Use `pulse` to tune retrieval. A cold node may need a sharper `description`; a
+repeated miss may mean the id or glossary vocabulary differs from what agents
+expect. An abandoned gather means the menu did not lead to a pull.
 
 </DocSection>
 
@@ -180,18 +170,14 @@ An undeclared kind prefix is a warning with a "did you mean" suggestion, not a
 failure. Treat ghost package edits as ordinary Git-reviewed changes: uncommitted
 edits are drafts; checked-in nodes are canonical.
 
-Hit something the loop above doesn't explain — an empty `gather`, a `review`
-that refuses to run, a stale example? See
-[Troubleshooting](/docs/troubleshooting).
+See [Troubleshooting](/docs/troubleshooting) for an empty `gather`, a `review`
+that refuses to run, or a stale example.
 
 </DocSection>
 
-<DocSection title="How It Works (the model underneath)">
+<DocSection title="Package Format">
 
-You can run the whole loop above without this section; your agent handles the
-format. Read on when you want to understand how the folder of files is wired.
-
-The `.ghost/` package is a **flat set of prose nodes**:
+A `.ghost/` package is a **flat set of prose nodes**:
 
 ```text
 .ghost/
@@ -205,7 +191,7 @@ The `.ghost/` package is a **flat set of prose nodes**:
   checks/               # optional review assertions; never a node
 ```
 
-There is no hierarchy, no inheritance, and no edges between nodes. The
+Nodes do not form a hierarchy, inherit from one another, or carry edges. The
 optional `cover:` in `manifest.yml` may name any node; `ghost gather` inlines it
 before the menu. The default skeleton calls that node `brand`, but the filename
 is not reserved. A node's identity is its file path with `.md` dropped
@@ -215,14 +201,14 @@ be a kind declared in `glossary.md`; a bare name (`voice.md`) has
 no kind. Folders are a human-browsing convenience only; the model reads a
 flat menu.
 
-Altitude lives in the prose. Universal guidance is stated plainly. Narrower
-guidance names the *situation* where it applies. The agent reads the condition
-and decides whether to use the node. Reserved at the package root: `manifest.yml`,
-`glossary.md`, `materials/`, and `checks/`; every other `*.md` is a node.
+Write universal guidance without a condition. Narrower guidance names the
+situation where it applies, which the agent uses to decide whether to select the
+node. `manifest.yml`, `glossary.md`, `materials/`, and `checks/` are reserved at
+the package root; every other `*.md` is a node.
 
-A node may carry `materials`: repo-relative paths/globs or HTTPS
-URLs for the concrete materials the prose governs. `ghost gather` emits the menu;
-the agent selects and manifests. Checks are used by `ghost review`, never by
+A node may carry `materials`: repo-relative paths/globs or HTTPS URLs for the
+concrete materials the prose governs. `ghost gather` emits the menu; the agent
+selects and applies the guidance. Checks are used by `ghost review`, never by
 generation.
 
 One contract per package: a repo's `.ghost/` is the whole ghost package.

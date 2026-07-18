@@ -6,8 +6,9 @@ materials:
   - apps/docs/src/components/docs/**
 ---
 
-This ghost package governs the ghost docs site: the landing page, documentation
-index, tool landings, MDX docs pages, and the small components that carry them.
+This ghost package governs ghost's public explanation: the root and package
+READMEs, landing page, documentation index, MDX docs pages, and the small
+components that carry them.
 It does not govern Vessel as a reference component registry; Vessel has its own
 ghost package under `packages/vessel-react/.ghost/`. When the docs consume Vessel
 materials, this package decides the docs' product stance and Vessel decides
@@ -17,7 +18,7 @@ the component-system contract.
 
 - ghost is **brand context for agents**, not a component library, lifecycle
   manager, design archive, or autonomous judge. Keep the docs centered on the
-  feed-forward act: the agent reads repo-local brand guidance before it builds.
+  main interaction: the agent reads repo-local brand guidance before it builds.
 - Preserve the flat corpus model: `.ghost/` is a package of prose nodes;
   `manifest.yml`, `glossary.md`, and `checks/` are reserved; everything else is
   a node whose id comes from its filename. No hierarchy, inheritance, graph, or
@@ -29,8 +30,9 @@ the component-system contract.
   `ghost gather`, `ghost pull`, `ghost pulse`, `ghost checks init`, and
   `ghost review` exactly unless the CLI changes and the generated manifest has
   been updated.
-- Do not let optional review language obscure the boundary: checks and review
-  are feed-back, advisory, and never generation input.
+- Do not let optional review language obscure the main interaction: checks and
+  review happen after a change exists, remain advisory, and never become
+  generation input.
 
 ## How to read the corpus
 

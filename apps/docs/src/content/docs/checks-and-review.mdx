@@ -1,22 +1,21 @@
 ---
 title: Checks And Review
-description: Opt in to review assertions with the checks directory, bind them to nodes, and assemble advisory review packets from a diff.
+description: Add review assertions to brand guidance, then ask your agent to review a diff against them.
 kicker: Docs
 section: guide
 order: 25
 slug: checks-and-review
 ---
 
-<DocSection title="The Feed-Back Half Of The Loop">
+<DocSection title="Review After Making">
 
-`gather` and `pull` are feed-forward: they ground your agent **before** it
-builds. Checks and `ghost review` are the optional feed-back half: **after** a
-change exists, they help the same agent review it against the guidance you wrote
-down.
+`gather` and `pull` give your agent guidance **before** it builds. Checks and
+`ghost review` are optional tools for **after** a change exists. They help the
+same agent review the change against the guidance you wrote down.
 
-The division of labor stays the same. The CLI assembles deterministically — it
-reads a diff, matches touched files to node `materials`, and offers the relevant
-checks. Your agent weighs the packet and renders findings. ghost grades nothing.
+Your agent performs the review. `ghost review` supplies repeatable evidence by
+reading a diff, matching touched files to node `materials`, and offering the
+relevant checks. The agent decides which checks apply and reports its findings.
 
 This guide assumes you have a `.ghost/` package; if not, start with
 [Getting Started](/docs/getting-started). Exact flags and exit codes live in
@@ -30,13 +29,9 @@ Review this diff against the ghost checks.
 
 <DocSection title="Checks: Opt-In Review Assertions">
 
-Checks live in a flat `.ghost/checks/` directory. Two properties keep them
-honest:
-
-- **Opt-in.** Core `ghost init` ships no checks. You add them explicitly.
-- **Feed-back only.** Nothing under `checks/` is a node. `ghost gather` and
-  `ghost pull` never emit check content, so checks cannot leak into generation
-  context.
+Checks live in a flat `.ghost/checks/` directory. `ghost init` does not add
+checks unless you request them. Files under `checks/` are review assertions,
+not nodes, so `ghost gather` and `ghost pull` do not emit their content.
 
 ```bash
 ghost checks init          # scaffold .ghost/checks/
@@ -72,18 +67,16 @@ glyph is used when the full lockup is required.
 | --- | --- |
 | `name` | The check's identity. |
 | `description` | What the check asserts, in one line. |
-| `severity` | `high`, `medium`, or `low` — advice for the reviewing agent, not an enforcement level. |
+| `severity` | `high`, `medium`, or `low`. This advises the reviewing agent; it does not enforce a result. |
 | `references` | Node ids this check is grounded in, optionally scoped to one section with a heading anchor (`asset.logo > Clearspace`). |
 
-The prose body is the instruction the reviewing agent follows. Write it like a
-review comment you would trust another engineer to act on: what to grade, what
-to flag, and what counts as preserved.
+The prose body instructs the reviewing agent. State what to grade, what to
+flag, and what counts as preserved.
 
-`references` does double duty. It grounds the check — `ghost validate` verifies
-every reference resolves to a real node — and it routes the check: when a diff
-touches a file matched by a referenced node's `materials`, that check is
-offered. A check that references no material-backed node is **always offered**,
-which is the right shape for cross-cutting assertions like voice or tone.
+`references` grounds and routes the check. `ghost validate` verifies each
+reference. During review, a check is offered when the diff touches a path in a
+referenced node's `materials`. A check with no material-backed reference is
+**always offered**, which suits cross-cutting assertions such as voice or tone.
 
 </DocSection>
 
@@ -103,29 +96,27 @@ ghost review --format json            # raw packet for host tooling
 The advisory packet contains:
 
 - **Touched files** parsed from the diff.
-- **Matched material-backed nodes** — every node whose repo-relative `materials`
-  locators match a touched file, with its full prose and which locators matched.
-  (HTTPS locators identify external material; they never match diff paths.)
-- **Offered checks** — checks routed via a matched node (`matched`) plus checks
-  with no material-backed references (`always`), each with its prose and the
-  referenced nodes' baseline prose.
-- **Coverage gaps** — touched files no node's materials claim, and
-  material-backed nodes no check guards.
+- **Matched material-backed nodes:** nodes whose repo-relative `materials`
+  locators match a touched file, including their prose and matched locators.
+  HTTPS locators identify external material and do not match diff paths.
+- **Offered checks:** checks routed through a matched node (`matched`) and checks
+  with no material-backed references (`always`).
+- **Coverage gaps:** touched files no node claims and material-backed nodes no
+  check guards.
 
-The host agent takes it from there: weigh which checks apply, cite the
-brand guidance, and do not invent obligations the package never states.
+The agent weighs which checks apply, cites the brand guidance, and reports its
+findings without inventing obligations the package never states.
 
 </DocSection>
 
-<DocSection title="Gaps Are Tuning Signal, Not Failures">
+<DocSection title="Use Coverage Gaps To Tune The Package">
 
-Coverage gaps are the review-side analog of `ghost pulse`: signals for the
-package's author, not errors.
+Coverage gaps show where the package may need work:
 
-- **Unmatched files** — the diff touched something no node claims. Maybe that
-  surface deserves guidance, or maybe it is genuinely out of scope.
-- **Unguarded materials** — a node points at concrete material, but no check
-  guards it. The node feeds generation but nothing asserts it survives review.
+- **Unmatched files:** the diff touched a file no node claims. Decide whether
+  that surface needs guidance.
+- **Unguarded materials:** a node points at concrete material, but no check
+  guards it during review.
 
 Grow coverage the same way you grow the brand guidance: one decision at a time,
 starting with the drift you keep catching by hand.

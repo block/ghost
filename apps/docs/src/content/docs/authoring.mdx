@@ -1,6 +1,6 @@
 ---
 title: Authoring
-description: Co-author ghost brand guidance through elicitation, human intent, shown material, agent synthesis, and Git review.
+description: Turn your intent, examples, and source material into brand guidance an agent can use.
 kicker: Docs
 section: guide
 order: 20
@@ -9,32 +9,26 @@ slug: authoring
 
 <DocSection title="The Authoring Model">
 
-A ghost package is not a scan dump. It is durable brand guidance that a
-human and agent shape together — through **elicitation, not scanning**.
+A human and agent author a ghost package together. The agent asks about the
+brand's intent, audience, conditions, and boundaries. The human answers with
+words, screenshots, links, shipped work, brand docs, and copy they love or
+hate. The agent drafts guidance from that evidence. Git review approves the
+result.
 
-The human names the intent: what the brand should feel like, who it serves,
-which guidance is universal, which guidance holds only under a condition, and what should
-not drift. The evidence is what the human says, shows, and points at — words,
-screenshots, links, exemplar products, brand docs, copy they love or hate. The
-agent synthesizes drafts, but ordinary Git review is where ghost package edits
-become canonical.
-
-Repo-bound reality — components, tokens, paths, building blocks — can be
-recorded as `materials` on the node whose prose explains their purpose. What a
-codebase does is not what a brand means; what it repeats may be legacy, not
-stance.
+Add components, tokens, paths, and other building blocks as `materials` on the
+node that explains their purpose. A repeated pattern in the codebase may be
+legacy rather than stance, so treat it as evidence to curate.
 
 </DocSection>
 
-<DocSection title="Scenario Matrix">
+<DocSection title="Choose An Interview Approach">
 
-Start by classifying the authoring scenario. The scenario determines what the
-human can articulate, show, or point at — and how the interview should run.
+Use the material the human can explain, show, or point at.
 
 | Scenario | Authoring posture |
 | --- | --- |
-| Net new brand | Stance-first. Elicit feel, audience, and early anti-goals before anything else exists to point at. |
-| Established brand, first ghost package | Artifact-rich interview. The human can show a lot — shipped surfaces, brand docs, campaigns. Elicit which of it is intentional. |
+| Net new brand | Stance-first. Elicit feel, audience, and anti-goals before anything else exists to point at. |
+| Established brand, first ghost package | Artifact-rich interview. Review shipped surfaces, brand docs, and campaigns. Ask which choices are intentional. |
 | Strong opinions, weak articulation | Example-led. Work from exemplars and counter-exemplars ("this feels like us, this never would") toward the stance underneath. |
 | Brand doc or design-language deck exists | Distillation. Treat the document as evidence: pull the claims that steer decisions, drop the filler, and have the human ratify each survivor. |
 | Rebrand, redesign, or migration | Transition-led. Capture current, target, and what must not be lost in between. |
@@ -50,35 +44,30 @@ Ask for it in plain English:
 Set up ghost for this repo.
 ```
 
-1. **Interview** - ask what the brand should feel like, what it should never
-   become, who it serves, and which surfaces or campaigns show it at its best.
-   Counter-exemplars are as valuable as exemplars: "we would never ship this"
-   usually yields a sharper decision than an hour of affirmative description.
-2. **Work the material** - ask for what the human can show: screenshots,
-   links, exemplar products, brand docs, past campaigns, a rejected design and
-   why it was rejected. Treat every artifact as evidence to curate, not guidance
-   to copy.
-3. **Draft** - write the smallest useful node prose from what the human said
-   or showed, asking of each node why, with what, and how it is assembled.
-4. **Curate** - have the human keep, soften, reject, restate at a different
-   altitude, or record important claims before treating them as durable.
-5. **Validate** - run ghost validation and use Git review as the approval
-   boundary.
+1. **Interview:** ask how the brand should feel, who it serves, what it should
+   avoid, and which work shows it at its best. Ask for examples the team would
+   reject too; they often expose a sharper boundary.
+2. **Review the material:** collect screenshots, links, brand docs, campaigns,
+   and rejected work. Ask which choices were intentional.
+3. **Draft:** write the smallest useful node from what the human said or showed.
+   Ask why the guidance exists, which materials support it, and how agents
+   should apply it.
+4. **Curate:** ask the human to keep, revise, narrow, or reject each claim.
+5. **Validate:** run `ghost validate`, then review the package changes in Git.
 
 ```bash
 ghost validate
 ```
 
-Artifacts and brand docs are testimony only. They can seed a draft, but they do
-not establish brand guidance by themselves — the human ratifies what is
-intentional.
+Artifacts and brand docs provide evidence for a draft. The human decides which
+choices become guidance.
 
 </DocSection>
 
 <DocSection title="The Flat Node Set">
 
-A `.ghost/` package is a **flat set of prose nodes** — no hierarchy, no inheritance,
-no edges. A node's identity is its file path with `.md` dropped
+A `.ghost/` package is a **flat set of prose nodes**. It has no hierarchy,
+inheritance, or edges. A node's identity is its file path with `.md` dropped
 (`marketing.email.md` is the node `marketing.email`). Its **kind** is the
 filename's first dotted segment (`principle.trust.md` → kind `principle`), and
 must be a kind declared in `glossary.md`; a bare name (`voice.md`) has
@@ -92,7 +81,7 @@ Node frontmatter carries only descriptive properties:
 
 | Property | What it does |
 | --- | --- |
-| `description` | The retrieval payload the menu shows: what the node governs, the observable condition under which it applies, and what it contributes where useful. |
+| `description` | The text an agent selects against: what the node governs, the observable condition under which it applies, and what it contributes where useful. |
 | `materials` | Optional list of locators for the concrete materials the guidance is about: repo-relative paths/globs or absolute HTTPS URLs. |
 | _passthrough_ | Free-form keys (`audience`, `stage`, …) are preserved for host tooling. |
 
@@ -100,74 +89,56 @@ Node frontmatter carries only descriptive properties:
 files, illustrations, and external asset libraries all use it. Guidance stays in
 prose; `materials` only says where the material is. Repo-relative locators also
 power `ghost review`: a diff that touches a matched path surfaces the node and
-its checks — see [Checks And Review](/docs/checks-and-review).
+its checks. See [Checks And Review](/docs/checks-and-review).
 
-The **glossary** (`glossary.md`) declares the kind vocabulary and what each
-kind means — its normative weight, so an agent knows how to read a node of
-that kind. Kinds are the author's choice; ghost ships no fixed vocabulary.
+The **glossary** (`glossary.md`) declares the kind vocabulary and explains how
+an agent should treat each kind. Kinds are the author's choice; ghost ships no
+fixed vocabulary.
 
 </DocSection>
 
 <DocSection title="Altitude And Conditions">
 
-State guidance at the altitude where it applies. Universal guidance is stated
-plainly. Narrower guidance names its **condition** in the prose — the *situation*
-where it applies ("when a surface must show many items at once, carry hierarchy with
-weight, not color"), never a destination or filing bucket ("for dashboards:").
-The agent reads the condition and decides when the guidance applies; that
-interpretation is the agent's job, not the filename's. Avoid broad universal
-imperatives unless universal retrieval is truly intended.
+State guidance at the altitude where it applies. Write universal guidance
+without a condition. For narrower guidance, name the **condition** in the prose:
+"when a surface must show many items at once, carry hierarchy with weight, not
+color." Do not file it under a destination such as "for dashboards." The agent
+uses the condition to decide when the guidance applies.
 
 </DocSection>
 
 <DocSection title="What A Body Answers">
 
-While drafting a node's prose body, ask three questions of every node: *why*
-(the stance — audience, goals, anti-goals, principles), *with what* (the
-materials — building blocks, files, routes, assets, exemplars, source links),
-and *how it is assembled* (the patterns — layouts, flows, states, content
-patterns, behavior, visual arrangements). These are drafting prompts, never
-frontmatter fields, and a node may answer only one. Each answer lands as a
-steering dimension: stance prose is read first — weakest at moving output form
-on its own, but the yardstick every later selection is measured against;
-materials provide concrete payload and support review matching; patterns and
-Skeletons steer strongest, and Skeleton fences are extracted and emitted dead
-last so generation starts from them.
+While drafting a node, ask why the guidance exists, which materials support
+it, and how agents should assemble the result. Put those answers in the prose
+body. They are not frontmatter fields, and a node does not need to answer all
+three.
+
+Stance helps the agent judge later choices. Materials give it concrete work to
+inspect or use. Patterns provide a repeatable assembly.
 
 </DocSection>
 
 <DocSection title="Authoring For Steering">
 
-Useful brand guidance should help future agents choose, restrain, anchor, and
-manifest. It should not only describe what exists or collect every available
-style detail.
+Useful brand guidance changes what an agent does. Write node prose that:
 
-Write node prose so generation decisions become explicit:
-
-- Name what generated work should preserve.
-- Block plausible defaults that would make the output feel generic or wrong.
-- Say which value wins when choices conflict.
-- State the condition under which a narrower guidance applies.
-- Capture broad brand intent.
-- Turn taste, trust, recovery, or disclosure into obligations.
-- Give repeatable layout, flow, state, content, behavior, or visual rules.
-- Anchor the guidance in concrete exemplars an agent can inspect.
-
-Write less like a brand book and more like a decision engine.
+- names what the generated work should preserve;
+- blocks plausible defaults that would make the output feel generic or wrong;
+- states which value wins when choices conflict;
+- gives the condition for narrower guidance;
+- provides repeatable layout, flow, content, or behavior rules; and
+- points to concrete exemplars the agent can inspect.
 
 </DocSection>
 
-<DocSection title="One Contract Per Package">
+<DocSection title="Package Scope And Approval">
 
-One contract per package: a repo's `.ghost/` is the whole ghost package. Reach for
-a second package only when a distinct product owns its own ghost package — a
-separate app in a monorepo — and target it with `ghost --package <dir>`.
+A repo's `.ghost/` is the whole ghost package. Use a second package only for a
+distinct product, such as a separate app in a monorepo, and target it with
+`ghost --package <dir>`.
 
-</DocSection>
-
-<DocSection title="Ratification">
-
-Uncommitted or unmerged ghost package edits are drafts. Checked-in ghost node prose
-is canonical.
+Treat uncommitted or unmerged package edits as drafts. Checked-in node prose is
+canonical.
 
 </DocSection>

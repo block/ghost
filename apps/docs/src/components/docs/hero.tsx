@@ -16,7 +16,7 @@ export function Hero() {
     >
       <h1 className="text-2xl font-normal leading-8 lowercase">ghost</h1>
       <p className="my-6 max-w-[54ch] rounded-squircle border border-[var(--doc-line)] px-[2ch] py-4 text-foreground">
-        a model always generates the likeliest thing. ghost makes your brand the
+        a model generates the likeliest thing. ghost makes your brand the
         likeliest thing.
       </p>
       <InlineIndex items={links} />

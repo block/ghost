@@ -15,9 +15,9 @@ What to match:
   the brand move.
 - **Editorial thesis cadence.** The thesis unfolds in paragraphs, not a grid of
   benefits. It trusts the reader to follow a serious idea.
-- **Mechanics over adjectives.** The copy names concrete mechanics — flat corpus,
-  `gather`, `pull`, `review`, Git approval — instead of claiming the product is
-  simple, powerful, or magical.
+- **Interaction over architecture.** The copy shows the agent finding and using
+  applicable guidance. Name commands when they clarify that interaction, not to
+  make the CLI the protagonist.
 - **Selective emphasis.** Foreground text highlights only the load-bearing model
   phrase. Do not bold every important sentence.
 - **Haunted restraint.** The concentric circles are spectral and low-opacity;

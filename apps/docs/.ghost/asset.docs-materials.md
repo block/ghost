@@ -3,7 +3,8 @@ description: Concrete docs-site materials — inspect before inventing tokens, c
 materials:
   - apps/docs/src/App.tsx
   - apps/docs/src/main.tsx
-  - apps/docs/src/styles/dev-fonts.css
+  - apps/docs/src/styles/docs.css
+  - apps/docs/src/styles/marked-doc.css
   - apps/docs/src/components/docs/**
   - apps/docs/src/app/**/*.tsx
   - apps/docs/src/content/docs/*.mdx
@@ -23,15 +24,13 @@ Material contract:
   `bg-card`) and the named docs typography variables (`--heading-*`,
   `--label-*`). Avoid raw palette utilities unless they are already part of a
   documented semantic exception.
-- **Fonts** are overridden for the docs dev surface in
-  `apps/docs/src/styles/dev-fonts.css`; `font-display` and `font-sans` resolve to
-  Cash Sans locally. Preserve the uppercase label and black display-type rhythm.
+- **Typography** uses the docs styles and Vessel's semantic type roles. Preserve
+  the compact monospace labels, lowercase headings, and restrained body rhythm.
 - **Navigation** is the bottom floating `Dock`. New top nav, side nav, or
   secondary persistent chrome should be treated as a product decision, not a
   routine addition.
-- **Page structure** lives in `AnimatedPageHeader`, `SectionWrapper`,
-  `DocsPageLayout`, `DocSection`, and `DocProse`. Use these before making a new
-  layout primitive.
+- **Page structure** lives in `PageHeader`, `SectionWrapper`, `DocsPageLayout`,
+  `DocSection`, and `DocProse`. Use these before making a new layout primitive.
 - **Docs content** is MDX under `apps/docs/src/content/docs/` with frontmatter
   wired through the docs manifest and routes. Do not hard-code a one-off article
   route unless the content model cannot express it.

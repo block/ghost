@@ -26,7 +26,7 @@ const guidanceExamples = [
     label: "visual decision",
     path: "pattern.crop-with-intent.md",
     body: `---
-description: Photography — gather when a composition uses a photo.
+description: Photography. Gather when a composition uses a photo.
 materials:
   - brand/photography/**
 ---
@@ -42,7 +42,7 @@ Reject cautious full-object framing and collages that avoid choosing a focal poi
     label: "product pattern",
     path: "condition.blocked-progress.md",
     body: `---
-description: Blocked progress — gather when someone cannot continue a task.
+description: Blocked progress. Gather when someone cannot continue a task.
 materials:
   - src/components/error-state/**
 ---
@@ -58,7 +58,7 @@ If the person cannot resolve the problem, state what happens next. Do not end on
     label: "exact material",
     path: "asset.color-roles.md",
     body: `---
-description: Exact color roles and values — gather before assigning color.
+description: Exact color roles and values. Gather before assigning color.
 materials:
   - src/styles/brand-tokens.css
 ---
@@ -92,11 +92,12 @@ export default function Home() {
         >
           <SectionLabel n={1}>fracture</SectionLabel>
           <div className="max-w-[54ch] space-y-4">
-            <p>Brand has never lived in one place.</p>
+            <p>Teams keep different parts of the brand in different tools.</p>
             <p>
-              Each discipline maintains the version of the brand it can use.
-              Brand guidelines often sit above them, describing a common intent
-              it cannot carry into the work.
+              Product teams maintain components and tokens. Marketing keeps
+              campaign systems and asset libraries. By the time a specialist
+              applies the shared brand guidelines, each discipline has adapted
+              them to its own work.
             </p>
           </div>
 
@@ -117,13 +118,8 @@ export default function Home() {
 
           <div className="max-w-[54ch] space-y-4">
             <p>
-              People have always bridged the gaps. They interpret, review,
-              correct, and repeat.
-            </p>
-            <p>
-              The fragmentation followed the organization. Different specialists
-              worked in different tools, on different materials, at different
-              times.
+              Specialists bridge the gaps through interpretation and review,
+              then repeat the work on the next surface.
             </p>
           </div>
         </section>
@@ -134,13 +130,16 @@ export default function Home() {
         >
           <SectionLabel n={2}>maker</SectionLabel>
           <div className="max-w-[54ch] space-y-4">
-            <p>Agents already cross boundaries the brand does not.</p>
+            <p>
+              Agents work across the boundaries that split brand guidance into
+              pieces.
+            </p>
             <p>
               Agents can build a payment screen, write its confirmation email,
-              produce a launch campaign, and revise the support response. But
-              the guidance still arrives as departmental debris: a component
-              library for one task, a voice guide for another, a campaign deck
-              for the next, all triggered separately by different people.
+              produce a launch campaign, and revise the support response. The
+              agent still receives a component library for one task, a voice
+              guide for another, and a campaign deck for the next. Different
+              people provide each source at different times.
             </p>
           </div>
         </section>
@@ -151,7 +150,10 @@ export default function Home() {
         >
           <SectionLabel n={3}>guidance</SectionLabel>
           <div className="max-w-[54ch] space-y-4">
-            <p>ghost gives brand decisions a shared, agent-legible form.</p>
+            <p>
+              ghost records brand decisions in prose that agents can find and
+              use.
+            </p>
             <p>
               A `.ghost/` package holds the brand's broad stances that should
               survive every medium, the narrower decisions that belong to a
@@ -159,9 +161,8 @@ export default function Home() {
               decisions become concrete.
             </p>
             <p>
-              One brand decision can be stated once without forcing every output
-              to look the same. The guidance stays specific without remaining
-              isolated by discipline.
+              One decision can guide a screen, email, campaign, and support
+              response. Each medium still keeps its own form.
             </p>
           </div>
 
@@ -236,8 +237,8 @@ export default function Home() {
           <div className="mt-10 max-w-[54ch] border-t border-[var(--doc-line)] pt-8">
             <p>
               One ghost package can guide product, marketing, support, and
-              motion without loading the entire brand into every task. The
-              guidance lives together. Each task receives only what applies.
+              motion. The agent loads only the guidance that applies to its
+              current task.
             </p>
           </div>
         </section>

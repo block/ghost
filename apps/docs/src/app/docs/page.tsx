@@ -8,7 +8,7 @@ const learn: DocIndexItem[] = [
     name: "Getting started",
     href: "/docs/getting-started",
     description:
-      "Record the first decision, brief an agent from selected guidance, and learn the complete loop.",
+      "Record one repeated decision and give it to an agent before the next task.",
   },
   {
     name: "Authoring",

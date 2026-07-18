@@ -3,7 +3,6 @@ description: Visual composition floor for the docs site — gather before changi
 materials:
   - apps/docs/src/app/page.tsx
   - apps/docs/src/app/docs/page.tsx
-  - apps/docs/src/app/tools/**/*.tsx
   - apps/docs/src/components/docs/**
   - packages/vessel-react/src/styles/main.css
 ---

@@ -1,13 +1,12 @@
 # @design-intelligence/ghost
 
-**ghost is your brand, packed for agents.** A `.ghost/` folder of plain-prose
-guidance (your stance, your voice, your trust moves) checked into the repo and
-read by any agent before it makes anything: a screen, an email, an empty
-state, a sentence.
+Use ghost to give agents applicable brand guidance before they start work. A
+`.ghost/` package stores your stance, voice, trust moves, and concrete materials
+in the repo. Agents select and read that guidance while working on a screen,
+email, empty state, or sentence.
 
-Today those decisions live in reviewers' heads: "that's not our voice," again,
-on every surface. The agent that built the thing never saw them. ghost writes
-them down once, where the agent looks first.
+Reviewers repeat the same feedback on every surface: "that's not our voice."
+Write the decision in `.ghost/` so the next agent has it before starting work.
 
 [Documentation](https://block.github.io/ghost/) ·
 [Repo](https://github.com/block/ghost)
@@ -32,21 +31,28 @@ Brief this work from the ghost package.
 Review this diff against the ghost checks.
 ```
 
-ghost never calls an LLM itself; your agent does the thinking. No API key,
-no lock-in.
+Your agent decides what applies and interprets the guidance. The CLI handles
+repeatable work without calling an LLM, so ghost needs no API key and does not
+lock you into one agent.
 
-## The Loop
+## Use Guidance While Making
+
+Your agent works with the package through a small set of commands:
 
 ```bash
 ghost init          # scaffold .ghost/ with the skeleton starter
 ghost checks init   # opt in to review assertions
 ghost validate      # make sure the package is well-formed
-ghost gather <ask>  # before building: list all available guidance
+ghost gather [ask]  # before building: show the complete guidance menu
 ghost pull <ids>    # read the picked nodes' full bodies
 ghost review        # during review: match a diff to guidance and checks
 ghost export        # bundle the guidance as a portable artifact
 ghost pulse         # while tuning: see what agents reached for
 ```
+
+For a task-specific gather, your agent reads the complete, unfiltered menu and
+pulls every node whose stated situation applies. Bare `ghost gather` inspects
+the catalog without grounding a task.
 
 Run `ghost --help` for the core workflow and `ghost <command> --help` for
 flags. The [CLI reference](https://block.github.io/ghost/docs/cli) covers
