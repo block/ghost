@@ -116,6 +116,7 @@ against the unpacked package with `--package <dir>`.
 ## Workflows
 
 - Author or update the package: follow [references/capture.md](references/capture.md).
+- Distill supplied artifacts into new or existing guidance: follow [references/distill.md](references/distill.md).
 - Author material-backed nodes: follow [references/blocks.md](references/blocks.md).
 - Choose which concrete code tiers the package carries: follow [references/concrete-tiers.md](references/concrete-tiers.md).
 - Choose the right human-agent authoring workflow: follow [references/authoring-scenarios.md](references/authoring-scenarios.md).

@@ -45,6 +45,9 @@ a gate to clear before writing anything.
 | Fork, white label, tenant variant | Shared base + local divergence. Keep shared guidance broad; scope divergence with conditions. |
 | Monorepo or product suite | One contract per package. |
 
+When supplied artifacts are the starting point or must be reconciled with an
+existing package, follow [distill.md](distill.md).
+
 If more than one applies, start with the broad scenario, then narrow.
 
 ## 2. Interview The Human

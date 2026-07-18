@@ -377,9 +377,10 @@ hygiene, not over-structure.
 Elicit the brand from the human, not from a codebase. Interview for stance,
 audience, anti-goals, and exemplars; ask for the material they can show —
 screenshots, links, exemplar products, brand docs, copy they love or hate. Treat
-every artifact as evidence to curate, never guidance to copy verbatim. Repo-bound
-reality can be recorded as `materials` on the node whose prose explains its
-purpose.
+every artifact as evidence to curate, never guidance to copy verbatim. When
+supplied artifacts are the starting point or must be reconciled with existing
+guidance, follow [distill.md](distill.md). Repo-bound reality can be recorded as
+`materials` on the node whose prose explains its purpose.
 
 ### 5. Write sparse nodes
 
