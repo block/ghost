@@ -38,16 +38,21 @@ export function scoreAll(config) {
       const htmls = htmlFiles.map((file) =>
         readFileSync(join(dir, file), "utf8"),
       );
-      const runScores = htmls.map(
-        (html) => scoreHtml(html, tells, { discountTells: ask.discount }).score,
+      const scoredRuns = htmls.map((html) =>
+        scoreHtml(html, tells, { discountTells: ask.discount }),
       );
+      const runScores = scoredRuns.map((run) => run.score);
       const metas = existingRunFiles(dir, ".meta.json").map((file) =>
         JSON.parse(readFileSync(join(dir, file), "utf8")),
       );
       const cell = {
         arm,
         ask: ask.n,
-        scores: summarize(runScores),
+        askTitle: ask.title,
+        scores: {
+          ...summarize(runScores),
+          max_possible: scoredRuns[0]?.max ?? 0,
+        },
         consistency: styleConsistency(htmls),
         sameness: cellSameness(htmls).mean,
         context: {
@@ -56,11 +61,15 @@ export function scoreAll(config) {
               .map((meta) => meta.inventory?.tokensEstimate)
               .filter(Number.isFinite),
           ),
+          segments: segmentMeans(metas),
           brandTokens: mean(metas.map((meta) => brandTokens(config, meta))),
         },
       };
-      if (arm === "gather")
+      if (arm === "gather") {
         cell.retrieval = retrievalMetrics(metas, ask, config);
+        cell.loop = loopMetrics(metas);
+        warnOnMixedLoopProtocols(ask, metas, cell.loop);
+      }
       cells.push(cell);
     }
   }
@@ -90,27 +99,70 @@ export function retrievalMetrics(metas, ask, config) {
       poisonPulled: [...poison].some((id) => pulled.has(id)),
     };
   });
+  const poisonCount = perRun.filter((run) => run.poisonPulled).length;
+  const pulledWords = config
+    ? mean(
+        metas.map((meta) =>
+          (meta.tape?.pulledIds ?? []).reduce((sum, id) => {
+            const nodePath = join(config.package, `${id}.md`);
+            if (!existsSync(nodePath)) return sum;
+            return (
+              sum + (readFileSync(nodePath, "utf8").match(/\S+/gu) ?? []).length
+            );
+          }, 0),
+        ),
+      )
+    : 0;
   return {
     precision: mean(perRun.map((run) => run.precision)),
     recall: mean(perRun.map((run) => run.recall)),
     poisonPulled: perRun.map((run) => run.poisonPulled),
-    poisonCount: perRun.filter((run) => run.poisonPulled).length,
+    poisonCount,
+    poisonPulls: poisonCount,
+    poisonRuns: poisonCount,
     selectionStability: meanPairwiseJaccard(runs),
-    pulledWords: config
-      ? mean(
-          metas.map((meta) =>
-            (meta.tape?.pulledIds ?? []).reduce((sum, id) => {
-              const nodePath = join(config.package, `${id}.md`);
-              if (!existsSync(nodePath)) return sum;
-              return (
-                sum +
-                (readFileSync(nodePath, "utf8").match(/\S+/gu) ?? []).length
-              );
-            }, 0),
-          ),
-        )
-      : 0,
+    stability: meanPairwiseJaccard(runs),
+    pulledWords,
+    pulledWordsMean: pulledWords,
   };
+}
+
+export function loopMetrics(metas) {
+  const runs = metas.length;
+  const validReceipts = metas.map((meta) => meta.loop).filter(validLoopReceipt);
+  return {
+    receipts: validReceipts.length,
+    runs,
+    meanRepairPasses:
+      validReceipts.length > 0
+        ? mean(validReceipts.map((loop) => loop.repairPasses))
+        : null,
+    renderedCount: validReceipts.filter((loop) => loop.rendered === true)
+      .length,
+    reviewRanCount: validReceipts.filter((loop) => loop.reviewRan === true)
+      .length,
+  };
+}
+
+function warnOnMixedLoopProtocols(ask, metas, loop) {
+  if (loop.receipts === 0 || loop.receipts === metas.length) return;
+  console.warn(
+    `steering-control: gather ask ${ask.n} mixes runs with and without valid loop receipts; this mixes protocols and should not be compared as one distribution.`,
+  );
+}
+
+function validLoopReceipt(loop) {
+  return (
+    loop &&
+    typeof loop === "object" &&
+    !Array.isArray(loop) &&
+    Array.isArray(loop.pulledIds) &&
+    Array.isArray(loop.inspectedMaterials) &&
+    typeof loop.rendered === "boolean" &&
+    Number.isFinite(loop.repairPasses) &&
+    loop.repairPasses >= 0 &&
+    typeof loop.reviewRan === "boolean"
+  );
 }
 
 function brandTokens(config, meta) {
@@ -123,6 +175,16 @@ function brandTokens(config, meta) {
     return sum + (readFileSync(nodePath, "utf8").match(/\S+/gu) ?? []).length;
   }, 0);
   return Math.round((brandWords + menuWords + pulledWords) * 1.33);
+}
+
+function segmentMeans(metas) {
+  const keys = ["ballast", "brand", "menu", "instructions", "ask"];
+  return Object.fromEntries(
+    keys.map((key) => [
+      key,
+      mean(metas.map((meta) => meta.inventory?.[key]).filter(Number.isFinite)),
+    ]),
+  );
 }
 
 function countTell(html, tell) {

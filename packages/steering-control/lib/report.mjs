@@ -7,7 +7,10 @@ const TOKEN_NOTE =
   "Token counts are estimates: words \u00d7 1.33, applied uniformly across arms.";
 
 const HONESTY_LINE =
-  "Every number below is deterministic \u2014 tell counts, selection-tape diffs, CSS extraction. No LLM judged anything.";
+  "Tell counts, pull tape, screenshots, and CSS extraction are deterministic. Gather loop receipts are agent-attested bookkeeping, not independent proof.";
+
+const GATHER_SCOPE_LINE =
+  "The gather arm measures the complete shipped Ghost consumer loop: select, pull, inspect, brief, make, render, repair, and review when available. It is not a context-only causal isolation.";
 
 function esc(s) {
   return String(s)
@@ -27,13 +30,17 @@ function median(values) {
 
 function fmt(n, digits = 2) {
   if (n === null || n === undefined) return "\u2014";
-  return Number(n)
+  const value = Number(n);
+  if (!Number.isFinite(value)) return "\u2014";
+  return value
     .toFixed(digits)
     .replace(/\.00$/, "")
     .replace(/(\.\d)0$/, "$1");
 }
 
 function brandTokens(cell) {
+  if (Number.isFinite(cell.context?.brandTokens))
+    return cell.context.brandTokens;
   const seg = cell.context?.segments ?? {};
   const pulled = cell.retrieval
     ? Math.round((cell.retrieval.pulledWordsMean ?? 0) * 1.33)
@@ -147,7 +154,7 @@ async function askSection(outDir, ask, askTitle, cells) {
     .map((c) => {
       const s = c.scores;
       const con = c.consistency ?? {};
-      return `<tr><td>${esc(c.arm)}</td><td>${s.min} / ${s.median} / ${s.max}</td><td>${fmt(con.accentHue)}</td><td>${fmt(con.radius)}</td><td>${fmt(con.fontStack)}</td><td>${fmt(c.sameness)}</td><td>${(c.context?.tokensEstimate ?? 0).toLocaleString("en-US")}</td></tr>`;
+      return `<tr><td>${esc(c.arm)}</td><td>${s.min} / ${s.median} / ${s.max}</td><td>${fmt(con.accentHue)}</td><td>${fmt(con.radius ?? con.controlRadius)}</td><td>${fmt(con.fontStack)}</td><td>${fmt(c.sameness)}</td><td>${(c.context?.tokensEstimate ?? 0).toLocaleString("en-US")}</td></tr>`;
     })
     .join("\n");
 
@@ -169,18 +176,23 @@ function gatherTable(cells) {
   const rows = gatherCells
     .map((c) => {
       const r = c.retrieval;
+      const loop = c.loop ?? {};
+      const poisonPulls = r.poisonPulls ?? r.poisonCount ?? 0;
       const poison =
-        r.poisonPulls > 0
-          ? `<td class="poison">${r.poisonPulls}</td>`
+        poisonPulls > 0
+          ? `<td class="poison">${poisonPulls}</td>`
           : `<td>0</td>`;
-      return `<tr><td>${c.ask} \u2014 ${esc(c.askTitle)}</td>${poison}<td>${fmt(r.precision)}</td><td>${fmt(r.recall)}</td><td>${fmt(r.stability)}</td><td>${(r.pulledWordsMean ?? 0).toLocaleString("en-US")}</td></tr>`;
+      const receipts = Number.isFinite(loop.receipts)
+        ? `${loop.receipts}/${loop.runs ?? c.scores?.n ?? "?"}`
+        : "\u2014";
+      return `<tr><td>${c.ask} \u2014 ${esc(c.askTitle)}</td>${poison}<td>${fmt(r.precision)}</td><td>${fmt(r.recall)}</td><td>${fmt(r.stability ?? r.selectionStability)}</td><td>${(r.pulledWordsMean ?? r.pulledWords ?? 0).toLocaleString("en-US")}</td><td>${receipts}</td><td>${fmt(loop.meanRepairPasses)}</td><td>${Number.isFinite(loop.renderedCount) ? loop.renderedCount : "\u2014"}</td><td>${Number.isFinite(loop.reviewRanCount) ? loop.reviewRanCount : "\u2014"}</td></tr>`;
     })
     .join("\n");
   return `<section>
 <h2>Gather metrics</h2>
-<p class="dim">From the selection tape. Poison pulls \u2014 wrong-register nodes pulled for the ask \u2014 are the legible number.</p>
+<p class="dim">From deterministic selection tape plus agent-attested loop receipts. Poison pulls \u2014 wrong-register nodes pulled for the ask \u2014 are the legible retrieval number; receipt fields summarize process and verification claims from <code>run-k.loop.json</code>.</p>
 <table>
-<thead><tr><th>ask</th><th>poison pulls</th><th>precision</th><th>recall</th><th>stability</th><th>pulled words (mean)</th></tr></thead>
+<thead><tr><th>ask</th><th>poison pulls</th><th>precision</th><th>recall</th><th>stability</th><th>pulled words (mean)</th><th>receipts</th><th>mean repairs</th><th>rendered</th><th>review ran</th></tr></thead>
 <tbody>${rows}</tbody>
 </table>
 </section>`;
@@ -240,6 +252,7 @@ footer { margin-top: 3rem; border-top: 1px solid #e5e7eb; padding-top: 1.5rem; f
 <p class="dim">generated: ${esc(metrics.generatedAt ?? "unknown")}</p>
 <p class="dim">package: ${esc(metrics.config?.package ?? "unknown")} \u00b7 runs per cell: ${metrics.config?.runsPerCell ?? "?"}</p>
 <p class="honesty">${HONESTY_LINE}</p>
+<p class="honesty">${GATHER_SCOPE_LINE}</p>
 </header>
 <section>
 <h2>Quality vs. brand-context tokens</h2>

@@ -68,6 +68,30 @@ The annotation is load-bearing. A bare sample teaches form; the annotation
 teaches which features of the form are intentional, which stops an agent from
 copying incidental details.
 
+An exemplar should identify eight things in prose:
+
+1. the rendered artifact the agent should inspect;
+2. the implementation, fixture, or source that produced it;
+3. what is intentional and load-bearing;
+4. what is incidental and should change with task facts;
+5. the observable conditions where it applies;
+6. the content, viewport, or state conditions that challenge or break it;
+7. the current materials it demonstrates;
+8. provenance, owner, review date, or compatibility signal when freshness
+   matters.
+
+Put locators in `materials`: render, implementation, assets, source, or external
+reference. Put interpretation in the body. Ownership and freshness also live in
+prose, the exemplar artifact, or a repo-owned system; they are not structured
+`materials` metadata.
+
+A rendered exemplar proves one solution under stated conditions. It is not a
+universal visual target. Provide one exemplar for each distinct,
+composition-critical surface shape that earns one, and say which details may be
+reused. If unrelated tasks start converging on the same composition, section
+order, or decoration, tighten applicability, add a shape-appropriate exemplar,
+or remove the exemplar.
+
 Protect exact voice artifacts the same way. A real on-brand error message
 out-steers a paragraph about error-message voice:
 
