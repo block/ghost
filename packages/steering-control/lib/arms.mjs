@@ -111,7 +111,7 @@ function gatherInstructions(config, askN, runK) {
     "Select only node ids whose described situation applies to the ask, then pull before making:",
     `${commandPrefix(config)} pull <ids> --package ${quoteArg(config.package)} --run ${quoteArg(runId)}`,
     "Inspect pulled materials that govern exactness, structure, or taste. Read files, view images or rendered exemplars when available, and note unavailable material honestly.",
-    "Brief the work before writing: Ghost-backed decisions, provisional decisions, materials to use, risks, and no more than five non-negotiables.",
+    "Brief the work before writing: ghost-backed decisions, provisional decisions, materials to use, risks, and no more than five non-negotiables.",
     "If a pulled Skeleton matches the task, start from it first, then fill it with task facts.",
     `Make the single self-contained HTML artifact at ${html}. Screenshots, logs, or notes may be created as evidence; only this run-${runK}.html is scored.`,
     "Render task-relevant viewports, states, and content stress. Verify mechanically and visually: overflow, overlap, dimensions, contrast, focus/order and required content, plus hierarchy, density, rhythm, composition, imagery, and brand fit.",
