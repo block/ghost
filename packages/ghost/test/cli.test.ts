@@ -6,6 +6,12 @@ import { gunzipSync } from "node:zlib";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { parse as parseYaml } from "yaml";
 import { buildCli } from "../src/cli.js";
+import {
+  gatherGhostPackage,
+  loadGhostSnapshot,
+  pullGhostNodes,
+} from "../src/embed/index.js";
+import { resolveGhostPackage } from "../src/package.js";
 
 async function runCli(
   argv: string[],
@@ -1342,6 +1348,56 @@ describe("ghost CLI", () => {
         reason: "glob matched more than 12 files; omitted the rest",
       }),
     );
+  });
+
+  it("CLI gather/pull JSON stays semantically aligned with embed", async () => {
+    await writeBareTestPackage(dir);
+    await mkdir(join(dir, ".ghost", "materials"), { recursive: true });
+    await writeFile(
+      join(dir, ".ghost", "materials", "tokens.css"),
+      ":root{}\n",
+    );
+    await writeFile(
+      join(dir, ".ghost", "asset.tokens.md"),
+      "---\ndescription: Tokens.\nmaterials:\n  - materials/tokens.css\n---\n\nToken prose.\n\n## Skeleton\n\n```css\n:root { }\n```\n\nStrip me.\n",
+    );
+
+    const snapshot = await loadGhostSnapshot(
+      resolveGhostPackage(undefined, dir),
+    );
+    const embedGather = gatherGhostPackage(snapshot, { ask: "tokens" });
+    const cliGather = JSON.parse(
+      (await runCli(["gather", "tokens", "--format", "json"], dir)).stdout,
+    );
+    expect(cliGather.contract).toEqual(embedGather.contract);
+    expect(cliGather.silence).toEqual(embedGather.silence);
+    expect(cliGather.coverage).toEqual(embedGather.coverage);
+    expect(cliGather.nodes).toEqual(embedGather.nodes);
+    expect(cliGather.next).toEqual({ command: "ghost pull <id> [<id>…]" });
+
+    const embedPull = await pullGhostNodes(snapshot, {
+      ids: ["asset.tokens"],
+      repoRoot: dir,
+    });
+    const cliPull = JSON.parse(
+      (await runCli(["pull", "asset.tokens", "--format", "json"], dir)).stdout,
+    );
+    expect(cliPull.nodes[0]).toMatchObject({
+      id: embedPull.nodes[0].id,
+      description: embedPull.nodes[0].description,
+      body: embedPull.nodes[0].body,
+    });
+    expect(cliPull.nodes[0].materials).toEqual(
+      embedPull.nodes[0].materials?.map((material) => ({
+        locator: material.locator,
+        tier: material.tier,
+        ...(material.inlined !== undefined
+          ? { inlined: material.inlined }
+          : {}),
+      })),
+    );
+    expect(cliPull.skeletons).toEqual(embedPull.skeletons);
+    expect(cliPull).not.toHaveProperty("checks");
   });
 
   it("pull partially succeeds with closest-id hints for unknown nodes", async () => {

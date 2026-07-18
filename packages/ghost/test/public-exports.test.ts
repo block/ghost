@@ -57,4 +57,17 @@ describe.runIf(hasBuiltExports)("built public exports", () => {
     expect(core.parseSourceRef).toBeTypeOf("function");
     expect(core.sliceNodeSection).toBeTypeOf("function");
   });
+
+  it("exposes the embedded host contract", async () => {
+    const embed = (await import("@design-intelligence/ghost/embed")) as Record<
+      string,
+      unknown
+    >;
+
+    expect(embed.loadGhostSnapshot).toBeTypeOf("function");
+    expect(embed.gatherGhostPackage).toBeTypeOf("function");
+    expect(embed.pullGhostNodes).toBeTypeOf("function");
+    expect(embed.inspectGhostMaterial).toBeTypeOf("function");
+    expect(embed.stampGhostEvent).toBeTypeOf("function");
+  });
 });

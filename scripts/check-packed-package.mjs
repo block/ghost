@@ -20,6 +20,7 @@ const PUBLIC_IMPORTS = [
   "@design-intelligence/ghost/fingerprint",
   "@design-intelligence/ghost/scan",
   "@design-intelligence/ghost/core",
+  "@design-intelligence/ghost/embed",
 ];
 
 function fail(message) {
@@ -68,6 +69,7 @@ const REQUIRED_DIST_FILES = [
   "cli.js",
   "index.js",
   join("ghost-core", "index.js"),
+  join("embed", "index.js"),
 ].map((path) => join(ROOT, "packages", "ghost", "dist", path));
 
 try {
