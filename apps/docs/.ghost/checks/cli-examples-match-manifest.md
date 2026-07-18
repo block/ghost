@@ -1,6 +1,6 @@
 ---
 name: cli-examples-match-manifest
-description: CLI examples and generated docs stay synchronized with the real Ghost command surface.
+description: CLI examples and generated docs stay synchronized with the real ghost command surface.
 severity: high
 references:
   - condition.cli-reference-exactness

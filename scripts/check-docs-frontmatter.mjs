@@ -11,7 +11,7 @@ const Schema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
   kicker: z.string().optional(),
-  section: z.enum(["guide", "drift", "ui"]).optional(),
+  section: z.literal("guide").optional(),
   order: z.number(),
   slug: z.string().min(1),
   route: z.string().optional(),
@@ -32,14 +32,7 @@ function walk(dir) {
 
 function routeFor(fm) {
   if (fm.route) return fm.route;
-  const section = fm.section ?? "guide";
-  const prefix =
-    section === "guide"
-      ? "/docs"
-      : section === "drift"
-        ? "/tools/drift"
-        : "/ui";
-  return `${prefix}/${fm.slug}`;
+  return `/docs/${fm.slug}`;
 }
 
 const files = walk(DOCS_DIR);
@@ -72,24 +65,8 @@ for (const { file, fm: _fm } of parsed) {
     if (!target) continue;
     // Routes still owned by React pages (anything MDX-authored is
     // already in `routes` via the manifest).
-    const KNOWN = [
-      "/",
-      "/tools",
-      "/tools/map",
-      "/tools/scan",
-      "/tools/drift",
-      "/tools/drift/workflow",
-      "/tools/fleet",
-      "/tools/ui",
-      "/docs",
-      "/ui",
-      "/ui/foundations",
-      "/ui/foundations/colors",
-      "/ui/foundations/typography",
-      "/ui/components",
-    ];
+    const KNOWN = ["/", "/docs"];
     if (KNOWN.includes(target)) continue;
-    if (target.startsWith("/ui/components/")) continue;
     if (routes.has(target)) continue;
     errors.push(`${relative(ROOT, file)}: broken internal link -> ${match[1]}`);
   }

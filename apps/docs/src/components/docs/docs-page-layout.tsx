@@ -3,20 +3,14 @@
 import { cn } from "@design-intelligence/vessel-react";
 import type { ReactNode } from "react";
 
-/**
- * Wrapper for doc pages that use the two-column section layout.
- * Provides page-level padding matching SectionWrapper.
- */
 export function DocsPageLayout({ children }: { children: ReactNode }) {
-  return <div className="relative py-6 md:py-8 px-6 lg:px-8">{children}</div>;
+  return (
+    <div className="doc-frame relative px-[2ch] py-4 sm:px-[4ch]">
+      {children}
+    </div>
+  );
 }
 
-/**
- * A single documentation section rendered as a two-column row on lg+.
- *
- * Left column: sticky section title (replaces inline <h2>).
- * Right column: section content with DocProse-compatible styling.
- */
 export function DocSection({
   id,
   title,
@@ -32,20 +26,16 @@ export function DocSection({
     <section
       id={id}
       className={cn(
-        "scroll-mt-10",
-        "grid grid-cols-1 lg:grid-cols-[12rem_1fr] xl:grid-cols-[14rem_1fr] gap-x-10 gap-y-0 border-t border-border/40 pt-8 pb-2 first:border-t-0 first:pt-0",
+        "doc-section scroll-mt-8 grid grid-cols-1 gap-x-[4ch] border-t border-[var(--doc-line)] py-8 first:border-t-0 first:pt-0 lg:grid-cols-[18ch_1fr]",
         className,
       )}
     >
-      {/* Left: sticky title */}
-      <div className="lg:sticky lg:top-8 lg:self-start mb-4 lg:mb-0 lg:pt-0.5">
-        <p className="font-display text-sm tracking-tight !text-foreground">
+      <div className="mb-4 lg:sticky lg:top-8 lg:mb-0 lg:self-start">
+        <p className="doc-section-label font-mono text-[0.8125rem] font-bold leading-5 lowercase text-foreground">
           {title}
         </p>
       </div>
-
-      {/* Right: content */}
-      <div className="min-w-0 max-w-[72ch]">{children}</div>
+      <div className="min-w-0 max-w-[76ch]">{children}</div>
     </section>
   );
 }

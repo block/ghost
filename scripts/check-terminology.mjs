@@ -78,6 +78,11 @@ const FORBIDDEN_PHRASES = [
   "wild nodes",
   "guard node",
   "guard nodes",
+  "brand truth",
+  "brand truths",
+  "prose truths",
+  "product truth",
+  "app truth",
 ];
 
 /**
@@ -89,7 +94,6 @@ const FORBIDDEN_PHRASES = [
 const ENTRANCE_DOCS = new Set([
   "README.md",
   "packages/ghost/README.md",
-  "apps/docs/src/content/docs/quickstart.mdx",
   "apps/docs/src/content/docs/getting-started.mdx",
 ]);
 
@@ -107,6 +111,10 @@ const ENTRANCE_FORBIDDEN_PHRASES = [
 const DISALLOWED_VERSION_MARKER = `${"v"}${"2"}`;
 
 const FORBIDDEN_PATTERNS = [
+  {
+    phrase: "capitalized ghost brand name",
+    pattern: /\bGhost\b/,
+  },
   {
     phrase: "future version marker",
     pattern: new RegExp(

@@ -36,12 +36,7 @@ function build(): DocsEntry[] {
       Content: mod.default,
     });
   }
-  out.sort((a, b) => {
-    if (a.frontmatter.section !== b.frontmatter.section) {
-      return a.frontmatter.section.localeCompare(b.frontmatter.section);
-    }
-    return a.frontmatter.order - b.frontmatter.order;
-  });
+  out.sort((a, b) => a.frontmatter.order - b.frontmatter.order);
   return out;
 }
 

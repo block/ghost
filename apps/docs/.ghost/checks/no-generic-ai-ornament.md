@@ -1,6 +1,6 @@
 ---
 name: no-generic-ai-ornament
-description: Docs UI avoids generic AI SaaS ornament and preserves Ghost's restrained monochrome visual stance.
+description: Docs UI avoids generic AI SaaS ornament and preserves ghost's restrained monochrome visual stance.
 severity: medium
 references:
   - anti-goal.generated-docs-site
@@ -15,4 +15,4 @@ state.
 
 This check should not block legitimate semantic color in docs prose or existing
 Vessel component behavior. The issue is generic ornament that weakens the severe,
-monochrome, typographic Ghost stance.
+monochrome, typographic ghost stance.

@@ -1,8 +1,8 @@
 # ghost-docs
 
-**Documentation site for the Ghost project.**
+**Documentation site for the ghost project.**
 
-`ghost-docs` is the deployed docs for everything in this monorepo: the `ghost` CLI, the fingerprint package format, the generation loop, and the live `vessel` component catalogue. A Vite + MDX app that consumes [`vessel-react`](../../packages/vessel-react) as a workspace dependency.
+`ghost-docs` is the deployed documentation for ghost: how agents author and use brand guidance from a `.ghost/` package, plus the supporting CLI reference. It is a Vite + MDX app that consumes [`vessel-react`](../../packages/vessel-react) as a workspace dependency.
 
 ## Run
 

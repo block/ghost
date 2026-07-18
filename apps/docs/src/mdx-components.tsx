@@ -1,8 +1,21 @@
 import type { ComponentProps } from "react";
 import { Link } from "react-router";
+import { BetaWarning } from "@/components/docs/beta-warning";
 import { Callout } from "@/components/docs/callout";
 import { CliHelp } from "@/components/docs/cli-help";
 import { DocSection } from "@/components/docs/docs-page-layout";
+import { GatherDemo } from "@/components/docs/gather-demo";
+import {
+  FileFigure,
+  Flag,
+  Listing,
+  ListingRow,
+  Mark,
+  Repair,
+  Split,
+  Step,
+  Steps,
+} from "@/components/docs/marked";
 
 function InternalOrExternalLink({
   href,
@@ -13,13 +26,19 @@ function InternalOrExternalLink({
   const isInternal = href.startsWith("/") || href.startsWith("#");
   if (isInternal) {
     return (
-      <Link to={href} className={rest.className}>
+      <Link to={href} className={`doc-link ${rest.className ?? ""}`}>
         {children}
       </Link>
     );
   }
   return (
-    <a href={href} target="_blank" rel="noreferrer noopener" {...rest}>
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer noopener"
+      {...rest}
+      className={`doc-link ${rest.className ?? ""}`}
+    >
       {children}
     </a>
   );
@@ -38,5 +57,16 @@ export const mdxComponents: Record<string, any> = {
   DocSection,
   Link,
   Callout,
+  BetaWarning,
   CliHelp,
+  GatherDemo,
+  Mark,
+  Flag,
+  FileFigure,
+  Listing,
+  ListingRow,
+  Steps,
+  Step,
+  Split,
+  Repair,
 };

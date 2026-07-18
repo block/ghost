@@ -1,9 +1,8 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
-import "@design-intelligence/vessel-react/styles.css";
 import { App } from "./App";
-import "./styles/dev-fonts.css";
+import "./styles/docs.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

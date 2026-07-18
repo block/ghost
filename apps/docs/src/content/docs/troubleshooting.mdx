@@ -1,6 +1,6 @@
 ---
 title: Troubleshooting
-description: What to do when gather comes back empty, validate warns about a kind, review refuses to run, or a pull misses an id.
+description: Fix empty gathers, validation warnings, review refusals, and unknown node ids.
 kicker: Docs
 section: guide
 order: 35
@@ -9,42 +9,38 @@ slug: troubleshooting
 
 <DocSection title="Start Here">
 
-Every Ghost command follows one exit-code contract, so start by reading the
+Every ghost command follows one exit-code contract, so start by reading the
 code before reading the message:
 
 | Code | Meaning |
 | --- | --- |
 | `0` | Success. |
-| `1` | The command ran but the result is unhappy: `validate` found issues, or an unexpected error was thrown. |
+| `1` | The command ran but reported problems: `validate` found issues, or an unexpected error was thrown. |
 | `2` | The command was called wrong: a bad flag or argument, a missing package for a command that needs one, a `pull` with no known ids, or `review` without a checks directory. |
 | `3` | A command-specific refusal, currently only `skill install` when a skill is already present (pass `--force`). |
 
-The sections below are the specific failures behind those codes, and what to
-do about each.
+Use the sections below to diagnose each code.
 
 </DocSection>
 
 <DocSection title="`ghost gather` returns nothing relevant">
 
-`gather` does no filtering or ranking; it always emits the whole guidance menu.
+`gather` emits the complete guidance menu without filtering or ranking.
 If your agent reads the menu and pulls nothing useful, the problem may be
-retrieval, applicability, or true fingerprint silence.
+retrieval, applicability, or true package silence.
 
-- **Check the description, not the body.** An agent selects against a node's
-  `description` alone. A vague description (`Our trust principles.`) is
-  invisible at selection time no matter how good the prose underneath is.
-  Rewrite it as a task-shaped phrase: what the node governs, what observable
-  condition makes it apply, and what it contributes where useful.
-- **Check `ghost pulse`.** It shows whether a node appeared on the menu, got
-  pulled, was missed by an id the agent tried and failed, or stayed cold
-  every time. A cold node with real content is a description problem, not a
-  content problem.
-- **Don't add more nodes to fix a retrieval miss.** A weak description with a
-  strong body is worse than a strong description with a thin body; the agent
-  never reaches the body.
-- **Respect silence.** If no description indicates an applicable situation, name
-  the fingerprint's silence, follow the cover silence posture, and do not claim
-  provisional local reasoning as Ghost-backed.
+- **Check the description.** An agent selects against a node's `description`.
+  A vague description (`Our trust principles.`) gives it no applicable
+  situation. Rewrite the description to name what the node governs, when it
+  applies, and what it contributes.
+- **Check `ghost pulse`.** It shows whether the agent saw and selected a node or
+  tried an unknown id. A node that appears but stays unselected may need a
+  sharper description.
+- **Sharpen the existing description.** The agent never reaches a body when its
+  description does not make the node applicable.
+- **Handle missing guidance.** If no description indicates an applicable
+  situation, say that the package has no guidance for the task. Follow any
+  instructions in the cover, and label local reasoning as provisional.
 
 ```bash
 ghost gather "checkout settings" --format json
@@ -58,15 +54,16 @@ ghost pulse
 A node's kind is the filename prefix before the first dot
 (`principle.trust.md` → kind `principle`), and it must be declared in
 `glossary.md`. An undeclared kind is a warning with a "did you mean"
-suggestion, not a failure — `validate` still exits `0` unless something else
+suggestion, not a failure; `validate` still exits `0` unless something else
 is wrong.
 
 - If the suggestion is right, it's usually a typo in the filename
   (`pinciple.trust.md`) or a stale glossary that never picked up a kind you
   started using.
 - If you meant to introduce a new kind, add it to `glossary.md`'s `kinds`
-  list along with a `#` section explaining its meaning and normative weight.
-  Declaring a kind with one user is fine; Ghost ships no fixed vocabulary.
+  list along with a `#` section explaining what it means and how an agent should
+  treat it.
+  Declaring a kind with one user is fine; ghost ships no fixed vocabulary.
 - If the file was never meant to carry a kind, drop the dotted prefix; a bare
   name (`voice.md`) has no kind and needs no glossary entry.
 
@@ -85,9 +82,9 @@ silently emitting an empty packet:
 ghost checks init
 ```
 
-If checks already exist and `review` still exits oddly, check that you're
-running it against a real diff — with no base and no staged/unstaged changes,
-there's nothing to match against materials. Point it explicitly:
+If checks already exist, confirm that `review` has a diff to read. With no base
+and no staged or unstaged changes, it has no files to match against materials.
+Pass a base or a diff:
 
 ```bash
 ghost review --base main
@@ -114,17 +111,13 @@ closest-id hints, and the miss is recorded for `ghost pulse`. A pull with
 <DocSection title="A node points at a file that moved">
 
 `materials` locators are repo-relative paths/globs or absolute HTTPS URLs.
-When a path moves or a component gets deleted, the node still validates (path
-resolution is checked, but drift after a refactor can slip through between
-validate runs) and `ghost review` will simply stop matching that node to the
-files that touch it.
+After a path moves or a component is deleted, `ghost review` stops matching the
+node to changed files. A validation run catches dead local paths.
 
-- Run `ghost export --strict` periodically; it audits every `materials` entry
-  and fails on any repo-relative path that resolves outside the package or
-  doesn't exist, which is exactly the "stranded" case a refactor produces.
-- If `ghost review`'s coverage gaps list a touched file no node claims, that's
-  the same signal at review time: either the file needs a `materials` owner,
-  or it's genuinely out of scope.
+- Run `ghost export --strict` to find repo-relative paths that resolve outside
+  the package or no longer exist.
+- If review coverage lists a touched file no node claims, decide whether to add
+  it to a node's `materials`.
 
 ```bash
 ghost export --strict
@@ -134,9 +127,8 @@ ghost export --strict
 
 <DocSection title="CLI docs or examples look stale">
 
-The CLI reference and its `--help` output are generated from the CLI source,
-not hand-maintained. If you changed a command or flag and the docs didn't
-follow:
+The CLI source generates the reference and `--help` output. After changing a
+command or flag, run:
 
 ```bash
 pnpm dump:cli-help
@@ -147,28 +139,24 @@ drift check declines a PR that changes a command surface without this step.
 
 </DocSection>
 
-<DocSection title="Fingerprint edits aren't taking effect">
+<DocSection title="ghost package edits aren't taking effect">
 
-Uncommitted or unmerged fingerprint edits are drafts; Ghost's tooling reads
-whatever is on disk in your working tree, so a draft node does show up in
-`gather` immediately. What it means for edits to "take effect" is usually one
-of:
+ghost commands read the files in your working tree, so uncommitted changes
+appear in `gather`.
 
-- **The agent already had a stale menu in context.** Re-run `ghost gather`
-  after any edit; nothing caches the menu between calls.
-- **The team disagrees on what's canonical.** Ordinary Git review is the
-  approval boundary for fingerprint edits, same as any other code change.
-  Treat an unmerged branch's nodes as provisional until they land.
+- **The agent has an old menu in context.** Re-run `ghost gather` after editing
+  the package.
+- **The team disagrees on the approved guidance.** Treat unmerged nodes as
+  drafts. Git review determines which changes become canonical.
 
 </DocSection>
 
 <DocSection title="Still stuck?">
 
-If none of the above matches what you're seeing, the fastest path is usually
-to ask your agent directly, since it already has the skill bundle installed:
+Ask your agent to diagnose the package with the installed skill:
 
 ```text
-Run ghost validate and ghost pulse, and tell me what's wrong with this fingerprint.
+Run ghost validate and ghost pulse, and tell me what's wrong with this ghost package.
 ```
 
 If that doesn't resolve it, open an issue with the exact command, its exit

@@ -1,6 +1,6 @@
 # vessel-light
 
-vessel-light is Vessel's design language as a locked-and-loaded `.ghost/` package for agents writing raw HTML/CSS. No install. No build. No dependencies. Copy the package into a repo, hand it to `ghost`, and make the agent style with the same tokens, primitives, and worked compositions Vessel uses.
+vessel-light packages Vessel's design language for agents writing raw HTML and CSS. It has no install, build, or dependencies. Copy the `.ghost/` package into a repo so your agent can select and apply Vessel's guidance, tokens, primitives, and worked compositions.
 
 ## Copy
 

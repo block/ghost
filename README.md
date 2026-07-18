@@ -1,9 +1,9 @@
 # ghost
 
-**ghost is your brand, packed for agents.** A `.ghost/` folder of plain-prose
-guidance (your stance, your voice, your trust moves) checked into the repo and
-read by any agent before it makes anything: a screen, an email, an empty
-state, a sentence.
+Use ghost to give agents applicable brand guidance before they start work. A
+`.ghost/` package stores your stance, voice, trust moves, and concrete materials
+in the repo. Agents select and read that guidance while working on a screen,
+email, empty state, or sentence.
 
 ```text
 .ghost/
@@ -13,12 +13,10 @@ state, a sentence.
   asset.logo.md         # points at the actual SVGs
 ```
 
-Today those decisions live in reviewers' heads: "that's not our voice," again,
-on every surface. The agent that built the thing never saw them. ghost writes
-them down once, where the agent looks first.
+Reviewers repeat the same feedback on every surface: "that's not our voice."
+Write the decision in `.ghost/` so the next agent has it before starting work.
 
-One portable packet; Claude Code, Codex, Cursor, and Goose all read the same
-one. One package, `@design-intelligence/ghost`. One CLI, `ghost`.
+Claude Code, Codex, Cursor, and Goose can all use the same guidance.
 
 [Documentation](https://block.github.io/ghost/) · [npm](https://www.npmjs.com/package/@design-intelligence/ghost)
 
@@ -42,25 +40,33 @@ Brief this work from the ghost package.
 Review this diff against the ghost checks.
 ```
 
-ghost never calls an LLM itself; your agent does the thinking. No API key,
-no lock-in.
+Your agent selects, interprets, and applies the guidance. The CLI handles the
+repeatable work without calling an LLM, so ghost needs no API key and does not
+lock you into one agent.
 
-## The Loop
+## Use Guidance While Making
+
+Your agent works with the package through a small set of commands:
 
 ```bash
 ghost init          # scaffold .ghost/ with the skeleton starter
 ghost checks init   # opt in to review assertions
 ghost validate      # make sure the package is well-formed
-ghost gather <ask>  # before building: list all available guidance
+ghost gather [ask]  # before building: show the complete guidance menu
 ghost pull <ids>    # read the picked nodes' full bodies
 ghost review        # during review: match a diff to guidance and checks
 ghost export        # bundle the guidance as a portable artifact
 ghost pulse         # while tuning: see what agents reached for
 ```
 
-ghost keeps a private local log of what agents reached for; `ghost pulse`
-reads it so you can tune descriptions. It stays on your machine and never
-enters version control.
+For a task-specific gather, your agent reads the complete, unfiltered menu and
+pulls every node whose stated situation applies. Bare `ghost gather` inspects
+the catalog without grounding a task. Because only selected nodes enter the
+working context, the agent can see the shape of the brand without loading the
+whole package.
+
+`gather` and `pull` write a Git-ignored local log. Use `ghost pulse` to inspect
+it and tune node descriptions.
 
 Run `ghost --help` for the core workflow and `ghost <command> --help` for
 flags; the [CLI reference](https://block.github.io/ghost/docs/cli) covers
@@ -68,22 +74,21 @@ every command.
 
 ## Thesis
 
-Agents changed the unit of design work. When they make the screens, the
-emails, and the sentences, polishing any one of them moves nothing; the next
-generation starts from the model's average again. The work that compounds is
-architectural: decide where that average serves, decide where the brand must
-win, and put those decisions where the agent reads before it makes.
+Agents now make screens, emails, and sentences. Polishing one output does not
+help the next generation. Record where the model's default is good enough and
+where the brand must differ, then give those decisions to the agent before it
+starts.
 
-ghost is that artifact: a `.ghost/` package checked into the repo, carrying the
-guidance, the materials they point at, and the conditions they hold under.
-Buttons stay buttons. The moments that carry your brand get your stance
-instead of the default. The few author it once. Every agent it travels to
-builds from it.
+A `.ghost/` package keeps that guidance in the repo with the materials it
+points at and the conditions where it applies. Buttons stay buttons. The
+moments that carry your brand get your stance instead of the default. Write the
+decision once, and each agent can use it when the same situation returns.
 
 ## How It Works
 
-A ghost package is a small folder of prose. The CLI computes; your agent reads,
-writes, and decides.
+A ghost package is a small folder of prose. Your agent finds the guidance that
+applies, reads it, and uses it while making. The CLI supports that work with
+repeatable commands for scaffolding, validation, retrieval, and review.
 
 ```text
 .ghost/
@@ -99,7 +104,7 @@ The package is a **flat set of nodes**. The optional `cover:` in
 `manifest.yml` may name any node; `ghost gather` inlines it before the menu.
 The default skeleton calls that node `brand`, but the filename is not reserved.
 A node is one markdown file: a `description` in frontmatter, optional
-`materials`, and a brand guidance in the prose body.
+`materials`, and brand guidance in the prose body.
 
 ```markdown
 ---
@@ -140,28 +145,22 @@ references:
 Grade whether the change preserves the logo guidance in `asset.logo`.
 ```
 
-`gather` and `pull` run before your agent builds. `review` runs after: it
-reads a diff, matches touched files to node `materials`, offers relevant
-checks, and emits an advisory packet for the host agent to weigh. Review
-output never enters generation context.
+`gather` and `pull` give your agent applicable guidance before it builds.
+`review` supports the same agent after a change exists: the CLI reads a diff,
+matches touched files to node `materials`, and offers relevant checks for the
+agent to weigh. Review output never enters generation context.
 
-The packet is the product; the CLI is the courier. Everything above
-(gather, pull, review, checks, the local log) is machinery around the
-brand guidance, and the guidance outlives all of it.
+## The Package Travels
 
-## Portable by Design
-
-The package travels. It is agent-agnostic (every host agent reads the same
-packet), medium-agnostic (the same guidance steers a screen, a page, an email, a
-sentence), and repo-native (it moves with a clone, a fork, a new hire's first
-checkout). When you need it as a standalone artifact:
+Different agents can read the same guidance and apply it to a screen, page,
+email, or sentence. The package moves with the repo when someone clones or
+forks it. To move the package on its own:
 
 ```bash
 ghost export
 ```
 
-The export audits every `materials` entry so the packet doesn't silently
-point at things that moved.
+The export audits `materials` entries and reports paths that moved.
 
 ## Project Status: Beta
 

@@ -1,23 +1,24 @@
 ---
-description: Always read first for docs-site work — non-negotiables, coverage, and silence posture for the Ghost docs surface.
+description: Always read first for docs-site work — non-negotiables, coverage, and silence posture for the ghost docs surface.
 materials:
   - apps/docs/src/app/page.tsx
   - apps/docs/src/content/docs/*.mdx
   - apps/docs/src/components/docs/**
 ---
 
-This fingerprint governs the Ghost docs site: the landing page, documentation
-index, tool landings, MDX docs pages, and the small components that carry them.
+This ghost package governs ghost's public explanation: the root and package
+READMEs, landing page, documentation index, MDX docs pages, and the small
+components that carry them.
 It does not govern Vessel as a reference component registry; Vessel has its own
-fingerprint under `packages/vessel-react/.ghost/`. When the docs consume Vessel
-materials, this fingerprint decides the docs' product stance and Vessel decides
+ghost package under `packages/vessel-react/.ghost/`. When the docs consume Vessel
+materials, this package decides the docs' product stance and Vessel decides
 the component-system contract.
 
 ## Non-negotiables
 
-- Ghost is **brand context for agents**, not a component library, lifecycle
+- ghost is **brand context for agents**, not a component library, lifecycle
   manager, design archive, or autonomous judge. Keep the docs centered on the
-  feed-forward act: the agent reads repo-local brand truth before it builds.
+  main interaction: the agent reads repo-local brand guidance before it builds.
 - Preserve the flat corpus model: `.ghost/` is a package of prose nodes;
   `manifest.yml`, `glossary.md`, and `checks/` are reserved; everything else is
   a node whose id comes from its filename. No hierarchy, inheritance, graph, or
@@ -29,8 +30,9 @@ the component-system contract.
   `ghost gather`, `ghost pull`, `ghost pulse`, `ghost checks init`, and
   `ghost review` exactly unless the CLI changes and the generated manifest has
   been updated.
-- Do not let optional review language obscure the boundary: checks and review
-  are feed-back, advisory, and never generation input.
+- Do not let optional review language obscure the main interaction: checks and
+  review happen after a change exists, remain advisory, and never become
+  generation input.
 
 ## How to read the corpus
 
@@ -47,7 +49,7 @@ pulls off the stance; match the annotated qualities, not every literal detail.
 
 ## Silence posture
 
-When this fingerprint is silent, proceed provisionally from nearby docs pages and
+When this package is silent, proceed provisionally from nearby docs pages and
 Vessel's token/component contract for routine implementation. Ask before
 changing product model vocabulary, introducing new visual metaphors, adding a new
 agent workflow, or making the docs sound more like marketing than instruction.

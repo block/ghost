@@ -1,95 +1,59 @@
-"use client";
-
-import { useStaggerReveal } from "@design-intelligence/vessel-react";
-import { BookOpen, FileText, Rocket, ShieldCheck, Zap } from "lucide-react";
-import type { ReactNode } from "react";
-import { Link } from "react-router";
-import { AnimatedPageHeader } from "@/components/docs/animated-page-header";
+import { BetaWarning } from "@/components/docs/beta-warning";
+import { DocIndex, type DocIndexItem } from "@/components/docs/doc-index";
+import { PageHeader } from "@/components/docs/page-header";
 import { SectionWrapper } from "@/components/docs/wrappers";
 
-const sections: {
-  name: string;
-  href: string;
-  description: string;
-  icon: ReactNode;
-}[] = [
+const learn: DocIndexItem[] = [
   {
-    name: "Five-Minute Ghost",
-    href: "/docs/quickstart",
-    description:
-      "Write down the one decision you keep repeating, once, and let your agent read it before it builds.",
-    icon: <Zap className="size-8" strokeWidth={1.5} />,
-  },
-  {
-    name: "Getting Started",
+    name: "Getting started",
     href: "/docs/getting-started",
     description:
-      "Install Ghost, set up the repo fingerprint, and learn the loop around .ghost.",
-    icon: <Rocket className="size-8" strokeWidth={1.5} />,
+      "Record one repeated decision and give it to an agent before the next task.",
   },
   {
-    name: "Fingerprint Authoring",
-    href: "/docs/fingerprint-authoring",
+    name: "Authoring",
+    href: "/docs/authoring",
     description:
-      "Co-author flat prose nodes that steer generation, with kinds from the glossary.",
-    icon: <FileText className="size-8" strokeWidth={1.5} />,
+      "Turn intent, shown material, and repeated decisions into guidance an agent can use.",
   },
   {
-    name: "Checks And Review",
+    name: "Checks and review",
     href: "/docs/checks-and-review",
     description:
-      "Opt in to review checks, bind review assertions to nodes, and assemble advisory packets from a diff.",
-    icon: <ShieldCheck className="size-8" strokeWidth={1.5} />,
+      "Attach review assertions to brand guidance and inspect changed work after generation.",
   },
+];
+
+const reference: DocIndexItem[] = [
   {
-    name: "CLI Reference",
+    name: "CLI reference",
     href: "/docs/cli",
     description:
-      "Every command around the flat fingerprint: init, checks, validate, gather, pull, pulse, and review.",
-    icon: <BookOpen className="size-8" strokeWidth={1.5} />,
+      "Exact commands, flags, outputs, and exit behavior for the ghost CLI.",
+  },
+  {
+    name: "Troubleshooting",
+    href: "/docs/troubleshooting",
+    description:
+      "Diagnose package discovery, validation, context gathering, review, and installation problems.",
   },
 ];
 
 export default function DocsIndex() {
-  const ref = useStaggerReveal<HTMLDivElement>(".doc-card", {
-    stagger: 0.06,
-    y: 30,
-    duration: 0.7,
-  });
-
   return (
     <SectionWrapper>
-      <AnimatedPageHeader
-        kicker="Docs"
-        title="Documentation"
-        description="Start with the simple loop, then reach for the command reference when you need exact flags and outputs."
-      />
+      <PageHeader kicker="" title="documentation" description="" />
+      <BetaWarning />
 
-      <div
-        ref={ref}
-        className="pb-16 pt-8 overflow-visible grid gap-4 md:grid-cols-2"
-      >
-        {sections.map((item) => (
-          <Link
-            key={item.href}
-            to={item.href}
-            className="doc-card group rounded-[var(--radius-card-sm)] border border-border-card hover:border-foreground/25 bg-card p-10 transition-colors duration-300"
-          >
-            <div className="mb-6 text-muted-foreground group-hover:text-foreground transition-colors duration-200">
-              {item.icon}
-            </div>
-            <span className="relative inline-block font-display text-lg font-bold tracking-tight">
-              <span className="relative z-10 transition-colors duration-300 group-hover:text-background">
-                {item.name}
-              </span>
-              <span className="absolute inset-0 bg-foreground origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out" />
-            </span>
-            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-              {item.description}
-            </p>
-          </Link>
-        ))}
-      </div>
+      <section className="mb-16 mt-12">
+        <h2 className="mb-6 font-bold lowercase">learn</h2>
+        <DocIndex items={learn} />
+      </section>
+
+      <section className="mb-20">
+        <h2 className="mb-6 font-bold lowercase">reference</h2>
+        <DocIndex items={reference} startAt={learn.length + 1} />
+      </section>
     </SectionWrapper>
   );
 }
