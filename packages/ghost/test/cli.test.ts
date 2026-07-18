@@ -104,6 +104,29 @@ async function runCli(
   return { stdout, stderr, code: exitCode ?? 0 };
 }
 
+async function writeBareTestPackage(dir: string): Promise<void> {
+  const packageDir = join(dir, ".ghost");
+  await mkdir(packageDir, { recursive: true });
+  await Promise.all([
+    writeFile(
+      join(packageDir, "manifest.yml"),
+      "schema: ghost.package/v1\nid: local\ncover: index\n",
+    ),
+    writeFile(
+      join(packageDir, "glossary.md"),
+      "---\nkinds:\n  - name: principle\n  - name: condition\n  - name: exemplar\n  - name: anti-goal\n  - name: cliche\n  - name: asset\n  - name: pattern\n---\n",
+    ),
+    writeFile(
+      join(packageDir, "index.md"),
+      "---\ndescription: Test package cover.\n---\n\nTest package.\n",
+    ),
+    writeFile(
+      join(packageDir, "cliche.median.md"),
+      "---\ndescription: Test cliche floor.\n---\n\nAvoid generic defaults.\n",
+    ),
+  ]);
+}
+
 describe("ghost CLI", () => {
   let dir: string;
 
@@ -320,89 +343,6 @@ describe("ghost CLI", () => {
     await expectSkeletonPackage(initOutput.written);
   });
 
-  it("initializes the minimal fingerprint package", async () => {
-    const init = await runCli(
-      ["init", "--template", "minimal", "--format", "json"],
-      dir,
-    );
-
-    expect(init.code).toBe(0);
-    const initOutput = JSON.parse(init.stdout);
-    expect(initOutput.written).toContain("manifest.yml");
-    expect(initOutput.written).toContain("glossary.md");
-    expect(initOutput.written).toContain("index.md");
-    expect(initOutput.written).toContain("cliche.median.md");
-    expect(initOutput.written).not.toContain("principle.stance.md");
-    expect(initOutput.written).not.toContain("decision.tradeoff.md");
-
-    const validate = await runCli(["validate", "--format", "json"], dir);
-    expect(validate.code).toBe(0);
-    const report = JSON.parse(validate.stdout);
-    expect(report.errors).toBe(0);
-    expect(report.warnings).toBe(0);
-  });
-
-  it("keeps default and steering as aliases for the skeleton template", async () => {
-    for (const name of ["default", "steering"]) {
-      await rm(join(dir, ".ghost"), { recursive: true, force: true });
-      const init = await runCli(
-        ["init", "--template", name, "--format", "json"],
-        dir,
-      );
-
-      expect(init.code).toBe(0);
-      const initOutput = JSON.parse(init.stdout);
-      expect([...initOutput.written].sort()).toEqual(
-        [...SKELETON_FILES].sort(),
-      );
-
-      const validate = await runCli(["validate"], dir);
-      expect(validate.code).toBe(0);
-    }
-  });
-
-  it("initializes the composition starter template", async () => {
-    const init = await runCli(
-      ["init", "--template", "composition", "--format", "json"],
-      dir,
-    );
-
-    expect(init.code).toBe(0);
-    const initOutput = JSON.parse(init.stdout);
-    expect(initOutput.written).toContain("manifest.yml");
-    expect(initOutput.written).toContain("glossary.md");
-    expect(initOutput.written).toContain("index.md");
-    expect(initOutput.written).toContain("principle.composition.md");
-    expect(initOutput.written).toContain("pattern.status-with-next-step.md");
-    expect(initOutput.written).toContain("cliche.median.md");
-
-    // The scaffolded package is valid as written.
-    const validate = await runCli(["validate", "--format", "json"], dir);
-    expect(validate.code).toBe(0);
-    const report = JSON.parse(validate.stdout);
-    expect(report.errors).toBe(0);
-    expect(report.warnings).toBe(0);
-
-    // The ladder nodes surface in the gather menu with their kinds.
-    const gather = await runCli(["gather", "--format", "json"], dir);
-    expect(gather.code).toBe(0);
-    const menu = JSON.parse(gather.stdout);
-    const ids = menu.nodes.map((node: { id: string }) => node.id);
-    expect(ids).toContain("principle.composition");
-    expect(ids).toContain("pattern.status-with-next-step");
-    const pattern = menu.nodes.find(
-      (node: { id: string }) => node.id === "pattern.status-with-next-step",
-    );
-    expect(pattern.kind).toBe("pattern");
-
-    // The pattern body carries the bound/open/refines convention.
-    const pull = await runCli(["pull", "pattern.status-with-next-step"], dir);
-    expect(pull.code).toBe(0);
-    expect(pull.stdout).toContain("Bound (decided");
-    expect(pull.stdout).toContain("Open (your call");
-    expect(pull.stdout).toContain("principle.composition");
-  });
-
   it("initializes the skeleton starter template by name", async () => {
     const init = await runCli(
       ["init", "--template", "skeleton", "--format", "json"],
@@ -423,9 +363,7 @@ describe("ghost CLI", () => {
 
     expect(result.code).toBe(2);
     expect(result.stderr).toContain("Unknown init template 'nope'");
-    expect(result.stderr).toContain("minimal");
-    expect(result.stderr).toContain("composition");
-    expect(result.stderr).toContain("skeleton");
+    expect(result.stderr).toContain("Available: skeleton");
   });
 
   it("installs the vessel-light body: full corpus, materials, checks", async () => {
@@ -490,7 +428,7 @@ describe("ghost CLI", () => {
     expect(unknown.stderr).toContain("vessel-light");
 
     const both = await runCli(
-      ["init", "--body", "vessel-light", "--template", "minimal"],
+      ["init", "--body", "vessel-light", "--template", "skeleton"],
       dir,
       { allowNoExit: true },
     );
@@ -604,9 +542,9 @@ describe("ghost CLI", () => {
   });
 
   it("refuses to overwrite existing fingerprint files unless forced", async () => {
-    await runCli(["init", "--template", "minimal"], dir);
+    await runCli(["init"], dir);
     await writeFile(
-      join(dir, ".ghost", "index.md"),
+      join(dir, ".ghost", "brand.md"),
       "---\n---\n\nCurated Surface voice.\n",
     );
 
@@ -617,7 +555,7 @@ describe("ghost CLI", () => {
       "Refusing to overwrite existing ghost package file(s)",
     );
     await expect(
-      readFile(join(dir, ".ghost", "index.md"), "utf-8"),
+      readFile(join(dir, ".ghost", "brand.md"), "utf-8"),
     ).resolves.toContain("Curated Surface");
 
     const forced = await runCli(["init", "--force"], dir);
@@ -875,7 +813,7 @@ describe("ghost CLI", () => {
   });
 
   it("gather reports concrete coverage and pull uses steering order with given-order escape hatch", async () => {
-    await runCli(["init", "--template", "minimal"], dir);
+    await writeBareTestPackage(dir);
     await writeFile(
       join(dir, ".ghost", "glossary.md"),
       "---\nkinds:\n  - name: anti-goal\n  - name: asset\n  - name: principle\n---\n\n# anti-goal\n\nReview-critical replacement.\n\n# asset\n\nConcrete material.\n\n# principle\n\nRule.\n",
@@ -941,7 +879,7 @@ describe("ghost CLI", () => {
   });
 
   it("gather names payload types without ranking them", async () => {
-    await runCli(["init", "--template", "minimal"], dir);
+    await writeBareTestPackage(dir);
     await writeFile(
       join(dir, ".ghost", "asset.tokens.md"),
       [
@@ -1022,7 +960,7 @@ describe("ghost CLI", () => {
   });
 
   it("pull extracts Skeletons last and validate warns on malformed Skeleton sections", async () => {
-    await runCli(["init", "--template", "minimal"], dir);
+    await writeBareTestPackage(dir);
     await writeFile(
       join(dir, ".ghost", "pattern.card.md"),
       "---\ndescription: Card pattern.\n---\n\nPattern prose.\n\n## Skeleton\n\n```tsx\n<section>{children}</section>\n```\n\nAfter skeleton should be stripped.\n",
@@ -1050,7 +988,7 @@ describe("ghost CLI", () => {
   });
 
   it("pull uses fences longer than inlined material and Skeleton backtick runs", async () => {
-    await runCli(["init", "--template", "minimal"], dir);
+    await writeBareTestPackage(dir);
     await mkdir(join(dir, "brand"), { recursive: true });
     await writeFile(
       join(dir, "brand", "example.md"),
@@ -1099,7 +1037,7 @@ describe("ghost CLI", () => {
   });
 
   it("pull emits binary materials as inspect-pointers in markdown and JSON", async () => {
-    await runCli(["init", "--template", "minimal"], dir);
+    await writeBareTestPackage(dir);
     await mkdir(join(dir, "brand"), { recursive: true });
     await writeFile(join(dir, "brand", "mark.png"), Buffer.from([0, 1, 2]));
     await writeFile(
@@ -1257,7 +1195,7 @@ describe("ghost CLI", () => {
   });
 
   it("pull inlines material files and emits inspect-pointers for binary materials, oversize files, and URL locators", async () => {
-    await runCli(["init", "--template", "minimal"], dir);
+    await writeBareTestPackage(dir);
     await mkdir(join(dir, ".ghost", "materials"), { recursive: true });
     await mkdir(join(dir, "brand"), { recursive: true });
     await writeFile(
@@ -1303,7 +1241,7 @@ describe("ghost CLI", () => {
   });
 
   it("pull supports locator-only output with --no-materials", async () => {
-    await runCli(["init", "--template", "minimal"], dir);
+    await writeBareTestPackage(dir);
     await mkdir(join(dir, ".ghost", "materials"), { recursive: true });
     await writeFile(
       join(dir, ".ghost", "materials", "tokens.css"),
@@ -1332,7 +1270,7 @@ describe("ghost CLI", () => {
   });
 
   it("pull emits transported material objects in JSON", async () => {
-    await runCli(["init", "--template", "minimal"], dir);
+    await writeBareTestPackage(dir);
     await mkdir(join(dir, ".ghost", "materials"), { recursive: true });
     await mkdir(join(dir, "brand"), { recursive: true });
     await writeFile(
@@ -1373,7 +1311,7 @@ describe("ghost CLI", () => {
   });
 
   it("pull expands globs with a cap and notes elision beyond it", async () => {
-    await runCli(["init", "--template", "minimal"], dir);
+    await writeBareTestPackage(dir);
     await mkdir(join(dir, "brand", "samples"), { recursive: true });
     for (let i = 0; i < 13; i++) {
       await writeFile(
@@ -1445,7 +1383,7 @@ describe("ghost CLI", () => {
   });
 
   it("pulse reports local gather/pull metrics", async () => {
-    await runCli(["init", "--template", "minimal"], dir);
+    await writeBareTestPackage(dir);
     await writeFile(
       join(dir, ".ghost", "principle.trust.md"),
       "---\ndescription: Trust.\n---\n\nBody.\n",
@@ -1952,7 +1890,7 @@ describe("ghost CLI", () => {
   });
 
   it("export audits bundled, URL, and referenced local material locators", async () => {
-    await runCli(["init", "--template", "minimal"], dir);
+    await writeBareTestPackage(dir);
     await mkdir(join(dir, ".ghost", "materials"), { recursive: true });
     await mkdir(join(dir, "brand"), { recursive: true });
     await writeFile(
@@ -1992,7 +1930,7 @@ describe("ghost CLI", () => {
   });
 
   it("export --strict exits 2 when referenced local material locators are stranded", async () => {
-    await runCli(["init", "--template", "minimal"], dir);
+    await writeBareTestPackage(dir);
     await writeFile(
       join(dir, ".ghost", "asset.voice.md"),
       "---\ndescription: Voice.\nmaterials:\n  - brand/voice.txt\n---\n\nVoice prose.\n",
@@ -2006,7 +1944,7 @@ describe("ghost CLI", () => {
   });
 
   it("commands work against an unpacked export directory outside a git repo", async () => {
-    await runCli(["init", "--template", "minimal"], dir);
+    await writeBareTestPackage(dir);
     await mkdir(join(dir, ".ghost", "materials"), { recursive: true });
     await writeFile(
       join(dir, ".ghost", "materials", "tokens.css"),
@@ -2088,7 +2026,7 @@ describe("ghost CLI", () => {
   });
 
   it("checks init skips median tells when the median node is absent", async () => {
-    await runCli(["init", "--template", "minimal"], dir);
+    await writeBareTestPackage(dir);
     await rm(join(dir, ".ghost", "cliche.median.md"));
 
     const add = await runCli(["checks", "init"], dir);

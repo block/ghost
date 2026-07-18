@@ -57,9 +57,9 @@ unexpected code.
 Scaffold a `.ghost/` package. The default starter includes a manifest,
 glossary, `brand.md` cover, foundation nodes with open questions, and context
 for the authoring conversation. These prompts tell the agent to ask rather than
-invent brand values. Use `--template minimal` for a smaller starter. Add
-guidance with files such as `principle.density.md`. Use `--package <dir>` for an
-exact directory, or set `GHOST_PACKAGE_DIR` when a host wrapper stores ghost
+invent brand values. Add guidance with files such as `principle.density.md`.
+Use `--package <dir>` for an exact directory, or set `GHOST_PACKAGE_DIR` when a
+host wrapper stores ghost
 files outside `.ghost`. Pass `--with checks` to add the checks directory.
 
 A template provides files and prompts for guidance you still need to author. A
@@ -80,7 +80,7 @@ your own. `--body` and `--template` are mutually exclusive.
 
 ```bash
 ghost init
-ghost init --template minimal
+ghost init --template skeleton
 ghost init --with checks
 ghost init --package product-ghost
 GHOST_PACKAGE_DIR=.agents/ghost ghost init
