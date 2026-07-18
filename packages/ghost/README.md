@@ -64,17 +64,38 @@ covers the full model. Stuck? See
 
 ```ts
 import {
-  initghostPackage,
-  lintghostPackage,
-  loadghostPackage,
+  initGhostPackage,
+  lintGhostPackage,
+  loadGhostPackage,
 } from "@design-intelligence/ghost/package";
 import { buildCatalogMenu } from "@design-intelligence/ghost/core";
+import {
+  gatherGhostPackage,
+  inspectGhostMaterial,
+  loadGhostSnapshot,
+  pullGhostNodes,
+} from "@design-intelligence/ghost/embed";
 import { buildCli } from "@design-intelligence/ghost/cli";
 ```
 
+Embedded hosts can use `@design-intelligence/ghost/embed` for the same semantic
+contract as CLI `gather` and `pull` without CLI-only presentation fields or event
+side effects. `loadGhostSnapshot` reads the package, resolved/absent/dangling
+cover state, glossary kinds, and checks. `gatherGhostPackage` returns the
+complete unfiltered menu with the resolved cover separated from selectable
+nodes; checks stay separate. `pullGhostNodes` validates and de-duplicates ids,
+returns misses with suggestions, stable cover/concrete/prose ordering, stripped
+node bodies, extracted Skeletons, and material transport packets. Use
+`inspectGhostMaterial` only for materials declared by a pulled node; it is local
+and bundled-only by default, with explicit host policy required for referenced
+files. HTTPS inspection is always rejected. Returned text is source data, not
+render-safe markup. Embedded operations do not write `.ghost/.events`; hosts may
+persist exported observability events in their own telemetry.
+
 Available subpath exports: `@design-intelligence/ghost`,
 `@design-intelligence/ghost/package`,
-`@design-intelligence/ghost/core`, and
+`@design-intelligence/ghost/core`,
+`@design-intelligence/ghost/embed`, and
 `@design-intelligence/ghost/cli`. The former package API remains available as
 an explicitly deprecated compatibility alias.
 

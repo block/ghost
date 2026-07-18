@@ -50,11 +50,18 @@ export function resolveRunId(flagValue?: unknown): string | undefined {
   return fromEnv || undefined;
 }
 
+export function stampGhostEvent(
+  event: NewGhostObservabilityEvent,
+  now: Date = new Date(),
+): GhostObservabilityEvent {
+  return { ts: now.toISOString(), ...event } as GhostObservabilityEvent;
+}
+
 export async function appendGhostEvent(
   packageDir: string,
   event: NewGhostObservabilityEvent,
 ): Promise<void> {
-  const line = `${JSON.stringify({ ts: new Date().toISOString(), ...event })}\n`;
+  const line = `${JSON.stringify(stampGhostEvent(event))}\n`;
   const tapePath = join(packageDir, GHOST_EVENTS_FILENAME);
   try {
     const isFirstWrite = await access(tapePath).then(

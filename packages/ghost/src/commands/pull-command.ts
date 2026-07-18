@@ -1,39 +1,12 @@
 import type { CAC } from "cac";
-import {
-  classifyMaterialLocator,
-  closestIds,
-  extractSkeletonFences,
-  type GhostCatalogNode,
-  type MaterialTransportResult,
-  resolveLocalMaterialLocator,
-  stripSkeletonSections,
-  type TransportedMaterial,
-  transportMaterials,
-} from "#ghost-core";
-import {
-  appendGhostEvent,
-  type PullMiss,
-  resolveRunId,
-} from "../observability-events.js";
+import type { TransportedMaterial } from "#ghost-core";
+import type { GhostPulledNode, GhostPullResult } from "../embed/index.js";
+import { loadGhostSnapshot, pullGhostNodes } from "../embed/index.js";
+import { appendGhostEvent, resolveRunId } from "../observability-events.js";
 import { resolveGhostPackage } from "../package.js";
-import {
-  GHOST_EVENTS_FILENAME,
-  GHOST_MATERIALS_DIR,
-} from "../scan/constants.js";
-import { loadGhostPackage } from "../scan/fingerprint-package.js";
+import { GHOST_EVENTS_FILENAME } from "../scan/constants.js";
 import { resolveGitRoot } from "../scan/package-paths.js";
 import { failFromError } from "./errors.js";
-
-interface PulledNode {
-  node: GhostCatalogNode;
-  materials: MaterialTransportResult;
-}
-
-interface PulledSkeleton {
-  nodeId: string;
-  info?: string;
-  content: string;
-}
 
 export function registerPullCommand(cli: CAC): void {
   cli
@@ -74,88 +47,49 @@ export function registerPullCommand(cli: CAC): void {
         }
 
         const paths = resolveGhostPackage(opts.package, process.cwd());
-        const loaded = await loadGhostPackage(paths);
-        const catalog = loaded.catalog;
+        const snapshot = await loadGhostSnapshot(paths);
+        const repoRoot = await resolveGitRoot(process.cwd());
+        const result = await pullGhostNodes(snapshot, {
+          ids,
+          repoRoot,
+          inlineMaterials: opts.materials !== false,
+          order: opts.order,
+        });
 
-        const requested = [...new Set(ids)];
-        const allIds = [...catalog.nodes.keys()];
-        const known = requested.filter((id) => catalog.nodes.has(id));
-        const missed: PullMiss[] = requested
-          .filter((id) => !catalog.nodes.has(id))
-          .map((id) => ({ requested: id, suggested: closestIds(id, allIds) }));
-
-        for (const miss of missed) {
+        for (const miss of result.missed) {
           const hint =
             miss.suggested.length > 0
               ? ` (did you mean ${miss.suggested.map((s) => `\`${s}\``).join(", ")}?)`
               : "";
           console.error(`Warning: unknown node \`${miss.requested}\`${hint}`);
         }
-        if (missed.length > 0) {
+        if (result.missed.length > 0) {
           console.error("Run `ghost gather` to list every node.");
         }
-
-        const givenNodes = known.map(
-          (id) => catalog.nodes.get(id) as GhostCatalogNode,
-        );
-        const nodes =
-          opts.order === "given"
-            ? givenNodes
-            : orderPulledNodes(givenNodes, loaded.manifest.cover);
-        const pulledNodes = await resolvePulledNodes(
-          nodes,
-          paths.packageDir,
-          opts.materials !== false,
-        );
-        const counts = sumMaterialCounts(pulledNodes);
 
         if (opts.events !== false) {
           const runId = resolveRunId(opts.run);
           await appendGhostEvent(paths.packageDir, {
             event: "pull",
             ...(runId ? { run: runId } : {}),
-            ids: known,
-            inlinedMaterials: counts.inlined,
-            omittedMaterials: counts.omitted,
-            ...(missed.length > 0 ? { missed } : {}),
+            ids: [...result.ids],
+            inlinedMaterials: result.materialCounts.inlined,
+            omittedMaterials: result.materialCounts.omitted,
+            ...(result.missed.length > 0 ? { missed: [...result.missed] } : {}),
           });
         }
 
-        if (known.length === 0) {
+        if (result.ids.length === 0) {
           process.exit(2);
           return;
         }
 
         if (opts.format === "json") {
           process.stdout.write(
-            `${JSON.stringify(
-              {
-                kind: "pull",
-                ...(missed.length > 0 ? { missed } : {}),
-                nodes: pulledNodes.map(({ node, materials }) => ({
-                  id: node.id,
-                  ...(node.kind !== undefined ? { kind: node.kind } : {}),
-                  ...(node.description
-                    ? { description: node.description }
-                    : {}),
-                  ...(node.materials !== undefined
-                    ? {
-                        materials:
-                          opts.materials === false
-                            ? node.materials
-                            : materials.materials.map(formatJsonMaterial),
-                      }
-                    : {}),
-                  body: stripSkeletonSections(node.body),
-                })),
-                skeletons: pulledSkeletons(pulledNodes),
-              },
-              null,
-              2,
-            )}\n`,
+            `${JSON.stringify(formatPullJson(result, opts.materials !== false), null, 2)}\n`,
           );
         } else {
-          process.stdout.write(formatPullMarkdown(pulledNodes));
+          process.stdout.write(formatPullMarkdown(result));
         }
         process.exit(0);
       } catch (err) {
@@ -164,92 +98,79 @@ export function registerPullCommand(cli: CAC): void {
     });
 }
 
-async function resolvePulledNodes(
-  nodes: GhostCatalogNode[],
-  packageDir: string,
+function formatPullJson(
+  result: GhostPullResult,
   inlineMaterials: boolean,
-): Promise<PulledNode[]> {
-  const repoRoot = await resolveGitRoot(process.cwd());
-  return Promise.all(
-    nodes.map(async (node) => ({
-      node,
-      materials: inlineMaterials
-        ? await transportMaterials(node.materials, {
-            repoRoot,
-            packageDir,
-            materialsDir: GHOST_MATERIALS_DIR,
-          })
-        : locatorOnlyMaterials(node.materials, repoRoot, packageDir),
-    })),
-  );
-}
-
-function orderPulledNodes(
-  nodes: GhostCatalogNode[],
-  coverId: string | undefined,
-): GhostCatalogNode[] {
-  return nodes
-    .map((node, index) => ({
-      node,
-      index,
-      bucket: steeringBucket(node, coverId),
-    }))
-    .sort((a, b) => a.bucket - b.bucket || a.index - b.index)
-    .map((entry) => entry.node);
-}
-
-function steeringBucket(
-  node: GhostCatalogNode,
-  coverId: string | undefined,
-): number {
-  if (coverId !== undefined && node.id === coverId) return 0;
-  if (node.concrete) return 1;
-  return 2;
-}
-
-function locatorOnlyMaterials(
-  locators: string[] | undefined,
-  repoRoot: string,
-  packageDir: string,
-): MaterialTransportResult {
+): Record<string, unknown> {
   return {
-    materials: (locators ?? []).map((locator) => ({
-      locator,
-      tier:
-        classifyMaterialLocator(locator).kind === "url"
-          ? "url"
-          : resolveLocalMaterialLocator(locator, {
-              repoRoot,
-              packageDir,
-              materialsDir: GHOST_MATERIALS_DIR,
-            }).tier,
+    kind: "pull",
+    ...(result.missed.length > 0 ? { missed: result.missed } : {}),
+    nodes: result.nodes.map((node) => ({
+      id: node.id,
+      ...(node.kind !== undefined ? { kind: node.kind } : {}),
+      ...(node.description ? { description: node.description } : {}),
+      ...(node.declaredMaterials !== undefined
+        ? {
+            materials: inlineMaterials
+              ? (node.materials ?? []).map(formatJsonMaterial)
+              : node.declaredMaterials,
+          }
+        : {}),
+      body: node.body,
     })),
-    inlined: 0,
-    omitted: 0,
+    skeletons: result.skeletons,
   };
 }
 
-function sumMaterialCounts(nodes: PulledNode[]): {
-  inlined: number;
-  omitted: number;
-} {
-  return nodes.reduce(
-    (sum, { materials }) => ({
-      inlined: sum.inlined + materials.inlined,
-      omitted: sum.omitted + materials.omitted,
-    }),
-    { inlined: 0, omitted: 0 },
-  );
+function formatPullMarkdown(result: GhostPullResult): string {
+  const sections: string[] = [];
+  for (const node of result.nodes) {
+    const kind = node.kind ? ` _(${node.kind})_` : "";
+    const lines = [`# \`${node.id}\`${kind}`];
+    if (node.description) lines.push("", `> ${node.description}`);
+    lines.push("", node.body.trim());
+    if (node.materials !== undefined && node.materials.length > 0) {
+      lines.push("", "Materials:");
+      for (const material of node.materials) {
+        appendMaterialMarkdown(lines, material);
+      }
+    }
+    sections.push(lines.join("\n"));
+  }
+
+  if (result.skeletons.length > 0) {
+    const lines = [
+      "# Skeletons — begin the artifact from this structure",
+      "",
+      "Begin the artifact from the matching structure below verbatim, then fill it.",
+    ];
+    for (const skeleton of result.skeletons) {
+      lines.push("", `## From \`${skeleton.nodeId}\``, "");
+      lines.push(fencedMarkdown(skeleton.content.trimEnd(), skeleton.info));
+    }
+    sections.push(lines.join("\n"));
+  }
+
+  return `${sections.join("\n\n---\n\n")}\n`;
 }
 
-function pulledSkeletons(nodes: PulledNode[]): PulledSkeleton[] {
-  return nodes.flatMap(({ node }) =>
-    extractSkeletonFences(node.body).map((fence) => ({
-      nodeId: node.id,
-      ...(fence.info ? { info: fence.info } : {}),
-      content: fence.content,
-    })),
-  );
+function appendMaterialMarkdown(
+  lines: string[],
+  material: NonNullable<GhostPulledNode["materials"]>[number],
+): void {
+  if (material.inlined !== undefined) {
+    const info = material.path ?? material.locator;
+    lines.push("", fencedMarkdown(material.inlined.trimEnd(), info));
+  } else if (material.reason === "binary inspect-pointer") {
+    lines.push(
+      `- inspect: ${material.path ?? material.locator} — view this image before generating`,
+    );
+  } else {
+    const reason = material.omitted
+      ? ` — ${material.reason ?? "not inlined"}`
+      : "";
+    lines.push(`- ${material.locator}${reason}`);
+  }
 }
 
 function formatJsonMaterial(material: TransportedMaterial): {
@@ -271,51 +192,6 @@ function formatJsonMaterial(material: TransportedMaterial): {
       ? { inspect: material.path ?? material.locator }
       : {}),
   };
-}
-
-function formatPullMarkdown(nodes: PulledNode[]): string {
-  const sections: string[] = [];
-  for (const { node, materials } of nodes) {
-    const kind = node.kind ? ` _(${node.kind})_` : "";
-    const lines = [`# \`${node.id}\`${kind}`];
-    if (node.description) lines.push("", `> ${node.description}`);
-    lines.push("", stripSkeletonSections(node.body).trim());
-    if (materials.materials.length > 0) {
-      lines.push("", "Materials:");
-      for (const material of materials.materials) {
-        if (material.inlined !== undefined) {
-          const info = material.path ?? material.locator;
-          lines.push("", fencedMarkdown(material.inlined.trimEnd(), info));
-        } else if (material.reason === "binary inspect-pointer") {
-          lines.push(
-            `- inspect: ${material.path ?? material.locator} — view this image before generating`,
-          );
-        } else {
-          const reason = material.omitted
-            ? ` — ${material.reason ?? "not inlined"}`
-            : "";
-          lines.push(`- ${material.locator}${reason}`);
-        }
-      }
-    }
-    sections.push(lines.join("\n"));
-  }
-
-  const skeletons = pulledSkeletons(nodes);
-  if (skeletons.length > 0) {
-    const lines = [
-      "# Skeletons — begin the artifact from this structure",
-      "",
-      "Begin the artifact from the matching structure below verbatim, then fill it.",
-    ];
-    for (const skeleton of skeletons) {
-      lines.push("", `## From \`${skeleton.nodeId}\``, "");
-      lines.push(fencedMarkdown(skeleton.content.trimEnd(), skeleton.info));
-    }
-    sections.push(lines.join("\n"));
-  }
-
-  return `${sections.join("\n\n---\n\n")}\n`;
 }
 
 function fencedMarkdown(content: string, info?: string): string {

@@ -63,6 +63,10 @@
     "./cli": {
       "types": "./dist/cli.d.ts",
       "import": "./dist/cli.js"
+    },
+    "./embed": {
+      "types": "./dist/embed/index.d.ts",
+      "import": "./dist/embed/index.js"
     }
   },
   "files": [

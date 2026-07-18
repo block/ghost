@@ -1,4 +1,4 @@
-import { readdir, readFile, stat } from "node:fs/promises";
+import { readdir, readFile, realpath, stat } from "node:fs/promises";
 import { isAbsolute, join, relative, resolve } from "node:path";
 import { TextDecoder } from "node:util";
 import { hasGlobMagic, matchesGlob, normalizeGlobPath } from "./glob.js";
@@ -36,6 +36,11 @@ export interface ExpandedLocalMaterialLocator {
   pattern: string;
   matches: Array<{ absolutePath: string; repoRelativePath: string }>;
   truncated: boolean;
+}
+
+export interface MaterialMimeInfo {
+  mime: string;
+  contentKind: "text" | "image" | "binary";
 }
 
 const DEFAULT_MATERIALS_DIR = "materials";
@@ -208,10 +213,32 @@ async function transportFile(
   tier: Exclude<TransportedMaterialTier, "url">,
   options: MaterialTransportOptions,
 ): Promise<TransportedMaterial> {
-  const base = { locator, tier, path: match.repoRelativePath };
+  const lexicalBase = { locator, tier, path: match.repoRelativePath };
+  let contained: Awaited<ReturnType<typeof resolveContainedRealFile>>;
+  try {
+    contained = await resolveContainedRealFile(
+      match.absolutePath,
+      options.repoRoot,
+    );
+  } catch {
+    return {
+      ...lexicalBase,
+      omitted: true as const,
+      reason: "matched file could not be read",
+    };
+  }
+  if (contained === null) {
+    return {
+      ...lexicalBase,
+      omitted: true as const,
+      reason: "resolved material path escapes repo",
+    };
+  }
+
+  const base = { locator, tier, path: contained.repoRelativePath };
   let s: Awaited<ReturnType<typeof stat>>;
   try {
-    s = await stat(match.absolutePath);
+    s = await stat(contained.realPath);
   } catch {
     return {
       ...base,
@@ -236,7 +263,7 @@ async function transportFile(
 
   let buffer: Buffer;
   try {
-    buffer = await readFile(match.absolutePath);
+    buffer = await readFile(contained.realPath);
   } catch {
     return {
       ...base,
@@ -245,7 +272,7 @@ async function transportFile(
     };
   }
 
-  if (isBinary(buffer)) {
+  if (isBinaryMaterial(buffer)) {
     return {
       ...base,
       omitted: true as const,
@@ -312,13 +339,70 @@ function toRepoRelative(path: string, repoRoot: string): string {
   return normalizeGlobPath(rel === "" ? "." : rel);
 }
 
+export async function resolveContainedRealFile(
+  absolutePath: string,
+  repoRoot: string,
+): Promise<{ realPath: string; repoRelativePath: string } | null> {
+  const realRepoRoot = await realpath(repoRoot);
+  const realPath = await realpath(absolutePath);
+  if (!isInsideOrEqual(realPath, realRepoRoot)) return null;
+
+  return {
+    realPath,
+    repoRelativePath: toRepoRelative(realPath, realRepoRoot),
+  };
+}
+
+export function inferMaterialMime(path: string): MaterialMimeInfo {
+  const lower = path.toLowerCase();
+  let mime = "application/octet-stream";
+  if (lower.endsWith(".png")) mime = "image/png";
+  else if (lower.endsWith(".jpg") || lower.endsWith(".jpeg"))
+    mime = "image/jpeg";
+  else if (lower.endsWith(".gif")) mime = "image/gif";
+  else if (lower.endsWith(".webp")) mime = "image/webp";
+  else if (lower.endsWith(".svg")) mime = "image/svg+xml";
+  else if (lower.endsWith(".css")) mime = "text/css";
+  else if (lower.endsWith(".html") || lower.endsWith(".htm"))
+    mime = "text/html";
+  else if (lower.endsWith(".json")) mime = "application/json";
+  else if (lower.endsWith(".md") || lower.endsWith(".markdown"))
+    mime = "text/markdown";
+  else if (lower.endsWith(".txt")) mime = "text/plain";
+  else if (
+    lower.endsWith(".js") ||
+    lower.endsWith(".mjs") ||
+    lower.endsWith(".ts") ||
+    lower.endsWith(".tsx")
+  ) {
+    mime = "text/plain";
+  }
+
+  return {
+    mime,
+    contentKind: isTextMime(mime)
+      ? "text"
+      : mime.startsWith("image/")
+        ? "image"
+        : "binary",
+  };
+}
+
+export function isBinaryMaterial(buffer: Buffer): boolean {
+  return buffer.includes(0);
+}
+
+export function isTextMime(mime: string): boolean {
+  return (
+    mime.startsWith("text/") ||
+    mime === "application/json" ||
+    mime === "image/svg+xml"
+  );
+}
+
 function isInsideOrEqual(child: string, parent: string): boolean {
   const rel = relative(parent, child);
   return rel === "" || (!rel.startsWith("..") && !isAbsolute(rel));
-}
-
-function isBinary(buffer: Buffer): boolean {
-  return buffer.includes(0);
 }
 
 function formatBytes(bytes: number): string {
