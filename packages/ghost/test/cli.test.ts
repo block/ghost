@@ -1519,7 +1519,7 @@ describe("ghost CLI", () => {
       [
         "relay",
         "gather",
-        "Code/Features/Lending/LendingUI",
+        "Sources/Features/Transfers/TransfersUI",
         "--package",
         ".ghost",
         "--format",
@@ -1538,14 +1538,16 @@ describe("ghost CLI", () => {
     expect(json).toHaveProperty("stackDirs");
     expect(json).toHaveProperty("brief");
     expect(json.source.kind).toBe("package");
-    expect(json.targetPaths).toEqual(["Code/Features/Lending/LendingUI"]);
+    expect(json.targetPaths).toEqual([
+      "Sources/Features/Transfers/TransfersUI",
+    ]);
     expect(json.stackDirs).toHaveLength(1);
     expect(typeof json.brief).toBe("string");
     expect(json.context.schema).toBe("ghost.relay-context/v1");
     expect(json).not.toHaveProperty("context_packet");
     expect(json.context.target).toMatchObject({
       mode: "generation",
-      paths: ["Code/Features/Lending/LendingUI"],
+      paths: ["Sources/Features/Transfers/TransfersUI"],
     });
     expect(json.context.sections.intent).toEqual(
       expect.arrayContaining([
@@ -1572,7 +1574,7 @@ describe("ghost CLI", () => {
           why_selected: expect.arrayContaining([
             {
               kind: "linked_ref",
-              value: "inventory.exemplar:lending-tokenized-screen",
+              value: "inventory.exemplar:transfers-tokenized-screen",
             },
           ]),
         }),
@@ -1581,12 +1583,12 @@ describe("ghost CLI", () => {
           kind: "composition",
         }),
         expect.objectContaining({
-          ref: "inventory.exemplar:lending-tokenized-screen",
+          ref: "inventory.exemplar:transfers-tokenized-screen",
           kind: "inventory",
-          path: "Code/Features/Lending/LendingUI",
+          path: "Sources/Features/Transfers/TransfersUI",
           why_selected: expect.arrayContaining([
-            { kind: "path", value: "Code/Features/Lending/LendingUI" },
-            { kind: "scope", value: "lending" },
+            { kind: "path", value: "Sources/Features/Transfers/TransfersUI" },
+            { kind: "scope", value: "transfers" },
             { kind: "surface_type", value: "native-feature" },
           ]),
         }),
@@ -1602,9 +1604,9 @@ describe("ghost CLI", () => {
     expect(json.selected_context.suggested_reads).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          path: "Code/Features/Lending/LendingUI",
+          path: "Sources/Features/Transfers/TransfersUI",
           reason:
-            "source surface for inventory.exemplar:lending-tokenized-screen",
+            "source surface for inventory.exemplar:transfers-tokenized-screen",
         }),
       ]),
     );
@@ -2227,7 +2229,7 @@ async function writeCheckPackage(
     `schema: ghost.fingerprint/v1
 intent:
   summary:
-    product: Cash iOS
+    product: Harbor iOS
   situations: []
   principles:
     - id: tokenized-ui-color
@@ -2236,16 +2238,16 @@ intent:
   experience_contracts: []
 inventory:
   exemplars:
-    - id: lending-tokenized-screen
-      path: Code/Features/Lending/LendingUI
-      title: Lending tokenized UI
-      surface: lending
-      why: Shows semantic CashTheme color usage for native lending UI.
+    - id: transfers-tokenized-screen
+      path: Sources/Features/Transfers/TransfersUI
+      title: Transfers tokenized UI
+      surface: transfers
+      why: Shows semantic HarborTheme color usage for native transfers UI.
       refs:
         - intent.principle:tokenized-ui-color
         - composition.pattern:tokenized-ui-color
   building_blocks:
-    tokens: [CashTheme.primary]
+    tokens: [HarborTheme.primary]
     components: []
 composition:
   patterns:
@@ -2257,7 +2259,7 @@ composition:
     options.checks === false
       ? undefined
       : `schema: ghost.validate/v1
-id: cash-ios
+id: harbor-ios
 checks:
   - id: no-hardcoded-ui-color
     title: Use design tokens for UI color
@@ -2266,9 +2268,9 @@ checks:
     derivation:
       intent: [intent.principle:tokenized-ui-color]
       composition: [composition.pattern:tokenized-ui-color]
-      inventory: [inventory.exemplar:lending-tokenized-screen]
+      inventory: [inventory.exemplar:transfers-tokenized-screen]
     applies_to:
-      paths: [Code/Features/Lending]
+      paths: [Sources/Features/Transfers]
     detector:
       type: forbidden-regex
       pattern: '${detectorPattern}'
@@ -2277,8 +2279,8 @@ checks:
       support: 0.94
       observed_count: 47
       examples:
-        - Code/Features/Lending/LendingUI
-    repair: Replace literals with Arcade/Cash semantic tokens.
+        - Sources/Features/Transfers/TransfersUI
+    repair: Replace literals with Harbor semantic tokens.
   - id: candidate-density-check
     title: Candidate density check
     status: proposed
@@ -2286,21 +2288,21 @@ checks:
     derivation:
       intent: [intent.principle:tokenized-ui-color]
     applies_to:
-      paths: [Code/Features/Lending]
+      paths: [Sources/Features/Transfers]
     detector:
       type: required-regex
-      pattern: 'CashTheme'
+      pattern: 'HarborTheme'
     evidence:
       support: 0.5
       observed_count: 1
       examples:
-        - Code/Features/Lending/LendingUI
+        - Sources/Features/Transfers/TransfersUI
 `,
   );
   await writeFile(
     join(pkg, "resources.yml"),
     `schema: ghost.resources/v1
-id: cash-ios
+id: harbor-ios
 primary:
   target: .
 `,
@@ -2320,7 +2322,7 @@ primary:
   await writeFile(
     join(pkg, "patterns.yml"),
     `schema: ghost.patterns/v1
-id: cash-ios
+id: harbor-ios
 surface_types: []
 composition_patterns: []
 `,
@@ -2473,7 +2475,7 @@ checks:
     derivation:
       intent: [${intentRef}]
     applies_to:
-      paths: [Code/Features/Lending]
+      paths: [Sources/Features/Transfers]
     detector:
       type: forbidden-regex
       pattern: '#[0-9a-fA-F]{3,8}'
@@ -2482,15 +2484,15 @@ checks:
       support: 0.94
       observed_count: 47
       examples:
-        - Code/Features/Lending/LendingUI
+        - Sources/Features/Transfers/TransfersUI
 `;
 }
 
 function mapWithScopes(): string {
   return `---
 schema: ghost.map/v1
-id: cash-ios
-repo: squareup/cash-ios
+id: harbor-ios
+repo: example/harbor-ios
 mapped_at: 2026-05-06T00:00:00.000Z
 platform: ios
 languages:
@@ -2506,31 +2508,31 @@ composition:
     - design-tokens
 design_system:
   paths:
-    - Code/DesignSystem
+    - Sources/DesignSystem
   status: active
 surface_sources:
   render_strategy: static-source
   include:
-    - Code/Features/**
+    - Sources/Features/**
   exclude:
     - "**/Tests/**"
 feature_areas:
-  - name: lending
+  - name: transfers
     paths:
-      - Code/Features/Lending
+      - Sources/Features/Transfers
 scopes:
-  - id: lending
-    name: Lending
+  - id: transfers
+    name: Transfers
     kind: product-surface
     paths:
-      - Code/Features/Lending
+      - Sources/Features/Transfers
 orientation_files:
   - README.md
 ---
 
 ## Identity
 
-Cash iOS.
+Harbor iOS.
 
 ## Topology
 

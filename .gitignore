@@ -27,3 +27,6 @@ docs/superpowers/plans/
 docs/superpowers/specs/
 notes/
 /demo/
+# Local Ghost selection event tapes
+**/.ghost/.events
+**/fingerprint/.events

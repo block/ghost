@@ -6,8 +6,8 @@ import { resolve } from "node:path";
 import { defaultGhostBin } from "./lib/ghost.mjs";
 import { startServer } from "./lib/server.mjs";
 
-// Load .env from the working directory if present (DATABRICKS_HOST lives
-// in an untracked .env / .env.local, same convention as the ghost CLI).
+// Load optional model-adapter configuration from untracked env files, using
+// the same convention as the ghost CLI.
 for (const envFile of [".env", ".env.local"]) {
   const envPath = resolve(process.cwd(), envFile);
   if (existsSync(envPath)) {

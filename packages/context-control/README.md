@@ -82,15 +82,13 @@ adapters ship, selectable in the bench UI:
 - `fake-lexical` — deterministic lexical-overlap stub with per-trial
   jitter near the decision boundary. No network, instant. Use it to
   exercise the UI loop and as a dumb-retrieval baseline.
-- `databricks` — a real LLM behind a Databricks serving endpoint with an
-  OpenAI-compatible chat API. This is the default whenever
-  `DATABRICKS_HOST` is set; put it in an untracked `.env` or `.env.local`
-  at the working directory and the CLI loads it on startup. Auth comes
-  from the `databricks` CLI's cached OAuth token; the endpoint from
-  `CONTEXT_CONTROL_ENDPOINT` (default `goose`), or name it inline as
-  `databricks:<endpoint>`. Trials run concurrently and sample at the
-  endpoint's default temperature — trial-to-trial variance is the signal
-  being measured, so it is not pinned to 0.
+- `openai-compatible` — a real LLM behind any OpenAI-compatible chat API.
+  Configure `CONTEXT_CONTROL_BASE_URL`, `CONTEXT_CONTROL_API_KEY`, and
+  `CONTEXT_CONTROL_MODEL` in an untracked `.env` or `.env.local` at the
+  working directory. The CLI loads it on startup and makes this adapter the
+  default when all three values are present. Trials run concurrently and
+  sample at the endpoint's default temperature because trial-to-trial variance
+  is the signal being measured.
 
 Add providers to `MODEL_ADAPTERS` in `lib/model.mjs`.
 
