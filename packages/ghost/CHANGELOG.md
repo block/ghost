@@ -1,5 +1,23 @@
 # @design-intelligence/ghost
 
+## 0.24.0
+
+### Minor Changes
+
+- [#239](https://github.com/block/ghost/pull/239) [`6f671f9`](https://github.com/block/ghost/commit/6f671f9fe0e5fa7eea34a4ca45885aade9471737) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Adds an artifact distillation workflow for reconciling links, images, documents, code, and media with new or existing ghost guidance.
+
+- [#235](https://github.com/block/ghost/pull/235) [`0bf7cda`](https://github.com/block/ghost/commit/0bf7cda63071e82579e0474b9ab3b6f63f55b54c) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Adds a making-loop recipe to the ghost skill: material inspection, rendered verification with bounded repair, and strengthened exemplar authoring guidance.
+
+- [#236](https://github.com/block/ghost/pull/236) [`65c44e5`](https://github.com/block/ghost/commit/65c44e5c27f8757feeae0c2ce65d8f71cb95258f) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Adopt ghost package terminology with the `ghost.package/v1` schema and package API, preserve legacy aliases, and name exported archives `<id>-ghost-package.tgz`.
+
+- [#233](https://github.com/block/ghost/pull/233) [`fe03ff9`](https://github.com/block/ghost/commit/fe03ff924f469a7be58f4137c71ec10489ec76ca) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Clarify gather's applicability contract in markdown and JSON, and make pulled material and Skeleton fences safe around nested backticks.
+
+### Patch Changes
+
+- [#237](https://github.com/block/ghost/pull/237) [`3877efc`](https://github.com/block/ghost/commit/3877efc1fbba28887b961f464eb39d32cad165e5) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Center the public documentation on how agents find and apply brand guidance, with the CLI in a supporting role.
+
+- [#235](https://github.com/block/ghost/pull/235) [`0bf7cda`](https://github.com/block/ghost/commit/0bf7cda63071e82579e0474b9ab3b6f63f55b54c) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - serializeNode preserves the materials frontmatter field instead of dropping it.
+
 ## 0.23.0
 
 ### Minor Changes
