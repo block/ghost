@@ -11,7 +11,7 @@ Review changed transitions and animations for vocabulary first.
 
 Flag durations that do not use `--duration-fast`, `--duration-normal`, or `--duration-slow`. A hard-coded millisecond value is a drift even when it matches the token today.
 
-Flag custom easing unless it uses the fingerprint's one ease or a browser default already required by the primitive.
+Flag custom easing unless it uses the package's one ease or a browser default already required by the primitive.
 
 Flag looping animations outside explicit loading states. Loading must be tied to ongoing work, not ambient motion.
 

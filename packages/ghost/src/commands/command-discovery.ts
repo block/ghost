@@ -110,14 +110,14 @@ const COMMAND_DISCOVERY = [
     group: "core",
     defaultHelp: true,
     compactName: "init",
-    summary: "Scaffold a .ghost/ fingerprint: manifest, glossary, and a node.",
+    summary: "Scaffold a .ghost/ package: manifest, glossary, and a node.",
   },
   {
     name: "validate",
     group: "core",
     defaultHelp: true,
     compactName: "validate",
-    summary: "Validate the fingerprint: artifact shape + node validity.",
+    summary: "Validate the ghost package: artifact shape + node validity.",
   },
   {
     name: "gather",
@@ -154,7 +154,7 @@ const COMMAND_DISCOVERY = [
     group: "core",
     defaultHelp: true,
     compactName: "export",
-    summary: "Package the fingerprint as a portable brand artifact.",
+    summary: "Package the ghost package as a portable brand artifact.",
   },
   {
     name: "checks",
@@ -168,7 +168,7 @@ const COMMAND_DISCOVERY = [
     group: "core",
     defaultHelp: true,
     compactName: "skill install",
-    summary: "Install the Ghost skill bundle.",
+    summary: "Install the ghost skill bundle.",
   },
   {
     name: "manifest",

@@ -1,19 +1,19 @@
 ---
 name: schema
-description: The Ghost fingerprint package shape: flat nodes, derived concreteness, Skeletons, probes, and checks.
+description: The ghost package shape: flat nodes, derived concreteness, Skeletons, probes, and checks.
 ---
 
-# Ghost Fingerprint Package Reference
+# ghost Package Reference
 
 Canonical package:
 
 ```text
 .ghost/
-  manifest.yml        ghost.fingerprint-package/v1: schema + id + optional cover
+  manifest.yml        ghost.package/v1: schema + id + optional cover
   glossary.md         kind vocabulary + meanings
   materials/          bundled materials; never a node source
-  <kind>.<slug>.md    a brand truth of a declared kind
-  <slug>.md           a brand truth without a kind
+  <kind>.<slug>.md    guidance of a declared kind
+  <slug>.md           guidance without a kind
   checks/             optional review assertions; never a node source
 ```
 
@@ -55,7 +55,7 @@ Use the full lockup when recognition matters.
 - `materials` accepts repo-relative paths/globs plus absolute HTTPS URLs. It is
   a locator list, not guidance.
 
-Ghost derives whether a node carries concrete material from structure:
+ghost derives whether a node carries concrete material from structure:
 non-empty `materials`, a fenced code block of at least 3 lines, or a
 `## Skeleton` section. `gather` reports these payload labels for clarity; they
 are not ranking signals.
@@ -100,7 +100,7 @@ Grade whether the change preserves the logo guidance in `asset.logo`.
 `references` are node ids with optional heading anchors. `probe` is optional: a
 repo-root shell command that `ghost review` runs for offered checks by default
 (timeout 30s; stdout/stderr truncated). Probe output is evidence only, never a
-Ghost pass/fail verdict. Use `ghost review --no-probes` to skip. Trust model:
+ghost pass/fail verdict. Use `ghost review --no-probes` to skip. Trust model:
 probes are the same class as npm scripts; Git review is the boundary.
 
 ## Gather / Pull / Review

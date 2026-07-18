@@ -2,22 +2,22 @@ import { readFile } from "node:fs/promises";
 import { parse as parseYaml } from "yaml";
 import {
   assembleCatalog,
-  type GhostFingerprintPackageManifest,
-  GhostFingerprintPackageManifestSchema,
+  type GhostPackageManifest,
+  GhostPackageManifestSchema,
   UsageError,
 } from "#ghost-core";
 import { isMissingPathError } from "../internal/fs.js";
 import { loadCheckFiles } from "./check-files.js";
 import type {
-  FingerprintPackagePaths,
-  LoadedFingerprintPackage,
+  GhostPackagePaths,
+  LoadedGhostPackage,
 } from "./fingerprint-package.js";
 import type { LintIssue } from "./lint.js";
 import { loadNodeFiles } from "./node-files.js";
 
-export async function loadFingerprintPackage(
-  paths: FingerprintPackagePaths,
-): Promise<LoadedFingerprintPackage> {
+export async function loadGhostPackage(
+  paths: GhostPackagePaths,
+): Promise<LoadedGhostPackage> {
   let manifestRaw: string;
   try {
     manifestRaw = await readFile(paths.manifest, "utf-8");
@@ -25,7 +25,7 @@ export async function loadFingerprintPackage(
     // A missing package is a usage error (run `ghost init`), not a crash.
     if (isMissingPathError(err)) {
       throw new UsageError(
-        `No Ghost fingerprint package found at ${paths.packageDir} (expected manifest.yml). Run \`ghost init\` or pass --package <dir>.`,
+        `No ghost package found at ${paths.packageDir} (expected manifest.yml). Run \`ghost init\` or pass --package <dir>.`,
       );
     }
     throw err;
@@ -49,14 +49,13 @@ export async function loadFingerprintPackage(
   };
 }
 
-export function lintFingerprintPackageManifest(
+export function lintGhostPackageManifest(
   raw: string,
   issues: LintIssue[],
 ): void {
   const manifest = parseYamlSafe(raw, "manifest.yml", issues);
   if (manifest === undefined) return;
-  const manifestResult =
-    GhostFingerprintPackageManifestSchema.safeParse(manifest);
+  const manifestResult = GhostPackageManifestSchema.safeParse(manifest);
   if (!manifestResult.success) {
     issues.push(
       ...manifestResult.error.issues.map((issue) => ({
@@ -72,14 +71,9 @@ export function lintFingerprintPackageManifest(
   }
 }
 
-function parseManifest(
-  raw: string,
-  label: string,
-): GhostFingerprintPackageManifest {
+function parseManifest(raw: string, label: string): GhostPackageManifest {
   const parsed = parseYamlStrict(raw, label);
-  return GhostFingerprintPackageManifestSchema.parse(
-    parsed,
-  ) as GhostFingerprintPackageManifest;
+  return GhostPackageManifestSchema.parse(parsed) as GhostPackageManifest;
 }
 
 function parseYamlStrict(raw: string, label: string): unknown {
@@ -93,6 +87,12 @@ function parseYamlStrict(raw: string, label: string): unknown {
     );
   }
 }
+
+/** @deprecated Use `loadGhostPackage`. */
+export const loadFingerprintPackage = loadGhostPackage;
+
+/** @deprecated Use `lintGhostPackageManifest`. */
+export const lintFingerprintPackageManifest = lintGhostPackageManifest;
 
 function parseYamlSafe(
   raw: string,

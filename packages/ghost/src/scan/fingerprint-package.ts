@@ -2,7 +2,7 @@ import { access, mkdir, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import {
   type GhostCatalog,
-  type GhostFingerprintPackageManifest,
+  type GhostPackageManifest,
   UsageError,
 } from "#ghost-core";
 import { isExistingPathError, isMissingPathError } from "../internal/fs.js";
@@ -14,7 +14,8 @@ import {
   FINGERPRINT_MANIFEST_FILENAME,
   GHOST_GLOSSARY_FILENAME,
 } from "./constants.js";
-import { loadFingerprintPackage } from "./fingerprint-package-loader.js";
+import { lintGhostPackage } from "./fingerprint-package-lint.js";
+import { loadGhostPackage } from "./fingerprint-package-loader.js";
 import { resolveGhostDirDefault } from "./package-paths.js";
 import {
   DEFAULT_TEMPLATE_NAME,
@@ -27,10 +28,9 @@ import {
 
 // The lint pass lives beside this module; re-export it so `validate` callers
 // keep a single import site for package loading and linting.
-export { lintFingerprintPackage } from "./fingerprint-package-lint.js";
-export { loadFingerprintPackage };
+export { lintGhostPackage, loadGhostPackage };
 
-export interface FingerprintPackagePaths {
+export interface GhostPackagePaths {
   dir: string;
   packageDir: string;
   manifest: string;
@@ -41,10 +41,10 @@ export interface FingerprintPackagePaths {
   composition: string;
 }
 
-export interface LoadedFingerprintPackage {
-  manifest: GhostFingerprintPackageManifest;
+export interface LoadedGhostPackage {
+  manifest: GhostPackageManifest;
   manifestRaw: string;
-  /** The in-memory flat node catalog — the only fingerprint model. */
+  /** The in-memory flat node catalog — the ghost package model. */
   catalog: GhostCatalog;
   /** Whether `.ghost/checks/` exists; `ghost review` requires it. */
   hasChecksDir: boolean;
@@ -60,7 +60,7 @@ export interface LoadedFingerprintPackage {
   invalidChecks: Array<{ file: string; message: string }>;
 }
 
-export interface InitFingerprintPackageOptions {
+export interface InitGhostPackageOptions {
   /** Init template name (default: "skeleton"). Mutually exclusive with `body`. */
   template?: string;
   /**
@@ -72,24 +72,24 @@ export interface InitFingerprintPackageOptions {
   force?: boolean;
 }
 
-export interface InitFingerprintPackageResult {
-  paths: FingerprintPackagePaths;
+export interface InitGhostPackageResult {
+  paths: GhostPackagePaths;
   /** Package-relative paths of the files the template wrote. */
   written: string[];
 }
 
 /**
- * Resolve the fingerprint package directory. `dirArg` (an explicit
+ * Resolve the ghost package directory. `dirArg` (an explicit
  * `--package <dir>`) always wins and is used exactly as given — it may be
  * absolute or relative, unlike `GHOST_PACKAGE_DIR`. When `dirArg` is
  * omitted, `GHOST_PACKAGE_DIR` is honored so every command — not just `init`
  * and `validate` — respects a host-configured package location. Falls back
  * to the default `.ghost` when neither is set.
  */
-export function resolveFingerprintPackage(
+export function resolveGhostPackage(
   dirArg: string | undefined,
   cwd = process.cwd(),
-): FingerprintPackagePaths {
+): GhostPackagePaths {
   const dir = resolve(cwd, dirArg ?? resolveGhostDirDefault());
   const packageDir = dir;
   return {
@@ -103,11 +103,11 @@ export function resolveFingerprintPackage(
   };
 }
 
-export async function initFingerprintPackage(
+export async function initGhostPackage(
   dirArg: string | undefined,
   cwd = process.cwd(),
-  options: InitFingerprintPackageOptions = {},
-): Promise<InitFingerprintPackageResult> {
+  options: InitGhostPackageOptions = {},
+): Promise<InitGhostPackageResult> {
   if (options.body !== undefined && options.template !== undefined) {
     throw new UsageError(
       "--body and --template are mutually exclusive. A template is a shape of emptiness; a body is a full inhabited package — pick one.",
@@ -134,7 +134,7 @@ export async function initFingerprintPackage(
     source = template;
   }
 
-  const paths = resolveFingerprintPackage(dirArg, cwd);
+  const paths = resolveGhostPackage(dirArg, cwd);
   await mkdir(paths.packageDir, { recursive: true });
 
   const files = (await source.files()).map((file) => ({
@@ -174,7 +174,7 @@ async function writeInitFile(
   } catch (err) {
     if (!force && isExistingPathError(err)) {
       throw new UsageError(
-        `Refusing to overwrite existing Ghost fingerprint file:\n  ${path}\nPass --force to overwrite.`,
+        `Refusing to overwrite existing ghost package file:\n  ${path}\nPass --force to overwrite.`,
       );
     }
     throw err;
@@ -195,7 +195,24 @@ async function assertInitDoesNotOverwrite(paths: string[]): Promise<void> {
   if (existing.length > 0) {
     const formatted = existing.map((path) => `  ${path}`).join("\n");
     throw new UsageError(
-      `Refusing to overwrite existing Ghost fingerprint file(s):\n${formatted}\nPass --force to overwrite.`,
+      `Refusing to overwrite existing ghost package file(s):\n${formatted}\nPass --force to overwrite.`,
     );
   }
 }
+
+/** @deprecated Use `GhostPackagePaths`. */
+export type FingerprintPackagePaths = GhostPackagePaths;
+/** @deprecated Use `LoadedGhostPackage`. */
+export type LoadedFingerprintPackage = LoadedGhostPackage;
+/** @deprecated Use `InitGhostPackageOptions`. */
+export type InitFingerprintPackageOptions = InitGhostPackageOptions;
+/** @deprecated Use `InitGhostPackageResult`. */
+export type InitFingerprintPackageResult = InitGhostPackageResult;
+/** @deprecated Use `resolveGhostPackage`. */
+export const resolveFingerprintPackage = resolveGhostPackage;
+/** @deprecated Use `initGhostPackage`. */
+export const initFingerprintPackage = initGhostPackage;
+/** @deprecated Use `loadGhostPackage`. */
+export const loadFingerprintPackage = loadGhostPackage;
+/** @deprecated Use `lintGhostPackage`. */
+export const lintFingerprintPackage = lintGhostPackage;

@@ -1,7 +1,7 @@
 {
   "name": "@design-intelligence/ghost",
   "version": "0.23.0",
-  "description": "Ghost CLI for the brand fingerprint: a portable steering packet of prose truths your agent reads before it builds, with advisory review after",
+  "description": "ghost CLI for portable .ghost/ packages of brand guidance your agent reads before it builds, with advisory review after",
   "license": "Apache-2.0",
   "author": "Block, Inc.",
   "repository": {
@@ -13,7 +13,7 @@
     "url": "https://github.com/block/ghost/issues"
   },
   "keywords": [
-    "fingerprint",
+    "brand-guidance",
     "product-surface",
     "surface-composition",
     "design-system",
@@ -47,6 +47,10 @@
     "./core": {
       "types": "./dist/ghost-core/index.d.ts",
       "import": "./dist/ghost-core/index.js"
+    },
+    "./package": {
+      "types": "./dist/package.d.ts",
+      "import": "./dist/package.js"
     },
     "./fingerprint": {
       "types": "./dist/fingerprint.d.ts",

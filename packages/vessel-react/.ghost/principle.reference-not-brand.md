@@ -3,7 +3,7 @@ description: Vessel is an agnostic reference body a product fingerprint inhabits
 ---
 
 Vessel provides a coherent implementation vocabulary — tokens, primitives, AI
-elements, interaction conventions — that a consuming product's own Ghost
+elements, interaction conventions — that a consuming product's own ghost
 fingerprint can select, interpret, and review against. It must not become that
 product's brand law.
 

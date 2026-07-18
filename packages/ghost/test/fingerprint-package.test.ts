@@ -2,22 +2,22 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import {
-  lintFingerprintPackage,
-  loadFingerprintPackage,
-  resolveFingerprintPackage,
-} from "../src/fingerprint.js";
 import { parseGlossary } from "../src/ghost-core/index.js";
+import {
+  lintGhostPackage,
+  loadGhostPackage,
+  resolveGhostPackage,
+} from "../src/package.js";
 import { detectFileKind } from "../src/scan/file-kind.js";
 import { loadNodeFiles } from "../src/scan/node-files.js";
 
-describe("split fingerprint package", () => {
+describe("ghost package", () => {
   let dir: string;
 
   beforeEach(async () => {
     dir = join(
       tmpdir(),
-      `ghost-fingerprint-package-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      `ghost-package-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     );
     await mkdir(dir, { recursive: true });
   });
@@ -29,14 +29,28 @@ describe("split fingerprint package", () => {
   it("loads a manifest-only package as an empty catalog", async () => {
     await writeManifest(dir);
 
-    const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
+    const loaded = await loadGhostPackage(resolveGhostPackage(dir));
 
     expect(loaded.manifest).toEqual({
-      schema: "ghost.fingerprint-package/v1",
+      schema: "ghost.package/v1",
       id: "local",
     });
     // Only the implicit root, no authored nodes.
     expect([...loaded.catalog.nodes.keys()]).toEqual([]);
+  });
+
+  it("accepts the deprecated fingerprint package schema", async () => {
+    await writeFile(
+      join(dir, "manifest.yml"),
+      "schema: ghost.fingerprint-package/v1\nid: legacy\n",
+    );
+
+    const loaded = await loadGhostPackage(resolveGhostPackage(dir));
+
+    expect(loaded.manifest).toEqual({
+      schema: "ghost.fingerprint-package/v1",
+      id: "legacy",
+    });
   });
 
   it("loads *.md node files into the flat catalog", async () => {
@@ -47,7 +61,7 @@ describe("split fingerprint package", () => {
       "---\ndescription: Trust at the payment moment.\n---\n\nReduce felt risk near payment.\n",
     );
 
-    const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
+    const loaded = await loadGhostPackage(resolveGhostPackage(dir));
 
     // id is the path; kind/slug come from the filename.
     const authored = loaded.catalog.nodes.get("checkout/principle.trust");
@@ -67,7 +81,7 @@ describe("split fingerprint package", () => {
       "---\ndescription: All feature UI.\nrelates:\n  - to: core\n---\n\nFeature prose.\n",
     );
 
-    const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
+    const loaded = await loadGhostPackage(resolveGhostPackage(dir));
     // The malformed node is excluded from the catalog but retained as invalid.
     expect(loaded.catalog.nodes.has("features")).toBe(false);
     expect(loaded.invalid).toEqual([
@@ -78,7 +92,7 @@ describe("split fingerprint package", () => {
     ]);
 
     // `validate` promotes it to a loud error keyed to the offending file.
-    const report = await lintFingerprintPackage(dir);
+    const report = await lintGhostPackage(dir);
     expect(report.errors).toBe(1);
     expect(report.issues[0]).toMatchObject({
       rule: "node-invalid",
@@ -120,7 +134,7 @@ Replacement rule.
       "---\ndescription: Density stance.\n---\n\nUse density deliberately.\n",
     );
 
-    const report = await lintFingerprintPackage(dir);
+    const report = await lintGhostPackage(dir);
 
     expect(report.errors).toBe(0);
     // The only warning is the undeclared cover, never a kind complaint.
@@ -138,7 +152,7 @@ Replacement rule.
       "---\ndescription: Voice.\n---\n\nSpeak plainly.\n",
     );
 
-    const report = await lintFingerprintPackage(dir);
+    const report = await lintGhostPackage(dir);
 
     expect(report.errors).toBe(0);
     // The only warning is the undeclared cover, never a kind complaint.
@@ -156,7 +170,7 @@ Replacement rule.
       "---\n{}\n---\n\nUse density deliberately.\n",
     );
 
-    const report = await lintFingerprintPackage(dir);
+    const report = await lintGhostPackage(dir);
 
     expect(report.errors).toBe(0);
     // Undeclared cover + missing description.
@@ -178,7 +192,7 @@ Replacement rule.
       "---\ndescription: Density stance.\n---\n\nUse density deliberately.\n",
     );
 
-    const report = await lintFingerprintPackage(dir);
+    const report = await lintGhostPackage(dir);
 
     expect(report.errors).toBe(0);
     expect(report.issues).not.toContainEqual(
@@ -194,7 +208,7 @@ Replacement rule.
       "---\ndescription: Density stance.\n---\n\nUse density deliberately.\n",
     );
 
-    const report = await lintFingerprintPackage(dir);
+    const report = await lintGhostPackage(dir);
 
     expect(report.errors).toBe(0);
     // Undeclared cover + undeclared kind.
@@ -218,7 +232,7 @@ Replacement rule.
       "---\ndescription: Density stance.\n---\n\nUse density deliberately.\n",
     );
 
-    const report = await lintFingerprintPackage(dir);
+    const report = await lintGhostPackage(dir);
 
     expect(report.errors).toBe(0);
     // The only warning is the undeclared cover, never a kind complaint.
@@ -235,7 +249,7 @@ Replacement rule.
       "---\ndescription: Logo.\nmaterials:\n  - brand/logo*.svg\n  - https://example.com/logo\n---\n\nLogo prose.\n",
     );
 
-    const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
+    const loaded = await loadGhostPackage(resolveGhostPackage(dir));
 
     expect(loaded.catalog.nodes.get("asset.logo")?.materials).toEqual([
       "brand/logo*.svg",
@@ -276,7 +290,7 @@ Replacement rule.
       "---\ndescription: Logo.\nmaterials:\n  - materials/claimed.txt\n  - missing/logo.svg\n  - https://example.com/logo.svg\n---\n\nLogo prose.\n",
     );
 
-    const report = await lintFingerprintPackage(dir, dir);
+    const report = await lintGhostPackage(dir, dir);
 
     expect(report.errors).toBe(0);
     // Undeclared cover + dead locator + orphaned material.
@@ -308,7 +322,7 @@ Replacement rule.
       "---\ndescription: Logo.\nmaterials:\n  - /absolute/logo.svg\n---\n\nLogo prose.\n",
     );
 
-    const report = await lintFingerprintPackage(dir);
+    const report = await lintGhostPackage(dir);
 
     expect(report.errors).toBe(1);
     expect(report.issues[0]).toMatchObject({
@@ -330,7 +344,7 @@ Replacement rule.
       ],
     ]);
 
-    const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
+    const loaded = await loadGhostPackage(resolveGhostPackage(dir));
 
     expect([...loaded.catalog.nodes.keys()]).toEqual(["asset.logo"]);
     expect(loaded.hasChecksDir).toBe(true);
@@ -342,7 +356,7 @@ Replacement rule.
   it("reports an absent checks/ directory without error", async () => {
     await writeManifest(dir);
 
-    const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
+    const loaded = await loadGhostPackage(resolveGhostPackage(dir));
 
     expect(loaded.hasChecksDir).toBe(false);
     expect(loaded.checks.size).toBe(0);
@@ -353,7 +367,7 @@ Replacement rule.
     await writeManifest(dir);
     await mkdir(join(dir, "checks", "nested"), { recursive: true });
 
-    const report = await lintFingerprintPackage(dir);
+    const report = await lintGhostPackage(dir);
 
     expect(report.errors).toBe(1);
     expect(report.issues[0]).toMatchObject({
@@ -374,7 +388,7 @@ Replacement rule.
       "---\ndescription: Email surface.\n---\n\nEmail.\n",
     );
 
-    const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
+    const loaded = await loadGhostPackage(resolveGhostPackage(dir));
 
     // The id rule is uniform: path minus .md.
     expect([...loaded.catalog.nodes.keys()]).toEqual(["email/index", "index"]);
@@ -389,7 +403,7 @@ Replacement rule.
       "schema: ghost.fingerprint-package/v1\nid: local\nplugins:\n  - retired\n",
     );
 
-    const report = await lintFingerprintPackage(dir);
+    const report = await lintGhostPackage(dir);
 
     expect(report.errors).toBe(1);
     expect(report.issues[0]).toMatchObject({
@@ -401,7 +415,7 @@ Replacement rule.
   it("reports a missing manifest", async () => {
     await writeFile(join(dir, "index.md"), "---\n---\n\nRoot prose.\n");
 
-    const report = await lintFingerprintPackage(dir);
+    const report = await lintGhostPackage(dir);
 
     expect(report.errors).toBe(1);
     expect(report.issues[0]).toMatchObject({
@@ -415,7 +429,7 @@ async function writeManifest(dir: string): Promise<void> {
   await mkdir(dir, { recursive: true });
   await writeFile(
     join(dir, "manifest.yml"),
-    "schema: ghost.fingerprint-package/v1\nid: local\n",
+    "schema: ghost.package/v1\nid: local\n",
   );
 }
 

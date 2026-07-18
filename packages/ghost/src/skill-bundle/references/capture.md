@@ -1,26 +1,26 @@
 ---
 name: capture
-description: Author repo-local Ghost brand fingerprints as a flat set of prose nodes.
+description: Author repo-local ghost packages as a flat set of prose nodes.
 handoffs:
   - label: Inspect the package
     command: ghost validate
-    prompt: Does this fingerprint package validate, and what is absent?
+    prompt: Does this ghost package validate, and what is absent?
 ---
 
-# Recipe: Author Ghost Fingerprint
+# Recipe: Author ghost Package
 
-**Goal:** record durable brand truths in `.ghost/` as a flat set of prose
+**Goal:** record durable brand guidance in `.ghost/` as a flat set of prose
 **nodes**. If a change is uncommitted, it is draft work. If it is checked in,
-Ghost treats the fingerprint package as canonical.
+ghost treats the `.ghost/` package as canonical.
 
 ```text
 .ghost/
   manifest.yml          # schema + id
   glossary.md           # the kind vocabulary + what each kind means
-  principle.trust.md    # a brand truth of kind `principle`
+  principle.trust.md    # guidance of kind `principle`
   pattern.invoice.md    # a pattern with an optional ## Skeleton
   anti-goal.generic.md  # a review-critical replacement rule
-  voice.md              # a brand truth without a kind
+  voice.md              # guidance without a kind
 ```
 
 A **node** is a markdown file: a `description`, optional `materials`, and a
@@ -208,10 +208,10 @@ action beats completeness...
   against applicability.
 - **Kind is the filename prefix** and must be a kind the glossary declares. A
   bare name (`voice.md`) has no kind.
-- **Altitude lives in the prose.** State a universal truth plainly; give a
-  narrower truth its **condition** — the situation it applies in — in the prose
+- **Altitude lives in the prose.** State universal guidance plainly; give a
+  narrower guidance a **condition** — the situation it applies in — in the prose
   and usually in the description. Do not use broad universal imperatives unless
-  universal retrieval is intended. Never file a truth by destination
+  universal retrieval is intended. Never file a node by destination
   (`for-emails.md`).
 - **Concreteness is derived.** A node carries concrete material when it has
   `materials`, a substantial fenced example, or a `## Skeleton`. You do not
@@ -219,7 +219,7 @@ action beats completeness...
 
 ## What a node body answers
 
-While drafting, ask three questions of every truth — *why* (the stance), *with
+While drafting, ask three questions of every node — *why* (the stance), *with
 what* (the materials), and *how it is assembled* (the patterns). These are
 drafting prompts, never frontmatter keys, node types, or required sections, and
 a node may answer only one. Each answer lands as a steering dimension the
@@ -235,8 +235,8 @@ machinery already scores:
   strongest steering; Skeleton fences are extracted and emitted dead last so
   generation starts from them.
 
-Keep a node **purpose-coherent**: one truth, any length. Split only when it is
-genuinely a different truth.
+Keep a node **purpose-coherent**: one coherent decision, any length. Split only when it
+contains a separate decision with different applicability.
 
 ## Node prose stances
 
@@ -256,7 +256,7 @@ Two carve-outs come first, because they invert ordinary prose advice:
 Everywhere else:
 
 - **No aspirational abstractions.** "We value clarity and trust" steers
-  nothing. Name the decision the truth forces: what gets picked when two goods
+  nothing. Name the decision the guidance forces: what gets picked when two goods
   compete, and what gets given up.
 - **Descriptions must discriminate.** Read the description alone. If it also
   fits a competitor's brand, it is retrieval-dead; rewrite it until it could
@@ -267,7 +267,7 @@ Everywhere else:
 - **Ban brand-deck filler.** "Elevate," "delight," "seamless," "best-in-class,"
   "empower." When a brand doc supplies these words, they are testimony to
   distill, never prose to keep.
-- **Settle the altitude on purpose.** Every truth is either claimed universal
+- **Settle the altitude on purpose.** Every node is either claimed universal
   or given its condition in the prose. A node body that does neither was never
   curated for altitude; ask the human which it is.
 
@@ -290,12 +290,12 @@ in curation still decides what becomes canonical.
 
 ## Author through steering jobs
 
-The steering jobs are questions, not mandatory fields. Encode the truth in the
+The steering jobs are questions, not mandatory fields. Encode the guidance in the
 strongest form that fixes the observed failure.
 
 | If the agent keeps... | Author... |
 | --- | --- |
-| missing the truth | sharper `description`; move universal truth to the cover |
+| missing the guidance | sharper `description`; move universal guidance to the cover |
 | inventing values | `asset.*` node with materials and exact names |
 | producing generic output | `anti-goal.*` replacement plus annotated `exemplar.*` |
 | choosing the wrong structure | `pattern.*` with bound/open and a `## Skeleton` |
@@ -306,11 +306,11 @@ strongest form that fixes the observed failure.
 
 A `concept.*` node holds a one-time creative move — a launch hook, a
 campaign idea, a specific non-median leap the corpus would not have produced
-by recombining its other truths. Scope it explicitly to the task or surface
+by recombining its other guidance. Scope it explicitly to the task or surface
 it was written for, keep it distinct from invariants, and do not generalize
 it into permanent brand law. If it proves reusable later, promote it into an
 exemplar or pattern deliberately; do not let a one-off default into durable
-truth by accumulation.
+guidance through accumulation.
 
 Ask while authoring:
 
@@ -329,7 +329,7 @@ Ask while authoring:
 
 Decide which posture fits before scaffolding. Follow
 [authoring-scenarios.md](authoring-scenarios.md) when setting up or substantially
-revising a fingerprint. Human intent anchors the truths; what the human says and
+revising a ghost package. Human intent anchors the guidance; what the human says and
 shows — words, images, links, exemplars — is the evidence; agent synthesis is
 draft work until a human curates it and Git review accepts it.
 
@@ -344,12 +344,12 @@ ghost validate
 
 `ghost init` seeds the skeleton starter: the manifest, a starter
 `glossary.md`, a `brand.md` cover, foundation chapters with open questions, and
-the model cliche floor. Replace open questions with real product truth before
+the model cliche floor. Replace open questions with real product guidance before
 using it to steer generation. Use `ghost init --template minimal` for a
 manifest, glossary, cover, and cliche floor.
 
 Write the manifest-declared cover as the human-curated front door:
-non-negotiables that apply to every task, what the fingerprint covers, and any
+non-negotiables that apply to every task, what the package covers, and any
 stricter silence posture. `ghost gather` inlines it before the menu, so anything
 that must never be missed belongs there.
 
@@ -364,7 +364,7 @@ feed-back only; they are never gathered.
 
 Declare the kinds you will use in `glossary.md` — the frontmatter `kinds` list
 plus a `#` section per kind explaining its meaning and normative weight. Kinds
-are your choice; Ghost ships no fixed vocabulary. A node's filename prefix must
+are your choice; ghost ships no fixed vocabulary. A node's filename prefix must
 match a declared kind (or the node has no kind).
 
 The glossary is a dictionary of every term with defined meaning in the corpus.
@@ -377,17 +377,16 @@ hygiene, not over-structure.
 Elicit the brand from the human, not from a codebase. Interview for stance,
 audience, anti-goals, and exemplars; ask for the material they can show —
 screenshots, links, exemplar products, brand docs, copy they love or hate. Treat
-every artifact as testimony to curate, never truth to copy verbatim. Repo-bound
+every artifact as evidence to curate, never guidance to copy verbatim. Repo-bound
 reality can be recorded as `materials` on the node whose prose explains its
 purpose.
 
 ### 5. Write sparse nodes
 
-Add the smallest useful set of nodes, each a purpose-coherent prose truth
+Add the smallest useful set of nodes, each carrying purpose-coherent prose guidance
 answering why, with what, or how it is assembled, named `<kind>.<slug>.md` or a
 bare slug. Draft only what the
-human said or showed. State conditions as situations in the prose. Prefer a few
-high-confidence truths over a noisy catalog. Hold each draft to the node prose
+human said or showed. State conditions as situations in the prose. Prefer a small amount of focused, well-grounded guidance over a noisy catalog. Hold each draft to the node prose
 stances and score it before curation; a node below the gate returns to the
 interview. Ask the human to keep, soften,
 reject, or re-title important claims before treating draft nodes as durable.
@@ -405,12 +404,12 @@ Undeclared kind prefixes and malformed Skeleton sections are warnings.
 ## Never
 
 - Never describe any file outside `.ghost/` as canonical package input.
-- Never derive a brand truth from repo code alone; what a codebase repeats may
-  be legacy, not stance. Use repo paths as `materials` only when the prose truth
+- Never derive brand guidance from repo code alone; what a codebase repeats may
+  be legacy, not stance. Use repo paths as `materials` only when the prose guidance
   has been curated.
 - Never draft a node the human neither said nor showed.
 - Never invent a hierarchy, inheritance, or cross-node edges — the package is
   flat.
-- Never file a truth by destination; state its condition in the prose.
+- Never file a node by destination; state its condition in the prose.
 - Never ship a blacklist-only anti-goal; state the replacement and enforce the
   hard line in review.

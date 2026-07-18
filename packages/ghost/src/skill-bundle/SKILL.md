@@ -1,34 +1,33 @@
 ---
 name: ghost
-description: Author, validate, consume, and review against a repo-local Ghost fingerprint — the medium-agnostic articulation of a product's brand. Use when the user wants to set up a .ghost fingerprint, write or update brand-truth nodes, gather brand context before generation, or assemble a review packet from Ghost checks.
+description: Author, validate, consume, and review against a repo-local ghost package — the medium-agnostic articulation of a product's brand. Use when the user wants to set up a .ghost package, write or update guidance nodes, gather brand context before generation, or assemble a review packet from ghost checks.
 license: Apache-2.0
 metadata:
   homepage: https://github.com/block/ghost
   cli: ghost
 ---
 
-# Ghost — Brand Fingerprints
+# ghost — Brand Guidance Packages
 
-A Ghost fingerprint is the medium-agnostic articulation of a brand: its truths,
-its stance, its conditions, and optional pointers to the concrete materials those
-truths govern. One brand truth is stated once, at the altitude it is actually
-true, and an agent reads the relevant truths before building.
+A ghost package is the medium-agnostic articulation of a brand: its guidance,
+its stance, its conditions, and optional pointers to the concrete materials that
+guidance governs. Each brand decision is stated once, at the broadest level where
+it applies, and an agent reads the relevant guidance before building.
 
 ```text
 .ghost/
   manifest.yml        # schema + id (the package anchor)
   glossary.md         # the author's kind vocabulary
   materials/          # bundled materials; reserved, never nodes
-  <kind>.<slug>.md    # a brand truth of a declared kind
-  <slug>.md           # a brand truth without a kind
+  <kind>.<slug>.md    # guidance of a declared kind
+  <slug>.md           # guidance without a kind
   checks/             # optional review assertions; never nodes
 ```
 
 ## The model in one breath
 
-- A **node** is a markdown file: `description`, optional `materials`, and a prose
-  brand truth.
-- `materials` is one list of locators for the concrete stuff the truth is about:
+- A **node** is a markdown file: `description`, optional `materials`, and prose brand guidance.
+- `materials` is one list of locators for the concrete stuff the guidance is about:
   repo-relative paths/globs or absolute HTTPS URLs. `materials/` is reserved for
   bundled materials; reference living implementations where they already live.
   Guidance stays in prose.
@@ -63,11 +62,11 @@ ghost pulse         # summarize local gather/pull events while tuning
 ```
 
 `gather` does no selection. It emits the complete, unfiltered, unranked menu
-from the Ghost brand fingerprint. You read the ask against descriptions, then
-pull every applicable truth and skip inapplicable nodes. Topic overlap alone is
+from the ghost package. You read the ask against descriptions, then
+pull every applicable node and skip inapplicable nodes. Topic overlap alone is
 not applicability. Its header includes a coverage line: total nodes and nodes
 carrying concrete material. `gather` labels materials, substantial fenced
-examples, and Skeletons separately, so an all-prose fingerprint is visible
+examples, and Skeletons separately, so an all-prose package is visible
 before generation.
 
 Prefer `ghost pull` over reading files directly: it emits the same prose,
@@ -108,7 +107,7 @@ from the node body and emits the fences at the end under a begin-from-this banne
 If a pulled Skeleton matches the task, start the artifact from it verbatim, then
 fill with task facts.
 
-## Receiving a fingerprint
+## Receiving a ghost package
 
 Unpack the exported archive, run `ghost validate --package <dir>`, then run
 `ghost skill install` in the receiving workspace. From there, gather and pull
@@ -116,28 +115,28 @@ against the unpacked package with `--package <dir>`.
 
 ## Workflows
 
-- Author or update the fingerprint: follow [references/capture.md](references/capture.md).
+- Author or update the package: follow [references/capture.md](references/capture.md).
 - Author material-backed nodes: follow [references/blocks.md](references/blocks.md).
 - Choose which concrete code tiers the package carries: follow [references/concrete-tiers.md](references/concrete-tiers.md).
 - Choose the right human-agent authoring workflow: follow [references/authoring-scenarios.md](references/authoring-scenarios.md).
 - Adapt a starter (a body or the skeleton) to your brand: follow [references/adapting-a-starter.md](references/adapting-a-starter.md).
-- Gather applicable truths for a task: follow [references/recall.md](references/recall.md).
+- Gather applicable guidance for a task: follow [references/recall.md](references/recall.md).
 - Make a visual artifact end to end: follow [references/making.md](references/making.md).
 - Shape a pre-generation brief: follow [references/brief.md](references/brief.md).
 - Probe readiness before generating: follow [references/self-check.md](references/self-check.md).
 - Audit steering coverage: follow [references/steering-audit.md](references/steering-audit.md).
 - Understand the package shape: see [references/schema.md](references/schema.md).
 
-Fingerprint authoring is **elicitation, not scanning**. The raw material is what
+ghost package authoring is **elicitation, not scanning**. The raw material is what
 the human brings and points at: words, images, links, exemplar products, brand
 docs, copy they love or hate. Repo code can supply material locators and local
-conventions, but durable brand truth should be curated by the human.
+conventions, but durable brand guidance should be curated by the human.
 
-## When the fingerprint is silent
+## When the package is silent
 
-A silent fingerprint does not require stopping. Proceed from nearby product
+A silent package does not require stopping. Proceed from nearby product
 surfaces, local conventions, and ordinary reasoning when safe, and label that
-reasoning as provisional and non-Ghost-backed unless the fingerprint itself
+reasoning as provisional and non-ghost-backed unless the package itself
 declares a stricter silence posture (check the cover), which overrides
 this default. Ask a human before high-risk, irreversible, privacy, security,
 legal, or brand-defining choices.
@@ -145,7 +144,7 @@ legal, or brand-defining choices.
 ## Never
 
 - Never invent hierarchy, inheritance, or cross-node edges.
-- Never file a truth by destination (`for-emails.md`); state its condition in prose.
+- Never file a node by destination (`for-emails.md`); state its condition in prose.
 - Never put guidance in `materials`; it belongs in the node body.
 - Never gather checks as generation context.
-- Never claim provisional or local-convention reasoning as Ghost-backed.
+- Never claim provisional or local-convention reasoning as ghost-backed.

@@ -10,17 +10,17 @@ import {
   type TransportedMaterial,
   transportMaterials,
 } from "#ghost-core";
-import { resolveFingerprintPackage } from "../fingerprint.js";
 import {
   appendGhostEvent,
   type PullMiss,
   resolveRunId,
 } from "../observability-events.js";
+import { resolveGhostPackage } from "../package.js";
 import {
   GHOST_EVENTS_FILENAME,
   GHOST_MATERIALS_DIR,
 } from "../scan/constants.js";
-import { loadFingerprintPackage } from "../scan/fingerprint-package.js";
+import { loadGhostPackage } from "../scan/fingerprint-package.js";
 import { resolveGitRoot } from "../scan/package-paths.js";
 import { failFromError } from "./errors.js";
 
@@ -43,7 +43,7 @@ export function registerPullCommand(cli: CAC): void {
     )
     .option(
       "--package <dir>",
-      "Use this fingerprint package directory (default: ./.ghost)",
+      "Use this ghost package directory (default: ./.ghost)",
     )
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
@@ -73,8 +73,8 @@ export function registerPullCommand(cli: CAC): void {
           return;
         }
 
-        const paths = resolveFingerprintPackage(opts.package, process.cwd());
-        const loaded = await loadFingerprintPackage(paths);
+        const paths = resolveGhostPackage(opts.package, process.cwd());
+        const loaded = await loadGhostPackage(paths);
         const catalog = loaded.catalog;
 
         const requested = [...new Set(ids)];

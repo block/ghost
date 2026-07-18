@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 # Builds apps/docs with DEPLOY_BASE=/ghost/ and uploads the dist as the
 # Pages artifact. apps/docs is the one deployed site — it owns the home,
-# the design language catalogue (/ui/*), and the Ghost tooling docs
+# the design language catalogue (/ui/*), and the ghost tooling docs
 # (/tools/drift/*) under a single aesthetic.
 
 on:
@@ -32,7 +32,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
-      - name: Build Ghost CLI package
+      - name: Build ghost CLI package
         run: pnpm --filter @design-intelligence/ghost build
 
       - name: Build vessel-react library

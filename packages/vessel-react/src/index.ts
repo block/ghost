@@ -1,5 +1,5 @@
 /**
- * vessel — reference component library for Ghost.
+ * vessel — reference component library for ghost.
  *
  * Re-exports 52 atomic UI components, 48 AI-native elements, theme primitives,
  * and shared hooks/utils. Consumer apps (apps/docs) import from

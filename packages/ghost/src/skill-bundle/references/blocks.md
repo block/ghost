@@ -1,21 +1,21 @@
 ---
 name: blocks
-description: Author block and material nodes so an agent can match a fingerprint's stance to concrete building blocks.
+description: Author block and material nodes so an agent can match a ghost package's stance to concrete building blocks.
 handoffs:
   - label: List the node menu
     command: ghost gather
-    prompt: What materials does this fingerprint document, and what is absent?
+    prompt: What materials does this package document, and what is absent?
 ---
 
 # Recipe: Author Block And Material Nodes
 
 **Goal:** when you are documenting the **materials** a brand draws from — its
 building blocks, assets, and reusable pieces — write that prose so an agent can
-translate the fingerprint's stance into concrete building blocks without the
-fingerprint ever naming a component.
+translate the package's stance into concrete building blocks without the
+guidance ever naming a component.
 
 This is opinionated method, not new schema. **"Block node" is shorthand in this
-recipe, not a Ghost concept**: it means any node whose truth is a reusable
+recipe, not a ghost concept**: it means any node whose guidance is a reusable
 building block, whatever kind the author's glossary declares for it (`block`,
 `asset`, `pattern`, …). A block node is a node like any other: a markdown file
 with a `description` and a prose body, named `<kind>.<slug>.md` (or a bare
@@ -25,10 +25,10 @@ whatever keeps each node purpose-coherent.
 
 ## Where it sits
 
-A fingerprint declares stance. Block and material nodes ground that stance in
+A ghost package declares stance. Block and material nodes ground that stance in
 concrete material: materials, substantial fenced examples, or Skeletons. A
 realizing agent **reads** them and matches against them. Strip every block node
-and the fingerprint is still valid — it just gives the agent less to draw on,
+and the package is still valid — it just gives the agent less to draw on,
 and prose-only steering is weak steering. The agent does the matching.
 
 ## Concreteness is the grounding dial
@@ -50,7 +50,7 @@ Neither is correct. A concrete block node is a deliberate trade, not a leak.
   the absence of a body is the signal that training priors are acceptable here.
   When a primitive is itself brand-distinctive (a button whose shape, weight, or
   focus treatment is a recognizable brand move), its *divergence from the
-  generic form* is a truth worth a body: state what differs and why, not the
+  generic form* is a decision worth a node: state what differs and why, not the
   full API.
 - **Anything that encodes a user moment** (confirmation, plan, task, tool,
   reasoning, sources…) earns **one short prose body**. This is what the method is
@@ -84,15 +84,15 @@ when (use X instead) / never*:
 
 Keep props, markup, and API reference out; the body documents purpose, and the
 implementation beneath it is swappable. Explicit values are the exception when
-the value itself is the brand truth — an exact color, a specific corner radius —
+the value itself is the brand guidance — an exact color, a specific corner radius —
 not a swappable implementation detail.
 
 ## How a match runs
 
-The agent reads the fingerprint's stance, `gather`s the menu, pulls block nodes
+The agent reads the package's stance, `gather`s the menu, pulls block nodes
 whose descriptions apply, separates near-neighbors on *not when* and *never*,
 and assembles. The realizing surface authors the chosen blocks in its medium.
-The fingerprint never named a component; the agent bridged via documented
+The guidance never named a component; the agent bridged via documented
 purpose.
 
 ## Curation rule
@@ -155,7 +155,7 @@ divergence from the generic form would earn a short body.)
 ## Materials: bundle brand-owned materials, reference implementations
 
 Use the rule of thumb literally. Bundle brand-owned materials: brand-owned artifacts that
-should travel with the fingerprint and survive export or refactors — tokens.css,
+should travel with the package and survive export or refactors — tokens.css,
 motion.json, logo.svg, type materials. Reference implementations: living app
 code, components, stories, or tests whose home is still the product repo. The
 `materials` list locates both; the prose says what the material proves.
@@ -173,7 +173,7 @@ prop APIs re-imports implementation opinion and creates a mirror to maintain.
   of a body is the signal. A brand-distinctive primitive earns a body for its
   divergence, never for its API.
 - Never put props, markup, or API reference in a block body; explicit
-  values belong only when the value itself is the brand truth.
-- Never let the fingerprint reference the realizing surface; blocks are read,
+  values belong only when the value itself is the brand guidance.
+- Never let the package reference the realizing surface; blocks are read,
   not addressed.
 - Never split two blocks that answer the same first question; that is one node.

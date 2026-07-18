@@ -1,5 +1,5 @@
 // Thin shell adapter over the real ghost CLI. context-control never
-// re-implements Ghost semantics; everything deterministic comes from
+// re-implements ghost semantics; everything deterministic comes from
 // `ghost gather --format json` and `ghost pull --format json`.
 import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";

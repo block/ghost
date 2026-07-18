@@ -1,16 +1,16 @@
 ---
 name: create-pr
 description: >-
-  Create a GitHub pull request for the Ghost repo from the current branch:
-  inspect branch changes, handle scoped commits, verify release and Ghost
+  Create a GitHub pull request for the ghost repo from the current branch:
+  inspect branch changes, handle scoped commits, verify release and ghost
   review requirements, push safely, and open a draft PR. Use when the user says
   "create PR", "open PR", "submit PR", "push PR", "make a pull request", or
-  asks to publish the current Ghost branch for review.
+  asks to publish the current ghost branch for review.
 ---
 
 # Create PR
 
-Create a GitHub pull request for the Ghost repo from the current branch. Prefer
+Create a GitHub pull request for the ghost repo from the current branch. Prefer
 a draft PR unless the user explicitly asks for a ready PR and validation has
 passed.
 
@@ -67,12 +67,12 @@ Run these in parallel where possible:
 
 Before pushing, verify that `origin` points to a Block-managed GitHub
 organization for this repo, normally `git@github.com:block/ghost.git` or an
-equivalent `https://github.com/block/ghost` remote. Do not push Ghost source to
+equivalent `https://github.com/block/ghost` remote. Do not push ghost source to
 personal or non-Block repositories.
 
 ## Step 4: Check Release Hygiene
 
-Ghost publishes only `@design-intelligence/ghost`; private packages are ignored by
+ghost publishes only `@design-intelligence/ghost`; private packages are ignored by
 Changesets.
 
 Inspect the diff and decide whether a changeset is required:
@@ -118,7 +118,7 @@ pnpm test
 pnpm check
 ```
 
-Ghost-specific validation:
+ghost-specific validation:
 
 ```bash
 ghost check --base <base>
@@ -134,7 +134,7 @@ node packages/ghost/dist/bin.js review --base <base> --include-memory
 
 Run `ghost check` for implementation or fingerprint changes that can affect a
 surface. Run `ghost review` when the change touches UI generation behavior,
-fingerprint semantics, review packets, composition rules, docs about Ghost's
+fingerprint semantics, review packets, composition rules, docs about ghost's
 surface model, or anything where advisory drift context would help reviewers.
 
 For fingerprint edits, also run:
@@ -185,7 +185,7 @@ Use this body structure:
 
 **Changeset:** added | not needed because ...
 
-**Ghost Review:**
+**ghost Review:**
 - `ghost check --base <base>`: result | not run because ...
 - `ghost review --base <base> --include-memory`: result | not run because ...
 
@@ -226,7 +226,7 @@ unless the user explicitly asked for a ready PR and validation is complete.
 
 Use a body file or heredoc to preserve formatting. After creation, output the PR
 URL as a clickable link and mention any skipped validation, missing issue link,
-or advisory Ghost review finding the user should know about.
+or advisory ghost review finding the user should know about.
 
 ## Tone
 

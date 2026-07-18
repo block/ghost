@@ -5,22 +5,36 @@ import { describe, expect, it } from "vitest";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const hasBuiltExports = existsSync(
-  resolve(REPO_ROOT, "packages/ghost/dist/fingerprint.js"),
+  resolve(REPO_ROOT, "packages/ghost/dist/package.js"),
 );
 
 describe.runIf(hasBuiltExports)("built public exports", () => {
-  it("exposes fingerprint-first package subpaths", async () => {
-    const [fingerprint, scan] = await Promise.all([
+  it("exposes the package API and deprecated fingerprint compatibility", async () => {
+    const [packageApiModule, fingerprint, scan] = await Promise.all([
+      import("@design-intelligence/ghost/package"),
       import("@design-intelligence/ghost/fingerprint"),
       import("@design-intelligence/ghost/scan"),
     ]);
 
+    const packageApi = packageApiModule as Record<string, unknown>;
     const fingerprintApi = fingerprint as Record<string, unknown>;
     const scanApi = scan as Record<string, unknown>;
 
-    expect(fingerprintApi.initFingerprintPackage).toBeTypeOf("function");
-    expect(fingerprintApi.lintFingerprintPackage).toBeTypeOf("function");
-    expect(fingerprintApi.loadFingerprintPackage).toBeTypeOf("function");
+    expect(packageApi.initGhostPackage).toBeTypeOf("function");
+    expect(packageApi.lintGhostPackage).toBeTypeOf("function");
+    expect(packageApi.loadGhostPackage).toBeTypeOf("function");
+    expect(packageApi.resolveGhostPackage).toBeTypeOf("function");
+    expect(packageApi.GHOST_PACKAGE_SCHEMA).toBe("ghost.package/v1");
+
+    expect(fingerprintApi.initFingerprintPackage).toBe(
+      packageApi.initGhostPackage,
+    );
+    expect(fingerprintApi.lintFingerprintPackage).toBe(
+      packageApi.lintGhostPackage,
+    );
+    expect(fingerprintApi.loadFingerprintPackage).toBe(
+      packageApi.loadGhostPackage,
+    );
     // Direct fingerprint.md loading was removed with compare/drift/fleet.
     expect(fingerprintApi.loadFingerprint).toBeUndefined();
     expect(fingerprintApi.writePackageContextBundle).toBeUndefined();

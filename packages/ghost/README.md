@@ -1,12 +1,12 @@
 # @design-intelligence/ghost
 
-**Ghost is your brand, packed for agents.** A `.ghost/` folder of plain-prose
-truths (your stance, your voice, your trust moves) checked into the repo and
+**ghost is your brand, packed for agents.** A `.ghost/` folder of plain-prose
+guidance (your stance, your voice, your trust moves) checked into the repo and
 read by any agent before it makes anything: a screen, an email, an empty
 state, a sentence.
 
 Today those decisions live in reviewers' heads: "that's not our voice," again,
-on every surface. The agent that built the thing never saw them. Ghost writes
+on every surface. The agent that built the thing never saw them. ghost writes
 them down once, where the agent looks first.
 
 [Documentation](https://block.github.io/ghost/) ·
@@ -21,18 +21,18 @@ npx ghost skill install
 
 ## Use It
 
-Ghost is **bring-your-own-agent**. Install the skill bundle so Claude Code,
+ghost is **bring-your-own-agent**. Install the skill bundle so Claude Code,
 Codex, Cursor, Goose, or another host agent knows how to author and use the
-fingerprint, then ask in plain English:
+ghost package, then ask in plain English:
 
 ```text
-Set up the Ghost fingerprint for this repo.
+Set up the ghost package for this repo.
 Write down the decision I keep repeating about checkout.
-Brief this work from the Ghost fingerprint.
-Review this diff against the Ghost checks.
+Brief this work from the ghost package.
+Review this diff against the ghost checks.
 ```
 
-Ghost never calls an LLM itself; your agent does the thinking. No API key,
+ghost never calls an LLM itself; your agent does the thinking. No API key,
 no lock-in.
 
 ## The Loop
@@ -40,11 +40,11 @@ no lock-in.
 ```bash
 ghost init          # scaffold .ghost/ with the skeleton starter
 ghost checks init   # opt in to review assertions
-ghost validate      # make sure the fingerprint is well-formed
-ghost gather <ask>  # before building: list every truth relevant to this task
-ghost pull <ids>    # read the picked truths' full bodies
-ghost review        # during review: match a diff to truths and checks
-ghost export        # package the fingerprint as a portable artifact
+ghost validate      # make sure the package is well-formed
+ghost gather <ask>  # before building: list all available guidance
+ghost pull <ids>    # read the picked nodes' full bodies
+ghost review        # during review: match a diff to guidance and checks
+ghost export        # bundle the guidance as a portable artifact
 ghost pulse         # while tuning: see what agents reached for
 ```
 
@@ -58,23 +58,23 @@ covers the full model. Stuck? See
 
 ```ts
 import {
-  initFingerprintPackage,
-  lintFingerprintPackage,
-  loadFingerprintPackage,
-} from "@design-intelligence/ghost/fingerprint";
+  initghostPackage,
+  lintghostPackage,
+  loadghostPackage,
+} from "@design-intelligence/ghost/package";
 import { buildCatalogMenu } from "@design-intelligence/ghost/core";
 import { buildCli } from "@design-intelligence/ghost/cli";
 ```
 
 Available subpath exports: `@design-intelligence/ghost`,
-`@design-intelligence/ghost/fingerprint`,
-`@design-intelligence/ghost/core`,
-`@design-intelligence/ghost/cli`, and
-`@design-intelligence/ghost/scan`.
+`@design-intelligence/ghost/package`,
+`@design-intelligence/ghost/core`, and
+`@design-intelligence/ghost/cli`. The former package API remains available as
+an explicitly deprecated compatibility alias.
 
 ## Project Status: Beta
 
-Ghost is pre-1.0 and under active development. The CLI, fingerprint schema,
+ghost is pre-1.0 and under active development. The CLI, package schema,
 on-disk `.ghost/` package shape, and public JavaScript exports may change in
 breaking ways before a stable 1.0 release. Breaking changes may ship in minor
 versions; patch versions are reserved for fixes that should not require

@@ -1,11 +1,11 @@
 ---
 name: steering-audit
-description: Audit a Ghost fingerprint for concrete steering coverage.
+description: Audit a ghost package for concrete steering coverage.
 ---
 
 # Recipe: Audit Steering Coverage
 
-A steering audit asks whether a fingerprint can move generation away from the
+A steering audit asks whether a ghost package can move generation away from the
 generic median. It is not a validation pass; `ghost validate` handles package
 shape.
 
@@ -36,7 +36,7 @@ Report first:
 
 | Row | Status | Evidence | Next move |
 | --- | --- | --- | --- |
-| Retrieval | strong / weak | descriptions, ids, cover | sharpen descriptions or move universal truth to the cover |
+| Retrieval | strong / weak | descriptions, ids, cover | sharpen descriptions or move universal guidance to the cover |
 | Concreteness | strong / thin | materials, fenced examples, Skeletons | add concrete locators, exemplars, or opening structures |
 | Anti-goals | present / missing / vague | `anti-goal.*`, review packet | write not-X-instead-Y replacements and material locators |
 | Consistency | clean / conflicting | concrete bodies vs rules | update stale examples; examples average with rules |
@@ -59,7 +59,7 @@ shape-appropriate exemplar, or remove the exemplar.
 
 For a task, gather, pull, and report:
 
-- **Green:** enough Ghost-backed concrete guidance to generate.
+- **Green:** enough ghost-backed concrete guidance to generate.
 - **Yellow:** safe to generate, but some reasoning is provisional. If there is
   no concrete material for this surface, readiness is at most Yellow.
 - **Red:** missing brand-defining, high-risk, irreversible, legal, privacy, or

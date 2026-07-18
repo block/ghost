@@ -1,15 +1,15 @@
 ---
 name: recall
-description: Gather and pull the applicable Ghost brand truths for a task.
+description: Gather and pull the applicable ghost brand guidance for a task.
 ---
 
-# Recipe: Recall Ghost Fingerprint
+# Recipe: Recall ghost Package
 
 1. Run `ghost gather <ask>` for the actual task. The cover is inlined by gather;
-   do not pull it separately. Read the coverage line: all-prose fingerprints are
+   do not pull it separately. Read the coverage line: all-prose packages are
    weak steering.
-2. Select against `description`; Ghost never selects for you. Pull every node
-   whose stated situation applies and whose truth, material, structure, or
+2. Select against `description`; ghost never selects for you. Pull every node
+   whose stated situation applies and whose guidance, material, structure, or
    refusal governs the work. Skip inapplicable nodes. Topic overlap alone is not
    applicability.
 3. Run `ghost pull <id> [<id>…]`. Prefer `pull` over reading files directly: it
@@ -30,7 +30,7 @@ description: Gather and pull the applicable Ghost brand truths for a task.
 4. Skeleton fences dead last: if one matches the surface, start from that
    structure verbatim.
 
-Return the selected truths with node ids, how each applies, and where the
-fingerprint is silent. If no node applies, say so and do not invent Ghost-backed
+Return the selected guidance with node ids, how each applies, and where the
+package is silent. If no node applies, say so and do not invent ghost-backed
 guidance. If silence is safe, proceed provisionally and label it;
 if it is brand-defining or high-risk, ask or author a node first.

@@ -1,5 +1,5 @@
 import type { CAC } from "cac";
-import { resolveFingerprintPackage } from "../fingerprint.js";
+import { resolveGhostPackage } from "../package.js";
 import { addChecksDir } from "../scan/check-scaffold.js";
 import { failFromError } from "./errors.js";
 
@@ -14,7 +14,7 @@ export function registerChecksCommand(cli: CAC): void {
     .command("checks <action>", "Manage review checks: init.")
     .option(
       "--package <dir>",
-      "Use this fingerprint package directory (default: ./.ghost)",
+      "Use this ghost package directory (default: ./.ghost)",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (action: string, opts) => {
@@ -30,7 +30,7 @@ export function registerChecksCommand(cli: CAC): void {
           return;
         }
 
-        const paths = resolveFingerprintPackage(opts.package, process.cwd());
+        const paths = resolveGhostPackage(opts.package, process.cwd());
         const result = await addChecksDir(paths.packageDir);
         if (opts.format === "json") {
           process.stdout.write(

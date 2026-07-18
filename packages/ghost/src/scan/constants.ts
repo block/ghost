@@ -1,8 +1,14 @@
-/** Canonical directory for the Ghost fingerprint package. */
-export const FINGERPRINT_PACKAGE_DIR = ".ghost";
+/** Canonical directory for a ghost package. */
+export const GHOST_PACKAGE_DIR = ".ghost";
 
-/** Portable fingerprint package manifest filename. */
-export const FINGERPRINT_MANIFEST_FILENAME = "manifest.yml";
+/** ghost package manifest filename. */
+export const GHOST_MANIFEST_FILENAME = "manifest.yml";
+
+/** @deprecated Use `GHOST_PACKAGE_DIR`. */
+export const FINGERPRINT_PACKAGE_DIR = GHOST_PACKAGE_DIR;
+
+/** @deprecated Use `GHOST_MANIFEST_FILENAME`. */
+export const FINGERPRINT_MANIFEST_FILENAME = GHOST_MANIFEST_FILENAME;
 
 /** Reserved package-root glossary filename. */
 export const GHOST_GLOSSARY_FILENAME = "glossary.md";

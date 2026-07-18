@@ -237,7 +237,7 @@ describe("ghost CLI", () => {
 
     await expect(
       readFile(join(dir, ".ghost", "manifest.yml"), "utf-8"),
-    ).resolves.toContain("schema: ghost.fingerprint-package/v1");
+    ).resolves.toContain("schema: ghost.package/v1");
     await expect(
       readFile(join(dir, ".ghost", "manifest.yml"), "utf-8"),
     ).resolves.toContain("cover: brand");
@@ -456,6 +456,7 @@ describe("ghost CLI", () => {
       join(dir, ".ghost", "manifest.yml"),
       "utf-8",
     );
+    expect(manifest).toContain("schema: ghost.package/v1");
     expect(manifest).toContain("id: vessel-light");
 
     // Fonts survive the packed payload byte-identically.
@@ -517,7 +518,7 @@ describe("ghost CLI", () => {
     );
     await expect(
       readFile(join(dir, ".agents", "ghost", "manifest.yml"), "utf-8"),
-    ).resolves.toContain("schema: ghost.fingerprint-package/v1");
+    ).resolves.toContain("schema: ghost.package/v1");
     await expect(
       readFile(join(dir, ".ghost", "manifest.yml"), "utf-8"),
     ).rejects.toThrow();
@@ -539,7 +540,7 @@ describe("ghost CLI", () => {
     );
     await expect(
       readFile(join(dir, "custom-dir", "manifest.yml"), "utf-8"),
-    ).resolves.toContain("schema: ghost.fingerprint-package/v1");
+    ).resolves.toContain("schema: ghost.package/v1");
     await expect(
       readFile(join(dir, ".ghost", "manifest.yml"), "utf-8"),
     ).rejects.toThrow();
@@ -588,7 +589,7 @@ describe("ghost CLI", () => {
       allowNoExit: true,
     });
     expect(result.code).toBe(2);
-    expect(result.stderr).toContain("No Ghost fingerprint package found");
+    expect(result.stderr).toContain("No ghost package found");
   });
 
   it("uses GHOST_PACKAGE_DIR as the default package lookup for validate", async () => {
@@ -613,7 +614,7 @@ describe("ghost CLI", () => {
 
     expect(refused.code).toBe(2);
     expect(refused.stderr).toContain(
-      "Refusing to overwrite existing Ghost fingerprint file(s)",
+      "Refusing to overwrite existing ghost package file(s)",
     );
     await expect(
       readFile(join(dir, ".ghost", "index.md"), "utf-8"),
@@ -642,7 +643,7 @@ describe("ghost CLI", () => {
     });
   });
 
-  it("detects Ghost YAML artifacts by schema when the filename is arbitrary", async () => {
+  it("detects ghost YAML artifacts by schema when the filename is arbitrary", async () => {
     await writeFile(
       join(dir, "package-anchor.yml"),
       "schema: ghost.fingerprint-package/v1\nid: local\n",
@@ -668,7 +669,7 @@ describe("ghost CLI", () => {
     expect(init.stdout).not.toContain("memory/intent.md:");
     expect(
       await readFile(join(dir, ".ghost", "manifest.yml"), "utf-8"),
-    ).toContain("schema: ghost.fingerprint-package/v1");
+    ).toContain("schema: ghost.package/v1");
 
     const validate = await runCli(["validate", "--format", "json"], dir);
     expect(validate.code).toBe(0);
@@ -912,7 +913,7 @@ describe("ghost CLI", () => {
     // line says so, and validate warns on it.
     await writeFile(
       join(dir, ".ghost", "principle.mute.md"),
-      "---\n{}\n---\n\nUndescribed truth.\n",
+      "---\n{}\n---\n\nUndescribed guidance.\n",
     );
     const gatherMute = await runCli(["gather"], dir);
     expect(gatherMute.stdout).toContain(
@@ -1140,7 +1141,7 @@ describe("ghost CLI", () => {
     const menuPayload = JSON.parse(gather.stdout);
     expect(menuPayload.ask).toBe("checkout confirmation");
     expect(menuPayload.source).toEqual({
-      artifact: "Ghost brand fingerprint",
+      artifact: "ghost package",
       list: "Available guidance",
     });
     expect(menuPayload.contract).toMatchObject({
@@ -1164,7 +1165,7 @@ describe("ghost CLI", () => {
     ).toBe(true);
 
     const gatherMarkdown = await runCli(["gather", "checkout", "hero"], dir);
-    expect(gatherMarkdown.stdout).toContain("# Ghost brand fingerprint");
+    expect(gatherMarkdown.stdout).toContain("# ghost package");
     expect(gatherMarkdown.stdout).toContain("Ask: checkout hero");
     expect(gatherMarkdown.stdout).toContain("## Available guidance");
 
@@ -1504,7 +1505,7 @@ describe("ghost CLI", () => {
     expect(report.coldNodes).not.toContain("index");
 
     const md = await runCli(["pulse"], dir);
-    expect(md.stdout).toContain("# Ghost Pulse");
+    expect(md.stdout).toContain("# ghost Pulse");
     expect(md.stdout).toContain("## Kind hit rates");
     expect(md.stdout).toContain("- Abandoned gathers: 1");
   });
@@ -1607,7 +1608,7 @@ describe("ghost CLI", () => {
         }),
       ]),
     );
-    expect(json.brief).toContain("# Ghost Relay Brief");
+    expect(json.brief).toContain("# ghost Relay Brief");
     expect(json.brief).toContain("## Context Hits");
   });
 
@@ -1634,7 +1635,7 @@ describe("ghost CLI", () => {
     }
     await expect(
       readFile(join(dir, "skills", "ghost", "SKILL.md"), "utf-8"),
-    ).resolves.toContain("When the fingerprint is silent");
+    ).resolves.toContain("When the package is silent");
     await expect(
       readFile(join(dir, "skills", "ghost", "SKILL.md"), "utf-8"),
     ).resolves.toContain(
@@ -1969,7 +1970,7 @@ describe("ghost CLI", () => {
     expect(payload).toMatchObject({
       kind: "export",
       id: "local",
-      archive: expect.stringContaining("local-fingerprint.tgz"),
+      archive: expect.stringContaining("local-ghost-package.tgz"),
     });
     expect(payload.audit.travels).toEqual([
       {

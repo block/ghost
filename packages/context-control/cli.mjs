@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// context-control: view a fingerprint as the selection surface it is, and
+// context-control: view a ghost package as the selection surface it is, and
 // bench single-shot selection against it. No generation, ever.
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
@@ -20,10 +20,10 @@ const args = process.argv.slice(2);
 if (args.includes("--help") || args.includes("-h")) {
   console.log(`usage: context-control [options]
 
-Serves the context-control UI for a .ghost fingerprint package.
+Serves the context-control UI for a .ghost package.
 
 Options:
-  --package <dir>   fingerprint package directory (default: ./.ghost)
+  --package <dir>   ghost package directory (default: ./.ghost)
   --asks <file>     asks.md shared with steering-control
   --port <n>        port (default: 4114)
   --ghost <bin>     ghost binary (default: repo dist build, else PATH)`);
@@ -42,7 +42,7 @@ for (let i = 0; i < args.length; i += 2) {
 
 const packageDir = resolve(process.cwd(), opts.package);
 if (!existsSync(packageDir)) {
-  console.error(`no fingerprint package at ${packageDir}`);
+  console.error(`no ghost package at ${packageDir}`);
   process.exit(2);
 }
 

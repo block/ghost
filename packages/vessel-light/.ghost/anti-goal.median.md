@@ -1,5 +1,5 @@
 ---
-description: "The model's median defaults this fingerprint refuses — gather for any greenfield visual surface or first-draft copy. Each rule is reject→replace; delete lines your brand legitimately violates."
+description: "The model's median defaults this ghost package refuses — gather for any greenfield visual surface or first-draft copy. Each rule is reject→replace; delete lines your brand legitimately violates."
 ---
 
 This is the model's median, not your brand. Each rule is reject→replace.
@@ -17,16 +17,16 @@ verified at review, never steered in prose.
 
 ### Hover-lift
 Reject hover-lift (`translateY` + growing shadow) as the default interaction
-→ confirm with color and background change at the fingerprint's fast
+→ confirm with color and background change at the package's fast
 duration. (measured: 341)
 
 ### Indigo accent
 Reject the indigo/blue/purple default accent (`#4f46e5`, `#2563eb`,
-`#8b5cf6` family; purple/violet hue 260–310) → the fingerprint's declared
+`#8b5cf6` family; purple/violet hue 260–310) → the package's declared
 palette; absent one, monochrome plus a single functional accent.
 
 ### Dark theme
-Reject unprompted dark theme → the fingerprint's declared surface.
+Reject unprompted dark theme → the package's declared surface.
 Dark-to-look-cool and light-to-be-safe are the same retreat from a decision.
 (measured: 271)
 
@@ -47,7 +47,7 @@ the ground.
 
 ### Glassmorphism
 Reject glassmorphism (decorative backdrop blur) → flat surfaces with real
-borders and the fingerprint's elevation tiers.
+borders and the package's elevation tiers.
 
 ### Chat bubbles
 Reject chat bubbles with initials-circle avatars for assistant turns →
@@ -73,7 +73,7 @@ prominent metric showing real user data is fine.
 
 ### Every button primary
 Reject every button a primary button → one primary per view; the rest step
-down the fingerprint's emphasis ladder.
+down the package's emphasis ladder.
 
 ### Eyebrow kicker
 Reject an eyebrow kicker on every section → at most one, where the register

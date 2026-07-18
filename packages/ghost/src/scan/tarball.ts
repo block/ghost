@@ -28,9 +28,9 @@ interface FileEntry {
 const BLOCK_SIZE = 512;
 
 /**
- * Write a dependency-free `.tgz` archive for a Ghost package directory.
+ * Write a dependency-free `.tgz` archive for a ghost package directory.
  *
- * This intentionally implements only the portable subset Ghost needs: ustar
+ * This intentionally implements only the portable subset ghost needs: ustar
  * regular-file entries, deterministic path ordering, no symlink traversal.
  */
 export async function writeDirectoryTarball(
@@ -206,5 +206,5 @@ function normalizeTarPath(path: string): string {
 }
 
 export function defaultArchiveName(id: string): string {
-  return `${id}-fingerprint.tgz`;
+  return `${id}-ghost-package.tgz`;
 }

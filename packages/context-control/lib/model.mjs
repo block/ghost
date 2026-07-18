@@ -86,14 +86,14 @@ export function fakeModel() {
 // (packages/ghost/src/skill-bundle/references/). The bench measures actual
 // agent behavior, so the protocol those recipes install is always on —
 // there is no skill-less arm. If the recipes change, change this with them.
-const SELECT_SYSTEM = `You are an agent selecting brand-fingerprint nodes for a task,
+const SELECT_SYSTEM = `You are an agent selecting brand guidance nodes for a task,
 following the ghost skill's recall recipe.
 
 You will get an ask, the cover already in context, and the ghost gather menu.
 Select only menu node ids against their descriptions. Do not select the cover.
 
 - Pull every node whose description indicates its stated situation applies and
-  whose truth, material, structure, or refusal governs the work.
+  whose guidance, material, structure, or refusal governs the work.
 - Skip inapplicable nodes. Topic overlap alone is not applicability.
 - Do not add nodes for completeness or omit applicable nodes to meet a count.
 - Anti-goal nodes are review-critical negative space; pull each one whose

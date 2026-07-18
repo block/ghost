@@ -7,10 +7,7 @@ import {
   resolveLocalMaterialLocator,
   type TransportedMaterialTier,
 } from "#ghost-core";
-import {
-  lintFingerprintPackage,
-  resolveFingerprintPackage,
-} from "../fingerprint.js";
+import { lintGhostPackage, resolveGhostPackage } from "../package.js";
 import { readPackageVersion } from "../package-version.js";
 import { GHOST_CHECKS_DIR } from "../scan/check-files.js";
 import {
@@ -18,8 +15,8 @@ import {
   GHOST_MATERIALS_DIR,
 } from "../scan/constants.js";
 import {
-  type LoadedFingerprintPackage,
-  loadFingerprintPackage,
+  type LoadedGhostPackage,
+  loadGhostPackage,
 } from "../scan/fingerprint-package.js";
 import { resolveGitRoot } from "../scan/package-paths.js";
 import { defaultArchiveName, writeDirectoryTarball } from "../scan/tarball.js";
@@ -47,7 +44,7 @@ export function registerExportCommand(cli: CAC): void {
   cli
     .command(
       "export",
-      "Package the fingerprint as a portable brand artifact with a locator audit.",
+      "Package the ghost package as a portable brand artifact with a locator audit.",
     )
     .option("--out <path>", "Write the archive to this path")
     .option("--no-checks", "Exclude the checks/ directory from the archive")
@@ -57,7 +54,7 @@ export function registerExportCommand(cli: CAC): void {
     )
     .option(
       "--package <dir>",
-      "Use this fingerprint package directory (default: ./.ghost)",
+      "Use this ghost package directory (default: ./.ghost)",
     )
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
@@ -70,19 +67,16 @@ export function registerExportCommand(cli: CAC): void {
           return;
         }
 
-        const paths = resolveFingerprintPackage(opts.package, process.cwd());
-        const report = await lintFingerprintPackage(
-          opts.package,
-          process.cwd(),
-        );
+        const paths = resolveGhostPackage(opts.package, process.cwd());
+        const report = await lintGhostPackage(opts.package, process.cwd());
         if (report.errors > 0) {
           console.error(
-            "Error: fingerprint package has validation errors. Run `ghost validate` and fix them before exporting.",
+            "Error: ghost package has validation errors. Run `ghost validate` and fix them before exporting.",
           );
           process.exit(2);
           return;
         }
-        const loaded = await loadFingerprintPackage(paths);
+        const loaded = await loadGhostPackage(paths);
 
         const archive =
           typeof opts.out === "string"
@@ -148,7 +142,7 @@ export function registerExportCommand(cli: CAC): void {
 }
 
 function buildExportAudit(
-  loaded: LoadedFingerprintPackage,
+  loaded: LoadedGhostPackage,
   options: { repoRoot: string; packageDir: string },
 ): ExportAudit {
   const travels: ExportAuditTravelingLocator[] = [];
@@ -207,10 +201,10 @@ function formatExportMarkdown(fields: {
   audit: ExportAudit;
 }): string {
   const lines = [
-    "# Ghost Export",
+    "# ghost Export",
     "",
     `Archive: \`${fields.archive}\``,
-    `Fingerprint: \`${fields.id}\``,
+    `Package: \`${fields.id}\``,
     "",
     "## Locator audit",
     "",

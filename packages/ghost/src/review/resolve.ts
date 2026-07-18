@@ -110,7 +110,7 @@ export function resolveReview(
     gaps.push({
       kind: "unmatched-file",
       detail:
-        "changed files match no node `materials` locators — no fingerprint material claims them",
+        "changed files match no node `materials` locators — no ghost package guidance claims them",
       files: unmatched,
     });
   }

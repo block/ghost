@@ -13,7 +13,7 @@ interface InstallManifest {
 }
 
 describe("install manifest", () => {
-  it("lists exactly the files in the Ghost skill bundle", async () => {
+  it("lists exactly the files in the ghost skill bundle", async () => {
     const manifestPath = resolve(REPO_ROOT, "install", "manifest.json");
     const manifest = JSON.parse(
       await readFile(manifestPath, "utf-8"),

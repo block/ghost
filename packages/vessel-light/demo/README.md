@@ -8,15 +8,15 @@ context-dumping — especially under production context pressure.
 | Arm | Context | Claim it tests |
 | --- | --- | --- |
 | **A — naked** | ballast + ask | baseline: median model output, no brand |
-| **B — dump** | fingerprint dump (front) + ballast + ask | the naive integration: "paste the brand guide in the system prompt" |
-| **C — gather** | ballast + gather menu + selected pulls (near the ask) + ask | Ghost's actual loop |
+| **B — dump** | package dump (front) + ballast + ask | the naive integration: "paste the brand guide in the system prompt" |
+| **C — gather** | ballast + gather menu + selected pulls (near the ask) + ask | ghost's actual loop |
 
 Optional: **B-clean** (dump, no ballast) vs **B-loaded** isolates attention
-dilution — same fingerprint, degrading as the window fills.
+dilution — same guidance, degrading as the window fills.
 
 ## Why the corpus is built for this
 
-The fingerprint spans registers that are individually true and mutually
+The package spans registers that are individually true and mutually
 contradictory outside their conditions:
 
 - product ↔ editorial (quiet type vs. 96px display heroes)
