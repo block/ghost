@@ -345,8 +345,7 @@ ghost validate
 `ghost init` seeds the skeleton starter: the manifest, a starter
 `glossary.md`, a `brand.md` cover, foundation chapters with open questions, and
 the model cliche floor. Replace open questions with real product guidance before
-using it to steer generation. Use `ghost init --template minimal` for a
-manifest, glossary, cover, and cliche floor.
+using it to steer generation.
 
 Write the manifest-declared cover as the human-curated front door:
 non-negotiables that apply to every task, what the package covers, and any
