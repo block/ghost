@@ -1,14 +1,15 @@
 # steering-control
 
 A before/after evaluation harness for ghost packages. It measures what
-handing an agent a `.ghost` package buys — output quality, run-to-run
-consistency, retrieval precision — as a ratio of the context tokens spent.
+handing an agent the complete shipped ghost consumer loop buys: output
+quality, run-to-run consistency, retrieval precision, and agent-attested
+process coverage as a ratio of the context tokens spent.
 
 It produces one artifact: a self-contained `report.html` with screenshot
-grids, variance bands, gather metrics, and a headline quality-vs-context
-chart. Every number is deterministic — grep-able tells, selection-tape
-diffs, CSS extraction. No LLM judges. Judgment stays with the human reading
-the report.
+grids, variance bands, gather metrics, loop receipts, and a headline
+quality-vs-context chart. Tell counts, pull tape, screenshots, and CSS
+extraction are deterministic. Loop receipts are agent-attested bookkeeping.
+Judgment stays with the human reading the report.
 
 ## The arms
 
@@ -16,10 +17,12 @@ the report.
 | --- | --- | --- |
 | `naked` | ballast + ask | baseline: median model output, no brand |
 | `dump` | full package prose up front + ballast + ask | the naive "paste the brand guide in the system prompt" |
-| `gather` | ballast + `ghost gather` menu + agent-selected `ghost pull`s near the ask | ghost's actual loop |
+| `gather` | ballast + run-stamped `ghost gather` menu + agent-selected `ghost pull`s, material inspection, brief, render, bounded repair, and optional review | ghost's default shipped consumer system |
 | `dump-growth` | dump of this package **plus** extra corpora + ballast + ask | how dumping degrades as the corpus grows, while the gather menu grows one line per node |
 
-Fresh context per run. The `naked` arm must never see the ghost package.
+Fresh context per run. The `naked` arm must never see the ghost package. The
+`naked` and `dump` arms remain one-shot generation baselines; `gather` is the
+full ghost making loop by default, not a context-only arm.
 
 ## Setup
 
@@ -87,13 +90,22 @@ Per cell (arm × ask), for k = 1..runsPerCell:
 ```bash
 steering-control prompt <arm> <ask-n> --run <k>   # writes out/<arm>/ask-<n>/run-<k>.prompt.md
 # → hand the prompt file to a FRESH agent context; it writes run-<k>.html
-#   (gather arm: the agent runs `ghost pull` itself mid-task — that IS the test)
-steering-control finish <arm> <ask-n> <k>         # slices the selection tape, records context sizes
+#   gather arm: the agent runs stamped `ghost pull`, inspects, briefs, renders,
+#   repairs, optionally reviews, and writes run-<k>.loop.json
+steering-control finish <arm> <ask-n> <k>         # slices the selection tape, records context sizes and receipt
 ```
 
-Gather-arm runs are strictly serialized — the harness hard-fails if a run
-is already open, because the selection tape is append-only and concurrent
-runs corrupt attribution.
+For gather, the harness stamps `ghost gather` and instructed `ghost pull` with
+`--run gather-ask<n>-run<k>`, then slices the local `.ghost/.events` tape from
+the lock offset. Gather-arm runs are strictly serialized — the harness
+hard-fails if a run is already open, because the selection tape is append-only
+and concurrent runs corrupt attribution.
+
+The gather receipt path is `out/gather/ask-<n>/run-<k>.loop.json`. It has five
+fields: `pulledIds`, `inspectedMaterials`, `rendered`, `repairPasses`, and
+`reviewRan`. Be honest. `rendered: false` is better than implying visual
+verification from source alone, and unavailable materials or skipped review
+should remain visible in the receipt or final notes.
 
 Then, zero LLM calls:
 
@@ -113,19 +125,26 @@ steering-control report    # out/report.html — self-contained, rebuildable fro
   that steering collapses the spread, not just the mean.
 - **Style consistency** — do the k runs agree on accent hue, radius, font
   stack? Fraction agreeing on the modal value, per dimension.
-- **Gather metrics** (gather arm only, from the selection tape) — poison
-  pulls (the legible number), precision/recall (secondary), selection
-  stability across runs (mean pairwise Jaccard), pulled words per run.
+- **Gather metrics** (gather arm only) — poison pulls, precision/recall,
+  selection stability, and pulled words from the deterministic selection tape;
+  receipt coverage, mean repair passes, rendered count, and review count from
+  agent-attested `run-k.loop.json` receipts.
 - **Reproduction footer** — the exact commands to rebuild the report from
-  `out/`, and the note that no LLM judged anything.
+  `out/`, and the note that deterministic measurements and agent-attested
+  receipts are different evidence types.
 
 ## Honest-claims checklist
 
+- Comparisons against `naked` and `dump` are complete-system-vs-baseline
+  comparisons. Do not claim a context-only causal isolation from the gather
+  point.
+- Do not mix gather outputs from before and after the making-loop default in
+  the same distribution; label pre-loop results separately if you keep them.
 - Report distributions, never single wins.
 - The token axis is an estimate; the method note says so.
 - If your ballast is small, claim "mid-conversation pressure," not "heavy
   context." Dilution claims need real window pressure (~80K+ tokens).
 - Custom tells must be measured, not aesthetic opinions. The built-in set
   comes from 300 unsteered generations across three models.
-- Commit `out/` (prompts, meta, metrics, report) so skeptics can rerun any
-  arm and audit any number.
+- Commit `out/` (prompts, loop receipts, meta, metrics, report) so skeptics
+  can rerun any arm and audit any number.

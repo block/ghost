@@ -53,7 +53,13 @@
       "consistency": { "accentHue": 1.0, "radius": 0.8, "fontStack": 1.0 },
       "context": {
         "tokensEstimate": 87350,
-        "segments": { "ballast": 80000, "brand": 0, "menu": 700, "ask": 150 }
+        "segments": {
+          "ballast": 80000,
+          "brand": 0,
+          "menu": 700,
+          "instructions": 450,
+          "ask": 150
+        }
       },
       "retrieval": {
         "precision": 0.86,
@@ -62,6 +68,13 @@
         "poisonRuns": 0,
         "stability": 0.88,
         "pulledWordsMean": 4900
+      },
+      "loop": {
+        "receipts": 5,
+        "runs": 5,
+        "meanRepairPasses": 1.4,
+        "renderedCount": 5,
+        "reviewRanCount": 3
       }
     },
     {
@@ -133,7 +146,13 @@
       "consistency": { "accentHue": 1.0, "radius": 1.0, "fontStack": 1.0 },
       "context": {
         "tokensEstimate": 88080,
-        "segments": { "ballast": 80000, "brand": 0, "menu": 700, "ask": 180 }
+        "segments": {
+          "ballast": 80000,
+          "brand": 0,
+          "menu": 700,
+          "instructions": 500,
+          "ask": 180
+        }
       },
       "retrieval": {
         "precision": 0.82,
@@ -142,6 +161,13 @@
         "poisonRuns": 0,
         "stability": 0.84,
         "pulledWordsMean": 5400
+      },
+      "loop": {
+        "receipts": 4,
+        "runs": 5,
+        "meanRepairPasses": 1.75,
+        "renderedCount": 4,
+        "reviewRanCount": 2
       }
     },
     {
@@ -195,7 +221,13 @@
       "consistency": { "accentHue": 0.8, "radius": 0.8, "fontStack": 1.0 },
       "context": {
         "tokensEstimate": 87720,
-        "segments": { "ballast": 80000, "brand": 0, "menu": 700, "ask": 120 }
+        "segments": {
+          "ballast": 80000,
+          "brand": 0,
+          "menu": 700,
+          "instructions": 500,
+          "ask": 120
+        }
       },
       "retrieval": {
         "precision": 0.74,
@@ -204,6 +236,13 @@
         "poisonRuns": 1,
         "stability": 0.79,
         "pulledWordsMean": 4700
+      },
+      "loop": {
+        "receipts": 5,
+        "runs": 5,
+        "meanRepairPasses": 2.0,
+        "renderedCount": 4,
+        "reviewRanCount": 5
       }
     }
   ]

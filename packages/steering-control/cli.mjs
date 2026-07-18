@@ -84,6 +84,10 @@ function finish(argv) {
       ? inventoryFromPrompt(readFileSync(promptPath, "utf8"))
       : {};
   const meta = { arm, askN: Number(askN), runK: Number(runK), inventory, tape };
+  if (arm === "gather") {
+    const loop = readLoopReceipt(dir, runK);
+    if (loop) meta.loop = loop;
+  }
   writeFileSync(
     join(dir, `run-${runK}.meta.json`),
     JSON.stringify(meta, null, 2),
@@ -108,6 +112,42 @@ async function report() {
   }
 }
 
+function readLoopReceipt(dir, runK) {
+  const receiptPath = join(dir, `run-${runK}.loop.json`);
+  if (!existsSync(receiptPath)) {
+    console.warn(`warning: expected loop receipt not found: ${receiptPath}`);
+    return null;
+  }
+  let receipt;
+  try {
+    receipt = JSON.parse(readFileSync(receiptPath, "utf8"));
+  } catch (error) {
+    console.warn(
+      `warning: invalid loop receipt JSON at ${receiptPath}: ${error.message}`,
+    );
+    return null;
+  }
+  if (!validLoopReceipt(receipt)) {
+    console.warn(`warning: invalid loop receipt shape at ${receiptPath}`);
+    return null;
+  }
+  return receipt;
+}
+function validLoopReceipt(receipt) {
+  return (
+    receipt &&
+    typeof receipt === "object" &&
+    !Array.isArray(receipt) &&
+    Array.isArray(receipt.pulledIds) &&
+    receipt.pulledIds.every((item) => typeof item === "string") &&
+    Array.isArray(receipt.inspectedMaterials) &&
+    receipt.inspectedMaterials.every((item) => typeof item === "string") &&
+    typeof receipt.rendered === "boolean" &&
+    Number.isFinite(receipt.repairPasses) &&
+    receipt.repairPasses >= 0 &&
+    typeof receipt.reviewRan === "boolean"
+  );
+}
 function readRun(argv) {
   const index = argv.indexOf("--run");
   return index >= 0 ? argv[index + 1] : null;
