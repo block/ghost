@@ -1,12 +1,10 @@
 # @design-intelligence/ghost
 
-## 1.0.0
-
-### Major Changes
-
-- [#240](https://github.com/block/ghost/pull/240) [`feddc63`](https://github.com/block/ghost/commit/feddc63a04777d28f4324646d52708f346d7c7b0) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Make `skeleton` the only `ghost init` template, removing `minimal`, `composition`, and the legacy `default` and `steering` aliases.
+## 0.25.0
 
 ### Minor Changes
+
+- [#240](https://github.com/block/ghost/pull/240) [`feddc63`](https://github.com/block/ghost/commit/feddc63a04777d28f4324646d52708f346d7c7b0) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Make `skeleton` the only `ghost init` template, removing `minimal`, `composition`, and the legacy `default` and `steering` aliases.
 
 - [#242](https://github.com/block/ghost/pull/242) [`2579381`](https://github.com/block/ghost/commit/2579381cb8440e773a9ccbefd8f8c8e3780d6d93) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Add the model-free `@design-intelligence/ghost/embed` public contract for embedded hosts and share gather/pull semantics with the CLI.
 
