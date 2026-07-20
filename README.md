@@ -171,7 +171,7 @@ The export audits `materials` entries and reports paths that moved.
 | Path | Role | Published? |
 | ---- | ---- | --- |
 | [`packages/ghost`](./packages/ghost) | The public `ghost` CLI, node authoring, package validation, gather/pull, review packet assembly, and the skill bundle. | yes: `@design-intelligence/ghost` |
-| [`packages/vessel-react`](./packages/vessel-react) | A standalone shadcn component registry plus `vessel-mcp` MCP server. | no |
+| [`packages/vessel-react`](./packages/vessel-react) | A standalone shadcn component registry and reference component system. | no |
 | [`packages/vessel-light`](./packages/vessel-light) | Vessel's design language as a portable `.ghost/` package for agents writing raw HTML/CSS. | no |
 | [`packages/steering-control`](./packages/steering-control) | Before/after evaluation harness: measures what a `.ghost` package buys as a self-contained `report.html`. | no |
 | [`apps/docs`](./apps/docs) | Public thesis site. | no |

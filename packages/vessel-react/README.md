@@ -95,17 +95,6 @@ pnpm --filter @design-intelligence/vessel-react build:lib
 
 See [`apps/docs`](../../apps/docs) for the live component catalogue.
 
-## MCP server
-
-`vessel` also ships a `vessel-mcp` bin — a Model Context Protocol server that re-exposes the component registry to AI assistants (Claude Code, Cursor, etc.) so they can discover and install components without a human in the loop. 5 tools, 2 resources. Source lives in `src/mcp/`, built separately via `tsconfig.mcp.json` → `dist-mcp/`.
-
-```bash
-pnpm --filter @design-intelligence/vessel-react build:mcp
-node packages/vessel-react/dist-mcp/bin.js   # stdio server
-```
-
-Wire it into your MCP host by pointing at the `vessel-mcp` bin.
-
 ## License
 
 Apache-2.0
