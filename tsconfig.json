@@ -12,8 +12,5 @@
     "forceConsistentCasingInFileNames": true
   },
   "files": [],
-  "references": [
-    { "path": "packages/ghost" },
-    { "path": "packages/vessel-react/tsconfig.mcp.json" }
-  ]
+  "references": [{ "path": "packages/ghost" }]
 }
