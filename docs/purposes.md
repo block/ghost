@@ -3,8 +3,7 @@
 > **Audience: ghost maintainers and contributors.** This is the internal model
 > doc. It defends the boundary between the `.ghost/` package and the consumers
 > that read it. It is not an onboarding guide and it assumes the full vocabulary
-> (projection, leak, corpus, glossary). If you are adopting ghost, start with
-> [Getting Started](../apps/docs/src/content/docs/getting-started.mdx) instead.
+> (projection, leak, corpus, glossary).
 
 ghost has one artifact, the `.ghost/` package, and several consumers
 that read it. This page exists to keep them honest.

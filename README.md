@@ -18,7 +18,12 @@ Write the decision in `.ghost/` so the next agent has it before starting work.
 
 Claude Code, Codex, Cursor, and Goose can all use the same guidance.
 
-[Documentation](https://block.github.io/ghost/) · [npm](https://www.npmjs.com/package/@design-intelligence/ghost)
+[Project site](https://block.github.io/ghost/) · [npm](https://www.npmjs.com/package/@design-intelligence/ghost)
+
+> [!WARNING]
+> ghost is a public development preview. It is not ready for adoption, and we
+> are not seeking external testers yet. The CLI, package format, and APIs may
+> change without migration support.
 
 ## Install
 
@@ -69,8 +74,7 @@ whole package.
 it and tune node descriptions.
 
 Run `ghost --help` for the core workflow and `ghost <command> --help` for
-flags; the [CLI reference](https://block.github.io/ghost/docs/cli) covers
-every command.
+current flags and command behavior.
 
 ## Thesis
 
@@ -162,13 +166,6 @@ ghost export
 
 The export audits `materials` entries and reports paths that moved.
 
-## Project Status: Beta
-
-> [!WARNING]
-> ghost is pre-1.0 and under active development. The CLI, package schema,
-> on-disk `.ghost/` package shape, and public JavaScript exports may change in
-> breaking ways before a stable 1.0 release.
-
 ## Repo Layout
 
 | Path | Role | Published? |
@@ -177,7 +174,7 @@ The export audits `materials` entries and reports paths that moved.
 | [`packages/vessel-react`](./packages/vessel-react) | A standalone shadcn component registry plus `vessel-mcp` MCP server. | no |
 | [`packages/vessel-light`](./packages/vessel-light) | Vessel's design language as a portable `.ghost/` package for agents writing raw HTML/CSS. | no |
 | [`packages/steering-control`](./packages/steering-control) | Before/after evaluation harness: measures what a `.ghost` package buys as a self-contained `report.html`. | no |
-| [`apps/docs`](./apps/docs) | Docs site. | no |
+| [`apps/docs`](./apps/docs) | Public thesis site. | no |
 
 ## Development
 
@@ -186,7 +183,6 @@ pnpm install
 pnpm build
 pnpm test
 pnpm check
-pnpm dump:cli-help
 ```
 
 Every `ghost` command is also available as `ghost-fingerprint` when another

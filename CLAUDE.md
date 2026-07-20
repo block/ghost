@@ -19,8 +19,7 @@ selection and interpretive BYOA work through the installed `ghost` skill.
 pnpm install          # install dependencies (pnpm 10+, Node 20.19+ or 22.12+)
 pnpm build            # build all packages
 pnpm test             # vitest across packages
-pnpm check            # biome, typecheck, file-size, CLI manifest drift
-pnpm dump:cli-help    # regenerate apps/docs/src/generated/cli-manifest.json
+pnpm check            # biome, typecheck, file-size, package checks
 ```
 
 Run the public CLI after building:
@@ -92,7 +91,7 @@ edits and checks.
 | `packages/vessel-react` | no | A standalone shadcn component registry plus `vessel-mcp` MCP server: the opinionated default reference body. Design-system-agnostic; nothing in ghost requires it. |
 | `packages/vessel-light` | no | Vessel's design language as a portable `.ghost/` package for agents writing raw HTML/CSS. No build, no dependencies. |
 | `packages/steering-control` | no | Before/after evaluation harness: measures what handing an agent a `.ghost` package buys, as a deterministic `report.html`. |
-| `apps/docs` | no | Docs site. |
+| `apps/docs` | no | Public thesis site. |
 
 ## CLI Commands
 
@@ -170,6 +169,3 @@ Use `patch` for fixes and docs, `minor` for new commands/flags/exports, and
   declaration or a directory hierarchy.
 - Skill recipes live in `packages/ghost/src/skill-bundle/references/`; install
   them with `ghost skill install`.
-- The CLI manifest at `apps/docs/src/generated/cli-manifest.json` is generated
-  by `pnpm dump:cli-help`. Re-run it after adding, removing, or renaming CLI
-  commands or flags.

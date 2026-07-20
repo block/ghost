@@ -91,11 +91,7 @@ const FORBIDDEN_PHRASES = [
  * Say "materials", "paths or URLs", "private local log", "before you build /
  * when you review" instead.
  */
-const ENTRANCE_DOCS = new Set([
-  "README.md",
-  "packages/ghost/README.md",
-  "apps/docs/src/content/docs/getting-started.mdx",
-]);
+const ENTRANCE_DOCS = new Set(["README.md", "packages/ghost/README.md"]);
 
 const ENTRANCE_FORBIDDEN_PHRASES = [
   "JSONL",

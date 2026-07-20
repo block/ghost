@@ -1,9 +1,9 @@
 # Contributing to ghost
 
-Contributions are welcome: fixes, docs, dogfooding reports, and friction you
-hit as a user are all valuable. ghost is pre-1.0 and moving fast, so this doc
-is organized around what gets a PR declined, because that's the information
-you need. Everything below is enforced by review, by CI, or both.
+ghost is a public development preview, not an open testing or support program.
+The maintainers may review focused fixes, but cannot promise responses to usage
+questions, feature requests, or unsolicited contributions. The constraints
+below explain which changes can fit the project when review capacity exists.
 
 ## Invariants
 
@@ -45,10 +45,8 @@ the list.
 
 - pnpm 10+, Node 20.19+ or 22.12+.
 - `pnpm install` → `pnpm check` → `pnpm test` → `pnpm build`. CI gates:
-  biome lint/format, typecheck, file-size, terminology, CLI-manifest drift,
-  docs frontmatter, packed-tarball checks.
-- Added, removed, or renamed a CLI command or flag? Run `pnpm dump:cli-help`
-  and commit the regenerated manifest, or the drift check declines for you.
+  biome lint/format, typecheck, file-size, terminology, and packed-tarball
+  checks.
 - **Changesets:** `@design-intelligence/ghost` is the only public
   package. Write the changeset file yourself: `patch` for fixes and docs,
   `minor` for new commands/flags/exports, `major` for removed or renamed
