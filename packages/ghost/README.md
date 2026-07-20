@@ -8,7 +8,7 @@ email, empty state, or sentence.
 Reviewers repeat the same feedback on every surface: "that's not our voice."
 Write the decision in `.ghost/` so the next agent has it before starting work.
 
-[Documentation](https://block.github.io/ghost/) ·
+[Project site](https://block.github.io/ghost/) ·
 [Repo](https://github.com/block/ghost)
 
 ## Install
@@ -55,10 +55,7 @@ pulls every node whose stated situation applies. Bare `ghost gather` inspects
 the catalog without grounding a task.
 
 Run `ghost --help` for the core workflow and `ghost <command> --help` for
-flags. The [CLI reference](https://block.github.io/ghost/docs/cli) covers
-every command; [Getting Started](https://block.github.io/ghost/docs/getting-started)
-covers the full model. Stuck? See
-[Troubleshooting](https://block.github.io/ghost/docs/troubleshooting).
+current flags and command behavior.
 
 ## Library
 
@@ -99,14 +96,13 @@ Available subpath exports: `@design-intelligence/ghost`,
 `@design-intelligence/ghost/cli`. The former package API remains available as
 an explicitly deprecated compatibility alias.
 
-## Project Status: Beta
+## Project Status: Development Preview
 
-ghost is pre-1.0 and under active development. The CLI, package schema,
-on-disk `.ghost/` package shape, and public JavaScript exports may change in
-breaking ways before a stable 1.0 release. Breaking changes may ship in minor
-versions; patch versions are reserved for fixes that should not require
-migration. Pin the version you depend on and review release notes before
-upgrading.
+ghost is being built in public, but it is not ready for adoption and the
+project is not seeking external testers yet. The CLI, package schema, on-disk
+`.ghost/` package shape, and public JavaScript exports may change without
+migration support. Breaking changes may ship in minor versions; patch versions
+are reserved for fixes that should not require migration.
 
 Every `ghost` command is also available as `ghost-fingerprint` for when
 another tool owns the `ghost` bin.

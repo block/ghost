@@ -2,9 +2,8 @@
 
 Durable, current, maintainer-audience architecture only — the internal model
 docs that defend a boundary or explain a rule a contributor needs before
-touching the package schema or CLI. Not onboarding (that's
-[apps/docs](../apps/docs)' Getting Started guide), not
-design exploration, not migration plans, not evidence appendices.
+touching the package schema or CLI. Not design exploration, migration plans, or
+evidence appendices.
 
 Before adding a doc here, ask:
 

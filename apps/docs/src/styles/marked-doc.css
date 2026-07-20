@@ -7,8 +7,17 @@
   --doc-line: #d9d7cf;
   --doc-mark: #f4e97b;
   --doc-mark-soft: #faf5c8;
-  --doc-flag: #ffddd4;
   --doc-on-mark: #16150f;
+
+  --doc-page-top: 4rem;
+  --doc-section-label-column: 9rem;
+  --doc-section-gap: 2rem;
+  --doc-section-content-column: 27rem;
+  --doc-section-width: calc(
+    var(--doc-section-label-column) +
+    var(--doc-section-gap) +
+    var(--doc-section-content-column)
+  );
 
   --background: var(--doc-bg);
   --foreground: var(--doc-text);
@@ -57,7 +66,6 @@
   --doc-line: #3a3932;
   --doc-mark: #d8cc4f;
   --doc-mark-soft: #3a3722;
-  --doc-flag: #4b2a23;
   --doc-on-mark: #16150f;
 
   --background: var(--doc-bg);
@@ -115,63 +123,14 @@ body {
   box-shadow: none !important;
 }
 
-.doc-link {
-  color: inherit;
-  text-decoration: underline;
-  text-decoration-skip-ink: none;
-  text-underline-offset: 0.24ch;
-}
-
-.doc-link:hover,
-.doc-link:focus-visible {
-  color: var(--doc-on-mark);
-  background: var(--doc-mark);
-  text-decoration: none;
-}
-
-.doc-index {
-  width: 100%;
-  max-width: 76ch;
-  border-top: 1px solid var(--doc-line);
-}
-
-.doc-index-row {
-  display: grid;
-  grid-template-columns: minmax(14ch, 22ch) minmax(0, 1fr);
-  gap: 0 2ch;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--doc-line);
-  color: inherit;
-  text-decoration: none;
-}
-
-.doc-index-row:hover,
-.doc-index-row:focus-visible {
-  color: inherit;
-  background: var(--doc-mark-soft);
-}
-
-.doc-index-row:focus-visible {
-  outline-offset: -1px !important;
-}
-
-.doc-index-id {
-  font-weight: 700;
-}
-
-.doc-index-number,
 .doc-annotation {
   color: var(--doc-middle);
   font-weight: 400;
 }
 
-.doc-index-description {
-  color: var(--doc-middle);
-}
-
 .doc-frame {
-  max-width: 84ch;
-  margin-inline: auto;
+  max-width: calc(var(--doc-section-width) + 4rem);
+  margin-inline: 0;
 }
 
 @utility rounded-squircle {
@@ -183,50 +142,60 @@ body {
   }
 }
 
-.doc-dock {
-  overflow: hidden;
-}
-
-.doc-masthead {
-  padding-block: 3rem 2.5rem;
-}
-
-.doc-masthead-title {
-  width: fit-content;
-  font-size: 1.5rem;
-  font-weight: 400;
-  line-height: 2rem;
-  letter-spacing: 0;
-  text-transform: lowercase;
-}
-
-.doc-masthead-kicker,
-.doc-masthead-description {
-  color: var(--doc-middle);
-}
-
-.doc-masthead-kicker {
-  margin-top: 0.75rem;
-  text-transform: lowercase;
-}
-
-.doc-masthead-description {
-  max-width: 54ch;
-  margin-top: 1rem;
-}
-
 .doc-section-stack {
   counter-reset: doc-section;
 }
 
 .doc-section {
+  position: relative;
+  width: 100%;
+  max-width: var(--doc-section-width);
   counter-increment: doc-section;
+}
+
+.doc-section::before {
+  position: absolute;
+  top: 0;
+  left: calc(-1 * 2ch);
+  width: 100vw;
+  height: 1px;
+  background: var(--doc-line);
+  content: "";
+}
+
+@media (min-width: 40rem) {
+  .doc-section::before {
+    left: calc(-1 * 4ch);
+  }
+}
+
+.doc-section-content {
+  width: 100%;
+  max-width: var(--doc-section-content-column);
+}
+
+@media (min-width: 64rem) {
+  :root {
+    --doc-section-label-column: 12rem;
+    --doc-section-content-column: 36rem;
+  }
+
+  .doc-section {
+    grid-template-columns: var(--doc-section-label-column) var(
+        --doc-section-content-column
+      );
+    column-gap: var(--doc-section-gap);
+  }
 }
 
 .doc-section-label::before {
   content: counter(doc-section) " ";
   color: var(--doc-middle);
   font-weight: 400;
+}
+
+.doc-section-label--manual::before {
+  content: none;
 }
 
 .doc-figure {
@@ -237,14 +206,11 @@ body {
 }
 
 .guidance-triptych {
-  position: relative;
-  left: 50%;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1ch;
   width: min(120ch, calc(100vw - 4ch));
   margin-block: 2rem;
-  transform: translateX(-50%);
 }
 
 .guidance-triptych .doc-figure {
@@ -345,29 +311,6 @@ body {
   background: var(--doc-mark);
 }
 
-.doc-prose pre.shiki,
-.doc-prose pre.shiki span {
-  background-color: transparent !important;
-}
-
-.dark .doc-prose pre.shiki {
-  color: var(--shiki-dark) !important;
-}
-
-.dark .doc-prose pre.shiki span {
-  color: var(--shiki-dark, var(--doc-text)) !important;
-}
-
-[cmdk-item][data-selected="true"] {
-  color: var(--doc-text);
-  background: var(--doc-mark-soft) !important;
-}
-
-[cmdk-group-heading] {
-  color: var(--doc-middle) !important;
-  text-transform: lowercase;
-}
-
 @media (max-width: 900px) {
   .guidance-triptych {
     left: auto;
@@ -382,17 +325,8 @@ body {
 }
 
 @media (max-width: 700px) {
-  .doc-index-row,
   .doc-figure-row {
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  .doc-index-description {
-    margin-top: 0.25rem;
-  }
-
-  .doc-masthead {
-    padding-block: 2.5rem 2rem;
   }
 }
 
