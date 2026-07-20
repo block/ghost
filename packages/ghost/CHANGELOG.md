@@ -1,5 +1,11 @@
 # @design-intelligence/ghost
 
+## 0.25.1
+
+### Patch Changes
+
+- [#243](https://github.com/block/ghost/pull/243) [`962094e`](https://github.com/block/ghost/commit/962094e33f5a17874f812ead28c5d3bd470e5bf6) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Remove the public documentation links and direct readers to current CLI help.
+
 ## 0.25.0
 
 ### Minor Changes
