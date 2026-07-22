@@ -1,53 +1,20 @@
 ---
 kinds:
-  - name: principle
-  - name: condition
   - name: pattern
   - name: exemplar
   - name: anti-goal
-  - name: asset
-  - name: decision
-  - name: voice
 ---
-
-# principle
-
-Durable stance, tradeoff, or invariant. Principles are always-on unless a
-narrower condition explicitly limits them; patterns may narrow principles, never
-loosen them.
-
-# condition
-
-Situational guidance. Use only when the stated situation holds, and do not treat the
-condition as a destination bucket.
 
 # pattern
 
-Reusable page, component, motion, or content composition. A pattern says when it
-applies, what is bound, what is open, and which principle it refines.
+Conditional composition or behavior. Pull it only when the description names a situation present in the task. A pattern states what is bound and what remains open.
 
 # exemplar
 
-Concrete reference for form, rhythm, quality, code shape, voice, or behavior.
-Match the annotated qualities; do not copy incidental details.
+Concrete source expression to inspect when translating the brand. Match annotated relationships; do not copy incidental content or implementation.
 
 # anti-goal
 
-Rejected default, neighboring style, generic generated pattern, or plausible
-wrong answer. Always-on like a principle, but phrased as the thing to steer away
-from.
+Rejected visual default paired with its replacement and a way to recognize the difference. Pull before creating or substantially changing a visual expression.
 
-# asset
-
-Material guidance about concrete tokens, components, type, motion, canvases, docs,
-copy, code, or files. `materials` locates; prose explains what the files mean.
-
-# decision
-
-Worked tradeoff trace: what was chosen, what was rejected, why, and when that
-choice would reverse.
-
-# voice
-
-Language and naming guidance: the product vocabulary, cadence, metaphor, and copy
-boundaries that make the docs sound like ghost rather than generic SaaS docs.
+Bare nodes hold global guidance. Their lack of a kind prefix does not make them automatically selected; their descriptions state their universal scope. The manifest cover remains the only node placed into context automatically.
