@@ -3,7 +3,9 @@ import {
   closestIds,
   extractSkeletonFences,
   type GhostCatalogNode,
+  type GhostMaterial,
   type MaterialTransportResult,
+  normalizeMaterial,
   resolveLocalMaterialLocator,
   stripSkeletonSections,
   transportMaterials,
@@ -122,22 +124,26 @@ function steeringBucket(
 }
 
 function locatorOnlyMaterials(
-  locators: readonly string[] | undefined,
+  declarations: readonly GhostMaterial[] | undefined,
   repoRoot: string,
   packageDir: string,
 ): MaterialTransportResult {
   return {
-    materials: (locators ?? []).map((locator) => ({
-      locator,
-      tier:
-        classifyMaterialLocator(locator).kind === "url"
-          ? "url"
-          : resolveLocalMaterialLocator(locator, {
-              repoRoot,
-              packageDir,
-              materialsDir: GHOST_MATERIALS_DIR,
-            }).tier,
-    })),
+    materials: (declarations ?? []).map((declaration) => {
+      const { locator, note } = normalizeMaterial(declaration);
+      return {
+        locator,
+        ...(note !== undefined ? { note } : {}),
+        tier:
+          classifyMaterialLocator(locator).kind === "url"
+            ? "url"
+            : resolveLocalMaterialLocator(locator, {
+                repoRoot,
+                packageDir,
+                materialsDir: GHOST_MATERIALS_DIR,
+              }).tier,
+      };
+    }),
     inlined: 0,
     omitted: 0,
   };

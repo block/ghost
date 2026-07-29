@@ -67,6 +67,10 @@ describe("ghost.node/v1 schema", () => {
         materials: [
           "src/components/checkout/**",
           "https://example.com/logo.svg",
+          {
+            locator: "mcp://brand-assets/checkout-marks",
+            note: "Approved payment marks",
+          },
         ],
         audience: "enterprise",
         stage: "purchase",
@@ -77,6 +81,73 @@ describe("ghost.node/v1 schema", () => {
     expect(reparsed.report.errors).toBe(0);
     expect(reparsed.node?.frontmatter).toEqual(original.frontmatter);
     expect(reparsed.node?.body).toBe(original.body);
+  });
+
+  it("accepts supported external locators", () => {
+    for (const locator of [
+      "https://example.com/logo.svg",
+      "mcp://brand-assets/logo-lockups",
+      "github:acme/brand-assets",
+      "figma://file/abc123",
+    ]) {
+      expect(lintGhostNode(node(`materials:\n  - ${locator}`)).errors).toBe(0);
+    }
+  });
+
+  it("rejects targetless external locators", () => {
+    for (const protocol of ["mcp", "figma", "github"]) {
+      for (const suffix of [
+        ":",
+        "://",
+        ":/",
+        ":///",
+        ":////",
+        ":\\\\",
+        ":%2F",
+        ":%5c",
+        ":/%2F\\%5C",
+        ":%252F",
+        ":%25255C",
+      ]) {
+        expect(
+          lintGhostNode(node(`materials:\n  - ${protocol}${suffix}`)).errors,
+        ).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("rejects external locator protocols outside the allowlist", () => {
+    for (const locator of [
+      "http://example.com/assets",
+      "file:///tmp/logo.svg",
+      "data:text/plain,secret",
+      "javascript:alert(1)",
+      "shell:rm",
+      "command:open",
+      "ftp://example.com/assets",
+      "chrome-extension://extension-id/asset.svg",
+    ]) {
+      expect(
+        lintGhostNode(node(`materials:\n  - ${locator}`)).errors,
+      ).toBeGreaterThan(0);
+    }
+  });
+
+  it("rejects empty notes and unknown annotated material keys", () => {
+    expect(
+      lintGhostNode(
+        node(
+          "materials:\n  - locator: mcp://brand-assets/logos\n    note: '  '",
+        ),
+      ).errors,
+    ).toBeGreaterThan(0);
+    expect(
+      lintGhostNode(
+        node(
+          "materials:\n  - locator: mcp://brand-assets/logos\n    provider: mcp",
+        ),
+      ).errors,
+    ).toBeGreaterThan(0);
   });
 
   it("serializes free-form frontmatter keys deterministically after known keys", () => {

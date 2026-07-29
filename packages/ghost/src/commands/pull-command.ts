@@ -160,21 +160,25 @@ function appendMaterialMarkdown(
 ): void {
   if (material.inlined !== undefined) {
     const info = material.path ?? material.locator;
-    lines.push("", fencedMarkdown(material.inlined.trimEnd(), info));
-  } else if (material.reason === "binary inspect-pointer") {
-    lines.push(
-      `- inspect: ${material.path ?? material.locator} — view this image before generating`,
-    );
-  } else {
-    const reason = material.omitted
-      ? ` — ${material.reason ?? "not inlined"}`
-      : "";
-    lines.push(`- ${material.locator}${reason}`);
+    lines.push("");
+    if (material.note !== undefined) {
+      lines.push(`Note for \`${material.locator}\`: ${material.note}`, "");
+    }
+    lines.push(fencedMarkdown(material.inlined.trimEnd(), info));
+    return;
   }
+
+  const target =
+    material.reason === "binary inspect-pointer"
+      ? `inspect: ${material.path ?? material.locator} — view this image before generating`
+      : `${material.locator}${material.omitted ? ` — ${material.reason ?? "not inlined"}` : ""}`;
+  lines.push(`- ${target}`);
+  if (material.note !== undefined) lines.push(`  Note: ${material.note}`);
 }
 
 function formatJsonMaterial(material: TransportedMaterial): {
   locator: string;
+  note?: string;
   tier: TransportedMaterial["tier"];
   inlined?: string;
   omitted?: true;
@@ -183,6 +187,7 @@ function formatJsonMaterial(material: TransportedMaterial): {
 } {
   return {
     locator: material.locator,
+    ...(material.note !== undefined ? { note: material.note } : {}),
     tier: material.tier,
     ...(material.inlined !== undefined ? { inlined: material.inlined } : {}),
     ...(material.omitted

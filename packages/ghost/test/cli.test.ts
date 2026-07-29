@@ -1213,7 +1213,7 @@ describe("ghost CLI", () => {
     await writeFile(join(dir, "brand", "large.txt"), "x".repeat(8 * 1024 + 1));
     await writeFile(
       join(dir, ".ghost", "asset.materials.md"),
-      "---\ndescription: Materials.\nmaterials:\n  - materials/tokens.css\n  - brand/voice.txt\n  - brand/mark.bin\n  - brand/large.txt\n  - https://example.com/brand-kit\n---\n\nRead these materials.\n",
+      "---\ndescription: Materials.\nmaterials:\n  - locator: materials/tokens.css\n    note: Canonical token values\n  - brand/voice.txt\n  - brand/mark.bin\n  - brand/large.txt\n  - locator: mcp://brand-assets/brand-kit\n    note: Approved source artwork\n---\n\nRead these materials.\n",
     );
 
     const md = await runCli(["pull", "asset.materials"], dir);
@@ -1221,6 +1221,9 @@ describe("ghost CLI", () => {
     expect(md.code).toBe(0);
     expect(md.stdout).toContain("Read these materials.");
     expect(md.stdout).toContain("```.ghost/materials/tokens.css");
+    expect(md.stdout).toContain(
+      "Note for `materials/tokens.css`: Canonical token values",
+    );
     expect(md.stdout).toContain(":root { --brand: #111; }");
     expect(md.stdout).toContain("```brand/voice.txt");
     expect(md.stdout).toContain("Use plain words.");
@@ -1231,8 +1234,9 @@ describe("ghost CLI", () => {
       "- brand/large.txt — exceeds 8 KB inline limit",
     );
     expect(md.stdout).toContain(
-      "- https://example.com/brand-kit — HTTPS URL; fetch it only if the task requires it",
+      "- mcp://brand-assets/brand-kit — external locator; use an available host connection if the task requires it",
     );
+    expect(md.stdout).toContain("Note: Approved source artwork");
 
     const events = (await readFile(join(dir, ".ghost", ".events"), "utf-8"))
       .trim()
@@ -1286,7 +1290,7 @@ describe("ghost CLI", () => {
     await writeFile(join(dir, "brand", "voice.txt"), "Plain.\n");
     await writeFile(
       join(dir, ".ghost", "asset.tokens.md"),
-      "---\ndescription: Tokens.\nmaterials:\n  - materials/tokens.css\n  - brand/voice.txt\n  - https://example.com/tokens\n---\n\nToken prose.\n",
+      "---\ndescription: Tokens.\nmaterials:\n  - materials/tokens.css\n  - brand/voice.txt\n  - locator: mcp://brand-assets/tokens\n    note: Canonical token source\n---\n\nToken prose.\n",
     );
 
     const json = await runCli(
@@ -1308,10 +1312,12 @@ describe("ghost CLI", () => {
         inlined: "Plain.\n",
       },
       {
-        locator: "https://example.com/tokens",
+        locator: "mcp://brand-assets/tokens",
+        note: "Canonical token source",
         tier: "url",
         omitted: true,
-        reason: "HTTPS URL; fetch it only if the task requires it",
+        reason:
+          "external locator; use an available host connection if the task requires it",
       },
     ]);
   });
@@ -1738,7 +1744,7 @@ describe("ghost CLI", () => {
     await runCli(["init", "--with", "checks"], dir);
     await writeFile(
       join(dir, ".ghost", "asset.logo.md"),
-      "---\ndescription: Logo.\nmaterials:\n  - brand/logo*.svg\n---\n\nLogo prose.\n",
+      "---\ndescription: Logo.\nmaterials:\n  - locator: brand/logo*.svg\n    note: Use the approved clearspace source\n  - brand/icon*.svg\n---\n\nLogo prose.\n",
     );
     await writeFile(
       join(dir, ".ghost", "checks", "logo-clearspace.md"),
@@ -1767,11 +1773,26 @@ describe("ghost CLI", () => {
       id: "asset.logo",
       files: ["brand/logo.svg"],
       matchedMaterials: ["brand/logo*.svg"],
+      materials: [
+        {
+          locator: "brand/logo*.svg",
+          note: "Use the approved clearspace source",
+        },
+        "brand/icon*.svg",
+      ],
     });
     expect(packet.checks[0]).toMatchObject({
       id: "logo-clearspace",
       offered: "matched",
     });
+
+    const markdown = await runCli(["review", "--diff=-"], dir, {
+      stdin: diff,
+    });
+    expect(markdown.code).toBe(0);
+    expect(markdown.stdout).toContain(
+      "`brand/logo*.svg` — Note: Use the approved clearspace source",
+    );
   });
 
   it("review resolves package-relative locators when the package sits below the repo root", async () => {
@@ -1904,7 +1925,7 @@ describe("ghost CLI", () => {
     );
     await writeFile(
       join(dir, ".ghost", "asset.tokens.md"),
-      "---\ndescription: Tokens.\nmaterials:\n  - materials/tokens.css\n  - https://example.com/tokens\n---\n\nToken prose.\n",
+      "---\ndescription: Tokens.\nmaterials:\n  - materials/tokens.css\n  - https://example.com/tokens\n  - mcp://brand-assets/tokens\n---\n\nToken prose.\n",
     );
 
     const out = join(dir, "brand.tgz");
@@ -1913,7 +1934,16 @@ describe("ghost CLI", () => {
     expect(result.code).toBe(0);
     expect(result.stdout).toContain("Locator audit");
     expect(result.stdout).toContain("materials/tokens.css");
-    expect(result.stdout).toContain("HTTPS URL");
+    expect(result.stdout).toContain("HTTPS external locator only");
+    expect(result.stdout).toContain(
+      "access depends on the URL and any permissions it requires",
+    );
+    expect(result.stdout).toContain(
+      "connection-dependent external locator only",
+    );
+    expect(result.stdout).toContain(
+      "recipient may need a connection or permission",
+    );
     const archive = parseTarEntries(gunzipSync(await readFile(out)));
     expect(archive.has("asset.tokens.md")).toBe(true);
     expect(archive.has("export.yml")).toBe(true);
@@ -1956,7 +1986,7 @@ describe("ghost CLI", () => {
     await writeFile(join(dir, "brand", "voice.txt"), "Plain.\n");
     await writeFile(
       join(dir, ".ghost", "asset.tokens.md"),
-      "---\ndescription: Tokens.\nmaterials:\n  - materials/tokens.css\n  - brand/voice.txt\n  - https://example.com/tokens\n---\n\nToken prose.\n",
+      "---\ndescription: Tokens.\nmaterials:\n  - materials/tokens.css\n  - brand/voice.txt\n  - https://example.com/tokens\n  - figma://file/abc\n---\n\nToken prose.\n",
     );
 
     const result = await runCli(["export", "--format", "json"], dir);
@@ -1978,11 +2008,36 @@ describe("ghost CLI", () => {
         nodeId: "asset.tokens",
         locator: "https://example.com/tokens",
         tier: "url",
+        access: "https",
+      },
+      {
+        nodeId: "asset.tokens",
+        locator: "figma://file/abc",
+        tier: "url",
+        access: "connector",
       },
     ]);
     expect(payload.audit.stranded).toEqual([
       { nodeId: "asset.tokens", locator: "brand/voice.txt" },
     ]);
+  });
+
+  it("export --strict allows connection-dependent external locators", async () => {
+    await writeBareTestPackage(dir);
+    await writeFile(
+      join(dir, ".ghost", "asset.remote.md"),
+      "---\ndescription: Remote material.\nmaterials:\n  - mcp://brand-assets/tokens\n---\n\nRemote prose.\n",
+    );
+
+    const result = await runCli(["export", "--strict"], dir);
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain(
+      "connection-dependent external locator only",
+    );
+    expect(result.stdout).toContain(
+      "recipient may need a connection or permission",
+    );
   });
 
   it("export --strict exits 2 when referenced local material locators are stranded", async () => {

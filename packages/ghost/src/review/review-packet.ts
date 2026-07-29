@@ -1,5 +1,10 @@
 import { join } from "node:path";
-import type { GhostCatalogNode } from "#ghost-core";
+import {
+  type GhostCatalogNode,
+  type GhostMaterial,
+  materialLocator,
+  normalizeMaterial,
+} from "#ghost-core";
 import { GHOST_MATERIALS_DIR } from "../scan/constants.js";
 import type { LoadedGhostPackage } from "../scan/fingerprint-package.js";
 import { resolveGitRoot } from "../scan/package-paths.js";
@@ -15,7 +20,7 @@ export interface PacketMaterialNode {
   kind?: string;
   description?: string;
   prose: string;
-  materials: string[];
+  materials: GhostMaterial[];
   matchedMaterials: string[];
   files: string[];
 }
@@ -152,7 +157,15 @@ export function formatReviewPacket(packet: ReviewPacket): string {
       if (node.description) out.push(`_${node.description}_`, "");
       out.push(node.prose, "");
       out.push("Matched materials:");
-      for (const locator of node.matchedMaterials) out.push(`- \`${locator}\``);
+      for (const locator of node.matchedMaterials) {
+        const declaration = node.materials.find(
+          (material) => materialLocator(material) === locator,
+        );
+        const note = declaration
+          ? normalizeMaterial(declaration).note
+          : undefined;
+        out.push(`- \`${locator}\`${note ? ` — Note: ${note}` : ""}`);
+      }
       out.push("Files:");
       for (const file of node.files) out.push(`- \`${file}\``);
       out.push("");

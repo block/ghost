@@ -3,9 +3,11 @@ import { TextDecoder } from "node:util";
 import {
   classifyMaterialLocator,
   expandLocalMaterialLocator,
+  type GhostMaterial,
   hasGlobMagic,
   inferMaterialMime,
   isTextMime,
+  materialLocator,
   materialLocatorClaimsPath,
   resolveContainedRealFile,
   resolveLocalMaterialLocator,
@@ -205,12 +207,13 @@ export async function inspectGhostMaterial(
 }
 
 function declaredMaterialLocator(
-  declared: readonly string[],
+  declared: readonly GhostMaterial[],
   requested: string,
   repoRoot: string,
   packageDir: string,
 ): string | undefined {
-  if (declared.includes(requested)) return requested;
+  const locators = declared.map(materialLocator);
+  if (locators.includes(requested)) return requested;
   const requestedKind = classifyMaterialLocator(requested);
   if (requestedKind.kind !== "local") return undefined;
   const requestedPath = resolveLocalMaterialLocator(requested, {
@@ -218,7 +221,7 @@ function declaredMaterialLocator(
     packageDir,
     materialsDir: GHOST_MATERIALS_DIR,
   }).pattern;
-  return declared.find(
+  return locators.find(
     (locator) =>
       hasGlobMagic(locator) &&
       materialLocatorClaimsPath(locator, requestedPath, {

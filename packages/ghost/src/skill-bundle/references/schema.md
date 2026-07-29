@@ -41,6 +41,8 @@ description: Logo lockups, clearspace, and when the glyph can stand alone.
 materials:
   - brand/logo*.svg
   - https://figma.com/file/example?node-id=logo-lockups
+  - locator: mcp://brand-assets/logo-lockups
+    note: Source lockups and glyph exports
 ---
 
 Use the full lockup when recognition matters.
@@ -52,8 +54,12 @@ Use the full lockup when recognition matters.
   governs, the observable condition under which it applies, and what it
   contributes where useful. Avoid broad universal wording unless universal
   retrieval is intended.
-- `materials` accepts repo-relative paths/globs plus absolute HTTPS URLs. It is
-  a locator list, not guidance.
+- `materials` accepts repo-relative paths/globs plus supported external locators using `https:`, `mcp:`,
+  `figma:`, or `github:`. Items may be bare locator strings or
+  `{ locator, note }` objects. Use a short `note` only when an opaque locator
+  needs retrieval context. The external locator tells the host how to connect;
+  ghost does not fetch or authenticate. The list
+  locates material, while guidance stays in the node body.
 
 ghost derives whether a node carries concrete material from structure:
 non-empty `materials`, a fenced code block of at least 3 lines, or a
@@ -108,7 +114,8 @@ probes are the same class as npm scripts; Git review is the boundary.
 - `ghost gather` emits the cover above Available guidance, then coverage counts.
   The guidance list is complete, unfiltered, and unranked. Checks are invisible.
 - `ghost pull` emits selected nodes in steering order and inlines small local
-  materials. Binary local materials become inspect-pointers.
+  materials. Binary local materials become inspect-pointers. External materials
+  remain locators for the host agent to access only when the task requires them.
 - `ghost review` matches diff files to local node materials, offers relevant
   checks, embeds probe evidence, and emits a packet for the host agent to
   judge.

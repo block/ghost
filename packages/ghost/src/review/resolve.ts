@@ -2,6 +2,7 @@ import {
   classifyMaterialLocator,
   type GhostCatalog,
   type MaterialTransportOptions,
+  materialLocator,
   materialLocatorClaimsPath,
   parseSourceRef,
 } from "#ghost-core";
@@ -50,9 +51,9 @@ export function resolveReview(
   const claimedFiles = new Set<string>();
 
   for (const node of catalog.nodes.values()) {
-    const localLocators = (node.materials ?? []).filter(
-      (locator) => classifyMaterialLocator(locator).kind === "local",
-    );
+    const localLocators = (node.materials ?? [])
+      .map(materialLocator)
+      .filter((locator) => classifyMaterialLocator(locator).kind === "local");
     if (localLocators.length === 0) continue;
     materialNodeIds.add(node.id);
     for (const file of touchedFiles) {

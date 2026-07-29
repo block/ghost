@@ -7,6 +7,7 @@ import {
   extractSkeletonSections,
   type GhostCatalog,
   listBundledMaterialFiles,
+  materialLocator,
   materialLocatorClaimsPath,
   parseGlossary,
   parseSourceRef,
@@ -243,7 +244,8 @@ async function lintMaterialLocators(
 
   const claimedLocators: string[] = [];
   for (const node of catalog.nodes.values()) {
-    for (const locator of node.materials ?? []) {
+    for (const material of node.materials ?? []) {
+      const locator = materialLocator(material);
       if (classifyMaterialLocator(locator).kind === "url") continue;
       claimedLocators.push(locator);
       const expanded = await expandLocalMaterialLocator(locator, options, {

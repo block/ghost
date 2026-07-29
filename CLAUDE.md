@@ -58,10 +58,11 @@ hierarchy, no inheritance, no edges; nesting into folders is a browsing
 convenience only.
 
 `materials` is the single locator field for concrete materials the guidance is
-about. It accepts repo-relative paths/globs and absolute HTTPS URLs. Components,
-patterns, logos, motion files, illustrations, and external asset libraries all
-use the same field. Guidance stays in prose; `materials` only says where the
-material is.
+about. It accepts repo-relative paths/globs and supported external locators
+(`https:`, `mcp:`, `figma:`, or `github:`) as bare strings or
+`{ locator, note }` objects. Components, patterns, logos, motion
+files, illustrations, and external asset libraries all use the same field.
+Guidance stays in prose; `materials` only says where the material is.
 
 While drafting a body, ask three questions of every node (drafting prompts,
 never fields): **why** (the stance), **with what** (the materials, and pointers

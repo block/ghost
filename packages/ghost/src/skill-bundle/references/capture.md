@@ -353,11 +353,15 @@ stricter silence posture. `ghost gather` inlines it before the menu, so anything
 that must never be missed belongs there.
 
 Nodes may carry a `materials` list in frontmatter: repo-relative paths/globs or
-HTTPS URLs for the concrete materials the prose governs. Put brand-owned
-materials that should survive export or refactors under `materials/`; point at
-living app code where the implementation itself should stay in place. Optional
-review checks live under `.ghost/checks/` (`ghost checks init`) and are
-feed-back only; they are never gathered.
+supported external locators using `https:`, `mcp:`, `figma:`, or `github:` for the concrete
+materials the prose governs. Use a bare locator when it explains itself. Use
+`{ locator, note }` when an opaque locator needs a short retrieval cue. The
+external locator tells the host how to connect;
+ghost does not fetch or authenticate. Put brand-owned materials that should
+survive export or refactors under `materials/`; point at living app code where
+the implementation itself should stay in place. Optional review checks live
+under `.ghost/checks/` (`ghost checks init`) and are feed-back only; they are
+never gathered.
 
 ### 3. Shape the glossary
 

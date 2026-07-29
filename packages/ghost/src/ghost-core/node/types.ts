@@ -1,3 +1,5 @@
+import type { GhostMaterial } from "../materials.js";
+
 export const GHOST_NODE_SCHEMA = "ghost.node/v1" as const;
 
 /**
@@ -17,11 +19,12 @@ export interface GhostNodeFrontmatter {
    */
   description?: string;
   /**
-   * Optional locators for the concrete materials this guidance is about: repo-relative
-   * paths/globs and absolute https URLs. Guidance stays in prose; this list is
-   * only where the agent or review harness can find the material.
+   * Optional locators for the concrete materials this guidance is about:
+   * repo-relative paths/globs and supported external locators. A locator
+   * may be a bare string or an object with a short retrieval note. Guidance stays in
+   * prose; this list only says where the material can be found.
    */
-  materials?: string[];
+  materials?: GhostMaterial[];
 }
 
 export interface GhostNodeDocument {

@@ -1,3 +1,5 @@
+import type { GhostMaterial } from "../materials.js";
+
 const FENCED_BLOCK_PATTERN =
   /(^|\n)(`{3,}|~{3,})[^\n]*\n([\s\S]*?)\n\2[ \t]*(?=\n|$)/g;
 const SKELETON_HEADING_PATTERN = /^##[ \t]+Skeleton[ \t]*$/gim;
@@ -14,7 +16,7 @@ export interface SkeletonSection {
 }
 
 export function carriesConcreteMaterial(input: {
-  materials?: string[];
+  materials?: GhostMaterial[];
   body: string;
 }): boolean {
   return (

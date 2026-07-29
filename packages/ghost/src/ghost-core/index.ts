@@ -62,7 +62,11 @@ export {
 export {
   type ClassifiedGhostMaterialLocator,
   classifyMaterialLocator,
+  type GhostAnnotatedMaterial,
+  type GhostMaterial,
   type GhostMaterialLocatorKind,
+  materialLocator,
+  normalizeMaterial,
   validateMaterialLocator,
 } from "./materials.js";
 // --- Node (ghost.node/v1) — the markdown node artifact ---

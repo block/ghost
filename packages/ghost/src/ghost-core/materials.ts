@@ -1,23 +1,64 @@
 /** Material locator support for fingerprint nodes. */
 export type GhostMaterialLocatorKind = "local" | "url";
 
+/** A material locator with an optional retrieval note. */
+export interface GhostAnnotatedMaterial {
+  locator: string;
+  note?: string;
+}
+
+/** A node material declaration. Bare locator strings remain supported. */
+export type GhostMaterial = string | GhostAnnotatedMaterial;
+
 export interface ClassifiedGhostMaterialLocator {
   kind: GhostMaterialLocatorKind;
   value: string;
+  /** Present for external locators. `url` remains the legacy public kind. */
+  access?: "https" | "connector";
 }
 
-const URL_SCHEME = /^[a-z][a-z0-9+.-]*:/i;
+const URI_SCHEME = /^[a-z][a-z0-9+.-]*:/i;
+const WINDOWS_ABSOLUTE_PATH = /^[a-zA-Z]:[\\/]/;
+const CONNECTOR_SEPARATOR_ONLY_TARGET = /^(?:[\\/]|%(?:25)*(?:2f|5c))*$/i;
+const ALLOWED_EXTERNAL_PROTOCOLS = new Set([
+  "figma:",
+  "github:",
+  "https:",
+  "mcp:",
+]);
+
+/** Normalize either supported material declaration shape. */
+export function normalizeMaterial(
+  material: GhostMaterial,
+): GhostAnnotatedMaterial {
+  return typeof material === "string" ? { locator: material } : material;
+}
+
+/** Return the locator from either supported material declaration shape. */
+export function materialLocator(material: GhostMaterial): string {
+  return normalizeMaterial(material).locator;
+}
 
 /**
- * Classify a material locator. `https://…` locators point outside the repo;
- * everything else is a repo-relative path/glob after validation.
+ * Classify a material locator after `validateMaterialLocator`. `url` is the
+ * legacy public kind for an external locator; `access` distinguishes HTTPS from
+ * connection-dependent locators. ghost never resolves or connects to them.
+ * Everything else is a repo-relative path/glob.
  */
 export function classifyMaterialLocator(
   value: string,
 ): ClassifiedGhostMaterialLocator {
-  return value.startsWith("https://")
-    ? { kind: "url", value }
-    : { kind: "local", value };
+  if (!URI_SCHEME.test(value) || WINDOWS_ABSOLUTE_PATH.test(value)) {
+    return { kind: "local", value };
+  }
+  return {
+    kind: "url",
+    value,
+    access:
+      value.slice(0, value.indexOf(":")).toLowerCase() === "https"
+        ? "https"
+        : "connector",
+  };
 }
 
 /** Return a human-readable validation error, or null when the locator is valid. */
@@ -29,25 +70,37 @@ export function validateMaterialLocator(value: string): string | null {
     return "material locator must not be empty";
   }
 
-  if (URL_SCHEME.test(value)) {
-    if (!value.startsWith("https://")) {
-      return "material URL locators must use https://";
-    }
+  // Preserve the local path boundary before URI classification. A drive path
+  // has URI-like syntax but must not bypass repo-relative path validation.
+  if (WINDOWS_ABSOLUTE_PATH.test(value)) {
+    return "local material locators must be repo-relative, not absolute paths";
+  }
+
+  if (URI_SCHEME.test(value)) {
+    let uri: URL;
     try {
-      const url = new URL(value);
-      if (url.protocol !== "https:" || url.hostname.length === 0) {
-        return "material URL locators must be absolute https URLs";
-      }
-      return null;
+      uri = new URL(value);
     } catch {
-      return "material URL locator is not a valid URL";
+      return "external material locator must be a valid absolute URI";
     }
+
+    const protocol = uri.protocol.toLowerCase();
+    if (!ALLOWED_EXTERNAL_PROTOCOLS.has(protocol)) {
+      return `external material locator protocol ${protocol} is not supported; use https:, mcp:, figma:, or github:`;
+    }
+    if (protocol === "https:" && uri.hostname.length === 0) {
+      return "HTTPS material locators must be absolute URLs with a host";
+    }
+    if (
+      protocol !== "https:" &&
+      CONNECTOR_SEPARATOR_ONLY_TARGET.test(`${uri.host}${uri.pathname}`)
+    ) {
+      return `${protocol} material locators must name a connector target`;
+    }
+    return null;
   }
 
   if (value.startsWith("/") || value.startsWith("\\")) {
-    return "local material locators must be repo-relative, not absolute paths";
-  }
-  if (/^[a-zA-Z]:[\\/]/.test(value)) {
     return "local material locators must be repo-relative, not absolute paths";
   }
   const normalized = value.replace(/\\/g, "/");

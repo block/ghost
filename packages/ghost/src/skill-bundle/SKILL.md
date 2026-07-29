@@ -28,9 +28,11 @@ it applies, and an agent reads the relevant guidance before building.
 
 - A **node** is a markdown file: `description`, optional `materials`, and prose brand guidance.
 - `materials` is one list of locators for the concrete stuff the guidance is about:
-  repo-relative paths/globs or absolute HTTPS URLs. `materials/` is reserved for
-  bundled materials; reference living implementations where they already live.
-  Guidance stays in prose.
+  repo-relative paths/globs or supported external locators using `https:`, `mcp:`,
+  `figma:`, or `github:`. A bare locator is enough
+  when it explains itself. An opaque locator may use `{ locator, note }` to say
+  what it contains. `materials/` is reserved for bundled materials; reference
+  living implementations where they already live. Guidance stays in prose.
 - A node's **kind** comes from its filename prefix (`principle.density.md` →
   kind `principle`). A bare name (`voice.md`) has no kind.
 - The **glossary** declares the kind vocabulary and what each kind means.

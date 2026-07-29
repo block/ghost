@@ -2,6 +2,7 @@ import type {
   CatalogMenuEntry,
   GhostCatalogNode,
   GhostGlossaryKind,
+  GhostMaterial,
   GhostPackageManifest,
   TransportedMaterial,
 } from "#ghost-core";
@@ -108,7 +109,7 @@ export interface GhostPulledNode {
   id: string;
   kind?: string;
   description?: string;
-  declaredMaterials?: readonly string[];
+  declaredMaterials?: readonly GhostMaterial[];
   materials?: readonly TransportedMaterial[];
   body: string;
 }

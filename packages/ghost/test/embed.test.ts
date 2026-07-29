@@ -10,12 +10,13 @@ import {
   stampGhostEvent,
 } from "../src/embed/index.js";
 import type { GhostEmbedSnapshot } from "../src/embed/types.js";
+import type { GhostMaterial } from "../src/ghost-core/index.js";
 import { resolveGhostPackage } from "../src/package.js";
 
 function withDeclaredMaterial(
   snapshot: GhostEmbedSnapshot,
   nodeId: string,
-  locator: string,
+  material: GhostMaterial,
 ): GhostEmbedSnapshot {
   const node = snapshot.catalog.nodes.get("asset.tokens");
   if (node === undefined) throw new Error("missing fixture node");
@@ -25,7 +26,7 @@ function withDeclaredMaterial(
       nodes: new Map(snapshot.catalog.nodes).set(nodeId, {
         ...node,
         id: nodeId,
-        materials: [locator],
+        materials: [material],
       }),
     },
   };
@@ -225,6 +226,64 @@ describe("embed contract", () => {
         inlined: "color: green\n",
       }),
     );
+  });
+
+  it("pulls an annotated local material with its declaration and transport metadata", async () => {
+    await writePackage(dir);
+    const baseSnapshot = await loadGhostSnapshot(
+      resolveGhostPackage(undefined, dir),
+    );
+    const declaration = {
+      locator: "brand/voice.txt",
+      note: "Canonical voice sample",
+    };
+    const snapshot = withDeclaredMaterial(
+      baseSnapshot,
+      "asset.annotated",
+      declaration,
+    );
+
+    const result = await pullGhostNodes(snapshot, {
+      ids: ["asset.annotated"],
+      repoRoot: dir,
+    });
+
+    expect(result.nodes[0]?.declaredMaterials).toEqual([declaration]);
+    expect(result.nodes[0]?.materials).toEqual([
+      {
+        locator: "brand/voice.txt",
+        note: "Canonical voice sample",
+        tier: "referenced",
+        path: "brand/voice.txt",
+        inlined: "Plain.\n",
+      },
+    ]);
+    expect(result.materialCounts).toEqual({ inlined: 1, omitted: 0 });
+  });
+
+  it("inspects a locator from an annotated material declaration", async () => {
+    await writePackage(dir);
+    const baseSnapshot = await loadGhostSnapshot(
+      resolveGhostPackage(undefined, dir),
+    );
+    const snapshot = withDeclaredMaterial(baseSnapshot, "asset.annotated", {
+      locator: "brand/voice.txt",
+      note: "Canonical voice sample",
+    });
+
+    const result = await inspectGhostMaterial(snapshot, {
+      nodeId: "asset.annotated",
+      locator: "brand/voice.txt",
+      repoRoot: dir,
+      policy: { local: "bundled-and-referenced" },
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      tier: "referenced",
+      path: "brand/voice.txt",
+      text: "Plain.\n",
+    });
   });
 
   it("inspects only declared contained locators under explicit host policy", async () => {

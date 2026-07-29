@@ -20,6 +20,21 @@ const NodeRefSchema = z.string().min(1).regex(NODE_ID_PATTERN, {
   message: "node ref must be a path id like 'marketing/email'",
 });
 
+const MaterialLocatorSchema = z
+  .string()
+  .min(1)
+  .superRefine((locator, ctx) => {
+    const message = validateMaterialLocator(locator);
+    if (message !== null) ctx.addIssue({ code: "custom", message });
+  });
+
+const AnnotatedMaterialSchema = z
+  .object({
+    locator: MaterialLocatorSchema,
+    note: z.string().trim().min(1).optional(),
+  })
+  .strict();
+
 /**
  * Zod schema for a `ghost.node/v1` frontmatter block.
  *
@@ -31,15 +46,7 @@ export const GhostNodeFrontmatterSchema = z
   .object({
     description: z.string().min(1).optional(),
     materials: z
-      .array(
-        z
-          .string()
-          .min(1)
-          .superRefine((locator, ctx) => {
-            const message = validateMaterialLocator(locator);
-            if (message !== null) ctx.addIssue({ code: "custom", message });
-          }),
-      )
+      .array(z.union([MaterialLocatorSchema, AnnotatedMaterialSchema]))
       .optional(),
     // `relates` (and all typed edges) were removed. Reject it with a message
     // that names the key so authors get a clear signal.

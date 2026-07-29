@@ -1,3 +1,5 @@
+import type { GhostMaterial } from "../materials.js";
+
 /**
  * A node in the fingerprint catalog — pure prose plus its filename-derived
  * identity. The body is the design expression; there are no structured content
@@ -12,8 +14,8 @@ export interface GhostCatalogNode {
   slug: string;
   /** Retrieval payload shown in gather: what applies, when, and what it contributes. */
   description?: string;
-  /** Optional material locators carried by the authored node. */
-  materials?: string[];
+  /** Optional bare or annotated material locators carried by the authored node. */
+  materials?: GhostMaterial[];
   /** True when the node carries a material locator, substantial fence, or Skeleton. */
   concrete: boolean;
   /** True when the node body carries a fenced block of at least 3 lines. */

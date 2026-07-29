@@ -2,12 +2,17 @@ import { readdir, readFile, realpath, stat } from "node:fs/promises";
 import { isAbsolute, join, relative, resolve } from "node:path";
 import { TextDecoder } from "node:util";
 import { hasGlobMagic, matchesGlob, normalizeGlobPath } from "./glob.js";
-import { classifyMaterialLocator } from "./materials.js";
+import {
+  classifyMaterialLocator,
+  type GhostMaterial,
+  normalizeMaterial,
+} from "./materials.js";
 
 export type TransportedMaterialTier = "bundled" | "referenced" | "url";
 
 export interface TransportedMaterial {
   locator: string;
+  note?: string;
   tier: TransportedMaterialTier;
   /** Repo-relative concrete file path, when the locator resolved to a file. */
   path?: string;
@@ -49,21 +54,25 @@ const DEFAULT_REFERENCED_INLINE_BYTES = 8 * 1024;
 const textDecoder = new TextDecoder("utf-8", { fatal: true });
 
 export async function transportMaterials(
-  locators: string[] | undefined,
+  declarations: GhostMaterial[] | undefined,
   options: MaterialTransportOptions,
 ): Promise<MaterialTransportResult> {
   const materials: TransportedMaterial[] = [];
   let inlined = 0;
   let omitted = 0;
 
-  for (const locator of locators ?? []) {
+  for (const declaration of declarations ?? []) {
+    const { locator, note } = normalizeMaterial(declaration);
+    const annotation = note === undefined ? {} : { note };
     const classified = classifyMaterialLocator(locator);
     if (classified.kind === "url") {
       materials.push({
         locator,
+        ...annotation,
         tier: "url",
         omitted: true,
-        reason: "HTTPS URL; fetch it only if the task requires it",
+        reason:
+          "external locator; use an available host connection if the task requires it",
       });
       omitted += 1;
       continue;
@@ -76,6 +85,7 @@ export async function transportMaterials(
     if (expanded.matches.length === 0) {
       materials.push({
         locator,
+        ...annotation,
         tier: expanded.tier,
         omitted: true,
         reason: "matched no local files",
@@ -91,6 +101,7 @@ export async function transportMaterials(
         expanded.tier,
         options,
       );
+      if (note !== undefined) transported.note = note;
       materials.push(transported);
       if (transported.inlined !== undefined) inlined += 1;
       if (transported.omitted) omitted += 1;
@@ -99,6 +110,7 @@ export async function transportMaterials(
     if (expanded.truncated) {
       materials.push({
         locator,
+        ...annotation,
         tier: expanded.tier,
         omitted: true,
         reason: `glob matched more than ${options.globCap ?? DEFAULT_GLOB_CAP} files; omitted the rest`,
