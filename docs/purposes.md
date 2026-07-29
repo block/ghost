@@ -38,7 +38,7 @@ into folders is a browsing convenience only.
 | `manifest.yml` | Schema version and package id; the package's anchor. |
 | `glossary.md` | The author's dictionary: every term with defined meaning in the corpus. ghost ships no fixed vocabulary. |
 | Prose nodes (`<kind>.<slug>.md`, `<slug>.md`) | Durable brand guidance; each body answers why (the stance), with what (the materials), or how it is assembled (the patterns). Altitude lives in prose; narrower guidance names its condition. |
-| Node frontmatter | `description` (retrieval payload) and optional `materials` (repo-relative paths/globs or supported external locators using `https:`, `mcp:`, `figma:`, or `github:`, with optional retrieval notes). |
+| Node frontmatter | `description` (retrieval payload) and optional `materials` (repo-relative paths/globs or supported external locators, with optional retrieval notes; see the schema reference for the supported schemes). |
 | `checks/` | Optional review assertions binding to nodes with `references`. Never a node source and never generation input. |
 
 One resolution mechanism, read-only:

@@ -62,6 +62,7 @@ export {
 export {
   type ClassifiedGhostMaterialLocator,
   classifyMaterialLocator,
+  externalLocatorScheme,
   type GhostAnnotatedMaterial,
   type GhostMaterial,
   type GhostMaterialLocatorKind,

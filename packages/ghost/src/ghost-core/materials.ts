@@ -40,6 +40,18 @@ export function materialLocator(material: GhostMaterial): string {
 }
 
 /**
+ * Return the lowercased scheme name of an external locator without its colon
+ * (e.g. `mcp`, `figma`, `github`, `https`). Returns `undefined` for a
+ * repo-relative local locator that carries no scheme.
+ */
+export function externalLocatorScheme(value: string): string | undefined {
+  if (!URI_SCHEME.test(value) || WINDOWS_ABSOLUTE_PATH.test(value)) {
+    return undefined;
+  }
+  return value.slice(0, value.indexOf(":")).toLowerCase();
+}
+
+/**
  * Classify a material locator after `validateMaterialLocator`. `url` is the
  * legacy public kind for an external locator; `access` distinguishes HTTPS from
  * connection-dependent locators. ghost never resolves or connects to them.

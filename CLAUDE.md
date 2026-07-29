@@ -58,11 +58,12 @@ hierarchy, no inheritance, no edges; nesting into folders is a browsing
 convenience only.
 
 `materials` is the single locator field for concrete materials the guidance is
-about. It accepts repo-relative paths/globs and supported external locators
-(`https:`, `mcp:`, `figma:`, or `github:`) as bare strings or
-`{ locator, note }` objects. Components, patterns, logos, motion
+about. It accepts repo-relative paths/globs and supported external locators as
+bare strings or `{ locator, note }` objects. Components, patterns, logos, motion
 files, illustrations, and external asset libraries all use the same field.
-Guidance stays in prose; `materials` only says where the material is.
+Guidance stays in prose; `materials` only says where the material is. See
+`packages/ghost/src/skill-bundle/references/schema.md` for the supported
+external locator schemes.
 
 While drafting a body, ask three questions of every node (drafting prompts,
 never fields): **why** (the stance), **with what** (the materials, and pointers

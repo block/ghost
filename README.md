@@ -123,12 +123,11 @@ constrained or when brand presence should recede.
 ```
 
 `materials` points at the concrete stuff the guidance is about through
-repo-relative paths/globs or supported external references (`https:`, `mcp:`,
-`figma:`, or `github:`). An opaque entry may include a short note describing
-what the agent will find there. Components, patterns,
-logos, motion files, illustrations, and external asset libraries all use the
-same field. Guidance stays in prose; `materials` only says where the material
-is.
+repo-relative paths/globs or supported external references. An opaque entry may
+include a short note describing what the agent will find there. Components,
+patterns, logos, motion files, illustrations, and external asset libraries all
+use the same field. Guidance stays in prose; `materials` only says where the
+material is.
 
 **Checks** are optional review assertions in a flat `.ghost/checks/` directory.
 Core `ghost init` ships no checks; add them explicitly:

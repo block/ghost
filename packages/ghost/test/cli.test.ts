@@ -1213,7 +1213,7 @@ describe("ghost CLI", () => {
     await writeFile(join(dir, "brand", "large.txt"), "x".repeat(8 * 1024 + 1));
     await writeFile(
       join(dir, ".ghost", "asset.materials.md"),
-      "---\ndescription: Materials.\nmaterials:\n  - locator: materials/tokens.css\n    note: Canonical token values\n  - brand/voice.txt\n  - brand/mark.bin\n  - brand/large.txt\n  - locator: mcp://brand-assets/brand-kit\n    note: Approved source artwork\n---\n\nRead these materials.\n",
+      "---\ndescription: Materials.\nmaterials:\n  - locator: materials/tokens.css\n    note: Canonical token values\n  - brand/voice.txt\n  - brand/mark.bin\n  - brand/large.txt\n  - https://example.com/brand-kit\n  - locator: mcp://brand-assets/brand-kit\n    note: Approved source artwork\n---\n\nRead these materials.\n",
     );
 
     const md = await runCli(["pull", "asset.materials"], dir);
@@ -1233,6 +1233,11 @@ describe("ghost CLI", () => {
     expect(md.stdout).toContain(
       "- brand/large.txt — exceeds 8 KB inline limit",
     );
+    // A bare https: URL and an annotated mcp: object coexist in one node and
+    // each surface their own locator-only line through the full pull path.
+    expect(md.stdout).toContain(
+      "- https://example.com/brand-kit — external locator; use an available host connection if the task requires it",
+    );
     expect(md.stdout).toContain(
       "- mcp://brand-assets/brand-kit — external locator; use an available host connection if the task requires it",
     );
@@ -1246,7 +1251,7 @@ describe("ghost CLI", () => {
       event: "pull",
       ids: ["asset.materials"],
       inlinedMaterials: 2,
-      omittedMaterials: 3,
+      omittedMaterials: 4,
     });
   });
 
@@ -1938,11 +1943,9 @@ describe("ghost CLI", () => {
     expect(result.stdout).toContain(
       "access depends on the URL and any permissions it requires",
     );
+    expect(result.stdout).toContain("mcp external locator only");
     expect(result.stdout).toContain(
-      "connection-dependent external locator only",
-    );
-    expect(result.stdout).toContain(
-      "recipient may need a connection or permission",
+      "recipient may need a mcp connection or permission",
     );
     const archive = parseTarEntries(gunzipSync(await readFile(out)));
     expect(archive.has("asset.tokens.md")).toBe(true);
@@ -2026,17 +2029,23 @@ describe("ghost CLI", () => {
     await writeBareTestPackage(dir);
     await writeFile(
       join(dir, ".ghost", "asset.remote.md"),
-      "---\ndescription: Remote material.\nmaterials:\n  - mcp://brand-assets/tokens\n---\n\nRemote prose.\n",
+      "---\ndescription: Remote material.\nmaterials:\n  - mcp://brand-assets/tokens\n  - figma://file/abc\n  - github:acme/brand-assets\n---\n\nRemote prose.\n",
     );
 
     const result = await runCli(["export", "--strict"], dir);
 
     expect(result.code).toBe(0);
+    expect(result.stdout).toContain("mcp external locator only");
     expect(result.stdout).toContain(
-      "connection-dependent external locator only",
+      "recipient may need a mcp connection or permission",
     );
+    expect(result.stdout).toContain("figma external locator only");
     expect(result.stdout).toContain(
-      "recipient may need a connection or permission",
+      "recipient may need a figma connection or permission",
+    );
+    expect(result.stdout).toContain("github external locator only");
+    expect(result.stdout).toContain(
+      "recipient may need a github connection or permission",
     );
   });
 

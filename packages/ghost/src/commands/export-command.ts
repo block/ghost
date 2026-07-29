@@ -3,6 +3,7 @@ import { dirname, resolve } from "node:path";
 import type { CAC } from "cac";
 import {
   classifyMaterialLocator,
+  externalLocatorScheme,
   type GhostCatalogNode,
   materialLocator,
   resolveLocalMaterialLocator,
@@ -222,9 +223,10 @@ function formatExportMarkdown(fields: {
     lines.push("Travels with the archive:", "");
     for (const item of fields.audit.travels) {
       if (item.access === "connector") {
+        const provider = externalLocatorScheme(item.locator) ?? "connector";
         lines.push(
-          `- \`${item.nodeId}\` — \`${item.locator}\` (connection-dependent external locator only)`,
-          "  - The locator travels; the recipient may need a connection or permission to access the material.",
+          `- \`${item.nodeId}\` — \`${item.locator}\` (${provider} external locator only)`,
+          `  - The locator travels; the recipient may need a ${provider} connection or permission to access the material.`,
         );
       } else if (item.access === "https") {
         lines.push(
