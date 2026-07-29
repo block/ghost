@@ -1,5 +1,11 @@
 # @design-intelligence/ghost
 
+## 0.26.0
+
+### Minor Changes
+
+- [#247](https://github.com/block/ghost/pull/247) [`6e248cc`](https://github.com/block/ghost/commit/6e248ccb629f7c54a2f63cbda05cbf5884e55ada) Thanks [@chailandau](https://github.com/chailandau)! - Accept `https:`, `mcp:`, `figma:`, and `github:` external material locators and annotated `{ locator, note }` declarations. This widens public material arrays from `string[]` to `GhostMaterial[]`; TypeScript consumers of `/core` and `/embed` can use `materialLocator()` or `normalizeMaterial()` to read either shape, and `externalLocatorScheme()` to read an external locator's scheme. Pull JSON now includes optional `note`, export audit JSON includes optional `access`, the export audit names the external provider (for example `mcp`, `figma`, or `github`), and external-material omission messages use the new locator terminology.
+
 ## 0.25.1
 
 ### Patch Changes
