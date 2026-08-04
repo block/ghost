@@ -1,5 +1,11 @@
 # @design-intelligence/ghost
 
+## 0.26.1
+
+### Patch Changes
+
+- [#249](https://github.com/block/ghost/pull/249) [`c103924`](https://github.com/block/ghost/commit/c103924d106f96f20a6af5f948bf756341eb6383) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Flush stdout and stderr before exit so piped command output is never truncated.
+
 ## 0.26.0
 
 ### Minor Changes
