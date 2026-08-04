@@ -7,7 +7,7 @@ import {
   resolveGhostPackage,
 } from "../package.js";
 import { detectFileKind, lintDetectedFileKind } from "../scan/file-kind.js";
-import { failFromError } from "./errors.js";
+import { exitCli, failFromError } from "./errors.js";
 import { registerInitCommand } from "./init-command.js";
 
 /**
@@ -39,7 +39,7 @@ export function registerFingerprintCommands(cli: CAC): void {
         if (path === undefined || (await isDirectory(target))) {
           report = await lintGhostPackage(packagePath, process.cwd());
           writeLintReport(report, opts.format);
-          process.exit(report.errors > 0 ? 1 : 0);
+          await exitCli(report.errors > 0 ? 1 : 0);
           return;
         }
 
@@ -50,9 +50,9 @@ export function registerFingerprintCommands(cli: CAC): void {
 
         writeLintReport(report, opts.format);
 
-        process.exit(report.errors > 0 ? 1 : 0);
+        await exitCli(report.errors > 0 ? 1 : 0);
       } catch (err) {
-        failFromError(err);
+        await failFromError(err);
       }
     });
 

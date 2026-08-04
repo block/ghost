@@ -6,7 +6,7 @@ import { appendGhostEvent, resolveRunId } from "../observability-events.js";
 import { resolveGhostPackage } from "../package.js";
 import { GHOST_EVENTS_FILENAME } from "../scan/constants.js";
 import { resolveGitRoot } from "../scan/package-paths.js";
-import { failFromError } from "./errors.js";
+import { exitCli, failFromError } from "./errors.js";
 
 export function registerPullCommand(cli: CAC): void {
   cli
@@ -37,12 +37,12 @@ export function registerPullCommand(cli: CAC): void {
       try {
         if (opts.format !== "markdown" && opts.format !== "json") {
           console.error("Error: --format must be 'markdown' or 'json'");
-          process.exit(2);
+          await exitCli(2);
           return;
         }
         if (opts.order !== "steering" && opts.order !== "given") {
           console.error("Error: --order must be 'steering' or 'given'");
-          process.exit(2);
+          await exitCli(2);
           return;
         }
 
@@ -80,7 +80,7 @@ export function registerPullCommand(cli: CAC): void {
         }
 
         if (result.ids.length === 0) {
-          process.exit(2);
+          await exitCli(2);
           return;
         }
 
@@ -91,9 +91,9 @@ export function registerPullCommand(cli: CAC): void {
         } else {
           process.stdout.write(formatPullMarkdown(result));
         }
-        process.exit(0);
+        await exitCli(0);
       } catch (err) {
-        failFromError(err);
+        await failFromError(err);
       }
     });
 }

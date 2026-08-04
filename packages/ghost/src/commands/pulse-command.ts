@@ -7,7 +7,7 @@ import {
 } from "../observability-events.js";
 import { resolveGhostPackage } from "../package.js";
 import { loadGhostPackage } from "../scan/fingerprint-package.js";
-import { failFromError } from "./errors.js";
+import { exitCli, failFromError } from "./errors.js";
 
 export function registerPulseCommand(cli: CAC): void {
   cli
@@ -23,7 +23,7 @@ export function registerPulseCommand(cli: CAC): void {
       try {
         if (opts.format !== "markdown" && opts.format !== "json") {
           console.error("Error: --format must be 'markdown' or 'json'");
-          process.exit(2);
+          await exitCli(2);
           return;
         }
 
@@ -38,9 +38,9 @@ export function registerPulseCommand(cli: CAC): void {
         } else {
           process.stdout.write(formatPulseMarkdown(report));
         }
-        process.exit(0);
+        await exitCli(0);
       } catch (err) {
-        failFromError(err);
+        await failFromError(err);
       }
     });
 }

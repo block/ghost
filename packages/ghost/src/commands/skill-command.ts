@@ -5,7 +5,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { CAC } from "cac";
 import { loadSkillBundle, UsageError } from "#ghost-core";
-import { failFromError } from "./errors.js";
+import { exitCli, failFromError } from "./errors.js";
 
 // The bundle assets are copied to `dist/skill-bundle` (sibling of `commands/`).
 const SKILL_BUNDLE_ROOT = fileURLToPath(
@@ -37,7 +37,7 @@ export function registerSkillCommand(cli: CAC): void {
       try {
         if (action !== "install") {
           console.error("Error: ghost skill currently supports only `install`");
-          process.exit(2);
+          await exitCli(2);
           return;
         }
 
@@ -53,7 +53,7 @@ export function registerSkillCommand(cli: CAC): void {
           console.error(
             `Error: ${outDir} already contains SKILL.md. Pass --force to reinstall.`,
           );
-          process.exit(3);
+          await exitCli(3);
           return;
         }
 
@@ -70,9 +70,9 @@ export function registerSkillCommand(cli: CAC): void {
           `Wrote ${written.length} file${written.length === 1 ? "" : "s"} to ${outDir}:\n`,
         );
         for (const file of written) process.stdout.write(`  ${file}\n`);
-        process.exit(0);
+        await exitCli(0);
       } catch (err) {
-        failFromError(err);
+        await failFromError(err);
       }
     });
 }

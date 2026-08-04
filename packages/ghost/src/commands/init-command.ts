@@ -3,7 +3,7 @@ import { UsageError } from "#ghost-core";
 import { initGhostPackage } from "../package.js";
 import { addChecksDir } from "../scan/check-scaffold.js";
 import { getInitBody } from "../scan/templates.js";
-import { failFromError } from "./errors.js";
+import { exitCli, failFromError } from "./errors.js";
 
 export function registerInitCommand(cli: CAC): void {
   cli
@@ -29,7 +29,7 @@ export function registerInitCommand(cli: CAC): void {
           console.error(
             "Error: ghost init no longer accepts a positional directory. Use --package <dir> for an exact package directory.",
           );
-          process.exit(2);
+          await exitCli(2);
           return;
         }
         const exactPackage =
@@ -97,9 +97,9 @@ export function registerInitCommand(cli: CAC): void {
             }
           }
         }
-        process.exit(0);
+        await exitCli(0);
       } catch (err) {
-        failFromError(err);
+        await failFromError(err);
       }
     });
 }

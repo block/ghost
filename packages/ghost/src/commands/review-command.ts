@@ -9,7 +9,7 @@ import {
   formatReviewPacket,
 } from "../review/review-packet.js";
 import { loadGhostPackage } from "../scan/fingerprint-package.js";
-import { failFromError } from "./errors.js";
+import { exitCli, failFromError } from "./errors.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -35,7 +35,7 @@ export function registerReviewCommand(cli: CAC): void {
         const format = opts.json ? "json" : opts.format;
         if (format !== "markdown" && format !== "json") {
           console.error("Error: --format must be 'markdown' or 'json'");
-          process.exit(2);
+          await exitCli(2);
           return;
         }
 
@@ -45,7 +45,7 @@ export function registerReviewCommand(cli: CAC): void {
           console.error(
             "No checks directory. Run `ghost checks init` to add review assertions.",
           );
-          process.exit(2);
+          await exitCli(2);
           return;
         }
         const diffText = await resolveDiff({
@@ -62,9 +62,9 @@ export function registerReviewCommand(cli: CAC): void {
             ? `${JSON.stringify(packet, null, 2)}\n`
             : formatReviewPacket(packet),
         );
-        process.exit(0);
+        await exitCli(0);
       } catch (err) {
-        failFromError(err);
+        await failFromError(err);
       }
     });
 }

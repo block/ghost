@@ -22,7 +22,7 @@ import {
 } from "../scan/fingerprint-package.js";
 import { resolveGitRoot } from "../scan/package-paths.js";
 import { defaultArchiveName, writeDirectoryTarball } from "../scan/tarball.js";
-import { failFromError } from "./errors.js";
+import { exitCli, failFromError } from "./errors.js";
 
 interface ExportAuditTravelingLocator {
   nodeId: string;
@@ -66,7 +66,7 @@ export function registerExportCommand(cli: CAC): void {
       try {
         if (opts.format !== "markdown" && opts.format !== "json") {
           console.error("Error: --format must be 'markdown' or 'json'");
-          process.exit(2);
+          await exitCli(2);
           return;
         }
 
@@ -76,7 +76,7 @@ export function registerExportCommand(cli: CAC): void {
           console.error(
             "Error: ghost package has validation errors. Run `ghost validate` and fix them before exporting.",
           );
-          process.exit(2);
+          await exitCli(2);
           return;
         }
         const loaded = await loadGhostPackage(paths);
@@ -137,9 +137,9 @@ export function registerExportCommand(cli: CAC): void {
           );
         }
 
-        process.exit(opts.strict && audit.stranded.length > 0 ? 2 : 0);
+        await exitCli(opts.strict && audit.stranded.length > 0 ? 2 : 0);
       } catch (err) {
-        failFromError(err);
+        await failFromError(err);
       }
     });
 }

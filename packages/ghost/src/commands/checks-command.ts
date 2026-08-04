@@ -1,7 +1,7 @@
 import type { CAC } from "cac";
 import { resolveGhostPackage } from "../package.js";
 import { addChecksDir } from "../scan/check-scaffold.js";
-import { failFromError } from "./errors.js";
+import { exitCli, failFromError } from "./errors.js";
 
 /**
  * `ghost checks <action>` — manage the flat `.ghost/checks/` directory of
@@ -21,12 +21,12 @@ export function registerChecksCommand(cli: CAC): void {
       try {
         if (opts.format !== "cli" && opts.format !== "json") {
           console.error("Error: --format must be 'cli' or 'json'");
-          process.exit(2);
+          await exitCli(2);
           return;
         }
         if (action !== "init") {
           console.error("Error: ghost checks supports `init`");
-          process.exit(2);
+          await exitCli(2);
           return;
         }
 
@@ -53,9 +53,9 @@ export function registerChecksCommand(cli: CAC): void {
             process.stdout.write(`  skipped ${file}\n`);
           }
         }
-        process.exit(0);
+        await exitCli(0);
       } catch (err) {
-        failFromError(err);
+        await failFromError(err);
       }
     });
 }
