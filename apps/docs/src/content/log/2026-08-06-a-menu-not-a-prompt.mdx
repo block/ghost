@@ -1,0 +1,70 @@
+---
+title: a menu, not a prompt
+date: 2026-08-06
+summary: gather and pull give agents the context a task needs while showing authors which guidance entered the work.
+---
+
+A useful brand packet needs a lot of context.
+
+Brand shows up through product behavior, composition, words, trust, marketing, email, images, and the small choices that connect them. A packet broad enough to steer all of that cannot become one prompt pasted into every task.
+
+The context window constrains you. Relevance constrains you more. A brand can hold guidance that looks contradictory because each statement belongs to a different medium or situation. A quiet product flow and an expressive campaign may both be right. A high-trust financial action and a casual social post should not use the same density, language, or persuasive moves.
+
+Humans resolve these differences from context. We browse documentation, recognize which part concerns the work, and return to it when a new decision appears. A model without that shared history needs the packet to make the process explicit.
+
+We built Gather and Pull from a simple requirement: give the agent the right context at the right time.
+
+## gather is the menu
+
+`ghost gather` presents the complete menu of guidance in a packet. Each item has an id and a description that tells the agent what it covers and when it applies. The menu stays compact enough to inspect without loading every node body and material into context.
+
+The host agent reads that menu against the task. It uses `ghost pull` to retrieve the applicable nodes, including their prose and concrete materials. It can return and pull more guidance as the work develops.
+
+The pair mimics how you use a documentation site. You don't paste the whole site into your working memory before designing a page. You see the available sections, open the ones that matter, start working, and consult another section when the task reaches it.
+
+This interaction changes how authors write the packet. A description is not a summary added for convenience. It is the retrieval payload. It needs to name the condition under which the guidance should enter the work. Topic overlap alone is not enough. Guidance about trust may apply to one irreversible action and not to every screen that contains money.
+
+The body can carry the full context without forcing it into a universal prompt.
+
+## ghost stops before the agent
+
+ghost does not decide which nodes apply. It emits the menu and retrieves the ids the host requests, leaving responsibility with the host agent.
+
+I don't want ghost to become another agent implementation. It should work across models, harnesses, editors, and future making loops. The host already knows the task, the conversation that led to it, the files being changed, and the medium it will produce. A separate ghost agent would duplicate that context and bind the packet to one interpreter.
+
+ghost handles the repeatable work: validate the package, expose the complete menu, retrieve selected guidance and materials in a stable order, and record what happened locally. The installed skill teaches a capable host how to judge applicability.
+
+This boundary keeps the brand artifact portable. A team can improve its packet without choosing the same model or agent harness as every consumer.
+
+## selection is evidence
+
+Gather solved another problem that mattered from the beginning of ghost: observability.
+
+Before selection events, we could inspect a generated output and see that something had gone wrong. We couldn't tell whether the packet lacked the right guidance, the menu described it poorly, the agent skipped it, or the model received it and failed to follow it.
+
+Gather and Pull record which guidance was exposed and which nodes the agent requested. The trace doesn't grade the output. It gives the author evidence about the context that participated in making it.
+
+Internal testing surfaced cases where agents pulled guidance we didn't expect or missed guidance we considered central. Those results showed that parts of our descriptions and organization were off. We adjusted the glossary and the way nodes explained their applicability, then tested again.
+
+The final output alone couldn't have told us what to change. Selection made the authoring problem visible.
+
+The feedback loop gives the packet a way to improve through use:
+
+1. An author states guidance and describes when it applies.
+2. An agent reads the menu and pulls a subset for a real task.
+3. The local event trail shows what it used and missed.
+4. The author revises the packet or glossary where the selection was wrong.
+
+The original ghost observed drift across implementations. Current ghost observes how authored guidance enters generation, carrying the same need for visibility into a different part of the work.
+
+## context has a cost
+
+Selective context has an economic effect.
+
+We haven't published an evaluation of the context savings yet. Internal workbench runs suggest we can steer with less context instead of dumping the whole brand into each generation. This should lower the cost of repeated work and leave more room for the task, source material, and iteration.
+
+We still owe a reproducible public evaluation. The architecture makes the measurements possible: menu size, selected-node size, selection traces, run cost, and output comparisons.
+
+The goal is not context minimalism. Some tasks need many nodes, and a serious brand packet should contain enough depth to change the work. Gather gives the agent a way to take what the task requires without pretending one universal prompt can represent the whole brand at once.
+
+This lets the brand remain broad while each generation stays specific, with a visible path that authors can inspect and improve.

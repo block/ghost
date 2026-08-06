@@ -1,0 +1,73 @@
+---
+title: three buckets could not hold a brand
+date: 2026-08-06
+summary: ghost moved from fixed steering facets and relationship machinery to a flat corpus shaped by each brand's own vocabulary.
+---
+
+Once ghost stopped treating repository scans as the source of truth, it needed a form people could author.
+
+An early model divided brand steering into three buckets: intent, inventory, and composition. It followed a messier first authored package of intent, maps, patterns, resources, checks, and scan output. We were trying to separate authored truth from generated evidence. The facets gave that work a cleaner theory.
+
+Intent held the reasons and principles behind the work. Inventory held the concrete things available to use. Composition explained how those things came together. The model reflected my experience with design systems and product design. It was a reasoned attempt, not a conclusion drawn from model testing.
+
+The buckets promised predictability. An agent could know where to look for each kind of information. ghost could validate a stable package shape. The format retained some of the scanning ethos: information that software once extracted from a repository could now be stated and maintained by an author.
+
+At that point I was thinking more about predictable machine consumption than the experience of the person trying to write the packet.
+
+## where do we put this?
+
+Internal author testing exposed the problem. People already had concepts, principles, examples, assets, and rules that made sense within their brands. ghost asked them to translate that knowledge into its terms.
+
+The translation was rarely clean.
+
+A piece of guidance might express intent and prescribe composition at the same time. A concrete material could carry the clearest statement of a principle. Authors had to decide where one idea belonged, then either lose part of its meaning or repeat it across files.
+
+The terms pulled the packet toward product interfaces. Inventory and composition make immediate sense when you're thinking about components, tokens, and screens. They fit less comfortably when the guidance concerns a company's stance in an email, the way it makes a claim in marketing, or how it communicates trust.
+
+The facet files were already large in testing. This created a practical context problem. The artifact was becoming broad enough to be useful while its structure encouraged sending large files into the model together.
+
+The buckets made the package predictable by making authors struggle with the boundaries.
+
+Markdown and prose were never the obstacle. Models already read them well. The question was why ghost kept putting a rigid theory of brand around a medium that could express the guidance directly.
+
+## going deep on structure
+
+We didn't jump from three files to today's flat corpus.
+
+ghost explored a more structured direction first. The package gained surfaces, placement, containment, bindings, and typed relationships. A surface could describe a part of a product. Nodes could live within a topology. A resolver could assemble a slice of guidance through parent relationships and composition edges. Repository paths could bind implementation to the right surface.
+
+I believed in this direction while we built it. The work was short-lived, but it wasn't casual churn.
+
+There is little industry precedent for a machine-first artifact that tries to carry brand at this breadth. The practical way to test a plausible theory was to take it far enough that its costs became real. Diagrams and design notes couldn't tell us how authors would experience the topology or how much resolution machinery agents would need.
+
+Testing the topology exposed too much machinery. Hierarchy needed rules for containment. Cross-cutting concepts needed edges. Repository ownership needed bindings. Inheritance needed resolution behavior. Every addition made the relationship model more expressive and made the system harder for both humans and machines to understand.
+
+The machinery had started to define the artifact. Authors were modeling their brand as relationships so ghost could reconstruct prose for an agent that was capable of reading prose and context.
+
+## a catalog of described nodes
+
+The simplification began by making description a first-class part of every node. Instead of asking a topology to determine what content existed for a task, ghost could present a catalog of names and descriptions. The host agent could read the task, judge which descriptions applied, and retrieve those nodes.
+
+Once that worked, surfaces stopped needing to act as content containers. Composition edges disappeared. Nesting and inheritance followed. The package settled into a flat corpus of small Markdown files.
+
+Flat doesn't mean shapeless.
+
+A node has an identity and a description. It can point to materials such as code, assets, or external sources. Its body carries the guidance in prose. Checks can reference guidance while staying out of generation context. These constraints make the packet portable and inspectable without claiming that every brand uses the same terms.
+
+Kinds remain, but the author owns them. One brand might use `principle`, `pattern`, and `exemplar`. Another might use words grounded in its own practice. The glossary declares those terms and teaches the model what they mean. A filename such as `principle.density.md` helps a person browse and gives the agent vocabulary. It doesn't place the node inside a ghost-owned hierarchy.
+
+The difference is small in file structure and large in authority. The old schema told authors which forms of brand knowledge existed. The current format lets authors describe their own knowledge through a grammar that ghost can validate and an agent can navigate.
+
+## what the buckets left behind
+
+Intent, inventory, and composition weren't useless ideas. They still help when drafting a node:
+
+- Why does this guidance matter?
+- Which materials make it concrete?
+- How should the result be assembled?
+
+They work as questions because one answer can cross all three. They failed as permanent filing destinations because brand knowledge doesn't respect those borders.
+
+ghost now imposes less structure and asks more from the writing. A description has to state when guidance applies. A node has to contain enough context to change an output. A glossary has to explain the author's terms. This work can't hide behind a comprehensive schema.
+
+The current corpus reflects a lesson from the systems we removed: structure should help a brand describe itself, not make the brand conform to ghost's theory of what it ought to contain.

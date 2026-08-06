@@ -1,0 +1,51 @@
+---
+title: drift was the point
+date: 2026-08-06
+summary: ghost began as an observatory for decentralized design systems where divergence could be seen and chosen.
+---
+
+ghost began with a loose idea about decentralized UI libraries.
+
+A library like shadcn gives a team the code and lets them own what happens next. This freedom is useful. A product can move without waiting for a central design systems team to accept its requirements, schedule the work, and release a new version. An area within a product can solve the problem in front of it instead of negotiating every local decision with a group several steps away.
+
+The cost is that every copy starts to evolve. One team changes the spacing. Another rebuilds a component around its workflow. A third finds a better pattern and has no way to show the rest of the system what it learned. The copies stop moving together, and nobody has a clear view of where they went.
+
+I wanted ghost to add that missing view.
+
+## drift as a signal
+
+The first version landed as a design drift detection engine. It scanned token overrides, hardcoded colors, missing tokens, component structure, and visual differences. Within a few days, it generated a 64-dimensional fingerprint of a design system. The fingerprint measured palette, spacing, typography, surfaces, and architecture. ghost could compare fingerprints, place a fleet of systems in a similarity space, and show how they changed over time.
+
+The point was never to force every copy back into alignment.
+
+I saw drift as natural evolution. No matter how complete a system appears, it has a blind spot around what products ship and what local teams discover. A central library captures the decisions its maintainers know about. It can't anticipate every workflow, audience, platform, or constraint that its consumers will meet.
+
+Letting products diverge gives the system room to learn. The real problem is letting them diverge invisibly.
+
+ghost treated drift as a neutral signal that needed a recorded stance. The early CLI had commands to acknowledge a difference, adopt a new fingerprint as a baseline, or mark one dimension as diverging. Projects could declare a parent. History files recorded how their fingerprints moved. A fleet view calculated clusters, outliers, and the distance between consumers.
+
+The high-level idea went further than the implementation. A copy might mark itself as following another implementation. A useful change in one product might become a marker for other products to inspect and adopt. Continuous AI analysis could watch the fleet and help teams decide whether a difference represented debt, a local requirement, or a direction worth promoting.
+
+We built much of the observatory. We didn't complete the social mechanism around one implementation becoming a marker for another. The code proves the direction we explored, not a finished governance model.
+
+## power without permission
+
+The ambition was broad from the start. ghost was meant to put power in the hands of the people making products, rather than reserve authority for one central team that owned the library or visual design.
+
+This didn't mean uncontrolled fragmentation. The counterweight was visibility. A product could move, but it could state what it had done. Other teams could compare the result, understand its lineage, and respond with intent. Acknowledging, adopting, rejecting, and diverging were different valid actions.
+
+Agents were part of this idea from the beginning. ghost was not a human dashboard that later acquired AI features. The plan called for agents to inspect systems continuously, interpret the differences, and help people manage evolution across a decentralized fleet.
+
+This framing led us toward machinery: scanners for different implementation details, embeddings, numerical profiles, temporal analysis, pixel comparisons, and a 3D visualization. Each part made the implementations more legible. Together they tested a belief that has stayed with ghost even as most of that surface disappeared: you can't improve a system you can't observe.
+
+## what survived
+
+ghost no longer asks products to publish numerical design fingerprints or declare parent implementations. The current packet is authored from prose, materials, and checks. This can look like a different project if you compare commands instead of beliefs.
+
+The decentralization ethos still lives in it.
+
+A ghost packet can work like the UI libraries that inspired the project. Someone can publish an authoritative version. A product or team can take it, adjust it for local needs, and own the result. A useful change can move back upstream. Downstream users remain free to accept it, keep their version, or move in another direction. Authority has a scope; it doesn't create an obligation for every consumer.
+
+The object being passed around changed. The first ghost tried to make implementations observable and their lineage explicit. The current ghost makes brand intent portable and forkable before an agent starts making.
+
+This shift came later. The founding position remains: local evolution is useful, central control has limits, and autonomy works better when the decisions stay visible.
