@@ -1,9 +1,7 @@
 name: Deploy to GitHub Pages
 
-# Builds apps/docs with DEPLOY_BASE=/ghost/ and uploads the dist as the
-# Pages artifact. apps/docs is the one deployed site — it owns the home,
-# the design language catalogue (/ui/*), and the ghost tooling docs
-# (/tools/drift/*) under a single aesthetic.
+# Builds apps/docs with DEPLOY_BASE=/ghost/ and uploads the static thesis,
+# development log, and RSS feed as the Pages artifact.
 
 on:
   push:
@@ -32,22 +30,10 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
-      - name: Build ghost CLI package
-        run: pnpm --filter @design-intelligence/ghost build
-
-      - name: Build vessel-react library
-        run: pnpm --filter @design-intelligence/vessel-react build:lib
-
-      - name: Build shadcn registry
-        run: pnpm --filter @design-intelligence/vessel-react build:registry
-
       - name: Build docs site (base=/ghost/)
         env:
           DEPLOY_BASE: /ghost/
         run: pnpm --filter ghost-docs build
-
-      - name: SPA fallback
-        run: cp apps/docs/dist/index.html apps/docs/dist/404.html
 
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:

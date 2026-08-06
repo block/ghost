@@ -95,7 +95,7 @@ edits and checks.
 | `packages/vessel-react` | no | A standalone shadcn component registry and reference component system: the opinionated default reference body. Design-system-agnostic; nothing in ghost requires it. |
 | `packages/vessel-light` | no | Vessel's design language as a portable `.ghost/` package for agents writing raw HTML/CSS. No build, no dependencies. |
 | `packages/steering-control` | no | Before/after evaluation harness: measures what handing an agent a `.ghost` package buys, as a deterministic `report.html`. |
-| `apps/docs` | no | Public thesis site. |
+| `apps/docs` | no | Public thesis site and development log. |
 
 ## CLI Commands
 

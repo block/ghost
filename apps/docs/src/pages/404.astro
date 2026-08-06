@@ -1,0 +1,17 @@
+---
+import DocSection from "@/components/DocSection.astro";
+import SectionWrapper from "@/components/SectionWrapper.astro";
+import Base from "@/layouts/Base.astro";
+import { sitePath } from "@/utils/paths";
+---
+
+<Base title="not found — ghost" description="This page does not exist.">
+  <SectionWrapper class="pt-[var(--doc-page-top)]">
+    <DocSection title="not found" marker={404} labelAs="h1" class="py-12 first:pt-12">
+      <div class="max-w-[54ch] space-y-4">
+        <p>This page does not exist.</p>
+        <p><a class="underline" href={sitePath("/")}>Return to ghost.</a></p>
+      </div>
+    </DocSection>
+  </SectionWrapper>
+</Base>

@@ -1,0 +1,48 @@
+---
+import { getCollection } from "astro:content";
+import SectionWrapper from "@/components/SectionWrapper.astro";
+import Base from "@/layouts/Base.astro";
+import { sitePath } from "@/utils/paths";
+
+const entries = (await getCollection("log")).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+);
+const formatDate = (date: Date) =>
+  new Intl.DateTimeFormat("en", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  }).format(date);
+---
+
+<Base title="ghost log" description="A development record for ghost.">
+  <SectionWrapper class="pt-[var(--doc-page-top)]">
+    <div class="mb-12 max-w-[var(--doc-section-width)]">
+      <a class="text-2xl font-normal leading-8 lowercase" href={sitePath("/")}>log</a>
+      <a class="mt-1 block text-[var(--doc-middle)] hover:underline" href={sitePath("/log/rss.xml")}>rss</a>
+    </div>
+    <h1 class="sr-only">ghost log</h1>
+    <ol class="max-w-[var(--doc-section-width)]">
+      {entries.map((entry, index) => (
+        <li class="log-row grid grid-cols-1 border-b border-[var(--doc-line)] lg:grid-cols-[var(--doc-section-label-column)_var(--doc-section-content-column)] lg:gap-x-[var(--doc-section-gap)]">
+          <span class="py-6 text-[var(--doc-middle)]" aria-hidden="true">{index}</span>
+          <a
+            class="block py-6 pl-[2ch] no-underline hover:bg-[var(--doc-mark-soft)] focus-visible:bg-[var(--doc-mark-soft)]"
+            href={sitePath(`/log/${entry.id}/`)}
+          >
+            <time
+              class="text-[var(--doc-middle)]"
+              datetime={entry.data.date.toISOString()}
+            >
+              {formatDate(entry.data.date)}
+            </time>
+            <h2 class="mt-1 font-bold lowercase">{entry.data.title}</h2>
+            <p class="mt-2 text-[var(--doc-middle)]">{entry.data.summary}</p>
+          </a>
+        </li>
+      ))}
+    </ol>
+    <div class="h-24" aria-hidden="true"></div>
+  </SectionWrapper>
+</Base>

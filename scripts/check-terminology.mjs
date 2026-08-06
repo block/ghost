@@ -22,6 +22,7 @@ const FILE_EXTENSIONS = new Set([
   ".json",
   ".md",
   ".mdx",
+  ".astro",
   ".mjs",
   ".ts",
   ".tsx",
@@ -201,7 +202,13 @@ function collectFiles(path) {
 
   if (info.isDirectory()) {
     for (const entry of readdirSync(path, { withFileTypes: true })) {
-      if (entry.name === "node_modules" || entry.name === "dist") continue;
+      if (
+        entry.name === "node_modules" ||
+        entry.name === "dist" ||
+        entry.name === ".astro"
+      ) {
+        continue;
+      }
       results.push(...collectFiles(join(path, entry.name)));
     }
     return results;

@@ -1,0 +1,55 @@
+---
+import { getCollection, render } from "astro:content";
+import SectionWrapper from "@/components/SectionWrapper.astro";
+import Base from "@/layouts/Base.astro";
+import { sitePath } from "@/utils/paths";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("log");
+  return entries.map((entry) => ({ params: { id: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const displayDate = new Intl.DateTimeFormat("en", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+  timeZone: "UTC",
+}).format(entry.data.date);
+---
+
+<Base title={`${entry.data.title} — ghost log`} description={entry.data.summary}>
+  <SectionWrapper class="pt-[var(--doc-page-top)]">
+    <div class="mb-12 max-w-[var(--doc-section-width)]">
+      <a class="text-[var(--doc-middle)] hover:underline" href={sitePath("/log/")}>← log</a>
+    </div>
+    <article class="log-entry max-w-[54ch] py-12">
+      <time class="text-[var(--doc-middle)]" datetime={entry.data.date.toISOString()}>
+        {displayDate}
+      </time>
+      <h1 class="mt-2 text-2xl font-normal leading-8 lowercase">{entry.data.title}</h1>
+      <p class="mt-4 text-[var(--doc-middle)]">{entry.data.summary}</p>
+      <div class="mt-10 border-t border-[var(--doc-line)] pt-8">
+        <Content />
+      </div>
+    </article>
+    <div class="h-24" aria-hidden="true"></div>
+  </SectionWrapper>
+</Base>
+
+<style>
+  .log-entry :global(p + p) {
+    margin-top: 1rem;
+  }
+
+  .log-entry :global(h2) {
+    margin-top: 2rem;
+    font-weight: 700;
+    text-transform: lowercase;
+  }
+
+  .log-entry :global(a) {
+    text-decoration: underline;
+  }
+</style>

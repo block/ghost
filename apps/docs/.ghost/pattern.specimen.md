@@ -1,7 +1,7 @@
 ---
 context: A reader needs to inspect an example, table, code sample, comparison, palette, diagnostic, or interactive result.
 materials:
-  - apps/docs/src/app/page.tsx
+  - apps/docs/src/pages/index.astro
   - apps/docs/src/components/docs/gather-demo.tsx
   - apps/docs/src/styles/marked-doc.css
 ---

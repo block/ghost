@@ -1,0 +1,46 @@
+---
+interface Props {
+  id?: string;
+  title?: string;
+  marker?: string | number;
+  labelHidden?: boolean;
+  labelAs?: keyof HTMLElementTagNameMap;
+  class?: string;
+}
+
+const {
+  id,
+  title,
+  marker,
+  labelHidden = false,
+  labelAs = "p",
+  class: className = "",
+} = Astro.props;
+const Label = labelAs;
+---
+
+<section
+  id={id}
+  class:list={["doc-section scroll-mt-8 grid grid-cols-1 py-8 first:pt-0", className]}
+>
+  <div
+    aria-hidden={labelHidden ? "true" : undefined}
+    class:list={[
+      "mb-4 lg:sticky lg:top-8 lg:mb-0 lg:self-start",
+      labelHidden && "hidden lg:block",
+    ]}
+  >
+    {!labelHidden && (
+      <Label
+        class:list={[
+          "doc-section-label font-mono text-[0.8125rem] font-bold leading-5 lowercase text-foreground",
+          marker !== undefined && "doc-section-label--manual",
+        ]}
+      >
+        {marker !== undefined && <span class="doc-annotation">{marker} </span>}
+        {title}
+      </Label>
+    )}
+  </div>
+  <div class="doc-section-content min-w-0"><slot /></div>
+</section>

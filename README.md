@@ -177,7 +177,7 @@ The export audits `materials` entries and reports paths that moved.
 | [`packages/vessel-react`](./packages/vessel-react) | A standalone shadcn component registry and reference component system. | no |
 | [`packages/vessel-light`](./packages/vessel-light) | Vessel's design language as a portable `.ghost/` package for agents writing raw HTML/CSS. | no |
 | [`packages/steering-control`](./packages/steering-control) | Before/after evaluation harness: measures what a `.ghost` package buys as a self-contained `report.html`. | no |
-| [`apps/docs`](./apps/docs) | Public thesis site. | no |
+| [`apps/docs`](./apps/docs) | Public thesis site and development log. | no |
 
 ## Development
 

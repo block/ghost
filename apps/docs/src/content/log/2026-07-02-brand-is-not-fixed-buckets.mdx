@@ -1,0 +1,45 @@
+---
+title: brand is not fixed buckets
+date: 2026-07-02
+summary: intent, inventory, and composition make ghost predictable for the machine while making authors translate their brand into the wrong shape.
+---
+
+Repository scans cannot be the source of truth. That leaves a harder problem: what should people write?
+
+The model under test divides brand guidance into three buckets: intent, inventory, and composition. It followed a messier first pass of intent, maps, patterns, resources, and scan output. The goal was to separate authored truth from generated evidence. The facets gave that work a cleaner theory.
+
+Intent holds the reasons and principles behind the work. Inventory holds the concrete things available to use. Composition explains how those things come together. The model comes from design systems and product design practice. It is a reasoned attempt, not a conclusion drawn from enough use.
+
+The buckets promise predictability. An agent can know where to look for each kind of information. ghost can validate a stable shape. The format keeps some of the scanning ethos: information that software once extracted from a repository can now be stated and maintained by an author.
+
+The problem is that predictable machine consumption came before the experience of the person writing the thing.
+
+## where do we put this?
+
+Internal author testing is exposing the problem. People already have concepts, principles, examples, assets, and rules that make sense within their brands. ghost asks them to translate that knowledge into its terms.
+
+The translation is rarely clean.
+
+A piece of guidance might express intent and prescribe composition at the same time. A concrete material might carry the clearest statement of a principle. Authors have to decide where one idea belongs, then either lose part of its meaning or repeat it across files.
+
+The terms also pull the artifact toward product interfaces. Inventory and composition make immediate sense when you're thinking about components, tokens, and screens. They fit less comfortably when the guidance concerns a company's stance in an email, the way it makes a claim in marketing, or how it communicates trust.
+
+The facet files are already getting large. This creates a practical context problem. The artifact is becoming broad enough to be useful while its structure encourages sending large files into the model together.
+
+The buckets make the package predictable by making authors struggle with the boundaries.
+
+Markdown and prose are not the obstacle. Models already read them well. The question is why ghost keeps putting a rigid theory of brand around a medium that can express the guidance directly.
+
+## the resolver is getting louder than the writing
+
+Right now the answer is Relay: a runtime that takes a request, decides which facets apply, and compiles a brief. Config-driven, custom facets, context hits, posture summaries. It works, and every new case adds another key to the config.
+
+That is a smell.
+
+Relay exists because the chosen structure needs resolving. The model on the other end reads Markdown. It can judge relevance from a task. It can follow prose. It does not need ghost to reconstruct a brand ontology before it sees the work.
+
+The next test is smaller and probably more obvious than the system already in place: described files, each with a clear condition for when it applies, and a way for the agent to see the available set before it loads the full text.
+
+It might not be enough. A loose pile of files can become just as messy as three overconfident buckets. The bet is that the author's own vocabulary, backed by good descriptions and concrete examples, will carry more signal than a ghost-owned theory of intent, inventory, and composition.
+
+This week should tell us whether that bet holds.

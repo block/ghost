@@ -1,8 +1,8 @@
 ---
 context: Any ghost visual expression, independent of surface, medium, or implementation.
 materials:
-  - apps/docs/src/app/page.tsx
-  - apps/docs/src/components/docs/docs-page-layout.tsx
+  - apps/docs/src/pages/index.astro
+  - apps/docs/src/components/DocSection.astro
   - apps/docs/src/styles/marked-doc.css
 ---
 

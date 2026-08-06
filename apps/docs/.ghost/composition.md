@@ -1,10 +1,10 @@
 ---
 context: Composing any ghost page or adapting its layout across viewport sizes.
 materials:
-  - apps/docs/src/components/docs/docs-page-layout.tsx
-  - apps/docs/src/components/docs/wrappers.tsx
+  - apps/docs/src/components/DocSection.astro
+  - apps/docs/src/components/SectionWrapper.astro
   - apps/docs/src/styles/marked-doc.css
-  - apps/docs/src/app/page.tsx
+  - apps/docs/src/pages/index.astro
 ---
 
 The main reading path is column-oriented and anchored to one side rather than centered in the viewport.

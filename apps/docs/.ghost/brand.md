@@ -2,7 +2,7 @@
 context: Any expression of the ghost brand.
 materials:
   - apps/docs/src/styles/marked-doc.css
-  - apps/docs/src/app/page.tsx
+  - apps/docs/src/pages/index.astro
 ---
 
 ghost is exact, quiet, and visibly structured. It does not perform futurism.
