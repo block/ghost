@@ -184,8 +184,8 @@ SaaS template, the anti-goal failed even when every token is technically valid.
 ```
 
 The strongest anti-goal is silent: purged from exemplars, absent from starter
-structures, and enforced by a probe-backed check in review. Use anti-goal prose
-to name the replacement; use checks and `probe:` commands to catch regressions.
+structures, and reinforced by a check in review. Use anti-goal prose to name the
+replacement; use checks to catch regressions.
 
 ## The node shape
 
@@ -299,7 +299,7 @@ strongest form that fixes the observed failure.
 | inventing values | `asset.*` node with materials and exact names |
 | producing generic output | `anti-goal.*` replacement plus annotated `exemplar.*` |
 | choosing the wrong structure | `pattern.*` with bound/open and a `## Skeleton` |
-| crossing hard lines | invariant prose plus a check, optionally with `probe:` |
+| crossing hard lines | invariant prose plus a review check |
 | applying guidance too broadly | condition in prose |
 | making bad tradeoffs | `decision.*` trace |
 | producing correct but forgettable work | scoped `concept.*` |

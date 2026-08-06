@@ -1,6 +1,6 @@
 ---
 name: self-check
-description: A pre-generation probe that reveals whether you have actually gathered and reasoned about the brand guidance, before you build.
+description: A pre-generation check that reveals whether you have actually gathered and reasoned about the brand guidance before you build.
 ---
 
 # Recipe: Self-Check Before Generating

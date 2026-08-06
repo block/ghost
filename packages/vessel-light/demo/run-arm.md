@@ -25,7 +25,7 @@ Same as B without ballast.
 
 ## Scoring
 1. Stage each artifact in a scratch git repo containing the .ghost package;
-   run ghost review --no-probes; record which checks fire and what a reviewing
+   run ghost review; record which checks fire and what a reviewing
    agent flags per artifact.
 2. Screenshot every artifact (agent-browser). Assemble per-ask grids: A | B | C.
 3. Report consistency across the 3–5 runs per cell, not single wins.

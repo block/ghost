@@ -75,14 +75,14 @@ selects, inspects, makes, renders, judges, and repairs in the same session.
     completion states, and localization.
 11. **Verify in two lanes.** Keep mechanical evidence and visual read
     separate:
-    - **Mechanical evidence:** probes, browser measurements, tests, and computed
-      checks own exact claims: overflow, overlap, dimensions, contrast, touch
+    - **Mechanical evidence:** browser measurements, tests, and computed checks
+      own exact claims: overflow, overlap, dimensions, contrast, touch
       targets, focus order, accessibility violations, required content, and
       forbidden implementation patterns. Never estimate what software can
       measure.
     - **Visual read:** inspect screenshots, recordings, or the live render
       for hierarchy, composition, density, rhythm, imagery, motion, brand fit,
-      and generic tells. Never treat a passing probe as proof that the surface
+      and generic tells. Never treat a passing test as proof that the surface
       feels right.
 12. **Repair within a bounded budget.** Fix visible or mechanical problems with
     coherent changes grounded in the evidence and pulled guidance. Default to two
@@ -104,7 +104,7 @@ visual success from source code alone. You may still report source-level checks,
 local reasoning, and the exact verification gap.
 
 If rendering is possible but incomplete, be precise: name the viewports, states,
-fixtures, probes, and materials checked, and name what was not checked. A narrow
+fixtures, measurements, and materials checked, and name what was not checked. A narrow
 verified claim is better than broad confidence without evidence.
 
 ## What to report back
@@ -114,7 +114,7 @@ Keep the final report short and evidence-based:
 - ghost nodes pulled and the main decisions they forced.
 - Materials inspected and materials unavailable.
 - Render matrix used: viewport, state, fixture, or preview path.
-- Mechanical probes or measurements run, with failures fixed or remaining.
+- Mechanical measurements or tests run, with failures fixed or remaining.
 - Visual issues found and repaired.
 - Review result when `ghost review` ran, or why it did not.
 - Residual risks, including any unavailable render or image-inspection capability.

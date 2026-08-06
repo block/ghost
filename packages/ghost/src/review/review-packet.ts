@@ -9,11 +9,10 @@ import { GHOST_MATERIALS_DIR } from "../scan/constants.js";
 import type { LoadedGhostPackage } from "../scan/fingerprint-package.js";
 import { resolveGitRoot } from "../scan/package-paths.js";
 import { type BaselineProse, resolveBaseline } from "./baseline.js";
-import { type ProbeEvidence, runProbe } from "./probes.js";
 import type { CoverageGap } from "./resolve.js";
 import { resolveReview } from "./resolve.js";
 
-export type { BaselineProse, ProbeEvidence };
+export type { BaselineProse };
 
 export interface PacketMaterialNode {
   id: string;
@@ -32,7 +31,6 @@ export interface PacketCheck {
   via: string[];
   prose: string;
   baseline: BaselineProse[];
-  probe?: ProbeEvidence;
 }
 
 export interface ReviewPacket {
@@ -49,9 +47,7 @@ export interface ReviewPacket {
 export interface BuildReviewPacketOptions {
   /** Absolute path of the ghost package directory (default: cwd/.ghost). */
   packageDir?: string;
-  runProbes?: boolean;
   cwd?: string;
-  probeTimeoutMs?: number;
 }
 
 export async function buildReviewPacket(
@@ -75,31 +71,20 @@ export async function buildReviewPacket(
     (matched) => materialNodeFromMatch(ghostPackage, matched),
   );
 
-  const checks: PacketCheck[] = await Promise.all(
-    resolution.offeredChecks.map(async (offered) => {
-      const check = ghostPackage.checks.get(offered.id);
-      const probeCommand = check?.doc.frontmatter.probe;
-      const probe =
-        options.runProbes !== false && probeCommand !== undefined
-          ? await runProbe(probeCommand, {
-              cwd: options.cwd ?? process.cwd(),
-              timeoutMs: options.probeTimeoutMs,
-            })
-          : undefined;
-      return {
-        id: offered.id,
-        severity: offered.severity,
-        offered: offered.offered,
-        via: offered.via,
-        prose: check?.doc.body.trim() ?? "",
-        baseline:
-          check?.references
-            .map((ref) => resolveBaseline(ref, ghostPackage.catalog))
-            .filter((ref): ref is BaselineProse => ref !== null) ?? [],
-        ...(probe ? { probe } : {}),
-      };
-    }),
-  );
+  const checks: PacketCheck[] = resolution.offeredChecks.map((offered) => {
+    const check = ghostPackage.checks.get(offered.id);
+    return {
+      id: offered.id,
+      severity: offered.severity,
+      offered: offered.offered,
+      via: offered.via,
+      prose: check?.doc.body.trim() ?? "",
+      baseline:
+        check?.references
+          .map((ref) => resolveBaseline(ref, ghostPackage.catalog))
+          .filter((ref): ref is BaselineProse => ref !== null) ?? [],
+    };
+  });
 
   return {
     packageId: ghostPackage.manifest.id,
@@ -135,10 +120,8 @@ export function formatReviewPacket(packet: ReviewPacket): string {
   out.push(`# ghost review — package \`${packet.packageId}\``, "");
   out.push(
     "You are reviewing a diff against ghost package guidance. The command has",
-    "assembled the touched files, matched material-backed nodes, offered",
-    "checks, and optional probe evidence. Probes are repo-owned shell commands",
-    "with the same trust class as npm scripts; git review is the boundary.",
-    "Weigh which checks apply. Do not invent obligations that are not grounded",
+    "assembled the touched files, matched material-backed nodes, and offered",
+    "checks. Weigh which checks apply. Do not invent obligations that are not grounded",
     "in the ghost package guidance or check text.",
     "",
   );
@@ -194,22 +177,6 @@ export function formatReviewPacket(packet: ReviewPacket): string {
           if (baseline.warning) out.push(`  - ⚠ ${baseline.warning}`);
         }
         out.push("");
-      }
-      if (check.probe) {
-        out.push(
-          "Probe evidence (shell run by ghost; evidence only, not a pass/fail verdict):",
-          `- command: \`${check.probe.command}\``,
-          `- exit code: ${check.probe.exitCode ?? "unknown"}${check.probe.timedOut ? " (timed out)" : ""}`,
-          "- stdout:",
-          "```",
-          check.probe.stdout.trimEnd(),
-          "```",
-          "- stderr:",
-          "```",
-          check.probe.stderr.trimEnd(),
-          "```",
-          "",
-        );
       }
       out.push(check.prose, "");
     }

@@ -1,6 +1,6 @@
 ---
 name: schema
-description: The ghost package shape: flat nodes, derived concreteness, Skeletons, probes, and checks.
+description: The ghost package shape: flat nodes, derived concreteness, Skeletons, and checks.
 ---
 
 # ghost Package Reference
@@ -97,17 +97,14 @@ description: Logo usage preserves clearspace and lockup integrity.
 severity: medium
 references:
   - asset.logo
-probe: pnpm test:logo-clearspace
 ---
 
 Grade whether the change preserves the logo guidance in `asset.logo`.
 ```
 
-`references` are node ids with optional heading anchors. `probe` is optional: a
-repo-root shell command that `ghost review` runs for offered checks by default
-(timeout 30s; stdout/stderr truncated). Probe output is evidence only, never a
-ghost pass/fail verdict. Use `ghost review --no-probes` to skip. Trust model:
-probes are the same class as npm scripts; Git review is the boundary.
+`references` are node ids with optional heading anchors. Check bodies contain
+review instructions for the host agent; they are not run by ghost and are never
+part of generation context.
 
 ## Gather / Pull / Review
 
@@ -117,5 +114,4 @@ probes are the same class as npm scripts; Git review is the boundary.
   materials. Binary local materials become inspect-pointers. External materials
   remain locators for the host agent to access only when the task requires them.
 - `ghost review` matches diff files to local node materials, offers relevant
-  checks, embeds probe evidence, and emits a packet for the host agent to
-  judge.
+  checks, and emits a packet for the host agent to judge.

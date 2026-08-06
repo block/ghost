@@ -1848,46 +1848,6 @@ describe("ghost CLI", () => {
     expect(check).toMatchObject({ offered: "matched" });
   });
 
-  it("review runs check probes as evidence and supports --no-probes", async () => {
-    await runCli(["init", "--with", "checks"], dir);
-    await writeFile(
-      join(dir, ".ghost", "asset.logo.md"),
-      "---\ndescription: Logo.\nmaterials:\n  - brand/logo.svg\n---\n\nLogo prose.\n",
-    );
-    await writeFile(
-      join(dir, ".ghost", "checks", "logo-probe.md"),
-      "---\nname: logo-probe\ndescription: Probe logo evidence.\nseverity: low\nreferences:\n  - asset.logo\nprobe: node -e \"console.log('probe evidence')\"\n---\n\nUse probe evidence, then judge.\n",
-    );
-    const diff = [
-      "diff --git a/brand/logo.svg b/brand/logo.svg",
-      "--- a/brand/logo.svg",
-      "+++ b/brand/logo.svg",
-      "@@ -1 +1 @@",
-      "-old",
-      "+new",
-    ].join("\n");
-
-    const probed = await runCli(
-      ["review", "--diff=-", "--format", "json"],
-      dir,
-      {
-        stdin: diff,
-      },
-    );
-    expect(probed.code).toBe(0);
-    expect(JSON.parse(probed.stdout).checks[0].probe).toMatchObject({
-      exitCode: 0,
-      stdout: "probe evidence\n",
-    });
-
-    const skipped = await runCli(
-      ["review", "--diff=-", "--format", "json", "--no-probes"],
-      dir,
-      { stdin: diff },
-    );
-    expect(JSON.parse(skipped.stdout).checks[0].probe).toBeUndefined();
-  });
-
   it("review matches anti-goal nodes through materials like any node", async () => {
     await runCli(["init", "--with", "checks"], dir);
     await writeFile(

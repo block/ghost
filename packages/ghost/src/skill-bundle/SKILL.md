@@ -46,9 +46,7 @@ it applies, and an agent reads the relevant guidance before building.
 - **Checks** are optional review assertions in a flat `.ghost/checks/*.md`
   directory. Checks are feed-back only; they never leak into generation
   context. Each check declares `references` to node ids and is used by
-  `ghost review`. A check may
-  include `probe: <command>`; review runs it as evidence unless `--no-probes` is
-  set. Checks are never emitted by `ghost gather` or `ghost pull`.
+  `ghost review`. Checks are never emitted by `ghost gather` or `ghost pull`.
 
 ## The loop
 
@@ -78,8 +76,8 @@ concrete nodes, prose rules), extracts Skeletons dead last, and appends
 structured events to `.ghost/.events` for local tuning.
 
 `review` does no grading. It assembles an advisory packet: touched files,
-matched material-backed nodes, offered checks, probe
-evidence, coverage gaps, and the diff. The host agent renders findings.
+matched material-backed nodes, offered checks, coverage gaps, and the diff. The
+host agent renders findings.
 
 For visual work, do not stop at generation. Continue through material inspection,
 compact briefing, rendered verification, bounded repair, and grounded review in
@@ -94,7 +92,7 @@ this same host-agent session.
 | `ghost validate [file-or-dir]` | Validate manifest, nodes, material locators, check references, and glossary kind prefixes. |
 | `ghost gather [ask…] [--format json]` | Emit the complete guidance menu plus coverage line; log exposed ids. |
 | `ghost pull <id> [<id>…]` | Emit selected nodes' full bodies and materials in steering order; log selected/missed ids. |
-| `ghost review [--diff <path|->] [--base <ref>] [--format json] [--no-probes]` | Emit an advisory review packet for a diff (requires `.ghost/checks/`). |
+| `ghost review [--diff <path|->] [--base <ref>] [--format json]` | Emit an advisory review packet for a diff (requires `.ghost/checks/`). |
 | `ghost export [--out <path>] [--no-checks] [--strict] [--format json]` | Package `.ghost/` as a portable brand artifact and report which material locators will not travel. |
 | `ghost pulse [--format json]` | Summarize local `.ghost/.events`. |
 | `ghost skill install` | Install this skill bundle. |
@@ -126,7 +124,7 @@ against the unpacked package with `--package <dir>`.
 - Gather applicable guidance for a task: follow [references/recall.md](references/recall.md).
 - Make a visual artifact end to end: follow [references/making.md](references/making.md).
 - Shape a pre-generation brief: follow [references/brief.md](references/brief.md).
-- Probe readiness before generating: follow [references/self-check.md](references/self-check.md).
+- Check readiness before generating: follow [references/self-check.md](references/self-check.md).
 - Audit steering coverage: follow [references/steering-audit.md](references/steering-audit.md).
 - Understand the package shape: see [references/schema.md](references/schema.md).
 

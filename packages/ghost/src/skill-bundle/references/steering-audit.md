@@ -44,7 +44,7 @@ Report first:
 | Materials | present / missing | `materials`, inspect-pointers | point at real assets/components/tokens |
 | Exemplars | annotated / unannotated / converging / missing | fenced samples, screenshots, repeated runs | say what to copy and what is incidental; tighten applicability when unrelated tasks converge |
 | Patterns | bound-open / loose / missing | `pattern.*`, Skeletons | state applies / bound / open and add a Skeleton when opening structure matters |
-| Checks | covered / partial / missing | checks/, probes, review packet | add checks/probes for high-risk invariants |
+| Checks | covered / partial / missing | checks/, review packet | add checks for high-risk invariants |
 | Silence posture | defined / missing | cover | say when to proceed provisionally or ask |
 
 ## Exemplar convergence
