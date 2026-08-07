@@ -1,5 +1,5 @@
 ---
-description: "The brand on one page; what this brand is, how it feels, and what only it refuses."
+context: "The brand on one page; what this brand is, how it feels, and what only it refuses."
 ---
 
 This cover is unwritten. ghost gather always places this page in an agent's

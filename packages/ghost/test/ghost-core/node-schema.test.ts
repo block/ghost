@@ -43,14 +43,41 @@ describe("ghost.node/v1 schema", () => {
     expect(lintGhostNode(node("audience: enterprise")).errors).toBe(0);
   });
 
-  it("accepts a description (the retrieval payload)", () => {
-    expect(lintGhostNode(node("description: Lifecycle email.")).errors).toBe(0);
+  it("accepts context (the retrieval payload)", () => {
+    expect(lintGhostNode(node("context: Lifecycle email.")).errors).toBe(0);
+  });
+
+  it("accepts description as a deprecated read alias", () => {
+    const parsed = parseNode(node("description: Lifecycle email."));
+    expect(parsed.report.errors).toBe(0);
+    expect(parsed.node?.frontmatter.description).toBe("Lifecycle email.");
+  });
+
+  it("serializes the deprecated description alias as context", () => {
+    const serialized = serializeNode({
+      frontmatter: { description: "Lifecycle email." },
+      body: "Send only when useful.",
+    });
+    expect(serialized).toContain("context: Lifecycle email.");
+    expect(serialized).not.toContain("description:");
+  });
+
+  it("prefers context when both keys are present", () => {
+    const serialized = serializeNode({
+      frontmatter: {
+        context: "Canonical retrieval payload.",
+        description: "Legacy retrieval payload.",
+      },
+      body: "Body.",
+    });
+    expect(serialized).toContain("context: Canonical retrieval payload.");
+    expect(serialized).not.toContain("Legacy retrieval payload.");
   });
 
   it("round-trips through serialize/parse (frontmatter is properties only)", () => {
     const original: GhostNodeDocument = {
       frontmatter: {
-        description: "Near payment, reduce felt risk.",
+        context: "Near payment, reduce felt risk.",
       },
       body: "Near payment, reduce felt risk.",
     };
@@ -63,7 +90,7 @@ describe("ghost.node/v1 schema", () => {
   it("round-trips complete frontmatter through serialize/parse", () => {
     const original = {
       frontmatter: {
-        description: "Checkout trust signals.",
+        context: "Checkout trust signals.",
         materials: [
           "src/components/checkout/**",
           "https://example.com/logo.svg",
@@ -154,7 +181,7 @@ describe("ghost.node/v1 schema", () => {
     const serialized = serializeNode({
       frontmatter: {
         stage: "purchase",
-        description: "Checkout trust signals.",
+        context: "Checkout trust signals.",
         audience: "enterprise",
         materials: ["src/components/checkout/**"],
       },
@@ -163,7 +190,7 @@ describe("ghost.node/v1 schema", () => {
 
     expect(serialized).toMatchInlineSnapshot(`
       "---
-      description: Checkout trust signals.
+      context: Checkout trust signals.
       materials:
         - src/components/checkout/**
       audience: enterprise

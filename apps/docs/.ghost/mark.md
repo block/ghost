@@ -1,5 +1,5 @@
 ---
-description: "Global rule for the yellow mark: it records selection, intervention, or active choice and never acts as general decoration."
+context: "Global rule for the yellow mark: it records selection, intervention, or active choice and never acts as general decoration."
 materials:
   - apps/docs/src/styles/marked-doc.css
   - apps/docs/src/components/docs/gather-demo.tsx

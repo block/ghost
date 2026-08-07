@@ -1,5 +1,5 @@
 ---
-description: Stack, Surface, and Text — rhythm from the gap scale, elevation as interaction tiers, type from the variant vocabulary.
+context: Stack, Surface, and Text — rhythm from the gap scale, elevation as interaction tiers, type from the variant vocabulary.
 materials:
   - "**/components/ui/stack.tsx"
   - "**/components/ui/surface.tsx"

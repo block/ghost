@@ -1,5 +1,5 @@
 ---
-description: "Gather for any text, and for heroes, landing pages, and editorial moments. The type dial: one voice typeface plus a mono for machine detail, with an editorial heading scale kept separate from product text — this brand's current answer is HK Grotesk."
+context: "Gather for any text, and for heroes, landing pages, and editorial moments. The type dial: one voice typeface plus a mono for machine detail, with an editorial heading scale kept separate from product text — this brand's current answer is HK Grotesk."
 materials:
   - materials/tokens.css
   - materials/fonts/*.woff2

@@ -27,8 +27,7 @@ const steeringDiagnoses = [
   {
     signal: "delivery gap",
     read: "the relevant guidance existed but did not reach the task",
-    repair:
-      "add the node, sharpen its description, or inspect why it was skipped",
+    repair: "add the node, sharpen its context, or inspect why it was skipped",
   },
   {
     signal: "correction gap",
@@ -43,7 +42,7 @@ const guidanceExamples = [
     label: "visual decision",
     path: "pattern.crop-with-intent.md",
     body: `---
-description: Photography. Gather when a composition uses a photo.
+context: Photography. Gather when a composition uses a photo.
 materials:
   - brand/photography/**
 ---
@@ -59,7 +58,7 @@ Reject cautious full-object framing and collages that avoid choosing a focal poi
     label: "product pattern",
     path: "condition.blocked-progress.md",
     body: `---
-description: Blocked progress. Gather when someone cannot continue a task.
+context: Blocked progress. Gather when someone cannot continue a task.
 materials:
   - src/components/error-state/**
 ---
@@ -75,7 +74,7 @@ If the person cannot resolve the problem, state what happens next. Do not end on
     label: "exact material",
     path: "asset.color-roles.md",
     body: `---
-description: Exact color roles and values. Gather before assigning color.
+context: Exact color roles and values. Gather before assigning color.
 materials:
   - src/styles/brand-tokens.css
 ---
@@ -247,14 +246,14 @@ export default function Home() {
             <p>
               Gather shows the complete menu before the agent chooses. If useful
               guidance does not reach the work, you can see whether the node was
-              missing, its description was unclear, or the agent skipped it.
+              missing, its context was unclear, or the agent skipped it.
             </p>
 
             <h3 className="pt-4 font-bold lowercase">efficiency</h3>
             <p>
-              Gather represents every node with a compact ID and description.
-              Pull loads the full prose and materials only for the selected
-              nodes. The agent sees the shape of the whole brand while keeping
+              Gather represents every node with a compact ID and context. Pull
+              loads the full prose and materials only for the selected nodes.
+              The agent sees the shape of the whole brand while keeping
               generation context small and free of unrelated instructions.
             </p>
           </div>
@@ -349,7 +348,7 @@ export default function Home() {
             </p>
             <p>
               Volume changes the work too. More instructions can flatten each
-              other until none of them wins. ghost favors compact descriptions,
+              other until none of them wins. ghost favors compact contexts,
               selective pulls, and material-backed detail so the important
               constraints are visible at the moment of making.
             </p>

@@ -23,7 +23,7 @@ ghost treats the `.ghost/` package as canonical.
   voice.md              # guidance without a kind
 ```
 
-A **node** is a markdown file: a `description`, optional `materials`, and a
+A **node** is a markdown file: a `context`, optional `materials`, and a
 prose body. The package is **flat** — no hierarchy, no inheritance, no edges. A
 node's kind comes from its filename prefix; the glossary declares the kinds.
 
@@ -37,7 +37,7 @@ should preserve and what is incidental.
 
 ````markdown
 ---
-description: Complete status card exemplar — normative for density, evidence placement, and action language.
+context: Complete status card exemplar — normative for density, evidence placement, and action language.
 materials:
   - src/components/status-card.tsx
 ---
@@ -99,7 +99,7 @@ out-steers a paragraph about error-message voice:
 
 ```markdown
 ---
-description: A verbatim on-brand error message — the voice at failure moments.
+context: A verbatim on-brand error message — the voice at failure moments.
 ---
 
 Normative for rhythm and stance at failure moments; match its form, not its words.
@@ -170,7 +170,7 @@ thing.
 
 ```markdown
 ---
-description: Review-critical replacement for the generic AI dashboard default.
+context: Review-critical replacement for the generic AI dashboard default.
 ---
 
 Not: rounded-xl cards on gray-50, indigo primary buttons, gradient hero text,
@@ -193,7 +193,7 @@ A node at `principle.trust.md` (id `principle.trust`, kind `principle`):
 
 ```markdown
 ---
-description: Trust at the payment moment.  # the retrieval payload
+context: Trust at the payment moment.  # the retrieval payload
 # optional: materials, audience, stage, or other free-form keys
 ---
 
@@ -201,16 +201,16 @@ Near the moment of payment, reduce felt risk. Proximity of reassurance to the
 action beats completeness...
 ```
 
-- **`description`** is how an agent finds the node: a compact retrieval payload
+- **`context`** is how an agent finds the node: a compact retrieval payload
   naming what the node governs, the observable condition under which it applies,
   and what it contributes when useful. `ghost gather` emits id, kind,
-  description, concrete coverage, payload labels, and material count; the agent matches the ask
+  context, concrete coverage, payload labels, and material count; the agent matches the ask
   against applicability.
 - **Kind is the filename prefix** and must be a kind the glossary declares. A
   bare name (`voice.md`) has no kind.
 - **Altitude lives in the prose.** State universal guidance plainly; give a
   narrower guidance a **condition** — the situation it applies in — in the prose
-  and usually in the description. Do not use broad universal imperatives unless
+  and usually in the context. Do not use broad universal imperatives unless
   universal retrieval is intended. Never file a node by destination
   (`for-emails.md`).
 - **Concreteness is derived.** A node carries concrete material when it has
@@ -258,7 +258,7 @@ Everywhere else:
 - **No aspirational abstractions.** "We value clarity and trust" steers
   nothing. Name the decision the guidance forces: what gets picked when two goods
   compete, and what gets given up.
-- **Descriptions must discriminate.** Read the description alone. If it also
+- **Contexts must discriminate.** Read the context alone. If it also
   fits a competitor's brand, it is retrieval-dead; rewrite it until it could
   belong to no one else.
 - **Cut unratified hedges.** "Generally," "where possible," and "consider" in a
@@ -279,7 +279,7 @@ dimension:
 | Dimension | Question |
 | --- | --- |
 | Testimony | Can you quote the human words or artifact this node came from? |
-| Discrimination | Does the description fit only this brand? |
+| Discrimination | Does the context fit only this brand? |
 | Force | Does the node body decide something, or merely describe something? |
 | Altitude | Is it universal on purpose, or given its condition? |
 | Residue | Is it free of starter-demo prose and brand-deck filler? |
@@ -295,7 +295,7 @@ strongest form that fixes the observed failure.
 
 | If the agent keeps... | Author... |
 | --- | --- |
-| missing the guidance | sharper `description`; move universal guidance to the cover |
+| missing the guidance | sharper `context`; move universal guidance to the cover |
 | inventing values | `asset.*` node with materials and exact names |
 | producing generic output | `anti-goal.*` replacement plus annotated `exemplar.*` |
 | choosing the wrong structure | `pattern.*` with bound/open and a `## Skeleton` |

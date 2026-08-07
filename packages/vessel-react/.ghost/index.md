@@ -1,5 +1,5 @@
 ---
-description: Start here — what the Vessel fingerprint covers and how to read it.
+context: Start here — what the Vessel fingerprint covers and how to read it.
 ---
 
 Vessel is ghost's reference body: an agnostic, agent-safe shadcn-compatible

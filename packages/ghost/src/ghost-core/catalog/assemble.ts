@@ -35,6 +35,7 @@ export function assembleCatalog(input: AssembleCatalogInput): GhostCatalog {
 
   for (const placed of input.placedNodes ?? []) {
     const fm = placed.doc.frontmatter;
+    const context = fm.context ?? fm.description;
     const concrete = carriesConcreteMaterial({
       materials: fm.materials,
       body: placed.doc.body,
@@ -43,7 +44,10 @@ export function assembleCatalog(input: AssembleCatalogInput): GhostCatalog {
       id: placed.id,
       ...(placed.kind !== undefined ? { kind: placed.kind } : {}),
       slug: placed.slug ?? placed.id.split("/").pop() ?? placed.id,
-      ...(fm.description !== undefined ? { description: fm.description } : {}),
+      ...(context !== undefined ? { context, description: context } : {}),
+      ...(fm.description !== undefined
+        ? { usesDeprecatedDescription: true as const }
+        : {}),
       ...(fm.materials !== undefined ? { materials: fm.materials } : {}),
       concrete,
       hasFencedExample: hasSubstantialFencedExample(placed.doc.body),

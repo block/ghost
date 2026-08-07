@@ -1,5 +1,5 @@
 ---
-description: "The deletion pass — every element must name what breaks if it goes; the fix for a crowded view is always demotion or deletion, never more emphasis; surfaces arrive settled, with no skeleton theater. Gather as the final pass over any composition, and whenever a view feels crowded, busy, or dressed up."
+context: "The deletion pass — every element must name what breaks if it goes; the fix for a crowded view is always demotion or deletion, never more emphasis; surfaces arrive settled, with no skeleton theater. Gather as the final pass over any composition, and whenever a view feels crowded, busy, or dressed up."
 ---
 
 Restraint is not a mood; it is a test every element has to pass. Before a

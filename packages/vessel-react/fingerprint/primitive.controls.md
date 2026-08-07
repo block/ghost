@@ -1,5 +1,5 @@
 ---
-description: Buttons, inputs, and forms — one primary action per view, quiet fields, focus rings as guidance, errors as facts at the field.
+context: Buttons, inputs, and forms — one primary action per view, quiet fields, focus rings as guidance, errors as facts at the field.
 materials:
   - "**/components/ui/button.tsx"
   - "**/components/ui/button-group.tsx"

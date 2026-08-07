@@ -1,5 +1,5 @@
 ---
-description: "Gather for any copy and for motion character. The temperature dial: how the brand sounds and how it moves — this brand's current answer is factual, quiet, never celebratory, with resolved spring motion."
+context: "Gather for any copy and for motion character. The temperature dial: how the brand sounds and how it moves — this brand's current answer is factual, quiet, never celebratory, with resolved spring motion."
 materials:
   - materials/tokens.css
 ---

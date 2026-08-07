@@ -18,7 +18,7 @@ This is opinionated method, not new schema. **"Block node" is shorthand in this
 recipe, not a ghost concept**: it means any node whose guidance is a reusable
 building block, whatever kind the author's glossary declares for it (`block`,
 `asset`, `pattern`, …). A block node is a node like any other: a markdown file
-with a `description` and a prose body, named `<kind>.<slug>.md` (or a bare
+with a `context` and a prose body, named `<kind>.<slug>.md` (or a bare
 slug). See [capture.md](capture.md) for the node shape. Block prose can be one
 paragraph inside a broader node, or split across many nodes, one per block,
 whatever keeps each node purpose-coherent.
@@ -46,7 +46,7 @@ Neither is correct. A concrete block node is a deliberate trade, not a leak.
 
 - **Primitives** (button, input, badge, avatar, spinner…) get **no prose body**
   when the generic form serves. They are shared vocabulary, not stance. If you
-  record one at all, give it only a `description` so `gather` can surface it;
+  record one at all, give it only a `context` so `gather` can surface it;
   the absence of a body is the signal that training priors are acceptable here.
   When a primitive is itself brand-distinctive (a button whose shape, weight, or
   focus treatment is a recognizable brand move), its *divergence from the
@@ -64,7 +64,7 @@ primitive.
 
 ## The shape of a block node
 
-A node like any other. Frontmatter carries `description` (the retrieval payload —
+A node like any other. Frontmatter carries `context` (the retrieval payload —
 write one on every block worth matching); the body is prose the agent reasons
 over.
 
@@ -90,7 +90,7 @@ not a swappable implementation detail.
 ## How a match runs
 
 The agent reads the package's stance, `gather`s the menu, pulls block nodes
-whose descriptions apply, separates near-neighbors on *not when* and *never*,
+whose contexts apply, separates near-neighbors on *not when* and *never*,
 and assembles. The realizing surface authors the chosen blocks in its medium.
 The guidance never named a component; the agent bridged via documented
 purpose.
@@ -118,7 +118,7 @@ kinds:
 
 ```markdown
 ---
-description: Gate a consequential action behind explicit user approval.
+context: Gate a consequential action behind explicit user approval.
 ---
 Gates a tool action behind explicit user approval. Reach for it when the user's
 first question is "do I allow this?", when a consequential action needs a human
@@ -131,7 +131,7 @@ with no decision to make, it only manufactures friction.
 
 ```markdown
 ---
-description: Present many records across shared, comparable columns.
+context: Present many records across shared, comparable columns.
 ---
 Presents many records across shared, comparable columns. Reach for it when the
 user's first question is "how do these compare across the same attributes?" Not
@@ -144,11 +144,11 @@ record's detail view.
 
 ```markdown
 ---
-description: A primitive action trigger.
+context: A primitive action trigger.
 ---
 ```
 
-(A primitive the generic form serves: a `description` so `gather` can surface
+(A primitive the generic form serves: a `context` so `gather` can surface
 it, no body. If this brand's button were itself a recognizable brand move, its
 divergence from the generic form would earn a short body.)
 

@@ -1,5 +1,5 @@
 ---
-description: "AI conversation threads — assistant text on the page surface, compact user turns, collapsed tool calls, one structured prompt input. Read only for chat threads, agent consoles, and prompt composers."
+context: "AI conversation threads — assistant text on the page surface, compact user turns, collapsed tool calls, one structured prompt input. Read only for chat threads, agent consoles, and prompt composers."
 ---
 
 In this context: AI conversation threads, agent consoles, review assistants,

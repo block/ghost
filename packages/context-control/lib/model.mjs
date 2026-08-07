@@ -9,7 +9,7 @@
 //   exists to expose. Use it to exercise the UI loop.
 //
 // - openai-compatible: a real LLM behind an OpenAI-compatible chat API.
-//   It sees the ask plus the menu (id, kind, description — exactly the
+//   It sees the ask plus the menu (id, kind, context — exactly the
 //   selection surface `ghost gather` emits) and returns node ids.
 
 const STOPWORDS = new Set([
@@ -60,7 +60,7 @@ export function fakeModel() {
       const selected = [];
       for (const entry of menu) {
         const nodeTokens = tokens(
-          [entry.id.replaceAll(/[.-]/g, " "), entry.kind, entry.description]
+          [entry.id.replaceAll(/[.-]/g, " "), entry.kind, entry.context]
             .filter(Boolean)
             .join(" "),
         );
@@ -85,14 +85,14 @@ const SELECT_SYSTEM = `You are an agent selecting brand guidance nodes for a tas
 following the ghost skill's recall recipe.
 
 You will get an ask, the cover already in context, and the ghost gather menu.
-Select only menu node ids against their descriptions. Do not select the cover.
+Select only menu node ids against their contexts. Do not select the cover.
 
-- Pull every node whose description indicates its stated situation applies and
+- Pull every node whose context indicates its stated situation applies and
   whose guidance, material, structure, or refusal governs the work.
 - Skip inapplicable nodes. Topic overlap alone is not applicability.
 - Do not add nodes for completeness or omit applicable nodes to meet a count.
 - Anti-goal nodes are review-critical negative space; pull each one whose
-  description names territory the ask enters.
+  context names territory the ask enters.
 
 Respond with ONLY a JSON array of node id strings, nothing else.`;
 
@@ -101,7 +101,7 @@ function selectUser(ask, menu, cover) {
     const flags = [entry.materials ? `${entry.materials} materials` : null]
       .filter(Boolean)
       .join(", ");
-    return `- ${entry.id}${entry.kind ? ` [${entry.kind}]` : ""}${flags ? ` (${flags})` : ""}: ${entry.description ?? "(no description)"}`;
+    return `- ${entry.id}${entry.kind ? ` [${entry.kind}]` : ""}${flags ? ` (${flags})` : ""}: ${entry.context ?? "(no context)"}`;
   });
   const coverLine = cover
     ? `Cover already in context: ${cover.id}\n\n${cover.body}\n\n`

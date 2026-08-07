@@ -37,7 +37,7 @@ A node is markdown with frontmatter and a prose body:
 
 ```markdown
 ---
-description: Logo lockups, clearspace, and when the glyph can stand alone.
+context: Logo lockups, clearspace, and when the glyph can stand alone.
 materials:
   - brand/logo*.svg
   - https://figma.com/file/example?node-id=logo-lockups
@@ -50,10 +50,11 @@ Use the full lockup when recognition matters.
 
 - Identity is the filename minus `.md`.
 - Kind is the first dotted segment of the filename.
-- `description` is the retrieval payload shown by `ghost gather`: what the node
+- `context` is the retrieval payload shown by `ghost gather`: what the node
   governs, the observable condition under which it applies, and what it
   contributes where useful. Avoid broad universal wording unless universal
-  retrieval is intended.
+  retrieval is intended. `description` remains a deprecated read alias for one
+  release; `ghost validate` warns until it is renamed.
 - `materials` accepts repo-relative paths/globs plus supported external locators using `https:`, `mcp:`,
   `figma:`, or `github:`. Items may be bare locator strings or
   `{ locator, note }` objects. Use a short `note` only when an opaque locator

@@ -1,5 +1,5 @@
 ---
-description: "The model's median defaults this ghost package refuses — gather for any greenfield visual surface or first-draft copy. Each rule is reject→replace; delete lines your brand legitimately violates."
+context: "The model's median defaults this ghost package refuses — gather for any greenfield visual surface or first-draft copy. Each rule is reject→replace; delete lines your brand legitimately violates."
 ---
 
 This is the model's median, not your brand. Each rule is reject→replace.

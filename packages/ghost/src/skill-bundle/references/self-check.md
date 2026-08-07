@@ -55,7 +55,7 @@ Classify readiness:
 When you cannot answer the grounding questions:
 
 1. Run `ghost gather <ask>` to emit the menu for the actual task, then match the
-   work to nodes by their descriptions.
+   work to nodes by their contexts.
 2. Read the selected nodes' bodies and re-ask the questions, citing node ids.
 
 A genuinely silent package is an expected state, not a blocker. When it does

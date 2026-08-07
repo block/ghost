@@ -40,10 +40,12 @@ const AnnotatedMaterialSchema = z
  *
  * Validates a node in isolation. Identity and containment are not here: they
  * come from the node's file path. Kind is the filename prefix, never a
- * frontmatter field.
+ * frontmatter field. `description` is accepted as a deprecated read alias for
+ * `context`; consumers resolve `context` first when both are present.
  */
 export const GhostNodeFrontmatterSchema = z
   .object({
+    context: z.string().min(1).optional(),
     description: z.string().min(1).optional(),
     materials: z
       .array(z.union([MaterialLocatorSchema, AnnotatedMaterialSchema]))
@@ -56,7 +58,7 @@ export const GhostNodeFrontmatterSchema = z
   })
   // Passthrough, not strict: authors may add free-form descriptive keys
   // (e.g. `audience`, `stage`) that describe what the node is. ghost does not
-  // gate on them — they ride along as part of the node's descriptive surface.
+  // gate on them; they ride along as part of the node's descriptive surface.
   .passthrough();
 
 export { NodeIdSchema, NodeRefSchema };

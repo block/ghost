@@ -1,5 +1,5 @@
 ---
-description: Global visual principles for every ghost expression, independent of surface, medium, or implementation.
+context: Global visual principles for every ghost expression, independent of surface, medium, or implementation.
 materials:
   - apps/docs/src/app/page.tsx
   - apps/docs/src/components/docs/docs-page-layout.tsx

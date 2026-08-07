@@ -1,5 +1,5 @@
 ---
-description: When reconciling with latest upstream shadcn — adopt mechanics, adapt anatomy, reject generic visual decisions.
+context: When reconciling with latest upstream shadcn — adopt mechanics, adapt anatomy, reject generic visual decisions.
 ---
 
 Condition: you are syncing Vessel components against newer upstream shadcn

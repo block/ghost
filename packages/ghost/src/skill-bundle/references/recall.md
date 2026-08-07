@@ -8,7 +8,7 @@ description: Gather and pull the applicable ghost brand guidance for a task.
 1. Run `ghost gather <ask>` for the actual task. The cover is inlined by gather;
    do not pull it separately. Read the coverage line: all-prose packages are
    weak steering.
-2. Select against `description`; ghost never selects for you. Pull every node
+2. Select against `context`; ghost never selects for you. Pull every node
    whose stated situation applies and whose guidance, material, structure, or
    refusal governs the work. Skip inapplicable nodes. Topic overlap alone is not
    applicability.

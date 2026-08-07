@@ -51,7 +51,7 @@ ghost pull <potentially-affected-node-ids>
 Treat the gathered menu as a reconciliation index. Read affected node bodies
 before proposing edits.
 
-Pull nodes whose descriptions or materials touch the evidence, the situation,
+Pull nodes whose contexts or materials touch the evidence, the situation,
 the medium, or the likely contradiction. If no node applies, say so and continue
 with a new-node proposal only after inspection and human ratification.
 

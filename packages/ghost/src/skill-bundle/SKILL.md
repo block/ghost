@@ -26,7 +26,7 @@ it applies, and an agent reads the relevant guidance before building.
 
 ## The model in one breath
 
-- A **node** is a markdown file: `description`, optional `materials`, and prose brand guidance.
+- A **node** is a markdown file: `context`, optional `materials`, and prose brand guidance. `description` is a deprecated compatibility alias for one release.
 - `materials` is one list of locators for the concrete stuff the guidance is about:
   repo-relative paths/globs or supported external locators (see
   [schema.md](references/schema.md)). A bare locator is enough
@@ -62,7 +62,7 @@ ghost pulse         # summarize local gather/pull events while tuning
 ```
 
 `gather` does no selection. It emits the complete, unfiltered, unranked menu
-from the ghost package. You read the ask against descriptions, then
+from the ghost package. You read the ask against contexts, then
 pull every applicable node and skip inapplicable nodes. Topic overlap alone is
 not applicability. Its header includes a coverage line: total nodes and nodes
 carrying concrete material. `gather` labels materials, substantial fenced

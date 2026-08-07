@@ -1,5 +1,5 @@
 ---
-description: When component work needs className, inline style, or arbitrary values — the governed escape-hatch path.
+context: When component work needs className, inline style, or arbitrary values — the governed escape-hatch path.
 materials:
   - packages/vessel-react/scripts/audit-agent-safety.mjs
 ---

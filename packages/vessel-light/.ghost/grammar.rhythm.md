@@ -1,5 +1,5 @@
 ---
-description: "Layout rhythm — all layout is stacks with a closed gap step set; gather before laying anything out; never ad-hoc sibling margins."
+context: "Layout rhythm — all layout is stacks with a closed gap step set; gather before laying anything out; never ad-hoc sibling margins."
 materials:
   - materials/primitives.css
   - "**/*.html"

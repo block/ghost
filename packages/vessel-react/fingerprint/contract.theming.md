@@ -1,5 +1,5 @@
 ---
-description: "The theming seams — which token bindings a theme may rebind freely, and which relationships must hold in every theme."
+context: "The theming seams — which token bindings a theme may rebind freely, and which relationships must hold in every theme."
 materials:
   - "**/styles/main.css"
 ---

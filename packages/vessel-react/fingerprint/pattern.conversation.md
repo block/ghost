@@ -1,5 +1,5 @@
 ---
-description: Conversation grammar for AI surfaces — assistant prose on the page surface, quiet user containment, tools and reasoning as collapsed affordances.
+context: Conversation grammar for AI surfaces — assistant prose on the page surface, quiet user containment, tools and reasoning as collapsed affordances.
 materials:
   - "**/components/ai-elements/conversation.tsx"
   - "**/components/ai-elements/message.tsx"

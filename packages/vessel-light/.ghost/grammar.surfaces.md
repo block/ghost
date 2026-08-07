@@ -1,5 +1,5 @@
 ---
-description: "Surface roles and the closed elevation set — gather for any card, popover, modal, dialog, scrim, or bordered container; flat is the default, borders are structural, exactly three elevation tiers."
+context: "Surface roles and the closed elevation set — gather for any card, popover, modal, dialog, scrim, or bordered container; flat is the default, borders are structural, exactly three elevation tiers."
 materials:
   - materials/primitives.css
   - materials/ref/composition.overlay.html

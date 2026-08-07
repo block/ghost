@@ -8,7 +8,7 @@ description: Build a compact pre-generation packet from pulled ghost guidance.
 A brief is an ephemeral steering packet for the generating pass. It is not a new
 schema and is never written back into `.ghost/`.
 
-1. Run `ghost gather <ask> --format json` and select against descriptions.
+1. Run `ghost gather <ask> --format json` and select against contexts.
 2. The cover is already in context and outside selection. Pull every applicable
    node with `ghost pull <id> [<id>…]`; skip nodes whose stated situation does
    not apply. Topic overlap alone is not applicability.

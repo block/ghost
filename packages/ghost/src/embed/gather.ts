@@ -62,7 +62,7 @@ export function gatherContract(ask: string | undefined): GhostGatherContract {
     selection: {
       basis: "applicability",
       instruction: ask
-        ? "Pull every node whose description indicates its stated situation applies and whose guidance, material, structure, or refusal governs the work; skip inapplicable nodes."
+        ? "Pull every node whose context indicates its stated situation applies and whose guidance, material, structure, or refusal governs the work; skip inapplicable nodes."
         : "Bare gather is catalog inspection. Do not treat the menu as task grounding until an ask is supplied; when grounding a task, pull every applicable node and skip inapplicable nodes.",
       topicOverlapAloneIsApplicability: false,
       addForCompleteness: false,
@@ -76,6 +76,9 @@ export function gatherContract(ask: string | undefined): GhostGatherContract {
 export function menuCoverage(
   menu: readonly CatalogMenuEntry[],
 ): GhostGatherCoverage {
+  const withoutContext = menu.filter(
+    (entry) => !entry.context || entry.context.trim().length === 0,
+  ).length;
   return {
     nodes: menu.length,
     concrete: menu.filter((entry) => entry.concrete).length,
@@ -84,9 +87,8 @@ export function menuCoverage(
       fencedExamples: menu.filter((entry) => entry.hasFencedExample).length,
       skeletons: menu.filter((entry) => entry.hasSkeleton).length,
     },
-    undescribed: menu.filter(
-      (entry) => !entry.description || entry.description.trim().length === 0,
-    ).length,
+    withoutContext,
+    undescribed: withoutContext,
   };
 }
 

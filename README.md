@@ -71,7 +71,7 @@ working context, the agent can see the shape of the brand without loading the
 whole package.
 
 `gather` and `pull` write a Git-ignored local log. Use `ghost pulse` to inspect
-it and tune node descriptions.
+it and tune node contexts.
 
 Run `ghost --help` for the core workflow and `ghost <command> --help` for
 current flags and command behavior.
@@ -107,12 +107,13 @@ repeatable commands for scaffolding, validation, retrieval, and review.
 The package is a **flat set of nodes**. The optional `cover:` in
 `manifest.yml` may name any node; `ghost gather` inlines it before the menu.
 The default skeleton calls that node `brand`, but the filename is not reserved.
-A node is one markdown file: a `description` in frontmatter, optional
-`materials`, and brand guidance in the prose body.
+A node is one markdown file: a `context` in frontmatter, optional
+`materials`, and brand guidance in the prose body. `description` remains a
+deprecated read alias for one release, and `ghost validate` warns on its use.
 
 ```markdown
 ---
-description: Logo lockups, clearspace, and when the glyph can stand alone.
+context: Logo lockups, clearspace, and when the glyph can stand alone.
 materials:
   - brand/logo*.svg
   - https://figma.com/file/example?node-id=logo-lockups

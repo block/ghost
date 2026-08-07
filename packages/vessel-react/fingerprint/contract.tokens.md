@@ -1,5 +1,5 @@
 ---
-description: The token pipeline — primitive values feed semantic roles, components author role-first, extensions stay narrow and job-named.
+context: The token pipeline — primitive values feed semantic roles, components author role-first, extensions stay narrow and job-named.
 materials:
   - "**/styles/main.css"
   - "**/components/ui/**/*.tsx"

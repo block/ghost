@@ -156,15 +156,12 @@ async function writeLargePullFixture(dir: string): Promise<void> {
         "",
       ].join("\n"),
     ),
-    writeFile(
-      join(ghost, "index.md"),
-      "---\ndescription: Cover.\n---\n\nCover.\n",
-    ),
+    writeFile(join(ghost, "index.md"), "---\ncontext: Cover.\n---\n\nCover.\n"),
     writeFile(
       join(ghost, "principle.long.md"),
       [
         "---",
-        "description: Large pull body.",
+        "context: Large pull body.",
         "---",
         "",
         "x".repeat(2 * 1024 * 1024),

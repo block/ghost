@@ -1,5 +1,5 @@
 ---
-description: "The measured defaults of unsteered generation — gather before any build to know what the model will reach for on its own, and veer."
+context: "The measured defaults of unsteered generation — gather before any build to know what the model will reach for on its own, and veer."
 ---
 
 These are not aesthetic opinions. They are the measured convergence of 300

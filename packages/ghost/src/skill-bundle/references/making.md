@@ -23,7 +23,7 @@ selects, inspects, makes, renders, judges, and repairs in the same session.
 
 1. **Gather for the actual ask.** Follow [recall.md](recall.md): run
    `ghost gather <ask>` with the user's real task, not a generic label.
-2. **Select applicable nodes.** Read descriptions against the situation. Pull
+2. **Select applicable nodes.** Read contexts against the situation. Pull
    guidance whose stated condition, material, structure, refusal, or decision
    governs the work. Topic overlap alone is not applicability.
 3. **Pull selected nodes.** Run `ghost pull <id> [<id>…]`. Prefer the pulled
@@ -38,7 +38,7 @@ selects, inspects, makes, renders, judges, and repairs in the same session.
    - read inlined text materials;
    - open referenced source, token, or component files;
    - view image inspect-pointers instead of relying on filenames;
-   - inspect rendered exemplars, not just their descriptions;
+   - inspect rendered exemplars, not just their contexts;
    - use an available host connection for an external locator only when inspecting
      it could materially affect the task;
    - let the host run its normal authentication and permission flow;

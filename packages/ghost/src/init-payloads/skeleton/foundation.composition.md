@@ -1,5 +1,5 @@
 ---
-description: "Composition — how a view is assembled: one focal point, one primary action, actions land last, separation escalates. Read before assembling any view."
+context: "Composition — how a view is assembled: one focal point, one primary action, actions land last, separation escalates. Read before assembling any view."
 ---
 
 ## Usage

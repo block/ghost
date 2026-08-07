@@ -80,7 +80,7 @@ export async function lintGhostPackage(
       await lintGlossary(paths.glossary, issues);
       lintCover(manifest.cover, catalog, issues);
       await lintKindPrefixes(paths, catalog, issues);
-      lintNodeDescriptions(catalog, issues);
+      lintNodeContexts(catalog, issues);
       lintSkeletonSections(catalog, issues);
       await lintMaterialLocators(paths, catalog, issues, cwd);
       lintCheckReferences(catalog, checks, issues);
@@ -187,24 +187,28 @@ async function lintKindPrefixes(
 }
 
 /**
- * The `description` is a node's entire retrieval payload: `gather` lists it as
- * the text the agent selects against. A node without one renders as a bare id
- * and cannot show when it applies, so `validate` makes that loud. Warning,
- * not error: an undescribed node is legal, just undiscoverable.
+ * `context` is a node's entire retrieval payload: `gather` lists it as the text
+ * the agent selects against. A node without one renders as a bare id and cannot
+ * show when it applies, so `validate` makes that loud. `description` remains a
+ * read alias for one release and produces a migration warning.
  */
-function lintNodeDescriptions(
-  catalog: GhostCatalog,
-  issues: LintIssue[],
-): void {
+function lintNodeContexts(catalog: GhostCatalog, issues: LintIssue[]): void {
   for (const node of catalog.nodes.values()) {
-    if (node.description !== undefined && node.description.trim().length > 0) {
-      continue;
+    if (node.usesDeprecatedDescription) {
+      issues.push({
+        severity: "warning",
+        rule: "node-description-deprecated",
+        message:
+          "node uses deprecated `description`; rename it to `context` (the retrieval payload shown by `gather`)",
+        path: `${node.id}.md.description`,
+      });
     }
+    if (node.context !== undefined && node.context.trim().length > 0) continue;
     issues.push({
       severity: "warning",
-      rule: "node-description-missing",
+      rule: "node-context-missing",
       message:
-        "node has no `description`, so `gather` lists it as a bare id without applicability context; add a one-line description of what this guidance governs, when it applies, and what it contributes",
+        "node has no `context`, so `gather` lists it as a bare id without applicability context; add one line describing what this guidance governs, when it applies, and what it contributes",
       path: `${node.id}.md`,
     });
   }

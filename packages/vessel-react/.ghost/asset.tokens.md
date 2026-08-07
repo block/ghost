@@ -1,5 +1,5 @@
 ---
-description: The token contract — primitives feed semantic roles, extensions stay narrow and job-named, no broad alias sprawl.
+context: The token contract — primitives feed semantic roles, extensions stay narrow and job-named, no broad alias sprawl.
 materials:
   - packages/vessel-react/src/styles/main.css
   - packages/vessel-react/src/styles/*.css

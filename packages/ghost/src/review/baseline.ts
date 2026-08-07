@@ -8,7 +8,7 @@ export interface BaselineProse {
   ref: string;
   nodeId: string;
   heading?: string;
-  description?: string;
+  context?: string;
   body: string;
   warning?: string;
 }
@@ -25,9 +25,7 @@ export function resolveBaseline(
     return {
       ref: raw,
       nodeId: ref.nodeId,
-      ...(node.description !== undefined
-        ? { description: node.description }
-        : {}),
+      ...(node.context !== undefined ? { context: node.context } : {}),
       body: node.body,
     };
   }
@@ -36,9 +34,7 @@ export function resolveBaseline(
     ref: raw,
     nodeId: ref.nodeId,
     heading: ref.heading,
-    ...(node.description !== undefined
-      ? { description: node.description }
-      : {}),
+    ...(node.context !== undefined ? { context: node.context } : {}),
     body: section ?? node.body,
     ...(section === null
       ? {

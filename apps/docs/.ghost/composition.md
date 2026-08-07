@@ -1,5 +1,5 @@
 ---
-description: Global composition model for margin, reading column, wider evidence, responsive collapse, and active empty space.
+context: Global composition model for margin, reading column, wider evidence, responsive collapse, and active empty space.
 materials:
   - apps/docs/src/components/docs/docs-page-layout.tsx
   - apps/docs/src/components/docs/wrappers.tsx

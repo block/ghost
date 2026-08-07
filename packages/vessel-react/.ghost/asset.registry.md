@@ -1,5 +1,5 @@
 ---
-description: The shadcn registry is the distribution surface — copy-and-own, with decision metadata as part of the API.
+context: The shadcn registry is the distribution surface — copy-and-own, with decision metadata as part of the API.
 materials:
   - packages/vessel-react/registry.json
   - packages/vessel-react/public/r/**

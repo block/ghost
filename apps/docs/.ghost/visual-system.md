@@ -1,5 +1,5 @@
 ---
-description: Global visual foundation for color, typography, spacing, shape, elevation, interaction, and accessibility.
+context: Global visual foundation for color, typography, spacing, shape, elevation, interaction, and accessibility.
 materials:
   - apps/docs/src/styles/marked-doc.css
   - apps/docs/src/styles/docs.css

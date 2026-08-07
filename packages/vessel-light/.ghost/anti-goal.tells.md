@@ -1,5 +1,5 @@
 ---
-description: "Failure modes specific to this brand's own signature — gather alongside any signature node you pull."
+context: "Failure modes specific to this brand's own signature — gather alongside any signature node you pull."
 ---
 
 These are the near-misses of Vessel's own signature: outputs that got close
