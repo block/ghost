@@ -421,7 +421,7 @@ Replacement rule.
     await writeManifest(dir);
     await writeFile(
       join(dir, "index.md"),
-      "---\ncontext: Start here.\n---\n\nFront door prose.\n",
+      "---\ncontext: The package cover and coverage map.\n---\n\nFront door prose.\n",
     );
     await mkdir(join(dir, "email"), { recursive: true });
     await writeFile(

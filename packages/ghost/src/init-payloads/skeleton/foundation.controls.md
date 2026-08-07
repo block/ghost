@@ -1,5 +1,5 @@
 ---
-context: "Controls — the five-rung emphasis ladder, quiet fields, and misuse. Read for any view with actions or inputs."
+context: "Any view with actions or inputs — the five-rung emphasis ladder, quiet fields, and misuse."
 ---
 
 ## Usage

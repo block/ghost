@@ -1,5 +1,5 @@
 ---
-context: "AI conversation threads — assistant text on the page surface, compact user turns, collapsed tool calls, one structured prompt input. Read only for chat threads, agent consoles, and prompt composers."
+context: "Chat threads, agent consoles, and prompt composers — assistant text on the page surface, compact user turns, collapsed tool calls, one structured prompt input."
 ---
 
 In this context: AI conversation threads, agent consoles, review assistants,

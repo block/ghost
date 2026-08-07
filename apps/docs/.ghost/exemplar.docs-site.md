@@ -1,5 +1,5 @@
 ---
-context: Gather when translating the ghost visual expression into another surface or medium and inspect the complete source expression.
+context: Translating the ghost visual expression into another surface or medium — the complete source expression to imitate.
 materials:
   - apps/docs/src/app/page.tsx
   - apps/docs/src/components/docs/hero.tsx

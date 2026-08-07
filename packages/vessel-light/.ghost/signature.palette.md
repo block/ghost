@@ -1,5 +1,5 @@
 ---
-context: "Gather whenever color beyond the base roles is in question, in any register. The palette dial: a monochrome spine plus a closed expression set whose volume rises with the register — this brand's current answer is gray plus five named hues."
+context: "Color beyond the base roles in any register — a monochrome spine plus a closed expression set whose volume rises with the register; this brand's current answer is gray plus five named hues."
 materials:
   - materials/tokens.css
 ---

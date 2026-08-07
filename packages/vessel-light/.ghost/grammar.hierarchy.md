@@ -1,5 +1,5 @@
 ---
-context: "The closed hierarchy vocabulary — six text variants, seven tones, a five-rung control emphasis ladder, one primary per view — gather for any view that contains text or actions."
+context: "Any view containing text or actions — six text variants, seven tones, a five-rung control emphasis ladder, one primary per view."
 materials:
   - materials/primitives.css
   - materials/ref/composition.form.html

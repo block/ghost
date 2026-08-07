@@ -1,5 +1,5 @@
 ---
-context: "Always read first: Vessel's design language as a raw HTML/CSS steering packet for agents."
+context: "Vessel's complete design language as a raw HTML/CSS steering packet for agents."
 materials:
   - materials/tokens.css
 ---

@@ -1,5 +1,5 @@
 ---
-context: "Motion — evidence of state change, three durations and one ease, nothing loops, and misuse; the ease's character is an open question shared with voice. Read for any transition or hover treatment."
+context: "Any transition or hover treatment — evidence of state change, three durations and one ease, nothing loops, and misuse; the ease's character is an open question shared with voice."
 ---
 
 ## Usage

@@ -1,5 +1,5 @@
 ---
-context: "Always read first: what this vendored ghost package is, what it governs, and that this repo's own nodes always win."
+context: "This vendored ghost package, what it governs, and the rule that this repo's own nodes always win."
 materials:
   - "**/styles/main.css"
 ---

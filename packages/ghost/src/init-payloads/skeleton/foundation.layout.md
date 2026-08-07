@@ -1,5 +1,5 @@
 ---
-context: "Layout — stacks with five gap steps, surface roles, three elevation tiers, the two radius roles, and misuse; radius values are an open question. Read before laying anything out."
+context: "Laying out any view — stacks with five gap steps, surface roles, three elevation tiers, the two radius roles, and misuse; radius values are an open question."
 ---
 
 ## Usage

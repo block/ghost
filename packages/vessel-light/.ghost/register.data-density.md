@@ -1,5 +1,5 @@
 ---
-context: "Data-dense consoles — gather for tables, dashboards, logs, and monitoring; compresses product rhythm to the two smallest gap steps, mono numerals, muted-first."
+context: "Tables, dashboards, logs, and monitoring — data-dense consoles compress product rhythm to the two smallest gap steps, mono numerals, muted-first."
 materials:
   - materials/ref/composition.table.html
   - materials/primitives.css

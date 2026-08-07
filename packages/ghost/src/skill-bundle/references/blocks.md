@@ -64,9 +64,9 @@ primitive.
 
 ## The shape of a block node
 
-A node like any other. Frontmatter carries `context` (the retrieval payload —
-write one on every block worth matching); the body is prose the agent reasons
-over.
+A node like any other. Frontmatter carries `context`, the direct applicability
+payload; write one on every block worth matching. The body is prose the agent
+reasons over.
 
 **Body:** one short paragraph in a consistent rhythm, *for / reach when / not
 when (use X instead) / never*:

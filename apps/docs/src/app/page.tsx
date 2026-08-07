@@ -42,7 +42,7 @@ const guidanceExamples = [
     label: "visual decision",
     path: "pattern.crop-with-intent.md",
     body: `---
-context: Photography. Gather when a composition uses a photo.
+context: A composition using photography — crop and focal-point guidance.
 materials:
   - brand/photography/**
 ---
@@ -58,7 +58,7 @@ Reject cautious full-object framing and collages that avoid choosing a focal poi
     label: "product pattern",
     path: "condition.blocked-progress.md",
     body: `---
-context: Blocked progress. Gather when someone cannot continue a task.
+context: Someone cannot continue a task — explanation, recovery, and next-action guidance.
 materials:
   - src/components/error-state/**
 ---
@@ -74,7 +74,7 @@ If the person cannot resolve the problem, state what happens next. Do not end on
     label: "exact material",
     path: "asset.color-roles.md",
     body: `---
-context: Exact color roles and values. Gather before assigning color.
+context: Assigning color — exact semantic roles and values.
 materials:
   - src/styles/brand-tokens.css
 ---

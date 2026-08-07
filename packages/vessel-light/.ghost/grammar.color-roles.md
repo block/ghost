@@ -1,5 +1,5 @@
 ---
-context: "Semantic color roles and the rules that govern them — gather before choosing any color; roles not raw values, status is meaning, expression is register-gated and never on controls."
+context: "Choosing any color — semantic roles, not raw values; status is meaning, expression is register-gated and never on controls."
 materials:
   - materials/tokens.css
   - "**/*.css"

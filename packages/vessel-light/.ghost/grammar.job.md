@@ -1,5 +1,5 @@
 ---
-context: "The routing rule — name the reader's job before composing anything; the job picks the ref to imitate and the register that applies, never the topic. Gather first for any new view, before structure exists."
+context: "Any new view before structure exists — the reader's job picks the ref to imitate and the register that applies, never the topic."
 materials:
   - materials/ref/composition.form.html
   - materials/ref/composition.table.html

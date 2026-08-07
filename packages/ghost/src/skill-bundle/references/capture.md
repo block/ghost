@@ -201,11 +201,13 @@ Near the moment of payment, reduce felt risk. Proximity of reassurance to the
 action beats completeness...
 ```
 
-- **`context`** is how an agent finds the node: a compact retrieval payload
-  naming what the node governs, the observable condition under which it applies,
-  and what it contributes when useful. `ghost gather` emits id, kind,
-  context, concrete coverage, payload labels, and material count; the agent matches the ask
-  against applicability.
+- **`context`** tells the agent when to gather the node: a compact retrieval
+  payload naming what the node governs, the observable condition under which it
+  applies, and what it contributes when useful. Usually state that information
+  directly. Use an explicit retrieval instruction such as “gather when” only
+  when the direct condition cannot carry a necessary routing constraint.
+  `ghost gather` emits id, kind, context, concrete coverage, payload labels, and
+  material count; the agent matches the ask against applicability.
 - **Kind is the filename prefix** and must be a kind the glossary declares. A
   bare name (`voice.md`) has no kind.
 - **Altitude lives in the prose.** State universal guidance plainly; give a

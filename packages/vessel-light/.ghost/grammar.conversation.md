@@ -1,5 +1,5 @@
 ---
-context: "Conversation grammar — plain assistant text, compact user surfaces, collapsed tool calls, one structured prompt input; gather for any AI thread, agent console, review assistant, or prompt composer."
+context: "Any AI thread, agent console, review assistant, or prompt composer — plain assistant text, compact user surfaces, collapsed tool calls, one structured prompt input."
 materials:
   - materials/ref/composition.conversation.html
   - "**/*.html"

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 const nodes = [
   { id: "brand", context: "the cover: the whole brand on one page" },
-  { id: "voice", context: "how we talk; grab for anything with words" },
+  { id: "voice", context: "anything with words; voice and tone" },
   { id: "motion", context: "when and how things move on screen" },
   {
     id: "email.transactional",
@@ -10,7 +10,7 @@ const nodes = [
   },
   {
     id: "layout.spacing",
-    context: "spacing logic; grab before laying out a page",
+    context: "laying out a page; spacing logic",
   },
   { id: "never.ai-defaults", context: "the AI defaults we refuse" },
   {

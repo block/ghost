@@ -1,5 +1,5 @@
 ---
-context: "Voice and tone — copy states facts, no performed personality, and misuse; warmth is an open question shared with motion. Read for any copy."
+context: "Any copy — facts without performed personality, and misuse; warmth is an open question shared with motion."
 ---
 
 ## Usage

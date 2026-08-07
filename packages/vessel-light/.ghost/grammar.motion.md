@@ -1,5 +1,5 @@
 ---
-context: "Motion doctrine — motion is evidence of state change, never decoration; a closed vocabulary of three duration roles and one ease; gather for any transition, animation, or hover treatment."
+context: "Any transition, animation, or hover treatment — motion is evidence of state change, never decoration; three duration roles and one ease form the closed vocabulary."
 materials:
   - materials/tokens.css
   - "**/*.css"

@@ -1,5 +1,5 @@
 ---
-context: Gather when a reader needs to inspect an example, table, code sample, comparison, palette, diagnostic, or interactive result.
+context: A reader inspecting an example, table, code sample, comparison, palette, diagnostic, or interactive result — the specimen frame that presents it as evidence.
 materials:
   - apps/docs/src/app/page.tsx
   - apps/docs/src/components/docs/gather-demo.tsx
