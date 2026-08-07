@@ -1,5 +1,5 @@
 ---
-context: The token contract — primitives feed semantic roles, extensions stay narrow and job-named, no broad alias sprawl.
+context: Changing tokens, semantic roles, or the Tailwind utility bridge.
 materials:
   - packages/vessel-react/src/styles/main.css
   - packages/vessel-react/src/styles/*.css

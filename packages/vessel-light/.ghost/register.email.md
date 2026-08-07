@@ -1,5 +1,5 @@
 ---
-context: "Transactional email only — inline styles, hardcoded hex transcribed from tokens.css, table layout, and system fonts invert the token contract."
+context: Transactional email only.
 materials:
   - materials/ref/email.html
 ---

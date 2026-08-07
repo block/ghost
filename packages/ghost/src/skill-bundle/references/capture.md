@@ -37,7 +37,7 @@ should preserve and what is incidental.
 
 ````markdown
 ---
-context: Complete status card exemplar — normative for density, evidence placement, and action language.
+context: Building or reviewing a status card.
 materials:
   - src/components/status-card.tsx
 ---
@@ -99,7 +99,7 @@ out-steers a paragraph about error-message voice:
 
 ```markdown
 ---
-context: A verbatim on-brand error message — the voice at failure moments.
+context: Writing or reviewing an error message.
 ---
 
 Normative for rhythm and stance at failure moments; match its form, not its words.
@@ -170,7 +170,7 @@ thing.
 
 ```markdown
 ---
-context: Review-critical replacement for the generic AI dashboard default.
+context: Building or reviewing an AI dashboard.
 ---
 
 Not: rounded-xl cards on gray-50, indigo primary buttons, gradient hero text,
@@ -193,7 +193,7 @@ A node at `principle.trust.md` (id `principle.trust`, kind `principle`):
 
 ```markdown
 ---
-context: Trust at the payment moment.  # the retrieval payload
+context: A person is about to pay.  # the retrieval payload
 # optional: materials, audience, stage, or other free-form keys
 ---
 
@@ -201,13 +201,12 @@ Near the moment of payment, reduce felt risk. Proximity of reassurance to the
 action beats completeness...
 ```
 
-- **`context`** tells the agent when to gather the node: a compact retrieval
-  payload naming what the node governs, the observable condition under which it
-  applies, and what it contributes when useful. Usually state that information
-  directly. Use an explicit retrieval instruction such as “gather when” only
-  when the direct condition cannot carry a necessary routing constraint.
-  `ghost gather` emits id, kind, context, concrete coverage, payload labels, and
-  material count; the agent matches the ask against applicability.
+- **`context`** tells the agent when to gather the node. Name the observable
+  condition under which it applies, and nothing else. Put the guidance and what
+  the node contributes in the body. State the condition directly; use “gather
+  when” only when the direct condition cannot carry a necessary routing
+  constraint. `ghost gather` emits id, kind, context, concrete coverage, payload
+  labels, and material count; the agent matches the ask against applicability.
 - **Kind is the filename prefix** and must be a kind the glossary declares. A
   bare name (`voice.md`) has no kind.
 - **Altitude lives in the prose.** State universal guidance plainly; give a

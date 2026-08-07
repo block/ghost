@@ -1,5 +1,5 @@
 ---
-context: "Any new view before structure exists — the reader's job picks the ref to imitate and the register that applies, never the topic."
+context: Any new view before its structure or register is chosen.
 materials:
   - materials/ref/composition.form.html
   - materials/ref/composition.table.html

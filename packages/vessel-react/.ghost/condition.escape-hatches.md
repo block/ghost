@@ -1,5 +1,5 @@
 ---
-context: When component work needs className, inline style, or arbitrary values — the governed escape-hatch path.
+context: Component work needs className, inline style, arbitrary values, or a local primitive fork.
 materials:
   - packages/vessel-react/scripts/audit-agent-safety.mjs
 ---

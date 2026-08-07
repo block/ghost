@@ -118,7 +118,7 @@ kinds:
 
 ```markdown
 ---
-context: Gate a consequential action behind explicit user approval.
+context: A consequential action needs explicit user approval before it runs.
 ---
 Gates a tool action behind explicit user approval. Reach for it when the user's
 first question is "do I allow this?", when a consequential action needs a human
@@ -131,7 +131,7 @@ with no decision to make, it only manufactures friction.
 
 ```markdown
 ---
-context: Present many records across shared, comparable columns.
+context: Many records need comparison across shared columns.
 ---
 Presents many records across shared, comparable columns. Reach for it when the
 user's first question is "how do these compare across the same attributes?" Not
@@ -144,7 +144,7 @@ record's detail view.
 
 ```markdown
 ---
-context: A primitive action trigger.
+context: A person can trigger an action.
 ---
 ```
 

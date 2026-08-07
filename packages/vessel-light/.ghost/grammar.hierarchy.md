@@ -1,5 +1,5 @@
 ---
-context: "Any view containing text or actions — six text variants, seven tones, a five-rung control emphasis ladder, one primary per view."
+context: Any view containing text or actions.
 materials:
   - materials/primitives.css
   - materials/ref/composition.form.html

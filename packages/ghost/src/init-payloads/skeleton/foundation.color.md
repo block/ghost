@@ -1,5 +1,5 @@
 ---
-context: "Choosing any color — the role system, status meanings, expression rules, and misuse; palette values are an open question."
+context: Choosing or applying color.
 ---
 
 ## Usage

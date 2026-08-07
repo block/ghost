@@ -1,5 +1,5 @@
 ---
-context: Stack, Surface, and Text — rhythm from the gap scale, elevation as interaction tiers, type from the variant vocabulary.
+context: Composing layout, surfaces, text hierarchy, spacing, cards, separators, or loading states.
 materials:
   - "**/components/ui/stack.tsx"
   - "**/components/ui/surface.tsx"

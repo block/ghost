@@ -1,5 +1,5 @@
 ---
-context: "The theming seams — which token bindings a theme may rebind freely, and which relationships must hold in every theme."
+context: Creating or changing a theme, token binding, font stack, radius, shadow, or gray ramp.
 materials:
   - "**/styles/main.css"
 ---

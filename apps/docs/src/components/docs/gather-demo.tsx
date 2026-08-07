@@ -1,21 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 const nodes = [
-  { id: "brand", context: "the cover: the whole brand on one page" },
-  { id: "voice", context: "anything with words; voice and tone" },
-  { id: "motion", context: "when and how things move on screen" },
+  { id: "brand", context: "any task that should express this brand" },
+  { id: "voice", context: "anything with words" },
+  { id: "motion", context: "anything that moves on screen" },
   {
     id: "email.transactional",
-    context: "when money moved and the reader is checking",
+    context: "money moved and the reader is checking",
   },
   {
     id: "layout.spacing",
-    context: "laying out a page; spacing logic",
+    context: "laying out a page",
   },
-  { id: "never.ai-defaults", context: "the AI defaults we refuse" },
+  { id: "never.ai-defaults", context: "any first-draft visual surface" },
   {
     id: "logo.usage",
-    context: "the mark, its clearspace, and where it may not appear",
+    context: "placing or sizing the mark",
   },
 ] as const;
 

@@ -12,10 +12,10 @@ export interface GhostNodeFrontmatter {
   /** Free-form descriptive properties parsed from node frontmatter. */
   [key: string]: unknown;
   /**
-   * Retrieval payload shown by gather: what the node governs, the observable
-   * condition under which it applies, and what it contributes where useful.
-   * Together with the node's id, it is how an agent decides applicability.
-   * Optional, but strongly encouraged on any node worth anchoring a task at.
+   * Retrieval payload shown by gather: the observable condition under which
+   * this node applies. Together with the node's id, it is how an agent decides
+   * applicability. Optional, but strongly encouraged on any node worth
+   * anchoring a task at.
    */
   context?: string;
   /** @deprecated Use `context`. Accepted as a read alias for one release. */

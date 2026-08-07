@@ -1,5 +1,5 @@
 ---
-context: Vessel is an agnostic reference body a product fingerprint inhabits — never the brand truth for any consumer.
+context: Any Vessel change that could encode product-specific brand truth.
 ---
 
 Vessel provides a coherent implementation vocabulary — tokens, primitives, AI

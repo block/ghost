@@ -208,7 +208,7 @@ function lintNodeContexts(catalog: GhostCatalog, issues: LintIssue[]): void {
       severity: "warning",
       rule: "node-context-missing",
       message:
-        "node has no `context`, so `gather` lists it as a bare id without applicability context; add one line describing what this guidance governs, when it applies, and what it contributes",
+        "node has no `context`, so `gather` lists it as a bare id without applicability context; add one line naming the observable condition under which this node applies",
       path: `${node.id}.md`,
     });
   }

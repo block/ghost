@@ -1,5 +1,5 @@
 ---
-context: "Replacement for the generic AI-product visual median: spectacle and generic card chrome become an inspectable marked document with a specific flat squircle card language."
+context: Any visual surface at risk of generic AI-product spectacle or card chrome.
 materials:
   - apps/docs/src/app/page.tsx
   - apps/docs/src/styles/marked-doc.css

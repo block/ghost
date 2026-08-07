@@ -1,5 +1,5 @@
 ---
-context: "This vendored ghost package, what it governs, and the rule that this repo's own nodes always win."
+context: Any task using or changing the vendored component set.
 materials:
   - "**/styles/main.css"
 ---

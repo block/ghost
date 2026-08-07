@@ -1,5 +1,5 @@
 ---
-context: Translating the ghost visual expression into another surface or medium — the complete source expression to imitate.
+context: Translating the ghost visual expression into another surface or medium.
 materials:
   - apps/docs/src/app/page.tsx
   - apps/docs/src/components/docs/hero.tsx

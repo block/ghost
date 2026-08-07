@@ -1,5 +1,5 @@
 ---
-context: "Any transition, animation, or hover treatment — motion is evidence of state change, never decoration; three duration roles and one ease form the closed vocabulary."
+context: Any transition, animation, or hover treatment.
 materials:
   - materials/tokens.css
   - "**/*.css"

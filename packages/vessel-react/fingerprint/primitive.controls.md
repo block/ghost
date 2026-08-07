@@ -1,5 +1,5 @@
 ---
-context: Buttons, inputs, and forms — one primary action per view, quiet fields, focus rings as guidance, errors as facts at the field.
+context: Any view with buttons, inputs, forms, labels, or field errors.
 materials:
   - "**/components/ui/button.tsx"
   - "**/components/ui/button-group.tsx"

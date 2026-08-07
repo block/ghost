@@ -1,5 +1,5 @@
 ---
-context: "Any build — the measured defaults the model reaches for unsteered, each paired with the veer away."
+context: Any build using the vendored component set.
 ---
 
 These are not aesthetic opinions. They are the measured convergence of 300

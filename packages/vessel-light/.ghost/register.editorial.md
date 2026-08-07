@@ -1,5 +1,5 @@
 ---
-context: "Heroes, marketing pages, pull quotes, and full-bleed dark moments — editorial and landing surfaces invert product type restraint."
+context: Heroes, marketing pages, pull quotes, or full-bleed dark moments.
 materials:
   - materials/ref/composition.editorial.html
   - materials/tokens.css

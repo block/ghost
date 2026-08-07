@@ -1,5 +1,5 @@
 ---
-context: "Any copy — facts without performed personality, and misuse; warmth is an open question shared with motion."
+context: Writing or editing any copy.
 ---
 
 ## Usage

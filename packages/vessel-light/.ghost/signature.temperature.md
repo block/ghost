@@ -1,5 +1,5 @@
 ---
-context: "Any copy, and the character of any motion — factual, quiet, never celebratory, with resolved spring motion."
+context: Writing any copy or choosing the character of motion.
 materials:
   - materials/tokens.css
 ---

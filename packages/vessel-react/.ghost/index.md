@@ -1,5 +1,5 @@
 ---
-context: The Vessel fingerprint’s coverage map — what each node kind governs and how the pieces fit together.
+context: Any task changing the Vessel workspace.
 ---
 
 Vessel is ghost's reference body: an agnostic, agent-safe shadcn-compatible

@@ -1,5 +1,5 @@
 ---
-context: "Any view containing text — six text variants, seven tones, the one-voice rule, and misuse; the typeface is an open question."
+context: Any view containing text.
 ---
 
 ## Usage

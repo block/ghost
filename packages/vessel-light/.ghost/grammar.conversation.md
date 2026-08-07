@@ -1,5 +1,5 @@
 ---
-context: "Any AI thread, agent console, review assistant, or prompt composer — plain assistant text, compact user surfaces, collapsed tool calls, one structured prompt input."
+context: Any AI thread, agent console, review assistant, or prompt composer.
 materials:
   - materials/ref/composition.conversation.html
   - "**/*.html"

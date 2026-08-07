@@ -1,5 +1,5 @@
 ---
-context: "Any view with actions or inputs — the five-rung emphasis ladder, quiet fields, and misuse."
+context: Any view with actions or inputs.
 ---
 
 ## Usage

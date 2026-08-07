@@ -1,5 +1,5 @@
 ---
-context: Conversation grammar for AI surfaces — assistant prose on the page surface, quiet user containment, tools and reasoning as collapsed affordances.
+context: Any AI conversation, prompt input, reasoning display, or tool output.
 materials:
   - "**/components/ai-elements/conversation.tsx"
   - "**/components/ai-elements/message.tsx"

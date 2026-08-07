@@ -12,7 +12,7 @@ export interface GhostCatalogNode {
   kind?: string;
   /** Filename slug: bare name, or the part after the first dot. */
   slug: string;
-  /** Retrieval payload shown in gather: what applies, when, and what it contributes. */
+  /** Retrieval payload shown in gather: the condition under which this node applies. */
   context?: string;
   /** @deprecated Use `context`. Mirrors the resolved context for one release. */
   description?: string;

@@ -1,5 +1,5 @@
 ---
-context: "Laying out any view — all layout is stacks with a closed gap step set; never ad-hoc sibling margins."
+context: Laying out any view.
 materials:
   - materials/primitives.css
   - "**/*.html"

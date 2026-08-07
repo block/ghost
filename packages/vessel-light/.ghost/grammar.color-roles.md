@@ -1,5 +1,5 @@
 ---
-context: "Choosing any color — semantic roles, not raw values; status is meaning, expression is register-gated and never on controls."
+context: Choosing or applying color.
 materials:
   - materials/tokens.css
   - "**/*.css"

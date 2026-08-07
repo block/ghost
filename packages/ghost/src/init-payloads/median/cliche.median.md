@@ -1,5 +1,5 @@
 ---
-context: "Any greenfield visual surface or first-draft copy — the model's median defaults this package refuses. Each rule is reject→replace; delete lines your brand legitimately violates."
+context: Any greenfield visual surface or first-draft copy.
 ---
 
 This is the model's median, not your brand. Each rule is reject→replace.

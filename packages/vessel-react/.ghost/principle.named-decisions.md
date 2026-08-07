@@ -1,5 +1,5 @@
 ---
-context: Authoring or reviewing components and tokens — make off-system output hard to express; decision names beat raw values, checks beat prose.
+context: Authoring or reviewing components, tokens, variants, or agent-safety checks.
 materials:
   - packages/vessel-react/src/components/**
   - packages/vessel-react/scripts/audit-agent-safety.mjs

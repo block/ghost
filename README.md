@@ -113,7 +113,7 @@ deprecated read alias for one release, and `ghost validate` warns on its use.
 
 ```markdown
 ---
-context: Logo lockups, clearspace, and when the glyph can stand alone.
+context: Placing, sizing, or choosing a logo lockup or glyph.
 materials:
   - brand/logo*.svg
   - https://figma.com/file/example?node-id=logo-lockups

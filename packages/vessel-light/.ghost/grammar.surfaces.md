@@ -1,5 +1,5 @@
 ---
-context: "Any card, popover, modal, dialog, scrim, or bordered container — flat is the default, borders are structural, exactly three elevation tiers."
+context: Any card, popover, modal, dialog, scrim, or bordered container.
 materials:
   - materials/primitives.css
   - materials/ref/composition.overlay.html

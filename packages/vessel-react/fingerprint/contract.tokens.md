@@ -1,5 +1,5 @@
 ---
-context: The token pipeline — primitive values feed semantic roles, components author role-first, extensions stay narrow and job-named.
+context: Changing tokens, component styles, semantic roles, or the Tailwind utility bridge.
 materials:
   - "**/styles/main.css"
   - "**/components/ui/**/*.tsx"

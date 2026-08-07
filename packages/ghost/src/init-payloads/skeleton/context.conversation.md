@@ -1,5 +1,5 @@
 ---
-context: "Chat threads, agent consoles, and prompt composers — assistant text on the page surface, compact user turns, collapsed tool calls, one structured prompt input."
+context: Chat threads, agent consoles, and prompt composers.
 ---
 
 In this context: AI conversation threads, agent consoles, review assistants,

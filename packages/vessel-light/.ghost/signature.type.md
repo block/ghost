@@ -1,5 +1,5 @@
 ---
-context: "Any text, hero, landing page, or editorial moment — one voice typeface plus mono for machine detail, with an editorial heading scale separate from product text; this brand's current answer is HK Grotesk."
+context: Any text, hero, landing page, or editorial moment.
 materials:
   - materials/tokens.css
   - materials/fonts/*.woff2

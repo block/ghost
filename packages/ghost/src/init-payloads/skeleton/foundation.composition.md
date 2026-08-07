@@ -1,5 +1,5 @@
 ---
-context: "Assembling any view — one focal point, one primary action, actions land last, separation escalates."
+context: Assembling any view.
 ---
 
 ## Usage

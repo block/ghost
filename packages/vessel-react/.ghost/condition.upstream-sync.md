@@ -1,5 +1,5 @@
 ---
-context: When reconciling with latest upstream shadcn — adopt mechanics, adapt anatomy, reject generic visual decisions.
+context: Reconciling Vessel with upstream shadcn or evaluating an upstream change.
 ---
 
 Condition: you are syncing Vessel components against newer upstream shadcn

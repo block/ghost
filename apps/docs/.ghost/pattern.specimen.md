@@ -1,5 +1,5 @@
 ---
-context: A reader inspecting an example, table, code sample, comparison, palette, diagnostic, or interactive result — the specimen frame that presents it as evidence.
+context: A reader needs to inspect an example, table, code sample, comparison, palette, diagnostic, or interactive result.
 materials:
   - apps/docs/src/app/page.tsx
   - apps/docs/src/components/docs/gather-demo.tsx

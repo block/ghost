@@ -1,5 +1,5 @@
 ---
-context: "Any transition or hover treatment — evidence of state change, three durations and one ease, nothing loops, and misuse; the ease's character is an open question shared with voice."
+context: Any transition, animation, or hover treatment.
 ---
 
 ## Usage

@@ -1,5 +1,5 @@
 ---
-context: "Global rule for the yellow mark: it records selection, intervention, or active choice and never acts as general decoration."
+context: Using yellow, selection, intervention, or active-choice states.
 materials:
   - apps/docs/src/styles/marked-doc.css
   - apps/docs/src/components/docs/gather-demo.tsx

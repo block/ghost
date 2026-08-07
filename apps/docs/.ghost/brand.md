@@ -1,5 +1,5 @@
 ---
-context: "The ghost visual expression in one screen: an exact, quiet, visibly structured document with one meaningful mark."
+context: Any expression of the ghost brand.
 materials:
   - apps/docs/src/styles/marked-doc.css
   - apps/docs/src/app/page.tsx
