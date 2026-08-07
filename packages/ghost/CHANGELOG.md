@@ -1,5 +1,13 @@
 # @design-intelligence/ghost
 
+## 0.27.0
+
+### Minor Changes
+
+- [#252](https://github.com/block/ghost/pull/252) [`75612b3`](https://github.com/block/ghost/commit/75612b38cdaaf0db7ab31192f2feca298df3eed5) Thanks [@chailandau](https://github.com/chailandau)! - Make `context` the canonical node retrieval field while reading `description` as a deprecated compatibility alias.
+
+- [#251](https://github.com/block/ghost/pull/251) [`78ca289`](https://github.com/block/ghost/commit/78ca28936a70de0b3f5ae3286cc6acb1d17c41bd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Remove check probe shell execution from `ghost review` so checks remain prose-only review assertions.
+
 ## 0.26.1
 
 ### Patch Changes
