@@ -1,5 +1,15 @@
 # @design-intelligence/ghost
 
+## 0.28.0
+
+### Minor Changes
+
+- [#254](https://github.com/block/ghost/pull/254) [`87c6803`](https://github.com/block/ghost/commit/87c6803723620a358165a5812d613971cef6e62a) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Material locators must name each file explicitly: glob patterns are no longer supported and now fail node validation, the glob matching machinery is removed from transport, review matching, and inspection, and the vessel-light starter body plus all docs and recipes teach the explicit-files convention so a pull never captures unintended files from a live repo.
+
+### Patch Changes
+
+- [#254](https://github.com/block/ghost/pull/254) [`87c6803`](https://github.com/block/ghost/commit/87c6803723620a358165a5812d613971cef6e62a) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - `ghost pull` now inlines each distinct material file once per pull: the first node in output order carries the content, and later nodes that declare the same file point at the copy already in context instead of repeating it.
+
 ## 0.27.0
 
 ### Minor Changes
