@@ -1330,18 +1330,14 @@ describe("ghost CLI", () => {
     ]);
   });
 
-  it("pull expands globs with a cap and notes elision beyond it", async () => {
+  it("pull inlines each explicitly named material exactly once", async () => {
     await writeBareTestPackage(dir);
     await mkdir(join(dir, "brand", "samples"), { recursive: true });
-    for (let i = 0; i < 13; i++) {
-      await writeFile(
-        join(dir, "brand", "samples", `${String(i).padStart(2, "0")}.txt`),
-        `sample ${i}\n`,
-      );
-    }
+    await writeFile(join(dir, "brand", "samples", "a.txt"), "sample a\n");
+    await writeFile(join(dir, "brand", "samples", "b.txt"), "sample b\n");
     await writeFile(
       join(dir, ".ghost", "asset.samples.md"),
-      "---\ncontext: Samples.\nmaterials:\n  - brand/samples/*.txt\n---\n\nSample prose.\n",
+      "---\ncontext: Samples.\nmaterials:\n  - brand/samples/a.txt\n  - brand/samples/b.txt\n---\n\nSample prose.\n",
     );
 
     const json = await runCli(
@@ -1351,17 +1347,58 @@ describe("ghost CLI", () => {
 
     expect(json.code).toBe(0);
     const materials = JSON.parse(json.stdout).nodes[0].materials;
-    expect(
-      materials.filter((m: { inlined?: string }) => m.inlined).length,
-    ).toBe(12);
+    expect(materials).toHaveLength(2);
     expect(materials).toContainEqual(
       expect.objectContaining({
-        locator: "brand/samples/*.txt",
+        locator: "brand/samples/a.txt",
         tier: "referenced",
-        omitted: true,
-        reason: "glob matched more than 12 files; omitted the rest",
+        inlined: "sample a\n",
       }),
     );
+    expect(materials).toContainEqual(
+      expect.objectContaining({
+        locator: "brand/samples/b.txt",
+        tier: "referenced",
+        inlined: "sample b\n",
+      }),
+    );
+  });
+
+  it("pull inlines a file shared across nodes once and points later nodes at it", async () => {
+    await writeBareTestPackage(dir);
+    await mkdir(join(dir, ".ghost", "materials"), { recursive: true });
+    await writeFile(
+      join(dir, ".ghost", "materials", "shared.css"),
+      ":root{}\n",
+    );
+    await writeFile(
+      join(dir, ".ghost", "asset.first.md"),
+      "---\ncontext: First.\nmaterials:\n  - materials/shared.css\n---\n\nFirst prose.\n",
+    );
+    await writeFile(
+      join(dir, ".ghost", "asset.second.md"),
+      "---\ncontext: Second.\nmaterials:\n  - materials/shared.css\n---\n\nSecond prose.\n",
+    );
+
+    const json = await runCli(
+      ["pull", "asset.first", "asset.second", "--format", "json"],
+      dir,
+    );
+
+    expect(json.code).toBe(0);
+    const nodes = JSON.parse(json.stdout).nodes;
+    const first = nodes.find((n: { id: string }) => n.id === "asset.first");
+    const second = nodes.find((n: { id: string }) => n.id === "asset.second");
+    expect(first.materials[0]).toMatchObject({
+      locator: "materials/shared.css",
+      inlined: ":root{}\n",
+    });
+    expect(second.materials[0]).toMatchObject({
+      locator: "materials/shared.css",
+      omitted: true,
+      reason: "content inlined above under node asset.first",
+    });
+    expect(second.materials[0].inlined).toBeUndefined();
   });
 
   it("CLI gather/pull JSON stays semantically aligned with embed", async () => {
@@ -1752,7 +1789,7 @@ describe("ghost CLI", () => {
     await runCli(["init", "--with", "checks"], dir);
     await writeFile(
       join(dir, ".ghost", "asset.logo.md"),
-      "---\ncontext: Logo.\nmaterials:\n  - locator: brand/logo*.svg\n    note: Use the approved clearspace source\n  - brand/icon*.svg\n---\n\nLogo prose.\n",
+      "---\ncontext: Logo.\nmaterials:\n  - locator: brand/logo.svg\n    note: Use the approved clearspace source\n  - brand/icon.svg\n---\n\nLogo prose.\n",
     );
     await writeFile(
       join(dir, ".ghost", "checks", "logo-clearspace.md"),
@@ -1780,13 +1817,13 @@ describe("ghost CLI", () => {
     expect(packet.materialNodes[0]).toMatchObject({
       id: "asset.logo",
       files: ["brand/logo.svg"],
-      matchedMaterials: ["brand/logo*.svg"],
+      matchedMaterials: ["brand/logo.svg"],
       materials: [
         {
-          locator: "brand/logo*.svg",
+          locator: "brand/logo.svg",
           note: "Use the approved clearspace source",
         },
-        "brand/icon*.svg",
+        "brand/icon.svg",
       ],
     });
     expect(packet.checks[0]).toMatchObject({
@@ -1799,7 +1836,7 @@ describe("ghost CLI", () => {
     });
     expect(markdown.code).toBe(0);
     expect(markdown.stdout).toContain(
-      "`brand/logo*.svg` — Note: Use the approved clearspace source",
+      "`brand/logo.svg` — Note: Use the approved clearspace source",
     );
   });
 

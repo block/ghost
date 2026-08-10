@@ -1,8 +1,12 @@
 ---
 context: Changing tokens, component styles, semantic roles, or the Tailwind utility bridge.
 materials:
-  - "**/styles/main.css"
-  - "**/components/ui/**/*.tsx"
+  - packages/vessel-react/src/styles/main.css
+  - packages/vessel-react/src/components/ui/button.tsx
+  - packages/vessel-react/src/components/ui/card.tsx
+  - packages/vessel-react/src/components/ui/input.tsx
+  - packages/vessel-react/src/components/ui/surface.tsx
+  - packages/vessel-react/src/components/ui/text.tsx
 ---
 
 The token layer has a fixed shape that all component and styling work must

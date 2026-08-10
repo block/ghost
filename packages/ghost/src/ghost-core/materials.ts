@@ -55,7 +55,7 @@ export function externalLocatorScheme(value: string): string | undefined {
  * Classify a material locator after `validateMaterialLocator`. `url` is the
  * legacy public kind for an external locator; `access` distinguishes HTTPS from
  * connection-dependent locators. ghost never resolves or connects to them.
- * Everything else is a repo-relative path/glob.
+ * Everything else is an explicit repo-relative file path.
  */
 export function classifyMaterialLocator(
   value: string,
@@ -126,6 +126,9 @@ export function validateMaterialLocator(value: string): string | null {
   }
   if (normalized.startsWith("~/")) {
     return "local material locators must be repo-relative, not home-relative paths";
+  }
+  if (/[*?{]/.test(normalized)) {
+    return "local material locators must name each file explicitly; glob patterns are not supported";
   }
   return null;
 }

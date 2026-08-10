@@ -57,12 +57,14 @@ Use the full lockup when recognition matters.
   universal wording unless universal retrieval is intended. `description`
   remains a deprecated read alias for one release; `ghost validate` warns until
   it is renamed.
-- `materials` accepts repo-relative paths/globs plus supported external locators using `https:`, `mcp:`,
-  `figma:`, or `github:`. Items may be bare locator strings or
-  `{ locator, note }` objects. Use a short `note` only when an opaque locator
-  needs retrieval context. The external locator tells the host how to connect;
-  ghost does not fetch or authenticate. The list
-  locates material, while guidance stays in the node body.
+- `materials` accepts repo-relative file paths plus supported external locators
+  using `https:`, `mcp:`, `figma:`, or `github:`. Name each file explicitly:
+  glob patterns are not supported and fail validation, because in a live
+  repo a glob can capture unintended files into pulls. Items may be bare
+  locator strings or `{ locator, note }` objects. Use a short `note` only when
+  an opaque locator needs retrieval context. The external locator tells the
+  host how to connect; ghost does not fetch or authenticate. The list locates
+  material, while guidance stays in the node body.
 
 ghost derives whether a node carries concrete material from structure:
 non-empty `materials`, a fenced code block of at least 3 lines, or a

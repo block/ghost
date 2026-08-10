@@ -2,8 +2,6 @@
 context: Choosing or applying color.
 materials:
   - materials/tokens.css
-  - "**/*.css"
-  - "**/*.html"
 ---
 
 The token file is the source of truth. An agent may combine tokens, but it

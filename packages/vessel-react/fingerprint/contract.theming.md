@@ -1,7 +1,7 @@
 ---
 context: Creating or changing a theme, token binding, font stack, radius, shadow, or gray ramp.
 materials:
-  - "**/styles/main.css"
+  - packages/vessel-react/src/styles/main.css
 ---
 
 Vessel ships vanilla: a deliberate default binding, not the language itself.

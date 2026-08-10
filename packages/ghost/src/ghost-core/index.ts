@@ -31,8 +31,6 @@ export {
 } from "./check/index.js";
 // --- CLI exit-code contract ---
 export { EXIT, UsageError } from "./errors.js";
-// --- Glob matching (repo-relative locators) ---
-export { hasGlobMagic, matchesGlob, normalizeGlobPath } from "./glob.js";
 // --- Glossary (reserved fingerprint vocabulary slot) ---
 export {
   type GhostGlossaryDocument,
@@ -42,8 +40,6 @@ export {
   parseGlossary,
 } from "./glossary.js";
 export {
-  type ExpandedLocalMaterialLocator,
-  expandLocalMaterialLocator,
   inferMaterialMime,
   isBinaryMaterial,
   isTextMime,
@@ -52,7 +48,9 @@ export {
   type MaterialTransportOptions,
   type MaterialTransportResult,
   materialLocatorClaimsPath,
+  type ResolvedLocalMaterialFile,
   resolveContainedRealFile,
+  resolveLocalMaterialFile,
   resolveLocalMaterialLocator,
   type TransportedMaterial,
   type TransportedMaterialTier,

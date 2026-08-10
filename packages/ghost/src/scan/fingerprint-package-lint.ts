@@ -3,7 +3,6 @@ import { relative, resolve } from "node:path";
 import {
   classifyMaterialLocator,
   closestIds,
-  expandLocalMaterialLocator,
   extractSkeletonSections,
   type GhostCatalog,
   listBundledMaterialFiles,
@@ -11,6 +10,7 @@ import {
   materialLocatorClaimsPath,
   parseGlossary,
   parseSourceRef,
+  resolveLocalMaterialFile,
   sliceNodeSection,
 } from "#ghost-core";
 import { isMissingPathError } from "../internal/fs.js";
@@ -252,10 +252,8 @@ async function lintMaterialLocators(
       const locator = materialLocator(material);
       if (classifyMaterialLocator(locator).kind === "url") continue;
       claimedLocators.push(locator);
-      const expanded = await expandLocalMaterialLocator(locator, options, {
-        cap: Number.POSITIVE_INFINITY,
-      });
-      if (expanded.matches.length > 0) continue;
+      const resolved = await resolveLocalMaterialFile(locator, options);
+      if (resolved.match !== undefined) continue;
       issues.push({
         severity: "warning",
         rule: "material-locator-dead",

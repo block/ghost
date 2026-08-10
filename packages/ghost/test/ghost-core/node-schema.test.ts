@@ -92,7 +92,7 @@ describe("ghost.node/v1 schema", () => {
       frontmatter: {
         context: "Checkout trust signals.",
         materials: [
-          "src/components/checkout/**",
+          "src/components/checkout/trust-signals.tsx",
           "https://example.com/logo.svg",
           {
             locator: "mcp://brand-assets/checkout-marks",

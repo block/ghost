@@ -61,7 +61,8 @@ async function writePackage(dir: string): Promise<void> {
       "materials:",
       "  - materials/tokens.css",
       "  - brand/voice.txt",
-      "  - brand/alt-*.txt",
+      "  - brand/alt-a.txt",
+      "  - brand/alt-b.txt",
       "  - brand/bad.md",
       "  - brand/growing.txt",
       "  - https://example.com/brand-kit",
@@ -337,26 +338,25 @@ describe("embed contract", () => {
       reason: "network material inspection is disabled by policy",
     });
 
-    const multiple = await inspectGhostMaterial(snapshot, {
+    const globRejected = await inspectGhostMaterial(snapshot, {
       nodeId: "asset.tokens",
       locator: "brand/alt-*.txt",
       repoRoot: dir,
       policy: { local: "bundled-and-referenced" },
     });
-    expect(multiple).toMatchObject({
+    expect(globRejected).toMatchObject({
       ok: false,
-      tier: "referenced",
       reason:
-        "locator matched multiple local files; inspect one matching file path at a time",
+        "local material locators must name each file explicitly; glob patterns are not supported",
     });
 
-    const globMatch = await inspectGhostMaterial(snapshot, {
+    const explicitMatch = await inspectGhostMaterial(snapshot, {
       nodeId: "asset.tokens",
       locator: "brand/alt-a.txt",
       repoRoot: dir,
       policy: { local: "bundled-and-referenced" },
     });
-    expect(globMatch).toMatchObject({
+    expect(explicitMatch).toMatchObject({
       ok: true,
       tier: "referenced",
       path: "brand/alt-a.txt",

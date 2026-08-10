@@ -2,7 +2,13 @@
 context: Any text, hero, landing page, or editorial moment.
 materials:
   - materials/tokens.css
-  - materials/fonts/*.woff2
+  - materials/fonts/HKGrotesk-Black.woff2
+  - materials/fonts/HKGrotesk-Bold.woff2
+  - materials/fonts/HKGrotesk-ExtraBold.woff2
+  - materials/fonts/HKGrotesk-Light.woff2
+  - materials/fonts/HKGrotesk-Medium.woff2
+  - materials/fonts/HKGrotesk-Regular.woff2
+  - materials/fonts/HKGrotesk-SemiBold.woff2
 ---
 
 This is Vessel's answer to type — it stands until you replace it.

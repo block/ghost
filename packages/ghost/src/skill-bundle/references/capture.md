@@ -353,9 +353,11 @@ non-negotiables that apply to every task, what the package covers, and any
 stricter silence posture. `ghost gather` inlines it before the menu, so anything
 that must never be missed belongs there.
 
-Nodes may carry a `materials` list in frontmatter: repo-relative paths/globs or
-supported external locators (see [schema.md](schema.md)) for the concrete
-materials the prose governs. Use a bare locator when it explains itself. Use
+Nodes may carry a `materials` list in frontmatter: explicit repo-relative file
+paths or supported external locators (see [schema.md](schema.md)) for the
+concrete materials the prose governs. Name each file; glob patterns are not
+supported and fail validation, because in a live repo a glob can capture
+unintended files into pulls. Use a bare locator when it explains itself. Use
 `{ locator, note }` when an opaque locator needs a short retrieval cue. The
 external locator tells the host how to connect;
 ghost does not fetch or authenticate. Put brand-owned materials that should

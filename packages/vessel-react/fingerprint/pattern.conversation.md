@@ -1,12 +1,12 @@
 ---
 context: Any AI conversation, prompt input, reasoning display, or tool output.
 materials:
-  - "**/components/ai-elements/conversation.tsx"
-  - "**/components/ai-elements/message.tsx"
-  - "**/components/ai-elements/prompt-input.tsx"
-  - "**/components/ai-elements/reasoning.tsx"
-  - "**/components/ai-elements/tool.tsx"
-  - "**/components/ai-elements/chain-of-thought.tsx"
+  - packages/vessel-react/src/components/ai-elements/conversation.tsx
+  - packages/vessel-react/src/components/ai-elements/message.tsx
+  - packages/vessel-react/src/components/ai-elements/prompt-input.tsx
+  - packages/vessel-react/src/components/ai-elements/reasoning.tsx
+  - packages/vessel-react/src/components/ai-elements/tool.tsx
+  - packages/vessel-react/src/components/ai-elements/chain-of-thought.tsx
 ---
 
 A conversation is a document being written, not a chat skin. The grammar the

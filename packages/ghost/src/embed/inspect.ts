@@ -2,14 +2,13 @@ import { readFile, stat } from "node:fs/promises";
 import { TextDecoder } from "node:util";
 import {
   classifyMaterialLocator,
-  expandLocalMaterialLocator,
   type GhostMaterial,
-  hasGlobMagic,
   inferMaterialMime,
   isTextMime,
   materialLocator,
   materialLocatorClaimsPath,
   resolveContainedRealFile,
+  resolveLocalMaterialFile,
   resolveLocalMaterialLocator,
   validateMaterialLocator,
 } from "#ghost-core";
@@ -57,33 +56,22 @@ export async function inspectGhostMaterial(
   }
 
   const policy = normalizePolicy(request.policy);
-  const expanded = await expandLocalMaterialLocator(request.locator, {
+  const resolved = await resolveLocalMaterialFile(request.locator, {
     repoRoot: request.repoRoot,
     packageDir: snapshot.package.dir,
     materialsDir: GHOST_MATERIALS_DIR,
   });
 
-  if (expanded.tier === "referenced" && policy.local === "bundled") {
+  if (resolved.tier === "referenced" && policy.local === "bundled") {
     return rejected(
       request,
       "referenced material inspection is disabled by policy",
-      expanded.tier,
+      resolved.tier,
     );
   }
-  if (expanded.matches.length === 0) {
-    return rejected(request, "locator matched no local files", expanded.tier);
-  }
-  if (expanded.matches.length > 1 || expanded.truncated) {
-    return rejected(
-      request,
-      "locator matched multiple local files; inspect one matching file path at a time",
-      expanded.tier,
-    );
-  }
-
-  const match = expanded.matches[0];
+  const match = resolved.match;
   if (match === undefined) {
-    return rejected(request, "locator matched no local files", expanded.tier);
+    return rejected(request, "locator matched no local files", resolved.tier);
   }
 
   let contained: Awaited<ReturnType<typeof resolveContainedRealFile>>;
@@ -96,7 +84,7 @@ export async function inspectGhostMaterial(
     return rejected(
       request,
       "matched file could not be read",
-      expanded.tier,
+      resolved.tier,
       match.repoRelativePath,
     );
   }
@@ -104,7 +92,7 @@ export async function inspectGhostMaterial(
     return rejected(
       request,
       "resolved material path escapes repo",
-      expanded.tier,
+      resolved.tier,
       match.repoRelativePath,
     );
   }
@@ -116,7 +104,7 @@ export async function inspectGhostMaterial(
     return rejected(
       request,
       "matched file could not be read",
-      expanded.tier,
+      resolved.tier,
       contained.repoRelativePath,
     );
   }
@@ -124,7 +112,7 @@ export async function inspectGhostMaterial(
     return rejected(
       request,
       "not a file",
-      expanded.tier,
+      resolved.tier,
       contained.repoRelativePath,
     );
   }
@@ -132,7 +120,7 @@ export async function inspectGhostMaterial(
     return rejected(
       request,
       `exceeds ${policy.maxBytes} byte inspect limit`,
-      expanded.tier,
+      resolved.tier,
       contained.repoRelativePath,
       info.size,
     );
@@ -143,7 +131,7 @@ export async function inspectGhostMaterial(
     return rejected(
       request,
       `MIME type ${mime} is not allowed by policy`,
-      expanded.tier,
+      resolved.tier,
       contained.repoRelativePath,
       info.size,
       mime,
@@ -157,7 +145,7 @@ export async function inspectGhostMaterial(
     return rejected(
       request,
       "matched file could not be read",
-      expanded.tier,
+      resolved.tier,
       contained.repoRelativePath,
     );
   }
@@ -165,7 +153,7 @@ export async function inspectGhostMaterial(
     return rejected(
       request,
       `exceeds ${policy.maxBytes} byte inspect limit`,
-      expanded.tier,
+      resolved.tier,
       contained.repoRelativePath,
       buffer.byteLength,
       mime,
@@ -176,7 +164,7 @@ export async function inspectGhostMaterial(
     ok: true as const,
     nodeId: request.nodeId,
     locator: request.locator,
-    tier: expanded.tier,
+    tier: resolved.tier,
     path: contained.repoRelativePath,
     byteLength: buffer.byteLength,
     mime,
@@ -193,7 +181,7 @@ export async function inspectGhostMaterial(
       return rejected(
         request,
         "not valid UTF-8 text",
-        expanded.tier,
+        resolved.tier,
         contained.repoRelativePath,
         buffer.byteLength,
         mime,
@@ -221,14 +209,12 @@ function declaredMaterialLocator(
     packageDir,
     materialsDir: GHOST_MATERIALS_DIR,
   }).pattern;
-  return locators.find(
-    (locator) =>
-      hasGlobMagic(locator) &&
-      materialLocatorClaimsPath(locator, requestedPath, {
-        repoRoot,
-        packageDir,
-        materialsDir: GHOST_MATERIALS_DIR,
-      }),
+  return locators.find((locator) =>
+    materialLocatorClaimsPath(locator, requestedPath, {
+      repoRoot,
+      packageDir,
+      materialsDir: GHOST_MATERIALS_DIR,
+    }),
   );
 }
 

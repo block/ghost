@@ -2,7 +2,7 @@
 context: Changing registry distribution, registry metadata, or copy-and-own component delivery.
 materials:
   - packages/vessel-react/registry.json
-  - packages/vessel-react/public/r/**
+  - packages/vessel-react/public/r/registry.json
   - packages/vessel-react/.shadcn/skills.md
 ---
 

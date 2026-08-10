@@ -28,8 +28,9 @@ it applies, and an agent reads the relevant guidance before building.
 
 - A **node** is a markdown file: `context`, optional `materials`, and prose brand guidance. `description` is a deprecated compatibility alias for one release.
 - `materials` is one list of locators for the concrete stuff the guidance is about:
-  repo-relative paths/globs or supported external locators (see
-  [schema.md](references/schema.md)). A bare locator is enough
+  explicit repo-relative file paths or supported external locators (see
+  [schema.md](references/schema.md)); name each file rather than
+  reaching for a glob. A bare locator is enough
   when it explains itself. An opaque locator may use `{ locator, note }` to say
   what it contains. `materials/` is reserved for bundled materials; reference
   living implementations where they already live. Guidance stays in prose.

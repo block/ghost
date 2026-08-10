@@ -1,7 +1,7 @@
 ---
 context: Any task using or changing the vendored component set.
 materials:
-  - "**/styles/main.css"
+  - packages/vessel-react/src/styles/main.css
 ---
 
 This ghost package ships with the Vessel component set. It is not a brand. It is
@@ -26,5 +26,5 @@ freely at the seams; do not fork the grammar silently.
 This package deliberately carries no product stance, flows, copy, or trust
 obligations. Author those as this repo's own nodes, next to these.
 
-After vendoring, verify the materials globs in each node resolve against this
+After vendoring, verify the materials paths in each node resolve against this
 repo's actual component paths and tighten them, then run `ghost validate`.

@@ -1,12 +1,12 @@
 ---
 context: Composing layout, surfaces, text hierarchy, spacing, cards, separators, or loading states.
 materials:
-  - "**/components/ui/stack.tsx"
-  - "**/components/ui/surface.tsx"
-  - "**/components/ui/text.tsx"
-  - "**/components/ui/card.tsx"
-  - "**/components/ui/separator.tsx"
-  - "**/components/ui/skeleton.tsx"
+  - packages/vessel-react/src/components/ui/stack.tsx
+  - packages/vessel-react/src/components/ui/surface.tsx
+  - packages/vessel-react/src/components/ui/text.tsx
+  - packages/vessel-react/src/components/ui/card.tsx
+  - packages/vessel-react/src/components/ui/separator.tsx
+  - packages/vessel-react/src/components/ui/skeleton.tsx
 ---
 
 Three components carry most of a screen's composure: Stack owns rhythm,

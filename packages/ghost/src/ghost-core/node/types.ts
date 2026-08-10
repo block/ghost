@@ -22,8 +22,9 @@ export interface GhostNodeFrontmatter {
   description?: string;
   /**
    * Optional locators for the concrete materials this guidance is about:
-   * repo-relative paths/globs and supported external locators. A locator
-   * may be a bare string or an object with a short retrieval note. Guidance stays in
+   * explicit repo-relative file paths and supported external locators. Glob
+   * patterns are not supported and fail validation. A locator may be a bare
+   * string or an object with a short retrieval note. Guidance stays in
    * prose; this list only says where the material can be found.
    */
   materials?: GhostMaterial[];

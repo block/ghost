@@ -1,7 +1,6 @@
 import { readdir, readFile, realpath, stat } from "node:fs/promises";
 import { isAbsolute, join, relative, resolve } from "node:path";
 import { TextDecoder } from "node:util";
-import { hasGlobMagic, matchesGlob, normalizeGlobPath } from "./glob.js";
 import {
   classifyMaterialLocator,
   type GhostMaterial,
@@ -25,7 +24,6 @@ export interface MaterialTransportOptions {
   repoRoot: string;
   packageDir: string;
   materialsDir?: string;
-  globCap?: number;
   referencedInlineBytes?: number;
 }
 
@@ -35,12 +33,11 @@ export interface MaterialTransportResult {
   omitted: number;
 }
 
-export interface ExpandedLocalMaterialLocator {
+export interface ResolvedLocalMaterialFile {
   locator: string;
   tier: Exclude<TransportedMaterialTier, "url">;
   pattern: string;
-  matches: Array<{ absolutePath: string; repoRelativePath: string }>;
-  truncated: boolean;
+  match?: { absolutePath: string; repoRelativePath: string };
 }
 
 export interface MaterialMimeInfo {
@@ -49,7 +46,6 @@ export interface MaterialMimeInfo {
 }
 
 const DEFAULT_MATERIALS_DIR = "materials";
-const DEFAULT_GLOB_CAP = 12;
 const DEFAULT_REFERENCED_INLINE_BYTES = 8 * 1024;
 const textDecoder = new TextDecoder("utf-8", { fatal: true });
 
@@ -78,15 +74,12 @@ export async function transportMaterials(
       continue;
     }
 
-    const expanded = await expandLocalMaterialLocator(locator, options, {
-      cap: options.globCap ?? DEFAULT_GLOB_CAP,
-    });
-    const globbed = hasGlobMagic(locator);
-    if (expanded.matches.length === 0) {
+    const resolved = await resolveLocalMaterialFile(locator, options);
+    if (resolved.match === undefined) {
       materials.push({
         locator,
         ...annotation,
-        tier: expanded.tier,
+        tier: resolved.tier,
         omitted: true,
         reason: "matched no local files",
       });
@@ -94,78 +87,40 @@ export async function transportMaterials(
       continue;
     }
 
-    for (const match of expanded.matches) {
-      const transported = await transportFile(
-        globbed ? match.repoRelativePath : locator,
-        match,
-        expanded.tier,
-        options,
-      );
-      if (note !== undefined) transported.note = note;
-      materials.push(transported);
-      if (transported.inlined !== undefined) inlined += 1;
-      if (transported.omitted) omitted += 1;
-    }
-
-    if (expanded.truncated) {
-      materials.push({
-        locator,
-        ...annotation,
-        tier: expanded.tier,
-        omitted: true,
-        reason: `glob matched more than ${options.globCap ?? DEFAULT_GLOB_CAP} files; omitted the rest`,
-      });
-      omitted += 1;
-    }
+    const transported = await transportFile(
+      locator,
+      resolved.match,
+      resolved.tier,
+      options,
+    );
+    if (note !== undefined) transported.note = note;
+    materials.push(transported);
+    if (transported.inlined !== undefined) inlined += 1;
+    if (transported.omitted) omitted += 1;
   }
 
   return { materials, inlined, omitted };
 }
 
-export async function expandLocalMaterialLocator(
+export async function resolveLocalMaterialFile(
   locator: string,
   options: MaterialTransportOptions,
-  expandOptions: { cap?: number } = {},
-): Promise<ExpandedLocalMaterialLocator> {
+): Promise<ResolvedLocalMaterialFile> {
   const resolved = resolveLocalMaterialLocator(locator, options);
-  const cap = expandOptions.cap ?? Number.POSITIVE_INFINITY;
-
-  if (!hasGlobMagic(locator)) {
-    const absolutePath = resolve(options.repoRoot, resolved.pattern);
-    try {
-      const s = await stat(absolutePath);
-      return {
-        locator,
-        tier: resolved.tier,
-        pattern: resolved.pattern,
-        matches: s.isFile()
-          ? [{ absolutePath, repoRelativePath: resolved.pattern }]
-          : [],
-        truncated: false,
-      };
-    } catch {
-      return {
-        locator,
-        tier: resolved.tier,
-        pattern: resolved.pattern,
-        matches: [],
-        truncated: false,
-      };
-    }
+  const absolutePath = resolve(options.repoRoot, resolved.pattern);
+  try {
+    const s = await stat(absolutePath);
+    return {
+      locator,
+      tier: resolved.tier,
+      pattern: resolved.pattern,
+      ...(s.isFile()
+        ? { match: { absolutePath, repoRelativePath: resolved.pattern } }
+        : {}),
+    };
+  } catch {
+    return { locator, tier: resolved.tier, pattern: resolved.pattern };
   }
-
-  const base = globLiteralBase(resolved.pattern);
-  const baseAbs = resolve(options.repoRoot, base);
-  const found: Array<{ absolutePath: string; repoRelativePath: string }> = [];
-  await walkFiles(baseAbs, options.repoRoot, found, cap + 1, resolved.pattern);
-
-  return {
-    locator,
-    tier: resolved.tier,
-    pattern: resolved.pattern,
-    matches: found.slice(0, cap),
-    truncated: found.length > cap,
-  };
 }
 
 export async function listBundledMaterialFiles(
@@ -174,12 +129,7 @@ export async function listBundledMaterialFiles(
   const materialsDir = options.materialsDir ?? DEFAULT_MATERIALS_DIR;
   const bundledDir = join(options.packageDir, materialsDir);
   const files: Array<{ absolutePath: string; repoRelativePath: string }> = [];
-  await walkFiles(
-    bundledDir,
-    options.repoRoot,
-    files,
-    Number.POSITIVE_INFINITY,
-  );
+  await walkFiles(bundledDir, options.repoRoot, files);
   return files.map((file) => file.repoRelativePath).sort();
 }
 
@@ -190,10 +140,7 @@ export function materialLocatorClaimsPath(
 ): boolean {
   if (classifyMaterialLocator(locator).kind === "url") return false;
   const resolved = resolveLocalMaterialLocator(locator, options);
-  const normalizedPath = normalizeGlobPath(repoRelativePath);
-  return hasGlobMagic(locator)
-    ? matchesGlob(resolved.pattern, normalizedPath)
-    : resolved.pattern === normalizedPath;
+  return resolved.pattern === normalizePath(repoRelativePath);
 }
 
 export function resolveLocalMaterialLocator(
@@ -204,7 +151,7 @@ export function resolveLocalMaterialLocator(
   pattern: string;
 } {
   const materialsDir = options.materialsDir ?? DEFAULT_MATERIALS_DIR;
-  const normalized = normalizeGlobPath(locator);
+  const normalized = normalizePath(locator);
   const packageMaterialsDir = resolve(options.packageDir, materialsDir);
   const packageRelative =
     normalized === materialsDir || normalized.startsWith(`${materialsDir}/`);
@@ -303,11 +250,7 @@ async function walkFiles(
   dir: string,
   repoRoot: string,
   files: Array<{ absolutePath: string; repoRelativePath: string }>,
-  limit: number,
-  glob?: string,
 ): Promise<void> {
-  if (files.length >= limit) return;
-
   let entries: Array<{
     name: string;
     isDirectory: () => boolean;
@@ -320,35 +263,28 @@ async function walkFiles(
   }
 
   for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
-    if (files.length >= limit) return;
     if (entry.name === ".git") continue;
     const absolutePath = join(dir, entry.name);
     if (entry.isDirectory()) {
-      await walkFiles(absolutePath, repoRoot, files, limit, glob);
+      await walkFiles(absolutePath, repoRoot, files);
       continue;
     }
     if (!entry.isFile()) continue;
-    const repoRelativePath = toRepoRelative(absolutePath, repoRoot);
-    if (glob === undefined || matchesGlob(glob, repoRelativePath)) {
-      files.push({ absolutePath, repoRelativePath });
-    }
+    files.push({
+      absolutePath,
+      repoRelativePath: toRepoRelative(absolutePath, repoRoot),
+    });
   }
-}
-
-function globLiteralBase(pattern: string): string {
-  const segments = normalizeGlobPath(pattern).split("/");
-  const literal: string[] = [];
-  for (const segment of segments) {
-    if (hasGlobMagic(segment)) break;
-    literal.push(segment);
-  }
-  const base = literal.join("/");
-  return base === "" ? "." : base;
 }
 
 function toRepoRelative(path: string, repoRoot: string): string {
   const rel = relative(repoRoot, path);
-  return normalizeGlobPath(rel === "" ? "." : rel);
+  return normalizePath(rel === "" ? "." : rel);
+}
+
+/** Normalize a repo-relative path: forward slashes, no leading `./`. */
+function normalizePath(p: string): string {
+  return p.replace(/\\/g, "/").replace(/^\.\//, "");
 }
 
 export async function resolveContainedRealFile(

@@ -2,7 +2,6 @@
 context: Any AI thread, agent console, review assistant, or prompt composer.
 materials:
   - materials/ref/composition.conversation.html
-  - "**/*.html"
 ---
 
 Conversation UI is not chat cosplay. The assistant speaks on the page surface

@@ -56,6 +56,7 @@ export async function pullGhostNodes(
     packageDir,
     options.inlineMaterials !== false,
   );
+  dedupeInlinedMaterials(pulledNodes);
   const materialCounts = sumMaterialCounts(pulledNodes);
 
   return {
@@ -100,6 +101,35 @@ async function resolvePulledNodes(
         : locatorOnlyMaterials(node.materials, repoRoot, packageDir),
     })),
   );
+}
+
+/**
+ * Inline each distinct file once per pull. Nodes are already in output order,
+ * so the first node that carries a file inlines it; every later declaration of
+ * the same resolved path becomes a pointer at the copy already in context.
+ * Mechanical, not selective: nothing is dropped and no relevance decision is
+ * made — repeating identical bytes only dilutes context and inflates the
+ * file's apparent salience.
+ */
+function dedupeInlinedMaterials(nodes: readonly PulledNode[]): void {
+  const firstCarrier = new Map<string, string>();
+  for (const { node, materials } of nodes) {
+    for (const material of materials.materials) {
+      if (material.inlined === undefined || material.path === undefined) {
+        continue;
+      }
+      const carrier = firstCarrier.get(material.path);
+      if (carrier === undefined) {
+        firstCarrier.set(material.path, node.id);
+        continue;
+      }
+      delete material.inlined;
+      material.omitted = true;
+      material.reason = `content inlined above under node ${carrier}`;
+      materials.inlined -= 1;
+      materials.omitted += 1;
+    }
+  }
 }
 
 function orderPulledNodes(

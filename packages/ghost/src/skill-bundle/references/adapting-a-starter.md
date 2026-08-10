@@ -48,8 +48,14 @@ that contradicts itself.
    failures this brand actually needs to avoid.
 4. **Add or edit materials.** Record literal values where the implementation or
    asset materials live, then add `materials` locators to the nodes that explain
-   them. Role names can stay stable while values change. The point is that a
-   realizing agent can inspect the same concrete source the prose governs.
+   them. Name each file explicitly; do not reach for glob patterns, which in a
+   live repo can capture unintended files into pulls. Role names can stay
+   stable while values change. The point is that a realizing agent can inspect
+   the same concrete source the prose governs. Starter and vendored packages
+   ship locators written against the source repo's layout, so after vendoring,
+   verify every locator resolves against this repo's actual paths, repoint the
+   ones that moved, and run `ghost validate` — `material-locator-dead` warnings
+   name the stale ones.
 5. **Re-tune contexts.** Revisit each `context.*` node after the foundation
    answers exist. Keep only inversions that apply in that situation; delete
    generic foundation rules repeated there, and add new contexts only when a

@@ -287,13 +287,13 @@ Replacement rule.
     await writeManifest(dir);
     await writeFile(
       join(dir, "asset.logo.md"),
-      "---\ncontext: Logo.\nmaterials:\n  - brand/logo*.svg\n  - https://example.com/logo\n---\n\nLogo prose.\n",
+      "---\ncontext: Logo.\nmaterials:\n  - brand/logo.svg\n  - https://example.com/logo\n---\n\nLogo prose.\n",
     );
 
     const loaded = await loadGhostPackage(resolveGhostPackage(dir));
 
     expect(loaded.catalog.nodes.get("asset.logo")?.materials).toEqual([
-      "brand/logo*.svg",
+      "brand/logo.svg",
       "https://example.com/logo",
     ]);
   });
@@ -353,6 +353,32 @@ Replacement rule.
     );
     expect(report.issues).not.toContainEqual(
       expect.objectContaining({ message: expect.stringContaining("https://") }),
+    );
+  });
+
+  it("rejects glob material locators", async () => {
+    await writeManifest(dir);
+    await mkdir(join(dir, "materials"), { recursive: true });
+    await writeFile(join(dir, "materials", "tokens.css"), ":root {}\n");
+    await writeFile(
+      join(dir, "asset.tokens.md"),
+      "---\ncontext: Tokens.\nmaterials:\n  - materials/*.css\n---\n\nToken prose.\n",
+    );
+
+    const report = await lintGhostPackage(dir, dir);
+
+    expect(report.errors).toBe(1);
+    expect(report.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          severity: "error",
+          rule: "node-invalid",
+          path: "asset.tokens.md",
+          message: expect.stringContaining(
+            "name each file explicitly; glob patterns are not supported",
+          ),
+        }),
+      ]),
     );
   });
 

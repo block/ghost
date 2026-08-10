@@ -2,8 +2,6 @@
 context: Laying out any view.
 materials:
   - materials/primitives.css
-  - "**/*.html"
-  - "**/*.css"
 ---
 
 All layout is stacks. Rhythm comes from relationships between siblings, not

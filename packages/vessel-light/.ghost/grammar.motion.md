@@ -2,8 +2,6 @@
 context: Any transition, animation, or hover treatment.
 materials:
   - materials/tokens.css
-  - "**/*.css"
-  - "**/*.html"
 ---
 
 Motion is evidence of a state change. It confirms hover, press, reveal,

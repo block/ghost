@@ -2,7 +2,7 @@
 context: Changing tokens, semantic roles, or the Tailwind utility bridge.
 materials:
   - packages/vessel-react/src/styles/main.css
-  - packages/vessel-react/src/styles/*.css
+  - packages/vessel-react/src/styles/font-faces.css
 ---
 
 The token contract has a fixed shape that all token work must preserve:

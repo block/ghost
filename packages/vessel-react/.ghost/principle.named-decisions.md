@@ -1,7 +1,6 @@
 ---
 context: Authoring or reviewing components, tokens, variants, or agent-safety checks.
 materials:
-  - packages/vessel-react/src/components/**
   - packages/vessel-react/scripts/audit-agent-safety.mjs
 ---
 

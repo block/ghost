@@ -1,14 +1,14 @@
 ---
 context: Any view with buttons, inputs, forms, labels, or field errors.
 materials:
-  - "**/components/ui/button.tsx"
-  - "**/components/ui/button-group.tsx"
-  - "**/components/ui/input.tsx"
-  - "**/components/ui/input-group.tsx"
-  - "**/components/ui/textarea.tsx"
-  - "**/components/ui/select.tsx"
-  - "**/components/ui/form.tsx"
-  - "**/components/ui/label.tsx"
+  - packages/vessel-react/src/components/ui/button.tsx
+  - packages/vessel-react/src/components/ui/button-group.tsx
+  - packages/vessel-react/src/components/ui/input.tsx
+  - packages/vessel-react/src/components/ui/input-group.tsx
+  - packages/vessel-react/src/components/ui/textarea.tsx
+  - packages/vessel-react/src/components/ui/select.tsx
+  - packages/vessel-react/src/components/ui/form.tsx
+  - packages/vessel-react/src/components/ui/label.tsx
 ---
 
 Controls make decisions obvious without making the view loud.
