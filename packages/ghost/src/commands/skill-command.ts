@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, rm, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -55,6 +55,14 @@ export function registerSkillCommand(cli: CAC): void {
           );
           await exitCli(3);
           return;
+        }
+
+        if (opts.force && existsSync(resolve(outDir, "SKILL.md"))) {
+          await rm(resolve(outDir, "SKILL.md"), { force: true });
+          await rm(resolve(outDir, "references"), {
+            recursive: true,
+            force: true,
+          });
         }
 
         const bundle = loadSkillBundle(SKILL_BUNDLE_ROOT);

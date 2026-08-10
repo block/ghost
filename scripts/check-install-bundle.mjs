@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 import { execFileSync } from "node:child_process";
 import {
+  existsSync,
+  mkdirSync,
   mkdtempSync,
   readdirSync,
   readFileSync,
   rmSync,
   statSync,
+  writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, relative, resolve } from "node:path";
@@ -92,6 +95,30 @@ try {
 
   const installedFiles = skillBundleOrder(listFiles(dest));
   assertSameList("installed files", installedFiles, manifest.files);
+
+  mkdirSync(join(dest, "references"), { recursive: true });
+  writeFileSync(join(dest, "references", "retired.md"), "stale\n");
+  writeFileSync(join(dest, "user-note.md"), "keep\n");
+  execFileSync(
+    "sh",
+    [
+      INSTALL_SCRIPT,
+      "--source",
+      pathToFileURL(ROOT).href,
+      "--dest",
+      dest,
+      "--force",
+      "--agent",
+      "codex",
+    ],
+    { cwd: ROOT, stdio: "pipe" },
+  );
+  if (existsSync(join(dest, "references", "retired.md"))) {
+    fail("forced reinstall kept a retired reference");
+  }
+  if (!existsSync(join(dest, "user-note.md"))) {
+    fail("forced reinstall removed a non-bundle file");
+  }
 } finally {
   rmSync(tmpRoot, { recursive: true, force: true });
 }

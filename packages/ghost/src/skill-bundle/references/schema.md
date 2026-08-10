@@ -1,11 +1,9 @@
 ---
 name: schema
-description: The ghost package shape: flat nodes, derived concreteness, Skeletons, and checks.
+description: The deterministic ghost package contract: layout, manifest, nodes, materials, Skeletons, checks, and command behavior.
 ---
 
 # ghost Package Reference
-
-Canonical package:
 
 ```text
 .ghost/
@@ -18,28 +16,31 @@ Canonical package:
 ```
 
 Reserved at the root: `manifest.yml`, `glossary.md`, `materials/`, and
-`checks/`. Every other `*.md` is a node.
+`checks/`. Every other `*.md` is a node. The corpus is flat: no hierarchy,
+inheritance, or edges.
 
 ## Manifest
 
 `manifest.yml` declares `schema`, `id`, and optionally `cover`. `cover` is a
 node id. When present and resolved, `ghost gather` inlines that node above the
-menu on every invocation. Use it for what selection cannot reliably retrieve:
-essence, temperature, and brand-only refusals.
+menu on every invocation.
 
-`ghost validate` enforces the cover contract: a missing referenced cover is an
-error, an undeclared cover is a warning, and a cover body past the one-screen
-budget (1500 bytes) is a warning.
+`ghost validate` reports a missing referenced cover as an error, an undeclared
+cover as a warning, and a cover body over 1500 bytes as a warning.
+
+## Glossary and identity
+
+`glossary.md` declares the package's kind vocabulary and defines each kind. A
+node's id is its filename minus `.md`; its kind is the first dotted filename
+segment. A bare filename has no kind. Undeclared kind prefixes warn.
 
 ## Nodes
-
-A node is markdown with frontmatter and a prose body:
 
 ```markdown
 ---
 context: Placing, sizing, or choosing a logo lockup or glyph.
 materials:
-  - brand/logo*.svg
+  - brand/logo-primary.svg
   - https://figma.com/file/example?node-id=logo-lockups
   - locator: mcp://brand-assets/logo-lockups
     note: Source lockups and glyph exports
@@ -48,36 +49,26 @@ materials:
 Use the full lockup when recognition matters.
 ```
 
-- Identity is the filename minus `.md`.
-- Kind is the first dotted segment of the filename.
-- `context` is the retrieval payload shown by `ghost gather`. Its only job is
-  to tell the agent when to gather the node. Name the observable applicability
-  condition directly; put guidance and contribution in the body. Say “gather
-  when” only when an explicit routing instruction is necessary. Avoid broad
-  universal wording unless universal retrieval is intended. `description`
-  remains a deprecated read alias for one release; `ghost validate` warns until
-  it is renamed.
-- `materials` accepts repo-relative file paths plus supported external locators
-  using `https:`, `mcp:`, `figma:`, or `github:`. Name each file explicitly:
-  glob patterns are not supported and fail validation, because in a live
-  repo a glob can capture unintended files into pulls. Items may be bare
-  locator strings or `{ locator, note }` objects. Use a short `note` only when
-  an opaque locator needs retrieval context. The external locator tells the
-  host how to connect; ghost does not fetch or authenticate. The list locates
-  material, while guidance stays in the node body.
+- `context` is the retrieval payload shown by `ghost gather`.
+- `description` remains a deprecated read alias for one release; validation
+  warns until it is renamed.
+- `materials` accepts explicit repo-relative file paths and external locators
+  using `https:`, `mcp:`, `figma:`, or `github:`.
+- Glob patterns are invalid. Each local file must be named explicitly.
+- A material may be a bare locator or `{ locator, note }`.
+- External locators describe access; ghost does not fetch or authenticate.
+- Frontmatter may contain additional descriptive keys. Guidance stays in prose.
 
-ghost derives whether a node carries concrete material from structure:
-non-empty `materials`, a fenced code block of at least 3 lines, or a
-`## Skeleton` section. `gather` reports these payload labels for clarity; they
-are not ranking signals.
+A node is concrete when it has non-empty `materials`, a fenced code block of at
+least three lines, or a `## Skeleton` section. `gather` reports those payload
+labels; they are not ranking signals.
 
-## Skeleton convention
+## Skeletons
 
-A `## Skeleton` section contains the literal opening structure for a surface.
-It should contain exactly one fenced block; `ghost validate` warns, never fails,
-when a Skeleton section has zero or multiple fences.
+A `## Skeleton` section contains literal opening structure. It must contain
+exactly one fenced block; zero or multiple fences warn.
 
-```markdown
+````markdown
 ## Skeleton
 
 ```tsx
@@ -86,10 +77,10 @@ when a Skeleton section has zero or multiple fences.
   <button>{nextStep}</button>
 </section>
 ```
-```
+````
 
-`ghost pull` extracts Skeleton fences and emits them dead last under a banner
-instructing the agent to begin from that structure verbatim.
+`ghost pull` removes Skeleton sections from node bodies and emits their fences
+last under the begin-from-this-structure banner.
 
 ## Checks
 
@@ -107,16 +98,18 @@ references:
 Grade whether the change preserves the logo guidance in `asset.logo`.
 ```
 
-`references` are node ids with optional heading anchors. Check bodies contain
-review instructions for the host agent; they are not run by ghost and are never
-part of generation context.
+`references` contains node ids with optional heading anchors. Check bodies are
+review instructions for the host agent. ghost validates and transports checks;
+it does not grade them.
 
-## Gather / Pull / Review
+## Command behavior
 
-- `ghost gather` emits the cover above Available guidance, then coverage counts.
-  The guidance list is complete, unfiltered, and unranked. Checks are invisible.
-- `ghost pull` emits selected nodes in steering order and inlines small local
-  materials. Binary local materials become inspect-pointers. External materials
-  remain locators for the host agent to access only when the task requires them.
-- `ghost review` matches diff files to local node materials, offers relevant
-  checks, and emits a packet for the host agent to judge.
+- `ghost gather` emits the cover, coverage counts, then a complete, unfiltered,
+  unranked node menu. Checks are absent.
+- `ghost pull` emits selected nodes in steering order, inlines eligible local
+  text materials once, leaves later duplicate pointers, turns binary materials
+  into inspect-pointers, and leaves external materials as locators.
+- `ghost review` matches touched files to exact local material paths, offers
+  relevant checks, and emits an advisory packet for the host agent.
+- `ghost export` bundles the package and audits which locators travel.
+- `ghost pulse` summarizes local gather and pull events.

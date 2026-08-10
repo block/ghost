@@ -14,9 +14,8 @@
 # What gets installed:
 #   <agent-skills-dir>/ghost/
 #     SKILL.md
-#     references/adapting-a-starter.md, authoring-scenarios.md, blocks.md
-#     references/brief.md, capture.md, concrete-tiers.md, recall.md
-#     references/schema.md, self-check.md, steering-audit.md
+#     references/authoring.md, brief.md, concrete.md, making.md, nodes.md
+#     references/recall.md, schema.md, self-check.md, steering-audit.md
 #
 # Exit codes:
 #   0  installed
@@ -178,21 +177,30 @@ if [ -z "$FILES" ]; then
   exit 2
 fi
 
-mkdir -p "$GHOST_DEST"
+STAGE="$(mktemp -d "${TMPDIR:-/tmp}/ghost-install.XXXXXX")"
+trap 'rm -rf "$STAGE"' EXIT HUP INT TERM
 
 count=0
 for rel in $FILES; do
   src="${GHOST_SOURCE}/${PACKAGE_PATH}/${rel}"
-  dst="${GHOST_DEST}/${rel}"
+  dst="${STAGE}/${rel}"
   mkdir -p "$(dirname "$dst")"
   if ! fetch "$src" > "$dst"; then
     printf '  ✗ failed: %s\n' "$rel" >&2
-    rm -f "$dst"
     exit 2
   fi
   printf '  ✓ %s\n' "$rel"
   count=$((count + 1))
 done
+
+if [ "$FORCE" -eq 1 ] && [ -e "$GHOST_DEST/SKILL.md" ]; then
+  rm -f "$GHOST_DEST/SKILL.md"
+  rm -rf "$GHOST_DEST/references"
+fi
+mkdir -p "$GHOST_DEST"
+cp -R "$STAGE/." "$GHOST_DEST/"
+rm -rf "$STAGE"
+trap - EXIT HUP INT TERM
 
 printf '\nInstalled %d files to %s\n' "$count" "$GHOST_DEST"
 printf '\n'

@@ -1668,13 +1668,13 @@ describe("ghost CLI", () => {
     expect(result.code).toBe(0);
     for (const path of [
       "SKILL.md",
-      "references/capture.md",
-      "references/blocks.md",
+      "references/authoring.md",
+      "references/nodes.md",
+      "references/concrete.md",
       "references/brief.md",
       "references/recall.md",
       "references/self-check.md",
       "references/schema.md",
-      "references/authoring-scenarios.md",
     ]) {
       await expect(
         readFile(join(dir, "skills", "ghost", path), "utf-8"),
@@ -1683,6 +1683,23 @@ describe("ghost CLI", () => {
     await expect(
       readFile(join(dir, "skills", "ghost", "SKILL.md"), "utf-8"),
     ).resolves.toContain("When the package is silent");
+
+    await writeFile(
+      join(dir, "skills", "ghost", "references", "retired.md"),
+      "stale recipe\n",
+    );
+    await writeFile(join(dir, "skills", "ghost", "user-note.md"), "keep me\n");
+    const forced = await runCli(
+      ["skill", "install", "--dest", "skills/ghost", "--force"],
+      dir,
+    );
+    expect(forced.code).toBe(0);
+    await expect(
+      readFile(join(dir, "skills", "ghost", "references", "retired.md")),
+    ).rejects.toMatchObject({ code: "ENOENT" });
+    await expect(
+      readFile(join(dir, "skills", "ghost", "user-note.md"), "utf-8"),
+    ).resolves.toBe("keep me\n");
     await expect(
       readFile(join(dir, "skills", "ghost", "SKILL.md"), "utf-8"),
     ).resolves.toContain(

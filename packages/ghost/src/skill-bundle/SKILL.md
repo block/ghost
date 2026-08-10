@@ -52,7 +52,7 @@ it applies, and an agent reads the relevant guidance before building.
 ## The loop
 
 ```bash
-ghost init          # scaffold .ghost/ with the steering starter
+ghost init          # scaffold .ghost/ with the skeleton starter
 ghost checks init   # opt in to review assertions
 ghost validate      # artifact shape + node/material/check validation
 ghost gather <ask>  # emit Available guidance for this task
@@ -116,12 +116,9 @@ against the unpacked package with `--package <dir>`.
 
 ## Workflows
 
-- Author or update the package: follow [references/capture.md](references/capture.md).
-- Distill supplied artifacts into new or existing guidance: follow [references/distill.md](references/distill.md).
-- Author material-backed nodes: follow [references/blocks.md](references/blocks.md).
-- Choose which concrete code tiers the package carries: follow [references/concrete-tiers.md](references/concrete-tiers.md).
-- Choose the right human-agent authoring workflow: follow [references/authoring-scenarios.md](references/authoring-scenarios.md).
-- Adapt a starter (a body or the skeleton) to your brand: follow [references/adapting-a-starter.md](references/adapting-a-starter.md).
+- Create or update a package: follow [references/authoring.md](references/authoring.md).
+- Write or revise guidance nodes: follow [references/nodes.md](references/nodes.md).
+- Bind guidance to tokens, Skeletons, components, and exemplars: follow [references/concrete.md](references/concrete.md).
 - Gather applicable guidance for a task: follow [references/recall.md](references/recall.md).
 - Make a visual artifact end to end: follow [references/making.md](references/making.md).
 - Shape a pre-generation brief: follow [references/brief.md](references/brief.md).
