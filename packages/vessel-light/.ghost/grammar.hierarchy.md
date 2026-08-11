@@ -2,7 +2,7 @@
 context: Any view containing text or actions.
 materials:
   - materials/primitives.css
-  - materials/ref/composition.form.html
+  - materials/examples/composition.form.html
 ---
 
 Hierarchy is a closed vocabulary, not a size slider. Every piece of text and

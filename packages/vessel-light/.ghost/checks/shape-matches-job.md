@@ -10,11 +10,11 @@ references:
 
 Apply this check to diffs that add or restructure a view. Classify the
 reader's job first — what they do next with the view — then judge the
-composition against the ref that job routes to. These flags catch the
+composition against the example that job routes to. These flags catch the
 template-convergence failure: a plausible layout applied to a job it does
 not fit.
 
-Flag a view whose job routes to one ref but whose composition imitates
+Flag a view whose job routes to one example but whose composition imitates
 another — a submit-and-done task laid out as a dashboard of cards, a
 records-scanning task rendered as prose sections, a stop-and-decide moment
 inlined into the page instead of interrupting it. (`grammar.job`)

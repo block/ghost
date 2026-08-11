@@ -39,9 +39,9 @@ Interview only for answers that change guidance:
 - Which decision is universal, and which reverses in a named situation?
 - What would make this guidance wrong six months from now?
 
-Human words, screenshots, links, exemplars, brand documents, rejected work, and
-code are evidence. A repository is not brand authority. What it repeats may be
-legacy.
+Human words, screenshots, links, products they point at, brand documents,
+rejected work, and code are evidence. A repository is not brand authority. What
+it repeats may be legacy.
 
 ### 2. Inspect evidence honestly
 
@@ -127,10 +127,9 @@ A starter is owned after copy. Its inherited answers remain provisional until th
 5. Retune conditional nodes after the foundations are real.
 6. Remove generic refusals the brand does not hold and update checks that
    reference them.
-7. Regenerate or delete stale exemplars. A stale exemplar outweighs corrected
-   prose.
+7. Update or remove examples that now teach the wrong thing.
 8. Rewrite checks so every asserted obligation is stated in guidance.
-9. Run `ghost validate`, then review the adapted exemplars.
+9. Run `ghost validate`.
 
 Do this in one sitting when possible. A half-adapted package can contradict
 itself. Until adaptation finishes, identify starter guidance as provisional.
@@ -142,6 +141,5 @@ itself. Until adaptation finishes, identify starter guidance as provisional.
 - Never regenerate an existing package because new evidence arrived.
 - Never resolve a contradiction silently.
 - Never create a new node when a focused edit preserves the existing purpose.
-- Never leave stale exemplars or checks beside revised guidance.
 - Never let an agent automate the starter manifest-id change; ownership is a
   human act.

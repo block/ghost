@@ -3,12 +3,12 @@ import { join } from "node:path";
 
 // Closure contract for the vessel-light fingerprint materials:
 // 1. Every token declared in tokens.css is consumed somewhere (or allowlisted).
-// 2. Every class defined in primitives.css renders in at least one ref.
-// 3. Ref <style> blocks bind tokens, never raw colors, shadows, or timing.
+// 2. Every class defined in primitives.css renders in at least one example.
+// 3. Example <style> blocks bind tokens, never raw colors, shadows, or timing.
 // 4. email.html's hex-transcription map stays in sync with tokens.css.
 
 const MATERIALS_DIR = "packages/vessel-light/.ghost/materials";
-const REF_DIR = join(MATERIALS_DIR, "ref");
+const EXAMPLE_DIR = join(MATERIALS_DIR, "examples");
 
 // Declared inventory: the closed five-hue expression set is the brand answer;
 // no register renders all five at once (see signature.palette).
@@ -29,11 +29,11 @@ const primitivesCss = readFileSync(
   join(MATERIALS_DIR, "primitives.css"),
   "utf8",
 );
-const refFiles = readdirSync(REF_DIR)
+const exampleFiles = readdirSync(EXAMPLE_DIR)
   .filter((name) => name.endsWith(".html"))
   .map((name) => ({
     name,
-    content: readFileSync(join(REF_DIR, name), "utf8"),
+    content: readFileSync(join(EXAMPLE_DIR, name), "utf8"),
   }));
 
 const failures = [];
@@ -46,7 +46,7 @@ const consumed = new Set();
 for (const source of [
   tokensCss,
   primitivesCss,
-  ...refFiles.map((f) => f.content),
+  ...exampleFiles.map((f) => f.content),
 ]) {
   for (const match of source.matchAll(/var\((--[a-z0-9-]+)/g)) {
     consumed.add(match[1]);
@@ -67,28 +67,28 @@ for (const token of consumed) {
   }
 }
 
-// 2. Class closure: every primitive class appears in a ref's class attribute.
+// 2. Class closure: every primitive class appears in an example's class attribute.
 const primitiveClasses = new Set(
   [...primitivesCss.matchAll(/\.([a-z][a-z0-9-]*)/g)].map((m) => m[1]),
 );
-const refClasses = new Set();
-for (const { content } of refFiles) {
+const exampleClasses = new Set();
+for (const { content } of exampleFiles) {
   for (const match of content.matchAll(/class="([^"]*)"/g)) {
     for (const cls of match[1].split(/\s+/)) {
-      if (cls) refClasses.add(cls);
+      if (cls) exampleClasses.add(cls);
     }
   }
 }
 for (const cls of primitiveClasses) {
-  if (!refClasses.has(cls)) {
+  if (!exampleClasses.has(cls)) {
     failures.push(
-      `undemonstrated class: .${cls} is defined in primitives.css but used in no ref`,
+      `undemonstrated class: .${cls} is defined in primitives.css but used in no example`,
     );
   }
 }
 
-// 3. Ref purity: no raw colors, shadows, or timing in ref <style> blocks.
-// Layout lengths (widths, paddings, insets) are incidental scaffolding and exempt.
+// 3. Example purity: no raw colors, shadows, or timing in example <style> blocks.
+// Layout lengths (widths, paddings, insets) are task-specific scaffolding and exempt.
 // email.html is exempt (inline table-layout medium); its transcription map is
 // validated in check 4 instead.
 const RAW_VALUE_PATTERNS = [
@@ -102,7 +102,7 @@ const RAW_VALUE_PATTERNS = [
   { pattern: /\bcubic-bezier\(/, label: "raw easing curve" },
   { pattern: /\b\d+(\.\d+)?m?s\b/, label: "raw duration" },
 ];
-for (const { name, content } of refFiles) {
+for (const { name, content } of exampleFiles) {
   if (name === "email.html") continue;
   const styleBlocks = [...content.matchAll(/<style>([\s\S]*?)<\/style>/g)].map(
     (m) => m[1],
@@ -112,7 +112,7 @@ for (const { name, content } of refFiles) {
       const match = block.match(pattern);
       if (match) {
         failures.push(
-          `ref purity: ${name} <style> contains ${label} (${match[0].trim()})`,
+          `example purity: ${name} <style> contains ${label} (${match[0].trim()})`,
         );
       }
     }
@@ -121,7 +121,7 @@ for (const { name, content } of refFiles) {
 
 // 4. email.html transcription map: every "<value> = --token" comment pair must
 // still match the token's declared value in tokens.css.
-const email = refFiles.find((f) => f.name === "email.html");
+const email = exampleFiles.find((f) => f.name === "email.html");
 if (email) {
   for (const match of email.content.matchAll(
     /(#[0-9a-fA-F]{3,8}|\d+px)\s*=\s*(--[a-z0-9-]+)/g,
@@ -141,7 +141,7 @@ if (email) {
     }
   }
 } else {
-  failures.push("missing ref: email.html not found");
+  failures.push("missing example: email.html not found");
 }
 
 if (failures.length > 0) {
@@ -153,5 +153,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `vessel-light closure check passed: ${declared.size} tokens, ${primitiveClasses.size} primitive classes, ${refFiles.length} refs.`,
+  `vessel-light closure check passed: ${declared.size} tokens, ${primitiveClasses.size} primitive classes, ${exampleFiles.length} examples.`,
 );

@@ -1,6 +1,6 @@
 ---
 name: nodes
-description: Write durable ghost guidance with discriminating context, purposeful prose, conditions, replacements, and annotated examples.
+description: Write durable ghost guidance with discriminating context, purposeful prose, conditions, replacements, and useful examples.
 ---
 
 # Recipe: Write Guidance Nodes
@@ -76,24 +76,14 @@ flat surface. Recognize the switch: removing the logo should not leave a generic
 SaaS dashboard behind.
 ```
 
-Purge the rejected pattern from exemplars and starter structures. Use checks to
+Purge the rejected pattern from examples and starter structures. Use checks to
 catch the hard regression; do not make anti-goal prose carry review alone.
 
-## Exemplars separate intent from accident
+## Explain examples
 
-A complete artifact often steers more strongly than abstract rules. Every
-exemplar must say:
-
-- the situation and surface shape it represents;
-- what is intentional and should be preserved;
-- what is incidental and must change with task facts;
-- the implementation, fixture, or source that produced it;
-- the conditions that challenge or break it;
-- ownership or freshness when stale guidance would be dangerous.
-
-One exemplar proves one solution under stated conditions. It is not a universal
-visual target. If unrelated tasks converge on its section order or decoration,
-tighten its context, add a shape-appropriate exemplar, or remove it.
+If a node includes or points to an example, say what the agent should keep and
+what should change with the task. Name the situation it fits when needed. If
+you cannot give those instructions, leave the example out.
 
 ## Reusable blocks earn prose by purpose
 
@@ -133,7 +123,7 @@ canonical; human curation does.
 | --- | --- |
 | missing guidance | sharper `context`; universal guidance may belong on the cover |
 | inventing values | a material-backed node with exact vocabulary |
-| producing generic output | replacement anti-goal plus annotated exemplar |
+| producing generic output | replacement anti-goal plus a well-explained example |
 | choosing the wrong structure | bound/open pattern and, when needed, a Skeleton |
 | crossing a hard line | invariant prose plus a review check |
 | applying guidance too broadly | a condition or reversal condition |
@@ -145,4 +135,4 @@ canonical; human curation does.
 - Never make a node a container for observations or implementation inventory.
 - Never duplicate API documentation unless the API itself is the guidance.
 - Never use a broad context to compensate for unrelated decisions in one body.
-- Never ship an unannotated exemplar or a blacklist-only anti-goal.
+- Never ship a blacklist-only anti-goal.

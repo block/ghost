@@ -1,6 +1,6 @@
 ---
 name: concrete
-description: Bind ghost guidance to explicit materials, tokens, Skeletons, components, and exemplars in formats agents can use directly.
+description: Bind ghost guidance to concrete material in formats agents can use directly.
 ---
 
 # Recipe: Bind Guidance To Concrete Material
@@ -8,18 +8,17 @@ description: Bind ghost guidance to explicit materials, tokens, Skeletons, compo
 **Goal:** make the intended continuation cheaper than the generic one without
 turning the package into a second implementation or a fixed template library.
 
-Concrete material operates at four tiers:
+Concrete material commonly does three jobs:
 
-| Tier | What it constrains | What it buys |
+| Form | What it constrains | What it buys |
 | --- | --- | --- |
 | Tokens | values and role names | stops plausible near-miss colors, sizes, and durations |
 | Skeletons | opening structure | commits layout before a generic structure wins the first tokens |
 | Components | reusable decisions | compresses variants, states, spacing, and behavior into names |
-| Exemplars | complete surface shapes | demonstrates interactions no single node states |
 
 ## Scope is not delivery
 
-Scope says how much a tier constrains. Delivery says whether the agent actually
+Scope says how much a material constrains. Delivery says whether the agent actually
 receives it. Skeletons live in node bodies and `ghost pull` emits them last.
 Files behind `materials` arrive only when pulled or inspected. Material the
 agent never reads contributes nothing.
@@ -40,7 +39,7 @@ the agent writes against, not an upstream representation. Name each file;
 glob patterns are invalid because a live repo can make them capture unintended
 content.
 
-## Choose earned tiers
+## Choose only what helps
 
 **Tokens are the visual floor.** Use one flat, contract-first file in the
 emission syntax. For CSS, lead with a comment such as `/* style only with these
@@ -60,10 +59,9 @@ grammar: purpose, reach-when, neighboring alternative, and never. Do not copy
 props into markdown. For a class vocabulary, lead each class block with a
 one-line contract comment so a skimming agent can recover the grammar.
 
-**Exemplars are earned by distinct surface shapes.** Use complete runnable files
-in the shipping medium, one per shape, with annotation naming what to preserve
-and what to replace. Name them by shape, such as `composition.form.html` or
-`email.html`, not by arbitrary example content.
+Examples are ordinary materials. When a complete runnable surface helps, point
+to it and follow the example guidance in [nodes.md](nodes.md). Name the file for
+the shape it shows, such as `composition.form.html`, not for arbitrary content.
 
 Absence can be the correct stance. A package that asks agents to compose fresh
 from tokens may reject a component kit. A package that values variation may use
@@ -81,8 +79,7 @@ consumer's brand.
 4. Give prose only to components whose purpose or divergence is not generic.
 5. Put token and theming invariants in contract nodes.
 6. Add checks only for countable, review-critical invariants.
-7. Include one annotated exemplar per composition-critical surface shape.
-8. Run `ghost validate`; dead-locator warnings identify paths that moved.
+7. Run `ghost validate`; dead-locator warnings identify paths that moved.
 
 For a familiar library, the model may already know the API. Guidance still
 matters for restraint and choice: which variant when, what not to combine, and
@@ -97,7 +94,7 @@ and when.
 
 Put brand-owned artifacts that must travel through export or survive refactors
 under `.ghost/materials/`: token output, logos, type files, motion data, and
-portable exemplars. Reference living components, stories, tests, and styles at
+portable examples. Reference living components, stories, tests, and styles at
 their repository paths. Guidance stays in prose in both cases.
 
 Use external locators when the authoritative material remains external. Add a
@@ -106,10 +103,10 @@ find.
 
 ## Drift bill
 
-Every concrete tier repeats a decision. A stale example can steer harder than
-correct prose. After changing a token or component contract, sweep Skeletons,
-components, exemplars, and checks for stranded names or literals. Delete a tier
-when its maintenance cost exceeds its steering value.
+Concrete material repeats decisions from the prose. After changing guidance,
+tokens, or component contracts, sweep Skeletons, components, examples, and
+checks for stranded names or literals. Delete any copy whose maintenance cost
+exceeds its steering value.
 
 `ghost pull` inlines each distinct local material once per pull. Later nodes
 keep a pointer to the first copy, so sharing a material across nodes is safe and
@@ -120,9 +117,9 @@ does not inflate its salience.
 1. Where does the emitted value vocabulary live?
 2. What commits the most composition-critical opening?
 3. Which reusable decisions are compressed into source-backed names?
-4. What demonstrates cross-node constraints working together?
-5. Will the agent actually receive or inspect each tier?
-6. Is each tier in the syntax the agent will emit?
+4. What material shows decisions working together when prose is not enough?
+5. Will the agent actually receive or inspect each material?
+6. Is each material in the syntax the agent will emit?
 7. Which copy goes stale when the underlying decision changes?
 
 Any answer may be "absent, because." An unexplained absence is the gap.
@@ -131,7 +128,4 @@ Any answer may be "absent, because." An unexplained absence is the gap.
 
 - Never point materials at globs, directories, or generated junk.
 - Never duplicate component APIs or pipeline source formats in prose.
-- Never let one exemplar become the universal composition.
-- Never add a tier because a design system convention says it should exist.
-- Never ship concrete code without identifying intentional and incidental
-  choices.
+- Never add concrete material only because a design-system convention says to.

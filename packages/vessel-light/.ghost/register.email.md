@@ -1,7 +1,7 @@
 ---
 context: Transactional email only.
 materials:
-  - materials/ref/email.html
+  - materials/examples/email.html
 ---
 
 Condition: this node applies only to email. In any other medium, everything

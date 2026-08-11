@@ -2,7 +2,7 @@
 context: Any card, popover, modal, dialog, scrim, or bordered container.
 materials:
   - materials/primitives.css
-  - materials/ref/composition.overlay.html
+  - materials/examples/composition.overlay.html
 ---
 
 Surface is the only way an element gets a background, border, radius, or

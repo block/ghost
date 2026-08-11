@@ -38,7 +38,7 @@ selects, inspects, makes, renders, judges, and repairs in the same session.
    - read inlined text materials;
    - open referenced source, token, or component files;
    - view image inspect-pointers instead of relying on filenames;
-   - inspect rendered exemplars, not just their contexts;
+   - inspect rendered examples, not just their contexts;
    - use an available host connection for an external locator only when inspecting
      it could materially affect the task;
    - let the host run its normal authentication and permission flow;
@@ -51,10 +51,9 @@ selects, inspects, makes, renders, judges, and repairs in the same session.
    - never modify an external resource unless the user explicitly asks;
    - record remote, oversized, missing, or unreadable materials;
    - never claim material grounding for something you did not inspect.
-6. **Separate exemplar intent from incidentals.** When a pulled exemplar applies,
-   identify what is load-bearing, what should change with task facts, and the
-   conditions where the exemplar stops applying. Do not turn one exemplar into a
-   universal visual target.
+6. **Follow the example instructions.** Keep what the node says to preserve,
+   change what belongs to the task, and use the example only in the situation it
+   covers. Do not turn one example into a universal target.
 7. **Brief the work.** Follow [brief.md](brief.md). The brief is a steering step,
    not a report. Keep the five-section shape, cap non-negotiables at five, and
    keep ghost-backed claims separate from provisional local reasoning.

@@ -52,7 +52,7 @@ agent-safety discipline, registry shape, and the boundary between reference
 vocabulary and product brand guidance. It does not define product-specific flows,
 copy, trust obligations, or business intent for consuming apps. New products
 should reference this package and the generated `public/r/registry.json`, then
-author their own ghost package separately. It doubles as a living exemplar
+author their own ghost package separately. It doubles as a living example
 of the ghost format. Start with the cover declared in `.ghost/manifest.yml`.
 
 Agents should read this README, `.ghost/`,
@@ -64,10 +64,8 @@ The shadcn registry entries can carry opportunistic, namespaced item metadata:
 - **`meta.agent_decision`** per high-impact item — the Orbit-style decision packet agents should read before source. It names the component's intent, when to use it, when not to use it, safe variants, common misuses, and token roles.
 - **`meta.fingerprint_dimensions`** per item — declares which embedding dimensions a component primarily expresses (`palette`, `spacing`, `typography`, `surfaces`). Drift tooling can use this for higher-confidence per-component attribution; absent the field, consumers fall back to file content and registry categories.
 
-Shape-aware examples can add two more optional `meta` fields:
-
-- **`meta.exemplar_kind`** — `atom` for primitive controls such as badge, button, cell, or input; `shape` for composed outputs.
-- **`meta.response_shapes`** — the composed shape(s) an example demonstrates: `article`, `tracker`, `comparison`, or `card`.
+Shape-aware examples can add **`meta.response_shapes`** for the composed
+shape they demonstrate: `article`, `tracker`, `comparison`, or `card`.
 
 That distinction helps generators pick relevant references instead of treating every example as a card. `card` is one response shape; it is not the default form of all intelligence.
 

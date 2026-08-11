@@ -69,7 +69,7 @@ antimedian experiment: 300 generations, 3 models, no design context) in any
 HTML artifact. Calibration on real data:
 
 - antimedian unsteered pages: mean **9.1/22** (gpt runs up to 15/22)
-- vessel-light refs: mean **0.2/22**
+- vessel-light examples: mean **0.2/22**
 
 Score every arm's artifacts; report the mean per arm alongside `ghost review`
 results. Known caveat: the font tells (`inter-font-default`,

@@ -1,7 +1,7 @@
 ---
 context: Tables, dashboards, logs, monitoring, or other data-dense consoles.
 materials:
-  - materials/ref/composition.table.html
+  - materials/examples/composition.table.html
   - materials/primitives.css
 ---
 

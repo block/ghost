@@ -37,23 +37,14 @@ Report first:
 | Row | Status | Evidence | Next move |
 | --- | --- | --- | --- |
 | Retrieval | strong / weak | contexts, ids, cover | sharpen contexts or move universal guidance to the cover |
-| Concreteness | strong / thin | materials, fenced examples, Skeletons | add concrete locators, exemplars, or opening structures |
+| Concreteness | strong / thin | materials, fenced examples, Skeletons | add concrete locators, examples, or opening structures |
 | Anti-goals | present / missing / vague | `anti-goal.*`, review packet | write not-X-instead-Y replacements and material locators |
-| Consistency | clean / conflicting | concrete bodies vs rules | update stale examples; examples average with rules |
+| Consistency | clean / conflicting | guidance vs concrete material | update or remove stale material |
 | Stance | present / missing | cover, `principle.*` | write forced-choice principles |
 | Materials | present / missing | `materials`, inspect-pointers | point at real assets/components/tokens |
-| Exemplars | annotated / unannotated / converging / missing | fenced samples, screenshots, repeated runs | say what to copy and what is incidental; tighten applicability when unrelated tasks converge |
 | Patterns | bound-open / loose / missing | `pattern.*`, Skeletons | state applies / bound / open and add a Skeleton when opening structure matters |
 | Checks | covered / partial / missing | checks/, review packet | add checks for high-risk invariants |
 | Silence posture | defined / missing | cover | say when to proceed provisionally or ask |
-
-## Exemplar convergence
-
-When auditing repeated runs, compare unrelated asks that pulled the same
-exemplar. If they reproduce the same composition, section order, or decorative
-treatment without the exemplar's stated condition requiring it, the exemplar is
-steering beyond its intent. The next move is to tighten applicability, add a
-shape-appropriate exemplar, or remove the exemplar.
 
 ## Task-level readiness
 

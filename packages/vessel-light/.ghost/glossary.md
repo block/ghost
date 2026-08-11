@@ -38,7 +38,7 @@ anti-goals before styling anything greenfield.
 
 ---
 
-To adapt this package to another brand, follow the `adapting-a-starter`
-recipe in the ghost skill bundle. In short: new manifest id, prune the
+To adapt this package to another brand, follow the starter section of the
+`authoring` recipe in the ghost skill bundle. In short: new manifest id, prune the
 median rules your brand legitimately violates, answer each signature node,
-edit `materials/tokens.css`, regenerate the refs, rewrite the tells.
+edit `materials/tokens.css`, regenerate the examples, rewrite the tells.

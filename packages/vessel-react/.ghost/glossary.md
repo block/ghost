@@ -2,7 +2,6 @@
 kinds:
   - name: principle
   - name: condition
-  - name: exemplar
   - name: asset
   - name: pattern
 ---
@@ -14,10 +13,6 @@ Durable stance: true across media unless a narrower condition explicitly limits 
 # condition
 
 Situational truth: fires only when the stated situation holds.
-
-# exemplar
-
-Illustrative reference: useful evidence, but not normative on its own.
 
 # asset
 

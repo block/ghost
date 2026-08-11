@@ -91,7 +91,7 @@ const TEMPLATES = new Map<string, GhostInitTemplate>([
 
 /**
  * An init body: a full inhabited ghost package — answered signature
- * dials, materials, refs, and its own checks. Templates are shapes of
+ * dials, materials, examples, and its own checks. Templates are shapes of
  * emptiness awaiting the owner's truths; a body is the same anatomy with a
  * real brand's values plugged in. Bodies keep their own manifest id (e.g.
  * `vessel-light`) so an unadapted install stays honestly labeled — changing
@@ -108,7 +108,7 @@ export interface GhostInitBody {
 const VESSEL_LIGHT_BODY: GhostInitBody = {
   name: "vessel-light",
   description:
-    "Vessel's design language at full strength: corpus, tokens, fonts, refs, and checks.",
+    "Vessel's design language at full strength: corpus, tokens, fonts, examples, and checks.",
   includesChecks: true,
   async files() {
     const payload = await loadPackedPayload("vessel-light");

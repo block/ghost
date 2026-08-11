@@ -1,12 +1,12 @@
 ---
 context: Any new view before its structure or register is chosen.
 materials:
-  - materials/ref/composition.form.html
-  - materials/ref/composition.table.html
-  - materials/ref/composition.editorial.html
-  - materials/ref/composition.overlay.html
-  - materials/ref/composition.conversation.html
-  - materials/ref/email.html
+  - materials/examples/composition.form.html
+  - materials/examples/composition.table.html
+  - materials/examples/composition.editorial.html
+  - materials/examples/composition.overlay.html
+  - materials/examples/composition.conversation.html
+  - materials/examples/email.html
 ---
 
 Before any structure exists, name what the reader does next with the view.
@@ -19,17 +19,17 @@ misleads.
 The jobs and where they route:
 
 - **Fill something in** — settings, signup, any submit-and-done task → the
-  form ref. Stacked labels and fields, one submit, secondary escape.
+  form example. Stacked labels and fields, one submit, secondary escape.
 - **Scan and compare records** — lists, audits, anything with rows and
-  figures → the table ref, in the data-density register.
+  figures → the table example, in the data-density register.
 - **Read a narrative** — a landing page, an announcement, a story → the
-  editorial ref, in the editorial register.
+  editorial example, in the editorial register.
 - **Stop and decide** — a confirmation, a destructive act, a choice that
-  interrupts the task → the overlay ref. The decision is the view.
+  interrupts the task → the overlay example. The decision is the view.
 - **Converse with the system** — an AI thread, an agent console, a prompt
-  composer → the conversation ref.
+  composer → the conversation example.
 - **Be notified elsewhere** — receipts, alerts, anything that lands in an
-  inbox → the email ref, in the email register.
+  inbox → the email example, in the email register.
 
 Read the request's verbs, not its nouns: "edit / set up / submit" routes to
 form; "compare / list / review the records" to table; "announce / tell the
@@ -37,7 +37,7 @@ story" to editorial; "confirm / are you sure" to overlay; "ask / draft with
 me" to conversation. When two jobs fold into one request, build for the job
 the reader performs on this view, now — the other job is the next view. When
 a job fits none of these, compose from the grammar and say so; do not force
-the nearest ref.
+the nearest example.
 
 Three shapes lie about the job, and we refuse them everywhere:
 

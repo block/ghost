@@ -1,7 +1,7 @@
 ---
 context: Heroes, marketing pages, pull quotes, or full-bleed dark moments.
 materials:
-  - materials/ref/composition.editorial.html
+  - materials/examples/composition.editorial.html
   - materials/tokens.css
 ---
 

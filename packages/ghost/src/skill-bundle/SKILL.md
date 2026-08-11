@@ -118,7 +118,7 @@ against the unpacked package with `--package <dir>`.
 
 - Create or update a package: follow [references/authoring.md](references/authoring.md).
 - Write or revise guidance nodes: follow [references/nodes.md](references/nodes.md).
-- Bind guidance to tokens, Skeletons, components, and exemplars: follow [references/concrete.md](references/concrete.md).
+- Bind guidance to concrete materials: follow [references/concrete.md](references/concrete.md).
 - Gather applicable guidance for a task: follow [references/recall.md](references/recall.md).
 - Make a visual artifact end to end: follow [references/making.md](references/making.md).
 - Shape a pre-generation brief: follow [references/brief.md](references/brief.md).
@@ -127,8 +127,8 @@ against the unpacked package with `--package <dir>`.
 - Understand the package shape: see [references/schema.md](references/schema.md).
 
 ghost package authoring is **elicitation, not scanning**. The raw material is what
-the human brings and points at: words, images, links, exemplar products, brand
-docs, copy they love or hate. Repo code can supply material locators and local
+the human brings and points at: words, images, links, products, brand docs, copy
+they love or hate. Repo code can supply material locators and local
 conventions, but durable brand guidance should be curated by the human.
 
 ## When the package is silent

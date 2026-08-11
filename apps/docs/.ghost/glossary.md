@@ -1,17 +1,12 @@
 ---
 kinds:
   - name: pattern
-  - name: exemplar
   - name: anti-goal
 ---
 
 # pattern
 
 Conditional composition or behavior. Pull it only when the description names a situation present in the task. A pattern states what is bound and what remains open.
-
-# exemplar
-
-Concrete source expression to inspect when translating the brand. Match annotated relationships; do not copy incidental content or implementation.
 
 # anti-goal
 

@@ -36,4 +36,4 @@ in context: what the brand is, its temperature, and the refusals only it
 makes. The ghost skill's `authoring` recipe explains how to grow this skeleton
 into a real ghost package: write the cover, answer each
 chapter's open question, prune the cliches your chapters absorb, then add
-materials and refs.
+materials and examples.

@@ -120,7 +120,7 @@ async function writeBareTestPackage(dir: string): Promise<void> {
     ),
     writeFile(
       join(packageDir, "glossary.md"),
-      "---\nkinds:\n  - name: principle\n  - name: condition\n  - name: exemplar\n  - name: anti-goal\n  - name: cliche\n  - name: asset\n  - name: pattern\n---\n",
+      "---\nkinds:\n  - name: principle\n  - name: condition\n  - name: anti-goal\n  - name: cliche\n  - name: asset\n  - name: pattern\n---\n",
     ),
     writeFile(
       join(packageDir, "index.md"),
@@ -389,7 +389,7 @@ describe("ghost CLI", () => {
     expect(written).toContain("signature.shape.md");
     expect(written).toContain("materials/tokens.css");
     expect(written).toContain("materials/fonts/HKGrotesk-Regular.woff2");
-    expect(written).toContain("materials/ref/composition.form.html");
+    expect(written).toContain("materials/examples/composition.form.html");
     expect(written).toContain("checks/median-tells.md");
     expect(written).toContain("checks/values.md");
     expect(written.some((p) => p.includes(".events"))).toBe(false);
@@ -903,10 +903,10 @@ describe("ghost CLI", () => {
       ].join("\n"),
     );
     await writeFile(
-      join(dir, ".ghost", "exemplar.copy.md"),
+      join(dir, ".ghost", "copy.md"),
       [
         "---",
-        "context: Copy exemplar.",
+        "context: Copy sample.",
         "---",
         "",
         "```txt",
@@ -944,10 +944,10 @@ describe("ghost CLI", () => {
       fencedExamples: 1,
       skeletons: 1,
     });
-    const exemplar = payload.nodes.find(
-      (node: { id: string }) => node.id === "exemplar.copy",
+    const fenced = payload.nodes.find(
+      (node: { id: string }) => node.id === "copy",
     );
-    expect(exemplar).toMatchObject({
+    expect(fenced).toMatchObject({
       concrete: true,
       hasFencedExample: true,
     });
@@ -1553,110 +1553,6 @@ describe("ghost CLI", () => {
     expect(md.stdout).toContain("# ghost Pulse");
     expect(md.stdout).toContain("## Kind hit rates");
     expect(md.stdout).toContain("- Abandoned gathers: 1");
-  });
-
-  // Phase 3: asserts path/scope/surface_type selection reasons (dormant Job 2,
-  // rebuilt as `gather` in Phase 5/7). Skipped until then.
-  it.skip("gathers Relay context as json from an exact package", async () => {
-    await writeCheckPackage(dir);
-
-    const result = await runCli(
-      [
-        "relay",
-        "gather",
-        "Sources/Features/Transfers/TransfersUI",
-        "--package",
-        ".ghost",
-        "--format",
-        "json",
-      ],
-      dir,
-    );
-
-    expect(result.code).toBe(0);
-    const json = JSON.parse(result.stdout);
-    expect(json.schema).toBe("ghost.relay.gather/v2");
-    expect(json).toHaveProperty("context");
-    expect(json).toHaveProperty("selected_context");
-    expect(json).toHaveProperty("source");
-    expect(json).toHaveProperty("targetPaths");
-    expect(json).toHaveProperty("stackDirs");
-    expect(json).toHaveProperty("brief");
-    expect(json.source.kind).toBe("package");
-    expect(json.targetPaths).toEqual([
-      "Sources/Features/Transfers/TransfersUI",
-    ]);
-    expect(json.stackDirs).toHaveLength(1);
-    expect(typeof json.brief).toBe("string");
-    expect(json.context.schema).toBe("ghost.relay-context/v1");
-    expect(json).not.toHaveProperty("context_packet");
-    expect(json.context.target).toMatchObject({
-      mode: "generation",
-      paths: ["Sources/Features/Transfers/TransfersUI"],
-    });
-    expect(json.context.sections.intent).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          ref: "intent.principle:tokenized-ui-color",
-          source: "intent.yml",
-        }),
-      ]),
-    );
-    expect(json.entrypoint).toBeUndefined();
-    expect(json.cascade_brief).toBeUndefined();
-    expect(json.selected_context.match.status).toBe("path-match");
-    expect(json.selected_context).not.toHaveProperty("intent");
-    expect(json.selected_context).not.toHaveProperty("composition");
-    expect(json.selected_context).not.toHaveProperty("inventory");
-    expect(json.selected_context).not.toHaveProperty("validation");
-    expect(json.selected_context).not.toHaveProperty("guidance");
-    expect(json.selected_context).not.toHaveProperty("active_obligations");
-    expect(json.selected_context.context_hits).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          ref: "intent.principle:tokenized-ui-color",
-          kind: "intent",
-          why_selected: expect.arrayContaining([
-            {
-              kind: "linked_ref",
-              value: "inventory.exemplar:transfers-tokenized-screen",
-            },
-          ]),
-        }),
-        expect.objectContaining({
-          ref: "composition.pattern:tokenized-ui-color",
-          kind: "composition",
-        }),
-        expect.objectContaining({
-          ref: "inventory.exemplar:transfers-tokenized-screen",
-          kind: "inventory",
-          path: "Sources/Features/Transfers/TransfersUI",
-          why_selected: expect.arrayContaining([
-            { kind: "path", value: "Sources/Features/Transfers/TransfersUI" },
-            { kind: "scope", value: "transfers" },
-            { kind: "surface_type", value: "native-feature" },
-          ]),
-        }),
-        expect.objectContaining({
-          ref: "validate.check:no-hardcoded-ui-color",
-          kind: "validation",
-        }),
-      ]),
-    );
-    expect(
-      json.selected_context.context_hits.map((hit: { ref: string }) => hit.ref),
-    ).not.toContain("validate.check:candidate-density-check");
-    expect(json.selected_context.suggested_reads).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          path: "Sources/Features/Transfers/TransfersUI",
-          reason:
-            "source surface for inventory.exemplar:transfers-tokenized-screen",
-        }),
-      ]),
-    );
-    expect(json.brief).toContain("# ghost Relay Brief");
-    expect(json.brief).toContain("## Context Hits");
   });
 
   it("installs the unified ghost skill bundle", async () => {
@@ -2311,19 +2207,6 @@ intent:
       principle: UI colors should come from the product token system.
       check_refs: [validate.check:no-hardcoded-ui-color]
   experience_contracts: []
-inventory:
-  exemplars:
-    - id: transfers-tokenized-screen
-      path: Sources/Features/Transfers/TransfersUI
-      title: Transfers tokenized UI
-      surface: transfers
-      why: Shows semantic HarborTheme color usage for native transfers UI.
-      refs:
-        - intent.principle:tokenized-ui-color
-        - composition.pattern:tokenized-ui-color
-  building_blocks:
-    tokens: [HarborTheme.primary]
-    components: []
 composition:
   patterns:
     - id: tokenized-ui-color
@@ -2343,7 +2226,6 @@ checks:
     derivation:
       intent: [intent.principle:tokenized-ui-color]
       composition: [composition.pattern:tokenized-ui-color]
-      inventory: [inventory.exemplar:transfers-tokenized-screen]
     applies_to:
       paths: [Sources/Features/Transfers]
     detector:
@@ -2372,128 +2254,6 @@ checks:
       observed_count: 1
       examples:
         - Sources/Features/Transfers/TransfersUI
-`,
-  );
-  await writeFile(
-    join(pkg, "resources.yml"),
-    `schema: ghost.resources/v1
-id: harbor-ios
-primary:
-  target: .
-`,
-  );
-  await writeFile(join(pkg, "map.md"), mapWithScopes());
-  await writeFile(
-    join(pkg, "survey.json"),
-    JSON.stringify({
-      schema: "ghost.survey/v1",
-      sources: [{ target: ".", scanned_at: "2026-05-06T00:00:00.000Z" }],
-      values: [],
-      tokens: [],
-      components: [],
-      ui_surfaces: [],
-    }),
-  );
-  await writeFile(
-    join(pkg, "patterns.yml"),
-    `schema: ghost.patterns/v1
-id: harbor-ios
-surface_types: []
-composition_patterns: []
-`,
-  );
-}
-
-async function _writeRelayRequestStackScenario(dir: string): Promise<void> {
-  await mkdir(join(dir, "stacks"), { recursive: true });
-  await mkdir(join(dir, "media", "email"), { recursive: true });
-  await writeFile(
-    join(dir, ".ghost", "relay.yml"),
-    `schema: ghost.relay-config/v1
-id: demo.product-surface/v1
-sources: []
-request_resolvers:
-  - id: demo-stacks
-    kind: stack
-    files:
-      - stacks/*.yml
-    schema: demo.stack/v1
-    unit_sources:
-      - id: unit-questions
-        path: "{unit}/questions.yml"
-        section: questions
-        items: questions
-        summary: question
-`,
-  );
-  await writeFile(
-    join(dir, "stacks", "portal.renewal-reminder.email.yml"),
-    `schema: demo.stack/v1
-id: portal.renewal-reminder.email
-title: Portal renewal reminder via email
-task_context:
-  customer: subscriber
-  system: systems.portal
-  moment: moments.subscription-renewal-reminder
-  medium: media.email
-  capability: capabilities.billing
-units:
-  - media/email
-`,
-  );
-  await writeFile(
-    join(dir, "media", "email", "questions.yml"),
-    `questions:
-  - id: email-sensitive-detail
-    question: What sensitive detail is safe in email?
-`,
-  );
-}
-
-async function _writeRelayRequestOnlyScenario(
-  dir: string,
-  options: { invalidUnitSection?: boolean } = {},
-): Promise<void> {
-  await mkdir(join(dir, ".agents", "ghost"), { recursive: true });
-  await mkdir(join(dir, "stacks"), { recursive: true });
-  await mkdir(join(dir, "media", "email"), { recursive: true });
-  await writeFile(
-    join(dir, ".agents", "ghost", "relay.yml"),
-    `schema: ghost.relay-config/v1
-id: demo.agent-context/v1
-base:
-  kind: none
-sources: []
-request_resolvers:
-  - id: demo-stacks
-    kind: stack
-    files:
-      - stacks/*.yml
-    schema: demo.stack/v1
-    unit_sources:
-      - id: unit-questions
-        path: "{unit}/questions.yml"
-        section: ${options.invalidUnitSection ? "composition" : "questions"}
-        items: questions
-        summary: question
-`,
-  );
-  await writeFile(
-    join(dir, "stacks", "portal.renewal-reminder.email.yml"),
-    `schema: demo.stack/v1
-id: portal.renewal-reminder.email
-title: Portal renewal reminder via email
-task_context:
-  medium: media.email
-units:
-  - media/email
-`,
-  );
-  await writeFile(
-    join(dir, "media", "email", "questions.yml"),
-    `questions:
-  - id: email-sensitive-detail
-    question: What sensitive detail is safe in email?
 `,
   );
 }
@@ -2537,84 +2297,4 @@ async function writeSplitFingerprintPackage(
     writes.push(writeFile(join(packageDir, "validate.yml"), checksRaw));
   }
   await Promise.all(writes);
-}
-
-function _checksFileWithDerivation(intentRef: string): string {
-  return `schema: ghost.validate/v1
-id: local
-checks:
-  - id: no-hardcoded-ui-color
-    title: Use design tokens for UI color
-    status: active
-    severity: serious
-    derivation:
-      intent: [${intentRef}]
-    applies_to:
-      paths: [Sources/Features/Transfers]
-    detector:
-      type: forbidden-regex
-      pattern: '#[0-9a-fA-F]{3,8}'
-      contexts: [swift]
-    evidence:
-      support: 0.94
-      observed_count: 47
-      examples:
-        - Sources/Features/Transfers/TransfersUI
-`;
-}
-
-function mapWithScopes(): string {
-  return `---
-schema: ghost.map/v1
-id: harbor-ios
-repo: example/harbor-ios
-mapped_at: 2026-05-06T00:00:00.000Z
-platform: ios
-languages:
-  - { name: swift, files: 5, share: 1.0 }
-build_system: bazel
-package_manifests:
-  - MODULE.bazel
-composition:
-  frameworks:
-    - { name: swiftui }
-  rendering: native
-  styling:
-    - design-tokens
-design_system:
-  paths:
-    - Sources/DesignSystem
-  status: active
-surface_sources:
-  render_strategy: static-source
-  include:
-    - Sources/Features/**
-  exclude:
-    - "**/Tests/**"
-feature_areas:
-  - name: transfers
-    paths:
-      - Sources/Features/Transfers
-scopes:
-  - id: transfers
-    name: Transfers
-    kind: product-surface
-    paths:
-      - Sources/Features/Transfers
-orientation_files:
-  - README.md
----
-
-## Identity
-
-Harbor iOS.
-
-## Topology
-
-Native Swift app.
-
-## Conventions
-
-Use feature scopes.
-`;
 }

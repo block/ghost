@@ -7,9 +7,8 @@ materials:
 vessel-light is Vessel without the React package: the design language as a
 steering packet for agents writing raw HTML and CSS.
 
-The contract is narrow. Style only with the tokens. Compose only with the
-closed sets the grammar enumerates. Imitate the refs when the task matches —
-worked examples to copy from, not a framework to import.
+Style only with the tokens. Compose only with the closed sets the grammar
+enumerates. Use the examples when the task matches; they are not a framework.
 
 Grammar and the median floor are safe verbatim, unchanged by any adaptation.
 Signature nodes state Vessel's current answer and stand until you replace
@@ -23,11 +22,7 @@ success, warning, information — never atmosphere. Atmosphere is catered: a
 five-hue expression palette whose volume rises with the register, from
 charts-only in product to two hues in editorial, and never on controls.
 
-It protects the taste that disappears when an agent freehands: quiet
-surfaces, deliberate spacing, one obvious action, restrained motion.
-
-Name the reader's job before composing anything — the job picks the ref and
-the register, never the topic. When a requested UI is not covered by a ref,
-compose from the grammar; do not invent a new styling system. Before
-anything ships, run the deletion pass: every element names what breaks if
-it goes, and the view arrives settled.
+Name the reader's job before composing anything. The job picks the example and
+the register, never the topic. When no example fits, compose from the grammar;
+do not invent a new styling system. Before anything ships, run the deletion
+pass: every element names what breaks if it goes, and the view arrives settled.

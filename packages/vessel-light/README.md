@@ -29,4 +29,4 @@ The corpus is factored by rate of change under adaptation: `grammar.*` nodes are
 
 ## Curation
 
-Each ref carries an annotation header declaring what it is normative for and what is incidental; together the refs demonstrate every closed set the grammar enumerates (the emphasis ladder, text variants, tones, elevation tiers). Regenerate refs whenever tokens or signature nodes change — a stale exemplar steers harder than any prose. Promote a new ref when repeated work proves a gap; do not add coverage upfront because a surface might exist someday.
+Each example says what to keep and what to change. Together they demonstrate every closed set the grammar enumerates: the emphasis ladder, text variants, tones, and elevation tiers. Regenerate examples whenever tokens or signature nodes change. Add one when repeated work proves a gap, not because a surface might exist someday.

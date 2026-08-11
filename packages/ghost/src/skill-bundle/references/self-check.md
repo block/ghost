@@ -35,7 +35,6 @@ Before generating, can you cite:
 - the governing principle, stance, or tradeoff?
 - the concrete materials, if exactness matters?
 - the applicable pattern, if structure matters?
-- the relevant exemplar and what it is normative for?
 - the anti-goal that blocks the generic version?
 - the hard invariants?
 - the conditions that apply or do not apply?
