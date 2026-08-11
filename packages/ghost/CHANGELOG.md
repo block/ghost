@@ -1,5 +1,15 @@
 # @design-intelligence/ghost
 
+## 0.29.0
+
+### Minor Changes
+
+- [#256](https://github.com/block/ghost/pull/256) [`ff0c6da`](https://github.com/block/ghost/commit/ff0c6daeafa0968bd12fa9bf904684e1fe5d3a78) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - The installed ghost skill now presents package authoring through three focused recipes: one workflow for creating and updating packages, one guide to writing durable nodes, and one guide to binding guidance to concrete material. `ghost skill install --force` now replaces the bundle directory so retired recipe files do not survive a reinstall.
+
+### Patch Changes
+
+- [#258](https://github.com/block/ghost/pull/258) [`94bb483`](https://github.com/block/ghost/commit/94bb483b9425456edec66e1a55c847019bc1d8de) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Treat examples as ordinary material and tell agents what to keep or change.
+
 ## 0.28.0
 
 ### Minor Changes
