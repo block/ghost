@@ -4,6 +4,7 @@ import {
   mkdirSync,
   readFileSync,
   rmSync,
+  symlinkSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -98,7 +99,12 @@ describe("steering-control", () => {
       script,
       "console.log('MENU marker principle.test ' + process.argv.slice(2).join(' '))\n",
     );
-    config.ghostBin = process.execPath;
+    // arms.mjs splits ghostBin on whitespace to allow prefixed commands
+    // ("pnpm exec ghost"), so a node path containing spaces needs a
+    // space-free symlink.
+    const nodeLink = join(dir, "node");
+    symlinkSync(process.execPath, nodeLink);
+    config.ghostBin = nodeLink;
     config.ghostArgs = [script];
     const { prompt, inventory } = assemblePrompt(config, "gather", 1, 1);
     expect(prompt).toContain("MENU marker");
