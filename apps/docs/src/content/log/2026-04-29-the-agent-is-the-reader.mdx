@@ -1,0 +1,27 @@
+---
+title: the agent is the reader
+date: 2026-04-29
+summary: ghost stops being a view humans read and becomes a layer the generating agent reaches into, which splits the tool into repeatable work and interpretation.
+---
+
+The drift work assumed a person at the end of it. Someone opens a fleet view, sees two products moving apart, and decides what to do. That person is real, but they are not who consumes most of what ghost produces now.
+
+Agents are writing the UI. When a model changes a component, it does not consult a similarity space or a history file. It works from whatever context arrives in the prompt.
+
+So the framing changes. ghost is the design-language layer an agent reaches into when the code it generates has to belong to a specific product.
+
+## what this does to the surface
+
+A scan now runs in stages. Topology comes first as `map.md`, then a concrete inventory of shipped values, then an interpretation written as `expression.md`. Each stage produces an artifact that can be inspected on its own, and the later stage cannot invent values the earlier one did not find.
+
+The split matters more than the file names. Extraction and comparison are repeatable and belong in the CLI. Deciding what a repeated value means is not repeatable, and it belongs in a skill recipe that a capable agent follows.
+
+Two weeks ago the CLI was the headline and the model was an implementation detail inside it. That ordering was wrong. The model does the reading. The CLI exists to make what it reads stable.
+
+## the part that is still guesswork
+
+We do not know where to stop. Right now ghost holds five tools, three stages, and a growing set of recipes, and each new case adds another stage or another verb.
+
+The boundary is also unsettled. A skill recipe can teach an agent to interpret a repository, and ghost can validate the artifact that comes out. Neither answers who is accountable when the interpretation is wrong. Today the artifact is generated, checked against a schema, and trusted because it validated.
+
+That is a thin kind of trust. It works while the reader is a scanner reporting what it found. It will not hold once the same artifact is meant to steer what gets made.

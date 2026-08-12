@@ -1,0 +1,29 @@
+---
+title: one artifact, many readers
+date: 2026-06-02
+summary: ghost resets around a single authored file that every command grounds in, and the machinery for letting agents rewrite it lasts about a week.
+---
+
+Scanning gave us artifacts nobody owned. A map, a survey, an interpretation, a set of checks, each written by a different stage and trusted because it validated. When a review flagged something, there was no single place to look to find out whether the flag reflected an actual position.
+
+So ghost resets around `fingerprint.yml`. One authored file that says what the product is, which moments matter, how surfaces should behave, and what must not be traded away. Checks stop being independent truth and become enforcement derived from it. Whatever a scan finds moves into a cache that is never canonical.
+
+Every command becomes a reader of that file. Review packets ground in it. Context bundles compile from it. The review command it emits cites it.
+
+## drift becomes one reader among several
+
+This demotes the founding idea. Drift detection used to be the product, and everything else was arranged around it. Now it is one thing you can do once a product has stated what it is.
+
+That reordering feels correct and it costs something. The fleet view, the similarity space, the stances a project could record about a difference: all of that still exists in the package, and none of it is what a new user meets first. We are carrying the machinery and leading with the file.
+
+## the part we already cut
+
+The reset shipped with `proposals/`. An agent could write a proposed change to the file, and a human would promote it. The idea was a file that heals itself through use: an agent notices a repeated correction, writes it down, a person accepts it.
+
+We removed that within a week. Two reasons.
+
+The proposal path made authoring feel optional. If an agent can draft the position later, nothing forces anyone to state it now, and a file full of unpromoted drafts steers nothing. The second reason is worse for the theory. An agent proposing a rule from repeated corrections is doing exactly what the scanner did, one layer up. It reads consequences and infers intent. The reset was supposed to end that.
+
+What remains is smaller than what we planned. A person writes the file. Agents read it, and the tooling around it stays repeatable. A thousand lines of proposal machinery came out and nothing about the loop got worse.
+
+The open question is the shape of the file itself. Sections for summary, topology, situations, principles, contracts, patterns, and substrate came from how design systems and product design already divide the work. That ordering has not been tested against anyone trying to write their own brand into it.

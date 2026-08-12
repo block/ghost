@@ -1,0 +1,29 @@
+---
+title: removing drift
+date: 2026-06-27
+summary: compare, drift, fleet, and the numerical fingerprint come out of the package, leaving the founding idea as something you can do rather than the thing ghost is.
+---
+
+Today `compare`, `drift`, `ack`, `track`, and `diverge` left the package, along with the parser, the writer, the semantic diff, the decision dimensions, the embeddings, and the perceptual prior that calibrated severity. About five and a half thousand lines.
+
+That was the original ghost. A design system reduced to a comparable vector, two vectors placed against each other, and a recorded stance on the difference.
+
+## why it could not stay
+
+The numbers assumed a fixed set of dimensions worth measuring: palette, spacing, typography, surfaces, architecture. Those are the dimensions of a visual interface. They compare two component libraries reasonably well.
+
+Nothing in that vocabulary reaches a decision about when a flow explains a risk, how a support reply opens, or which claim a campaign page is allowed to make. Once the artifact carried those positions in prose, the comparable vector could only see the part of a brand that happened to be expressible as a token value.
+
+Keeping it meant maintaining a measurement layer for one medium while the rest of the guidance had no measurement at all. The severity calibration made this concrete. Every rule needed a weight so a difference could be scored, and the weights came from us rather than from any author.
+
+## what actually goes away
+
+Comparison does not disappear as an idea. A reviewing agent can read a diff against stated guidance and say what looks off, without a distance metric.
+
+What disappears is the claim that the difference has a number. That number was doing quiet work: it made governance look automatic. A threshold decided whether a change was acceptable, and nobody had to state a position.
+
+The stance commands went with it. Acknowledging a difference, adopting a new baseline, marking a dimension as diverging: those verbs only make sense against a measured baseline. Without one, the recorded stance is a sentence in a file and Git already handles that.
+
+Drift is now something the package supports rather than the thing ghost is. The remaining model is a graph of nodes: prose in files, placed in a containment tree, cascading from ancestors, with typed edges for the cases where composition crosses the tree. Selection walks that structure and assembles what a surface needs.
+
+The graph is a week old and holds better than the buckets it replaced.

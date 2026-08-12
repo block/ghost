@@ -4,56 +4,42 @@ date: 2026-05-19
 summary: repository scanning can map a design language in code, but it cannot decide which shipped choices deserve to guide the next one.
 ---
 
-Until now, ghost has assumed a shared UI library would sit at the center. Products would adopt it, change their copies, and publish enough information for ghost to compare how the fleet evolved.
+ghost assumed a shared UI library would sit at the center. Products would adopt it, change their copies, and publish enough information to compare how the fleet evolved.
 
-That assumption creates a time problem. A new component library can take years to reach the products where its observability would matter. ghost needs to work across the implementations companies already have, without requiring them to replace their stacks first.
+That creates a time problem. A new component library can take years to reach the products where its observability would matter. ghost needs to work with the implementations companies already have.
 
-The question became whether an agent could inspect any frontend repository, infer its design language, and build the drift mechanism from there. The scanners work.
+So the question changed: can an agent inspect any frontend repository, infer its design language, and build the drift mechanism from there?
+
+The scanners work.
 
 ## scanning what has shipped
 
-The scanning work no longer depends on one UI library or framework. ghost inspects repositories, finds their visual and structural signals, and generates comparable fingerprints. The scans have worked across several real frontend codebases and produced visualizations of their design languages.
+ghost can find visual and structural signals across different frameworks, generate comparable fingerprints, and map the design languages in real frontend codebases. The maps reveal clusters, divergence, and systems that have formed across products without a shared component source.
 
-Those views are useful. They show relationships that have been hard to see across products. They can reveal clusters, divergence, and the different visual systems that have formed over time. The observability idea works without requiring every product to adopt the same component source.
+That success exposes the flaw.
 
-That success exposes the problem with the direction.
-
-A scanner sees implementation. It has no way to know which parts of that implementation are right according to the brand. It can't tell whether a repeated pattern expresses deliberate intent, survives because nobody has touched the code in five years, or exists because a deadline forced a compromise. When the repository is the evidence, every shipped choice arrives with the same apparent legitimacy.
-
-The approach favors mature products. ghost needs enough code to inspect before it can infer a useful design language. The richest signal therefore carries the most history: deliberate decisions mixed with migrations, local fixes, and technical debt.
+A scanner sees implementation. It cannot tell whether a repeated pattern expresses intent, survived because nobody touched it for five years, or came from a deadline. Every shipped choice arrives with the same apparent legitimacy. The strongest signal often sits in the oldest product, where deliberate decisions mix with migrations, local fixes, and technical debt.
 
 The project is trying to derive a source of truth from the accumulated consequences of not having one.
 
 ## the components do not contain the picture
 
-This limitation reaches beyond scanners.
+This limitation reaches beyond scanners. A design system gives an agent components, tokens, variants, and documentation written for people. A designer brings additional context: which compositions feel plausible, when a rule bends, and which technically valid arrangement would never ship.
 
-Design systems often give an agent a component library and documentation written for humans. The components tell it which pieces exist. The documentation explains APIs, variants, tokens, and some broad principles. A human designer brings years of additional context to that material. They know which compositions feel plausible, which rules bend in a high-trust moment, and which valid arrangement would never ship.
+An agent does not inherit that context from component code.
 
-An agent doesn't inherit that context from the component code.
+Giving it 30 components is like giving it a jigsaw puzzle without the final picture. It can assemble the pieces in millions of valid ways. Only a small subset will feel like the brand. The missing decisions often concern composition: why a dense workflow resists cards, or why a high-trust action explains risk before asking for commitment. Neither decision lives inside a button.
 
-Giving it 30 components is like giving it a jigsaw puzzle without showing the final picture. It can assemble the pieces in millions of valid ways. Only a small subset will feel like the brand.
-
-The missing context often concerns composition: why one action sits on the right, why a dense workflow resists cards, why checkout removes decoration, or why one product explains a risk before asking for commitment. None of those decisions live inside a button by itself.
-
-Loose guidance leaves the model to complete the picture from its training. It fills each gap with a common interpretation: familiar layouts, familiar phrases, familiar hierarchy, familiar AI product styling. A polished result can still be an average assembled from patterns that belong to everyone.
+When guidance leaves those gaps open, the model fills them from its training. The result can be polished and still average together patterns that belong to everyone.
 
 ghost needs to carry the decisions that keep a model out of that median.
 
-## from design language to brand
+## from evidence to authored intent
 
-The repository lesson changes the question. Instead of asking how an agent can infer a brand from what a product has shipped, ghost needs to ask how people can author the best portable brand artifact for an agent before it makes anything.
+The question is no longer how an agent can infer a brand from what a product shipped. It is how people can author a portable brand artifact before the agent makes anything.
 
-That artifact cannot stop at interface design. Product is an extension of brand. The same company expresses a stance through its product behavior, marketing, emails, words, trust decisions, social presence, and images. Those expressions belong to separate teams with separate documents, and the seams show.
+That artifact cannot stop at interfaces. A single task may need product behavior, voice, accessibility, visual composition, and trust guidance. The task determines the context, not the department that authored each document.
 
-Agents make those organizational boundaries less useful. An agent writing an error state may need product behavior, voice, accessibility, and trust guidance at once. An agent making a campaign page may need visual composition and the same stance toward customer claims. The task determines the context, not the department that authored each document.
+This broader claim has only been tested against frontend codebases. Email, marketing, and support remain bets. The scanner has still made one limit clear: implementation evidence can help authors find concrete material, but it cannot decide what should be true.
 
-So far, this has only been tested against frontend codebases. Claims about email, marketing, and support are still bets. But the scanner has made the limit clear enough: implementation evidence can help find material. It cannot decide what should be true.
-
-## authored, portable, optional
-
-Moving toward authored intent raises a concern. ghost is supposed to challenge centralized control. Would an authoritative brand artifact recreate the same bottleneck in a different file format?
-
-It should not. The copy-and-own premise from [detecting drift](../2026-04-21-detecting-drift/) still matters. Someone should be able to publish a starting point without controlling every product that adapts it. A product should be able to take the artifact, adjust it for local needs, and own the result.
-
-The scanner is still useful. Repositories contain valuable evidence. They can show how a brand is behaving in practice and point authors toward concrete examples. They can't decide which historical choices deserve to steer the next generation.
+The copy-and-own premise from [detecting drift](../2026-04-21-detecting-drift/) remains. Authors can publish a starting point without controlling every product that adapts it. Repositories can show what a brand has become in practice. They cannot decide which historical choices should steer what comes next.

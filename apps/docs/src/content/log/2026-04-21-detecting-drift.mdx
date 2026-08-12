@@ -6,44 +6,30 @@ summary: ghost is trying to make design drift visible across decentralized UI sy
 
 ghost began with a loose idea about decentralized UI libraries.
 
-shadcn gave teams the code and let them own what happens next. This freedom is useful. A product can move without waiting for a central design systems team to accept its requirements, schedule the work, and release a new version. An area within a product can solve the problem in front of it instead of negotiating every local decision with a group several steps away. This direction also works well for model-generated code because the relevant context stays local.
+shadcn gives teams the code and lets them own what happens next. A product can solve a local problem without waiting for a central design systems team to accept it and release a new version. This also works well for model-generated code because the relevant context stays local.
 
-When multiple products rely on the same UI library, the cost is that every copy starts to evolve. One team changes the spacing. Another rebuilds a component around its workflow. A third finds a better pattern and has no way to show the rest of the system what it learned. The copies stop moving together, and nobody has a clear view of where they went. This showed up in internal tools and in open source tools like goose. Each had its own copy, and that ownership substantially helped AI-aided development.
+The cost is that every copy evolves. One team changes the spacing. Another rebuilds a component around its workflow. A third finds a better pattern with no way to show the rest of the system. The copies stop moving together, and nobody can see where they went.
 
 ghost is meant to add that missing view.
 
 ## drift as a signal
 
-Right now ghost is a design drift detection engine. It scans token overrides, hardcoded colors, missing tokens, component structure, and visual differences. The newest piece is a 64-dimensional fingerprint of a design system. The fingerprint measures palette, spacing, typography, surfaces, and architecture. ghost can compare fingerprints, place a fleet of systems in a similarity space, and show how they move over time.
+ghost currently scans implementation details and generates a 64-dimensional fingerprint of a design system. The fingerprint measures palette, spacing, typography, surfaces, and architecture. A fleet view can compare systems, find clusters and outliers, and show how they move over time.
 
-The point is not to force every copy back into alignment.
+The point is not to force every copy back into alignment. A central library cannot anticipate every workflow, audience, platform, or constraint its consumers will meet. Local divergence gives the system room to learn. The problem is letting it happen invisibly.
 
-Drift is natural evolution. No matter how complete a system appears, it has a blind spot around what products ship and what local teams discover. A central library captures the decisions its maintainers know about. It can't anticipate every workflow, audience, platform, or constraint that its consumers will meet.
+ghost treats drift as a neutral signal that needs a recorded stance. The CLI can acknowledge a difference, adopt a new fingerprint as a baseline, or mark one dimension as diverging. Projects can declare a parent, and history files record how their fingerprints move.
 
-Letting products diverge gives the system room to learn. The real problem is letting them diverge invisibly.
+This puts authority closer to the people making products. A product can move without permission, but other teams can see what changed and respond with intent. Agents should inspect these systems continuously and help people interpret their differences, rather than serve as features added to a human dashboard.
 
-ghost treats drift as a neutral signal that needs a recorded stance. The CLI currently has commands to acknowledge a difference, adopt a new fingerprint as a baseline, or mark one dimension as diverging. Projects can declare a parent. History files record how their fingerprints move. A fleet view calculates clusters, outliers, and the distance between consumers.
-
-The idea is already ahead of the implementation. A copy might mark itself as following another implementation. A useful change in one product might become a marker for other products to inspect and adopt. Continuous AI analysis could watch the fleet and help teams decide whether a difference represents debt, a local requirement, or a direction worth promoting.
-
-Much of the observatory exists. The social mechanism around one implementation becoming a marker for another does not. The code proves the direction under exploration, not a finished governance model.
-
-## power without permission
-
-The ambition is broad. ghost should put power in the hands of the people making products, rather than reserve authority for one central team that owns the library or visual design.
-
-This does not mean uncontrolled fragmentation. The counterweight is visibility. A product can move, but it should state what it has done. Other teams can compare the result, understand its lineage, and respond with intent. Acknowledging, adopting, rejecting, and diverging are different valid actions.
-
-This should not be a human dashboard with some AI features bolted on. Agents should inspect systems continuously, interpret the differences, and help people manage evolution across a decentralized fleet.
-
-That keeps pulling the work toward machinery: scanners for different implementation details, embeddings, numerical profiles, temporal analysis, pixel comparisons, and a 3D visualization. Each part makes implementations more legible. Together they test the belief underneath the project: you can't improve a system you can't observe.
+Much of that observatory exists. The social mechanism around it does not.
 
 ## what remains unresolved
 
-The fleet view shows that two products moved apart. It says nothing about which one is right.
+The fleet view can show that two products moved apart. It cannot say which one is right.
 
-The open question keeps circling around acknowledge, adopt, and diverge. The case that matters most is the one the tool barely handles: a product found something better and the parent should take it. A copy can declare a parent. Nothing lets a parent watch a child, and it is not clear whether that should be a CLI verb, a file, or a conversation between two teams that no tool should try to hold.
+The case that matters most is also the one ghost barely handles: a product finds something better, and its parent should take it. A copy can declare a parent, but nothing lets a parent watch a child. It is not clear whether that belongs in a CLI command, a file, or a conversation between teams that no tool should hold.
 
-This week went into packaging. The surface went from eighteen verbs to eleven, then six. The engine and CLI merged into one binary. A tag-triggered tarball means someone outside the repo can try it without living inside a checkout.
+This week also went into reducing the package from eighteen verbs to eleven, then six. The engine and CLI now ship as one binary, with a tag-triggered tarball that can run outside the repository.
 
-Cutting surface was easier than answering the question. Visibility is not governance. It might be the part that makes governance possible.
+Cutting surface was easier than answering the larger question. Visibility is not governance. It might be the part that makes governance possible.
