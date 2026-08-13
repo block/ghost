@@ -4,32 +4,22 @@ date: 2026-04-21
 summary: ghost is trying to make design drift visible across decentralized UI systems before deciding what to do about it.
 ---
 
-ghost began with a loose idea about decentralized UI libraries.
+ghost began with an idea about decentralized UI libraries.
 
-shadcn gives teams the code and lets them own what happens next. A product can solve a local problem without waiting for a central design systems team to accept it and release a new version. This also works well for model-generated code because the relevant context stays local.
+shadcn gives teams the code and lets them own what happens next. A product can solve a local problem without waiting for a central design systems team to accept it and release a new version. This also worked well for model-generated code because the relevant context stayed local.
 
-The cost is that every copy evolves. One team changes the spacing. Another rebuilds a component around its workflow. A third finds a better pattern with no way to show the rest of the system. The copies stop moving together, and nobody can see where they went.
+The cost is that every copy evolves. One team changes the spacing. Another rebuilds a component around its workflow. A third finds a better pattern with no way to show the rest of the system. The copies stop moving together. By design, but that leads to the formation of the next problem to solve. Some movements are the library evolving organically. 
 
-ghost is meant to add that missing view.
+ghost is meant to add that missing view. 
 
 ## drift as a signal
 
-ghost currently scans implementation details and generates a 64-dimensional fingerprint of a design system. The fingerprint measures palette, spacing, typography, surfaces, and architecture. A fleet view can compare systems, find clusters and outliers, and show how they move over time.
+ghost currently scans implementation details and generates a fingerprint of a design system. The fingerprint measures palette, spacing, typography, surfaces, and architecture. A fleet view can compare systems, find clusters and outliers, and show how they move over time.
 
-The point is not to force every copy back into alignment. A central library cannot anticipate every workflow, audience, platform, or constraint its consumers will meet. Local divergence gives the system room to learn. The problem is letting it happen invisibly.
+The point is not to force every copy back into alignment. A central library cannot anticipate every workflow, audience, platform, or constraint its consumers will meet. Local divergence gives the system room to learn. The gap is letting it happen invisibly.
 
 ghost treats drift as a neutral signal that needs a recorded stance. The CLI can acknowledge a difference, adopt a new fingerprint as a baseline, or mark one dimension as diverging. Projects can declare a parent, and history files record how their fingerprints move.
 
 This puts authority closer to the people making products. A product can move without permission, but other teams can see what changed and respond with intent. Agents should inspect these systems continuously and help people interpret their differences, rather than serve as features added to a human dashboard.
 
 Much of that observatory exists. The social mechanism around it does not.
-
-## what remains unresolved
-
-The fleet view can show that two products moved apart. It cannot say which one is right.
-
-The case that matters most is also the one ghost barely handles: a product finds something better, and its parent should take it. A copy can declare a parent, but nothing lets a parent watch a child. It is not clear whether that belongs in a CLI command, a file, or a conversation between teams that no tool should hold.
-
-This week also went into reducing the package from eighteen verbs to eleven, then six. The engine and CLI now ship as one binary, with a tag-triggered tarball that can run outside the repository.
-
-Cutting surface was easier than answering the larger question. Visibility is not governance. It might be the part that makes governance possible.
