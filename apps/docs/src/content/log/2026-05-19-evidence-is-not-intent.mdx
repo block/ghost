@@ -6,29 +6,19 @@ summary: repository scanning can map a design language in code, but it cannot de
 
 ghost assumed a shared UI library would sit at the center. Products would adopt it, change their copies, and publish enough information to compare how the fleet evolved.
 
-That creates a time problem. A new component library can take years to reach the products where its observability would matter. ghost needs to work with the implementations companies already have.
+That creates a time problem. A new component library can take months to reach the products where its observability would matter. ghost needs to work with the implementations companies already have.
 
 So the question changed: can an agent inspect any frontend repository, infer its design language, and build the drift mechanism from there?
-
-The scanners work.
 
 ## scanning what has shipped
 
 ghost can find visual and structural signals across different frameworks, generate comparable fingerprints, and map the design languages in real frontend codebases. The maps reveal clusters, divergence, and systems that have formed across products without a shared component source.
 
-That success exposes the flaw.
+But while a scanner sees implementation. It cannot tell whether a repeated pattern expresses intent, survived because nobody touched it for five years, or came from a deadline. Every shipped choice arrives with the same apparent legitimacy. The strongest signal often sits in the oldest product, where deliberate decisions mix with migrations, local fixes, and technical debt.
 
-A scanner sees implementation. It cannot tell whether a repeated pattern expresses intent, survived because nobody touched it for five years, or came from a deadline. Every shipped choice arrives with the same apparent legitimacy. The strongest signal often sits in the oldest product, where deliberate decisions mix with migrations, local fixes, and technical debt.
+The project is trying to derive a source of truth from the accumulated consequences of not having one. This limitation reaches beyond scanners. A design system gives an agent components, tokens, variants, and documentation written for people. A designer brings additional context: which compositions feel plausible, when a rule bends, and which technically valid arrangement would never ship.
 
-The project is trying to derive a source of truth from the accumulated consequences of not having one.
-
-## the components do not contain the picture
-
-This limitation reaches beyond scanners. A design system gives an agent components, tokens, variants, and documentation written for people. A designer brings additional context: which compositions feel plausible, when a rule bends, and which technically valid arrangement would never ship.
-
-An agent does not inherit that context from component code.
-
-Giving it 30 components is like giving it a jigsaw puzzle without the final picture. It can assemble the pieces in millions of valid ways. Only a small subset will feel like the brand. The missing decisions often concern composition: why a dense workflow resists cards, or why a high-trust action explains risk before asking for commitment. Neither decision lives inside a button.
+An agent does not inherit that context from component code. Giving it 30 components is like giving it a jigsaw puzzle without the final picture. It can assemble the pieces in millions of valid ways. Only a small subset will feel like the brand. The missing decisions often concern composition: why a dense workflow resists cards, or why a high-trust action explains risk before asking for commitment. Neither decision lives inside a button.
 
 When guidance leaves those gaps open, the model fills them from its training. The result can be polished and still average together patterns that belong to everyone.
 
@@ -42,4 +32,4 @@ That artifact cannot stop at interfaces. A single task may need product behavior
 
 This broader claim has only been tested against frontend codebases. Email, marketing, and support remain bets. The scanner has still made one limit clear: implementation evidence can help authors find concrete material, but it cannot decide what should be true.
 
-The copy-and-own premise from [detecting drift](../2026-04-21-detecting-drift/) remains. Authors can publish a starting point without controlling every product that adapts it. Repositories can show what a brand has become in practice. They cannot decide which historical choices should steer what comes next.
+The copy-and-own premise remains. Authors can publish a starting point without controlling every product that adapts it. Repositories can show what a brand has become in practice. They cannot decide which historical choices should steer what comes next.
