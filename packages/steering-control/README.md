@@ -2,13 +2,13 @@
 
 A before/after evaluation harness for ghost packages. It measures what
 handing an agent the complete shipped ghost consumer loop buys: output
-quality, run-to-run consistency, retrieval precision, and agent-attested
+quality, run-to-run consistency, retrieval precision, and agent-reported
 process coverage as a ratio of the context tokens spent.
 
 It produces one artifact: a self-contained `report.html` with screenshot
 grids, variance bands, gather metrics, loop receipts, and a headline
 quality-vs-context chart. Tell counts, pull tape, screenshots, and CSS
-extraction are deterministic. Loop receipts are agent-attested bookkeeping.
+extraction are deterministic. Loop receipts are agent-reported bookkeeping.
 Judgment stays with the human reading the report.
 
 ## The arms
@@ -128,9 +128,9 @@ steering-control report    # out/report.html — self-contained, rebuildable fro
 - **Gather metrics** (gather arm only) — poison pulls, precision/recall,
   selection stability, and pulled words from the deterministic selection tape;
   receipt coverage, mean repair passes, rendered count, and review count from
-  agent-attested `run-k.loop.json` receipts.
+  agent-reported `run-k.loop.json` receipts.
 - **Reproduction footer** — the exact commands to rebuild the report from
-  `out/`, and the note that deterministic measurements and agent-attested
+  `out/`, and the note that deterministic measurements and agent-reported
   receipts are different evidence types.
 
 ## Honest-claims checklist

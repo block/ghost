@@ -46,7 +46,7 @@ export function registerInitCommand(cli: CAC): void {
           typeof opts.body === "string" ? getInitBody(opts.body) : undefined;
         if (body?.includesChecks && withIds.includes("checks")) {
           throw new UsageError(
-            `--with checks is redundant with --body ${body.name} — this body already includes its own checks/.`,
+            `--with checks is redundant with --body ${body.name}: this body already includes its own checks/.`,
           );
         }
 

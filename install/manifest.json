@@ -9,13 +9,11 @@
   "files": [
     "SKILL.md",
     "references/authoring.md",
-    "references/brief.md",
     "references/concrete.md",
+    "references/ground.md",
     "references/making.md",
     "references/nodes.md",
-    "references/recall.md",
     "references/schema.md",
-    "references/self-check.md",
     "references/steering-audit.md"
   ]
 }

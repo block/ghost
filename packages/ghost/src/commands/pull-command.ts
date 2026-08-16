@@ -6,6 +6,11 @@ import { appendGhostEvent, resolveRunId } from "../observability-events.js";
 import { resolveGhostPackage } from "../package.js";
 import { GHOST_EVENTS_FILENAME } from "../scan/constants.js";
 import { resolveGitRoot } from "../scan/package-paths.js";
+import {
+  neutralizeSentinels,
+  untrustedBegin,
+  untrustedEnd,
+} from "../untrusted-framing.js";
 import { exitCli, failFromError } from "./errors.js";
 
 export function registerPullCommand(cli: CAC): void {
@@ -166,7 +171,11 @@ function appendMaterialMarkdown(
     if (material.note !== undefined) {
       lines.push(`Note for \`${material.locator}\`: ${material.note}`, "");
     }
-    lines.push(fencedMarkdown(material.inlined.trimEnd(), info));
+    lines.push(
+      untrustedBegin(info),
+      fencedMarkdown(neutralizeSentinels(material.inlined.trimEnd()), info),
+      untrustedEnd(info),
+    );
     return;
   }
 
@@ -183,6 +192,7 @@ function formatJsonMaterial(material: TransportedMaterial): {
   note?: string;
   tier: TransportedMaterial["tier"];
   inlined?: string;
+  untrusted?: true;
   omitted?: true;
   reason?: string;
   inspect?: string;
@@ -191,7 +201,9 @@ function formatJsonMaterial(material: TransportedMaterial): {
     locator: material.locator,
     ...(material.note !== undefined ? { note: material.note } : {}),
     tier: material.tier,
-    ...(material.inlined !== undefined ? { inlined: material.inlined } : {}),
+    ...(material.inlined !== undefined
+      ? { inlined: material.inlined, untrusted: true as const }
+      : {}),
     ...(material.omitted
       ? { omitted: true as const, reason: material.reason ?? "not inlined" }
       : {}),

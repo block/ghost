@@ -8,6 +8,11 @@ import {
 import { resolveGhostPackage } from "../package.js";
 import { loadGhostPackage } from "../scan/fingerprint-package.js";
 import { exitCli, failFromError } from "./errors.js";
+import {
+  buildPulseObservations,
+  formatPulseObservation,
+  type PulseObservation,
+} from "./pulse-observations.js";
 
 export function registerPulseCommand(cli: CAC): void {
   cli
@@ -83,6 +88,7 @@ type PulseReport = {
   coldNodes: string[];
   misses: MissReport[];
   concreteness: ConcretenessReport;
+  observations: PulseObservation[];
 };
 
 function buildPulseReport(
@@ -120,13 +126,15 @@ function buildPulseReport(
       continue;
     }
 
-    pulls += 1;
-    if (sawGather) activeGatherHasPull = true;
-    for (const id of event.ids) {
-      pullCounts.set(id, (pullCounts.get(id) ?? 0) + 1);
-    }
-    for (const miss of event.missed ?? []) {
-      recordMiss(missCounts, miss);
+    if (event.event === "pull") {
+      pulls += 1;
+      if (sawGather) activeGatherHasPull = true;
+      for (const id of event.ids) {
+        pullCounts.set(id, (pullCounts.get(id) ?? 0) + 1);
+      }
+      for (const miss of event.missed ?? []) {
+        recordMiss(missCounts, miss);
+      }
     }
   }
 
@@ -205,6 +213,7 @@ function buildPulseReport(
         (a, b) => b.count - a.count || a.requested.localeCompare(b.requested),
       ),
     concreteness,
+    observations: buildPulseObservations(events),
   };
 }
 
@@ -321,6 +330,18 @@ function formatPulseMarkdown(report: PulseReport): string {
           ? ` — suggested: ${miss.suggested.map((s) => `\`${s}\``).join(", ")}`
           : "";
       lines.push(`- \`${miss.requested}\` × ${miss.count}${suggestions}`);
+    }
+  }
+
+  lines.push("", "## Sequence observations", "");
+  lines.push(
+    "Observations, not violations; nothing blocks or refuses on this.",
+  );
+  if (report.observations.length === 0) {
+    lines.push("None.");
+  } else {
+    for (const observation of report.observations) {
+      lines.push(`- ${formatPulseObservation(observation)}`);
     }
   }
 

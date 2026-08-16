@@ -8,6 +8,11 @@ import {
 import { GHOST_MATERIALS_DIR } from "../scan/constants.js";
 import type { LoadedGhostPackage } from "../scan/fingerprint-package.js";
 import { resolveGitRoot } from "../scan/package-paths.js";
+import {
+  neutralizeSentinels,
+  untrustedBegin,
+  untrustedEnd,
+} from "../untrusted-framing.js";
 import { type BaselineProse, resolveBaseline } from "./baseline.js";
 import type { CoverageGap } from "./resolve.js";
 import { resolveReview } from "./resolve.js";
@@ -42,6 +47,7 @@ export interface ReviewPacket {
   checks: PacketCheck[];
   gaps: CoverageGap[];
   diff: string;
+  untrusted: true;
 }
 
 export interface BuildReviewPacketOptions {
@@ -94,6 +100,7 @@ export async function buildReviewPacket(
     checks,
     gaps: resolution.gaps,
     diff: diffText,
+    untrusted: true,
   };
 }
 
@@ -190,7 +197,15 @@ export function formatReviewPacket(packet: ReviewPacket): string {
     out.push("");
   }
 
-  out.push("## Diff", "```diff", packet.diff.trimEnd(), "```", "");
+  out.push(
+    "## Diff",
+    untrustedBegin("diff"),
+    "```diff",
+    neutralizeSentinels(packet.diff.trimEnd()),
+    "```",
+    untrustedEnd("diff"),
+    "",
+  );
   out.push("## Produce findings");
   out.push(
     "For each applicable check, emit findings with severity, location, baseline,",
