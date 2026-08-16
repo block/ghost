@@ -98,7 +98,7 @@ decision appears.
 
 ### 5. Write and ratify
 
-Use [nodes.md](nodes.md) for node craft, [concrete.md](concrete.md) for material
+Use [nodes.md](nodes.md) for node craft, [materials.md](materials.md) for material
 bindings, and [schema.md](schema.md) for the package contract.
 
 Keep each edit attributable to something the human said, showed, or accepted.

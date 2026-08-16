@@ -2,7 +2,7 @@ import { access, appendFile, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { GHOST_EVENTS_FILENAME } from "./scan/constants.js";
 
-const FIRST_WRITE_NOTICE = `ghost: logging selection events locally to .ghost/${GHOST_EVENTS_FILENAME} (gitignored; never leaves your machine). Summarize with \`ghost pulse\`.`;
+const FIRST_WRITE_NOTICE = `ghost: logging selection events locally to .ghost/${GHOST_EVENTS_FILENAME} (gitignored; never leaves your machine). Summarize with \`ghost stats\`.`;
 
 export type GatherObservabilityEvent = {
   ts: string;
@@ -96,7 +96,7 @@ export async function readGhostEvents(
       const parsed = JSON.parse(line) as unknown;
       if (isGhostEvent(parsed)) events.push(parsed);
     } catch {
-      // Ignore malformed events tape lines; pulse should still be useful.
+      // Ignore malformed events tape lines; stats should still be useful.
     }
   }
   return events;

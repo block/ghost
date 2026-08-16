@@ -6,9 +6,9 @@ import { registerFingerprintCommands } from "./commands/fingerprint-commands.js"
 import { registerGatherCommand } from "./commands/gather-command.js";
 import { registerManifestCommand } from "./commands/manifest-command.js";
 import { registerPullCommand } from "./commands/pull-command.js";
-import { registerPulseCommand } from "./commands/pulse-command.js";
 import { registerReviewCommand } from "./commands/review-command.js";
 import { registerSkillCommand } from "./commands/skill-command.js";
+import { registerStatsCommand } from "./commands/stats-command.js";
 import { readPackageVersion } from "./package-version.js";
 
 export {
@@ -22,7 +22,7 @@ export function buildCli(): ReturnType<typeof cac> {
   registerFingerprintCommands(cli);
   registerGatherCommand(cli);
   registerPullCommand(cli);
-  registerPulseCommand(cli);
+  registerStatsCommand(cli);
   registerReviewCommand(cli);
   registerExportCommand(cli);
   registerChecksCommand(cli);

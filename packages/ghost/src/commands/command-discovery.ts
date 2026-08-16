@@ -110,7 +110,8 @@ const COMMAND_DISCOVERY = [
     group: "core",
     defaultHelp: true,
     compactName: "init",
-    summary: "Scaffold a .ghost/ package: manifest, glossary, and a node.",
+    summary:
+      "Scaffold .ghost/ with the starter package: manifest, glossary, a brand cover, foundation chapters, and context nodes.",
   },
   {
     name: "validate",
@@ -135,11 +136,18 @@ const COMMAND_DISCOVERY = [
     summary: "Emit the named nodes' bodies; log the pull to .ghost/.events.",
   },
   {
-    name: "pulse",
+    name: "stats",
     group: "core",
     defaultHelp: true,
-    compactName: "pulse",
+    compactName: "stats",
     summary: "Summarize local gather/pull events from .ghost/.events.",
+  },
+  {
+    name: "pulse",
+    group: "advanced",
+    defaultHelp: false,
+    compactName: "pulse",
+    summary: "Deprecated alias for ghost stats.",
   },
   {
     name: "review",

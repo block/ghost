@@ -14,7 +14,7 @@ Start with:
 ```bash
 ghost validate
 ghost gather --format json
-ghost pulse --format json
+ghost stats --format json
 ```
 
 If checks are installed and a diff exists, run `ghost review` too.
@@ -27,7 +27,7 @@ Report first:
   nodes. Concrete means non-empty `materials`, a fenced code block of at least 3
   lines, or a `## Skeleton` section. `ghost gather` also breaks out materials,
   substantial fenced examples, and Skeletons as payload labels.
-- **Pulse by concreteness:** concrete-material exposure/pull rate vs prose-only
+- **Pull rate by concreteness:** concrete-material exposure/pull rate vs prose-only
   exposure/pull rate. In markdown this is the `Concrete material` row. This is
   the tuning instrument: if concrete nodes are not pulled when applicable,
   contexts or task selection are failing.
@@ -48,12 +48,6 @@ Report first:
 
 ## Task-level readiness
 
-For a task, gather, pull, and report:
-
-- **Green:** enough ghost-backed concrete guidance to generate.
-- **Yellow:** safe to generate, but some reasoning is provisional. If there is
-  no concrete material for this surface, readiness is at most Yellow.
-- **Red:** missing brand-defining, high-risk, irreversible, legal, privacy, or
-  security guidance; ask or author first.
-
-Never present steering coverage as deterministic pass/fail.
+For a task, gather, pull, and report the readiness color from the anchor
+contract in [ground.md](ground.md). Never present steering coverage as
+deterministic pass/fail.

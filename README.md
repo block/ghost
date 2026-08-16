@@ -61,7 +61,7 @@ ghost gather [ask]  # before building: show the complete guidance menu
 ghost pull <ids>    # read the picked nodes' full bodies
 ghost review        # during review: match a diff to guidance and checks
 ghost export        # bundle the guidance as a portable artifact
-ghost pulse         # while tuning: see what agents reached for
+ghost stats         # while tuning: see what agents reached for
 ```
 
 For a task-specific gather, your agent reads the complete, unfiltered menu and
@@ -70,7 +70,7 @@ the catalog without grounding a task. Because only selected nodes enter the
 working context, the agent can see the shape of the brand without loading the
 whole package.
 
-`gather` and `pull` write a Git-ignored local log. Use `ghost pulse` to inspect
+`gather` and `pull` write a Git-ignored local log. Use `ghost stats` to inspect
 it and tune node contexts.
 
 Run `ghost --help` for the core workflow and `ghost <command> --help` for
@@ -115,7 +115,8 @@ deprecated read alias for one release, and `ghost validate` warns on its use.
 ---
 context: Placing, sizing, or choosing a logo lockup or glyph.
 materials:
-  - brand/logo*.svg
+  - brand/logo-lockup.svg
+  - brand/logo-glyph.svg
   - https://figma.com/file/example?node-id=logo-lockups
 ---
 

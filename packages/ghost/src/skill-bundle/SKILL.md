@@ -24,6 +24,16 @@ it applies, and an agent reads the relevant guidance before building.
   checks/             # optional review assertions; never nodes
 ```
 
+## Where to go
+
+- Making something against a package: [references/making.md](references/making.md)
+- Grounding before generating: [references/ground.md](references/ground.md)
+- Writing or revising a node: [references/nodes.md](references/nodes.md)
+- Binding guidance to materials: [references/materials.md](references/materials.md)
+- Creating or overhauling a package: [references/authoring.md](references/authoring.md)
+- Auditing steering health: [references/steering-audit.md](references/steering-audit.md)
+- Formats and command behavior: [references/schema.md](references/schema.md)
+
 ## The model in one breath
 
 - A **node** is a markdown file: `context`, optional `materials`, and prose brand guidance. `description` is a deprecated compatibility alias for one release.
@@ -59,17 +69,15 @@ ghost gather <ask>  # emit Available guidance for this task
 ghost pull <ids>    # pull selected node bodies and materials
 ghost review        # assemble diff + matched material-backed nodes + checks
 ghost export        # package .ghost/ as a portable brand artifact
-ghost pulse         # summarize local gather/pull events while tuning
+ghost stats         # summarize local gather/pull events while tuning
 ```
 
 `gather` does no selection. It emits the complete, unfiltered, unranked menu
-from the ghost package. Read the ask against contexts. When you are uncertain
-whether a node applies, pull it. Under-pull is silent and unrecoverable;
-over-pull is mild dilution. Skip only clear non-matches. Topic overlap alone is
-not applicability. Its header includes a coverage line: total nodes and nodes
-carrying concrete material. `gather` labels materials, substantial fenced
-examples, and Skeletons separately, so an all-prose package is visible
-before generation.
+from the ghost package. The selection rule lives in
+[references/ground.md](references/ground.md). Its header includes a coverage
+line: total nodes and nodes carrying concrete material. `gather` labels
+materials, substantial fenced examples, and Skeletons separately, so an
+all-prose package is visible before generation.
 
 Prefer `ghost pull` over reading files directly: it emits the same prose,
 inlines small local materials by default, turns binary materials into
@@ -81,24 +89,9 @@ structured events to `.ghost/.events` for local tuning. Inlined material content
 matched material-backed nodes, offered checks, coverage gaps, and the diff. The
 host agent renders findings.
 
-For visual work, do not stop at generation: ground, anchor, make, then
-verify in two tracks, repair within budget, and review. See
+For visual work, do not stop at generation: ground (ending in an anchor), make,
+then verify in two tracks, repair within budget, and review. See
 [references/making.md](references/making.md).
-
-## CLI verbs
-
-| Verb | Purpose |
-|---|---|
-| `ghost init` | Scaffold `.ghost/` with the starter package: manifest, glossary, a `brand.md` cover, foundation chapters, context nodes, and the cliche floor. `--with checks` also adds the checks directory. |
-| `ghost checks init` | Scaffold `.ghost/checks/` with an example review assertion. |
-| `ghost validate [file-or-dir]` | Validate manifest, nodes, material locators, check references, and glossary kind prefixes. |
-| `ghost gather [ask…] [--format json]` | Emit the complete guidance menu plus coverage line; log exposed ids. |
-| `ghost pull <id> [<id>…]` | Emit selected nodes' full bodies and materials in steering order; log selected/missed ids. |
-| `ghost review [--diff <path|->] [--base <ref>] [--format json]` | Emit an advisory review packet for a diff (requires `.ghost/checks/`). |
-| `ghost export [--out <path>] [--no-checks] [--strict] [--format json]` | Package `.ghost/` as a portable brand artifact and report which material locators will not travel. |
-| `ghost pulse [--format json]` | Summarize local gather/pull events from `.ghost/.events`. |
-| `ghost skill install` | Install this skill bundle. |
-| `ghost manifest [--format json]` | Emit a self-describing JSON manifest of every command and flag. |
 
 ## Skeleton convention
 
@@ -115,16 +108,6 @@ a brief.
 Unpack the exported archive, run `ghost validate --package <dir>`, then run
 `ghost skill install` in the receiving workspace. From there, gather and pull
 against the unpacked package with `--package <dir>`.
-
-## Workflows
-
-- Create or update a package: follow [references/authoring.md](references/authoring.md).
-- Write or revise guidance nodes: follow [references/nodes.md](references/nodes.md).
-- Bind guidance to concrete materials: follow [references/concrete.md](references/concrete.md).
-- Ground and anchor before generating: follow [references/ground.md](references/ground.md).
-- Make a visual artifact end to end: follow [references/making.md](references/making.md).
-- Audit steering coverage: follow [references/steering-audit.md](references/steering-audit.md).
-- Understand the package shape: see [references/schema.md](references/schema.md).
 
 ghost package authoring is **elicitation, not scanning**. The raw material is what
 the human brings and points at: words, images, links, products, brand docs, copy

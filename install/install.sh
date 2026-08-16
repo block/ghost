@@ -14,7 +14,7 @@
 # What gets installed:
 #   <agent-skills-dir>/ghost/
 #     SKILL.md
-#     references/authoring.md, concrete.md, ground.md, making.md, nodes.md
+#     references/authoring.md, ground.md, making.md, materials.md, nodes.md
 #     references/schema.md, steering-audit.md
 #
 # Exit codes:

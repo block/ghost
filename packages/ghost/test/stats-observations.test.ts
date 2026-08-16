@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
-  buildPulseObservations,
-  formatPulseObservation,
-} from "../src/commands/pulse-observations.js";
+  buildStatsObservations,
+  formatStatsObservation,
+} from "../src/commands/stats-observations.js";
 import type { GhostObservabilityEvent } from "../src/observability-events.js";
 
 function event(
@@ -15,7 +15,7 @@ function event(
   } as GhostObservabilityEvent;
 }
 
-describe("pulse sequence observations", () => {
+describe("stats sequence observations", () => {
   it("reports pull-without-gather with run attribution and partitioning", () => {
     const events: GhostObservabilityEvent[] = [
       event({ event: "pull", run: "r1", ids: ["asset.tokens"] }, 1),
@@ -24,7 +24,7 @@ describe("pulse sequence observations", () => {
       event({ event: "pull", ids: ["brand"] }, 4),
     ];
 
-    const observations = buildPulseObservations(events);
+    const observations = buildStatsObservations(events);
 
     expect(observations).toEqual([
       expect.objectContaining({
@@ -36,7 +36,7 @@ describe("pulse sequence observations", () => {
         ts: "2026-08-15T00:00:04.000Z",
       }),
     ]);
-    expect(formatPulseObservation(observations[0])).toContain("run `r1`");
+    expect(formatStatsObservation(observations[0])).toContain("run `r1`");
   });
 
   it("returns no observations for gather then pull", () => {
@@ -45,6 +45,6 @@ describe("pulse sequence observations", () => {
       event({ event: "pull", ids: ["asset.tokens"] }, 2),
     ];
 
-    expect(buildPulseObservations(events)).toEqual([]);
+    expect(buildStatsObservations(events)).toEqual([]);
   });
 });

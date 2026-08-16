@@ -67,7 +67,7 @@ describe("ghost CLI", () => {
       "validate",
       "gather",
       "pull",
-      "pulse",
+      "stats",
       "review",
       "export",
       "checks init",
@@ -75,6 +75,7 @@ describe("ghost CLI", () => {
     ]) {
       expect(result.stdout).toContain(command);
     }
+    expect(result.stdout).not.toContain("pulse");
     expect(result.stdout).toContain("ghost --help --all");
     // Removed in the flat-corpus cleanup.
     expect(result.stdout).not.toContain("migrate");
@@ -93,10 +94,11 @@ describe("ghost CLI", () => {
       "init",
       "gather [...ask]",
       "pull <...ids>",
-      "pulse",
+      "stats",
       "review",
       "export",
       "checks <action>",
+      "pulse",
       "manifest",
       "skill <action>",
     ]) {
@@ -119,6 +121,7 @@ describe("ghost CLI", () => {
       (command: { name: string }) => command.name,
     );
     expect(names).toContain("gather");
+    expect(names).toContain("stats");
     expect(names).toContain("pulse");
     expect(names).toContain("review");
     expect(names).toContain("export");
@@ -131,6 +134,13 @@ describe("ghost CLI", () => {
     expect(gather.group).toBe("core");
     expect(typeof gather.summary).toBe("string");
     expect(Array.isArray(gather.options)).toBe(true);
+
+    const review = manifest.data.commands.find(
+      (command: { name: string }) => command.name === "review",
+    );
+    expect(
+      review.options.map((option: { name: string }) => option.name),
+    ).not.toContain("json");
 
     const globalNames = manifest.data.globalOptions.map(
       (option: { name: string }) => option.name,
@@ -223,6 +233,7 @@ describe("ghost CLI", () => {
     // The open questions ship unanswered and forbid freehanding.
     const layout = await runCli(["pull", "foundation.layout"], dir);
     expect(layout.code).toBe(0);
+    expect(layout.stdout).toContain("not yet ratified");
     expect(layout.stdout).toContain("Open — ask the human");
     expect(layout.stdout).toContain("freehand");
 
@@ -1451,7 +1462,7 @@ describe("ghost CLI", () => {
     });
   });
 
-  it("pulse ignores unrecognized event kinds on the tape", async () => {
+  it("stats ignores unrecognized event kinds on the tape", async () => {
     await writeBareTestPackage(dir);
     await writeFile(
       join(dir, ".ghost", ".events"),
@@ -1481,13 +1492,13 @@ describe("ghost CLI", () => {
       ].join("\n"),
     );
 
-    const pulse = await runCli(["pulse", "--format", "json"], dir);
+    const stats = await runCli(["stats", "--format", "json"], dir);
 
-    expect(pulse.code).toBe(0);
-    expect(JSON.parse(pulse.stdout).pulls).toBe(1);
+    expect(stats.code).toBe(0);
+    expect(JSON.parse(stats.stdout).pulls).toBe(1);
   });
 
-  it("pulse reports local gather/pull metrics", async () => {
+  it("stats reports local gather/pull metrics", async () => {
     await writeBareTestPackage(dir);
     await writeFile(
       join(dir, ".ghost", "principle.trust.md"),
@@ -1502,11 +1513,11 @@ describe("ghost CLI", () => {
     await runCli(["pull", "principle.trust", "principle.trst"], dir);
     await runCli(["gather", "settings"], dir);
 
-    const pulse = await runCli(["pulse", "--format", "json"], dir);
-    expect(pulse.code).toBe(0);
-    const report = JSON.parse(pulse.stdout);
+    const stats = await runCli(["stats", "--format", "json"], dir);
+    expect(stats.code).toBe(0);
+    const report = JSON.parse(stats.stdout);
     expect(report).toMatchObject({
-      kind: "pulse",
+      kind: "stats",
       gathers: 2,
       pulls: 1,
       abandonedGathers: 1,
@@ -1546,8 +1557,8 @@ describe("ghost CLI", () => {
       coldNodes: ["voice"],
     });
     expect(report.coldNodes).not.toContain("index");
-    const md = await runCli(["pulse"], dir);
-    expect(md.stdout).toContain("# ghost Pulse");
+    const md = await runCli(["stats"], dir);
+    expect(md.stdout).toContain("# ghost Stats");
     expect(md.stdout).toContain("## Kind hit rates");
     expect(md.stdout).toContain("## Sequence observations");
     expect(md.stdout).toContain(
@@ -1571,10 +1582,20 @@ describe("ghost CLI", () => {
         }),
       ].join("\n"),
     );
-    const clean = await runCli(["pulse"], dir);
+    const clean = await runCli(["stats"], dir);
     expect(clean.code).toBe(0);
     expect(clean.stdout).toContain("## Sequence observations");
     expect(clean.stdout).toContain("None.");
+  });
+
+  it("pulse remains a deprecated alias for stats", async () => {
+    await writeBareTestPackage(dir);
+
+    const alias = await runCli(["pulse", "--format", "json"], dir);
+
+    expect(alias.code).toBe(0);
+    expect(alias.stderr).toContain("deprecated");
+    expect(JSON.parse(alias.stdout)).toMatchObject({ kind: "stats" });
   });
 
   it("installs the unified ghost skill bundle", async () => {
@@ -1588,7 +1609,7 @@ describe("ghost CLI", () => {
       "SKILL.md",
       "references/authoring.md",
       "references/nodes.md",
-      "references/concrete.md",
+      "references/materials.md",
       "references/ground.md",
       "references/making.md",
       "references/schema.md",

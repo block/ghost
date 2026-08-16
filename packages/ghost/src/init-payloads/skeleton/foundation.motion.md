@@ -2,6 +2,9 @@
 context: Any transition, animation, or hover treatment.
 ---
 
+Starter guidance, not yet ratified by the brand owner. Cite it as provisional
+until a human edits or confirms this chapter.
+
 ## Usage
 
 Motion is evidence of a state change. It confirms hover, press, reveal,

@@ -47,7 +47,7 @@ ghost gather [ask]  # before building: show the complete guidance menu
 ghost pull <ids>    # read the picked nodes' full bodies
 ghost review        # during review: match a diff to guidance and checks
 ghost export        # bundle the guidance as a portable artifact
-ghost pulse         # while tuning: see what agents reached for
+ghost stats         # while tuning: see what agents reached for
 ```
 
 For a task-specific gather, your agent reads the complete, unfiltered menu and

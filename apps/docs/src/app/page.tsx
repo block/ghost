@@ -363,7 +363,7 @@ export default function Home() {
               instruction stuffed into the first request.
             </p>
             <p>
-              Then tune the package from the evidence. Pulse can show whether a
+              Then tune the package from the evidence. Stats can show whether a
               node was seen and pulled. Review can show which guidance applied
               to the diff. Human feedback can show where the prose was vague,
               the material was missing, or the example taught the wrong move.

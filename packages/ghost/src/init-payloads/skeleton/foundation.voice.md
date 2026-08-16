@@ -2,6 +2,9 @@
 context: Writing or editing any copy.
 ---
 
+Starter guidance, not yet ratified by the brand owner. Cite it as provisional
+until a human edits or confirms this chapter.
+
 ## Usage
 
 Copy states what happened, what is possible, or what the user must decide.

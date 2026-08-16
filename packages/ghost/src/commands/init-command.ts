@@ -7,7 +7,10 @@ import { exitCli, failFromError } from "./errors.js";
 
 export function registerInitCommand(cli: CAC): void {
   cli
-    .command("init", "Create a root .ghost package of nodes")
+    .command(
+      "init",
+      "Scaffold .ghost/ with the starter package: manifest, glossary, a brand cover, foundation chapters, and context nodes.",
+    )
     .option("--package <dir>", "Exact ghost package directory to initialize")
     .option(
       "--template <name>",

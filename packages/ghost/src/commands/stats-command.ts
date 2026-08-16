@@ -9,45 +9,65 @@ import { resolveGhostPackage } from "../package.js";
 import { loadGhostPackage } from "../scan/fingerprint-package.js";
 import { exitCli, failFromError } from "./errors.js";
 import {
-  buildPulseObservations,
-  formatPulseObservation,
-  type PulseObservation,
-} from "./pulse-observations.js";
+  buildStatsObservations,
+  formatStatsObservation,
+  type StatsObservation,
+} from "./stats-observations.js";
 
-export function registerPulseCommand(cli: CAC): void {
-  cli
-    .command("pulse", "Summarize local gather/pull events from .ghost/.events.")
-    .option(
-      "--package <dir>",
-      "Use this ghost package directory (default: ./.ghost)",
-    )
-    .option("--format <fmt>", "Output format: markdown or json", {
-      default: "markdown",
-    })
-    .action(async (opts) => {
-      try {
-        if (opts.format !== "markdown" && opts.format !== "json") {
-          console.error("Error: --format must be 'markdown' or 'json'");
-          await exitCli(2);
-          return;
-        }
+export function registerStatsCommand(cli: CAC): void {
+  const options = (command: ReturnType<CAC["command"]>) =>
+    command
+      .option(
+        "--package <dir>",
+        "Use this ghost package directory (default: ./.ghost)",
+      )
+      .option("--format <fmt>", "Output format: markdown or json", {
+        default: "markdown",
+      });
 
-        const paths = resolveGhostPackage(opts.package, process.cwd());
-        const loaded = await loadGhostPackage(paths);
-        const menu = buildCatalogMenu(loaded.catalog);
-        const events = await readGhostEvents(paths.packageDir);
-        const report = buildPulseReport(events, menu);
+  options(
+    cli.command(
+      "stats",
+      "Summarize local gather/pull events from .ghost/.events.",
+    ),
+  ).action(async (opts) => {
+    await runStats(opts);
+  });
 
-        if (opts.format === "json") {
-          process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
-        } else {
-          process.stdout.write(formatPulseMarkdown(report));
-        }
-        await exitCli(0);
-      } catch (err) {
-        await failFromError(err);
-      }
-    });
+  options(cli.command("pulse", "Deprecated alias for `ghost stats`.")).action(
+    async (opts) => {
+      process.stderr.write("ghost pulse is deprecated; use `ghost stats`.\n");
+      await runStats(opts);
+    },
+  );
+}
+
+async function runStats(opts: {
+  package?: string;
+  format?: string;
+}): Promise<void> {
+  try {
+    if (opts.format !== "markdown" && opts.format !== "json") {
+      console.error("Error: --format must be 'markdown' or 'json'");
+      await exitCli(2);
+      return;
+    }
+
+    const paths = resolveGhostPackage(opts.package, process.cwd());
+    const loaded = await loadGhostPackage(paths);
+    const menu = buildCatalogMenu(loaded.catalog);
+    const events = await readGhostEvents(paths.packageDir);
+    const report = buildStatsReport(events, menu);
+
+    if (opts.format === "json") {
+      process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+    } else {
+      process.stdout.write(formatStatsMarkdown(report));
+    }
+    await exitCli(0);
+  } catch (err) {
+    await failFromError(err);
+  }
 }
 
 type NodeHitReport = {
@@ -76,8 +96,8 @@ type ConcretenessReport = {
   proseOnly: { exposures: number; pulls: number; hitRate: number };
 };
 
-type PulseReport = {
-  kind: "pulse";
+type StatsReport = {
+  kind: "stats";
   events: number;
   gathers: number;
   pulls: number;
@@ -88,13 +108,13 @@ type PulseReport = {
   coldNodes: string[];
   misses: MissReport[];
   concreteness: ConcretenessReport;
-  observations: PulseObservation[];
+  observations: StatsObservation[];
 };
 
-function buildPulseReport(
+function buildStatsReport(
   events: GhostObservabilityEvent[],
   currentMenu: CatalogMenuEntry[],
-): PulseReport {
+): StatsReport {
   const exposureCounts = new Map<string, number>();
   const pullCounts = new Map<string, number>();
   const missCounts = new Map<
@@ -180,7 +200,7 @@ function buildPulseReport(
   const concreteness = buildConcretenessReport(nodes, nodeConcrete);
 
   return {
-    kind: "pulse",
+    kind: "stats",
     events: events.length,
     gathers,
     pulls,
@@ -213,7 +233,7 @@ function buildPulseReport(
         (a, b) => b.count - a.count || a.requested.localeCompare(b.requested),
       ),
     concreteness,
-    observations: buildPulseObservations(events),
+    observations: buildStatsObservations(events),
   };
 }
 
@@ -263,9 +283,9 @@ function recordMiss(
   missCounts.set(miss.requested, existing);
 }
 
-function formatPulseMarkdown(report: PulseReport): string {
+function formatStatsMarkdown(report: StatsReport): string {
   const lines: string[] = [
-    "# ghost Pulse",
+    "# ghost Stats",
     "",
     `- Events: ${report.events}`,
     `- Gathers: ${report.gathers}`,
@@ -341,7 +361,7 @@ function formatPulseMarkdown(report: PulseReport): string {
     lines.push("None.");
   } else {
     for (const observation of report.observations) {
-      lines.push(`- ${formatPulseObservation(observation)}`);
+      lines.push(`- ${formatStatsObservation(observation)}`);
     }
   }
 

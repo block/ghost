@@ -57,7 +57,7 @@ A pattern fixes part of a reusable structure and leaves the rest available:
 
 Everything bound is a template. Nothing bound is vibes. Use a Skeleton only
 when the opening structure itself must arrive verbatim; see
-[concrete.md](concrete.md).
+[materials.md](materials.md).
 
 ## Anti-goals replace
 

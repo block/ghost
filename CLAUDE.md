@@ -35,7 +35,7 @@ ghost is **BYOA (bring your own agent)**. Claude Code, Codex, Cursor, Goose, or
 another host agent reads, decides, and writes. ghost grounds that work with a
 deterministic CLI and an interpretive skill bundle. The CLI does repeatable work
 with no LLM: schema and node validation, glossary kind-prefix checks, check
-validation, a flat gather menu, selected-node pulls, local pulse summaries, and
+validation, a flat gather menu, selected-node pulls, local stats summaries, and
 review packet assembly. The skill teaches the agent how to author and consume
 the brand guidance.
 
@@ -50,7 +50,7 @@ glossary.md           # the author's category vocabulary + what each kind means
 checks/               # optional review assertions; never a node source
 ```
 
-The **corpus is flat**. A node is a markdown file: a `description` in
+The **corpus is flat**. A node is a markdown file: a `context` in
 frontmatter (the retrieval payload), optional `materials`, and brand guidance in
 the prose body. A node's identity is its filename minus `.md`; its kind is the
 filename prefix before the first dot, declared in the glossary. There is no
@@ -75,7 +75,7 @@ to implementation or assets the agent can inspect), and **how it is assembled**
 Altitude lives in the prose: universal guidance is stated plainly; narrower
 guidance names its **condition**, the situation it applies in, never a filing
 destination. `ghost gather` emits the complete menu (every node's id, kind,
-description, material count, and payload labels); the agent pulls every node
+context, material count, and payload labels); the agent pulls every node
 whose stated situation applies to the actual task. `ghost pull` emits selected node bodies and materials. `ghost
 review` reads a diff, matches touched files to node materials, offers relevant
 checks, and emits an advisory packet for the host agent to judge.
@@ -91,7 +91,7 @@ edits and checks.
 
 | Package | Published? | Description |
 | --- | --- | --- |
-| `packages/ghost` | yes: `@design-intelligence/ghost` | The public package. Ships the `ghost` CLI, node authoring, corpus validation, gather/pull/pulse, review packet assembly, and the unified skill bundle. Shared runtime lives in `packages/ghost/src/ghost-core`. |
+| `packages/ghost` | yes: `@design-intelligence/ghost` | The public package. Ships the `ghost` CLI, node authoring, corpus validation, gather/pull/stats, review packet assembly, and the unified skill bundle. Shared runtime lives in `packages/ghost/src/ghost-core`. |
 | `packages/vessel-react` | no | A standalone shadcn component registry and reference component system: the opinionated default reference body. Design-system-agnostic; nothing in ghost requires it. |
 | `packages/vessel-light` | no | Vessel's design language as a portable `.ghost/` package for agents writing raw HTML/CSS. No build, no dependencies. |
 | `packages/steering-control` | no | Before/after evaluation harness: measures what handing an agent a `.ghost` package buys, as a deterministic `report.html`. |
@@ -109,7 +109,7 @@ Core workflow:
 | `ghost gather [ask…]` | Emit the complete guidance menu so the agent can pull applicable nodes. |
 | `ghost pull <id> [<id>…]` | Emit selected nodes' bodies and materials; append the selection to the local `.ghost/.events` tape. |
 | `ghost review` | Emit an advisory review packet for a diff using material-backed nodes and checks (requires `.ghost/checks/`). |
-| `ghost pulse` | Summarize local gather/pull events from `.ghost/.events`. |
+| `ghost stats` | Summarize local gather/pull events from `.ghost/.events`. |
 | `ghost export` | Bundle the guidance as a portable tarball with a materials audit (`--strict` fails on stranded locators). |
 | `ghost skill install` | Install the unified `ghost` skill bundle. |
 

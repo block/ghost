@@ -1,6 +1,6 @@
 import type { GhostObservabilityEvent } from "../observability-events.js";
 
-export type PulseObservation = {
+export type StatsObservation = {
   kind: "pull-without-gather";
   run?: string;
   ts: string;
@@ -12,10 +12,10 @@ type Group = {
   events: GhostObservabilityEvent[];
 };
 
-export function buildPulseObservations(
+export function buildStatsObservations(
   events: GhostObservabilityEvent[],
-): PulseObservation[] {
-  const observations: PulseObservation[] = [];
+): StatsObservation[] {
+  const observations: StatsObservation[] = [];
   for (const group of partitionByRun(events)) {
     observations.push(...observeGroup(group));
   }
@@ -36,8 +36,8 @@ function partitionByRun(events: GhostObservabilityEvent[]): Group[] {
   return [...groups.values()];
 }
 
-function observeGroup(group: Group): PulseObservation[] {
-  const observations: PulseObservation[] = [];
+function observeGroup(group: Group): StatsObservation[] {
+  const observations: StatsObservation[] = [];
   let sawGather = false;
 
   for (const event of group.events) {
@@ -63,7 +63,7 @@ function runPart(group: Group): { run?: string } {
   return group.run ? { run: group.run } : {};
 }
 
-export function formatPulseObservation(observation: PulseObservation): string {
+export function formatStatsObservation(observation: StatsObservation): string {
   const run = observation.run ? `run \`${observation.run}\`: ` : "";
   return `${run}pull at ${observation.ts} had no prior gather in this run.`;
 }

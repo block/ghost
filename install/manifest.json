@@ -9,9 +9,9 @@
   "files": [
     "SKILL.md",
     "references/authoring.md",
-    "references/concrete.md",
     "references/ground.md",
     "references/making.md",
+    "references/materials.md",
     "references/nodes.md",
     "references/schema.md",
     "references/steering-audit.md"

@@ -1,6 +1,6 @@
 ---
 name: making
-description: Use the five-phase ghost making loop for visual artifacts.
+description: Use the three-phase ghost making loop for visual artifacts.
 ---
 
 # Recipe: Make a Visual Artifact From a ghost Package
@@ -10,17 +10,15 @@ marketing pages, emails, components, charts, empty states, slides, or any other
 surface where structure, visual priority, density, imagery, motion, or responsive
 behavior can fail after source looks correct.
 
-The portable loop is **GROUND -> ANCHOR -> MAKE -> VERIFY -> CLOSE**. Each phase
-ends in an artifact the next consumes: pull packet plus inspected materials,
-anchor, artifact, verified render, then report. ghost supplies deterministic
+The portable loop is **GROUND -> MAKE -> VERIFY**. ghost supplies deterministic
 context and review packets. The host agent selects, inspects, makes, renders,
 judges, repairs, and reviews in the same session.
 
 ## Ground
 
-Follow [ground.md](ground.md): gather with the real ask, select against
-`context`, pull with an over-pull bias, and inspect decisive materials before
-generating.
+Follow [ground.md](ground.md), which ends with the anchor: gather with the real
+ask, select against `context`, pull with an over-pull bias, and inspect decisive
+materials before generating.
 
 Use this triage for material inspection:
 
@@ -36,12 +34,6 @@ Use this triage for material inspection:
 - If a material is blocked or unavailable, tell the user which resource matters
   and why. Continue only when the result can remain sound, and say it was not
   inspected.
-
-## Anchor
-
-Follow [ground.md](ground.md)'s anchor: up to five cited non-negotiables, one
-readiness color, and one named silence line kept separate from ghost-backed
-claims.
 
 ## Make
 
@@ -80,12 +72,10 @@ render. Use a third pass only for a clear, bounded remaining fix. If a third
 pass fails, stop patching and re-inspect the pulled guidance, materials, and
 anchor, or ask for human review.
 
-## Close
-
-Run `ghost review` when `.ghost/checks/` exists and a diff is available. Judge
-the review packet yourself. Report what was made, which node ids governed it,
-what was verified and how, what stayed provisional, and what was not inspected.
-Do not paste the anchor unless the user asks.
+When the artifact holds, run `ghost review` when `.ghost/checks/` exists and a
+diff is available. Judge the packet yourself. Report what was made, which node
+ids governed it, what was verified and how, what stayed provisional, and what
+was not inspected. Do not paste the anchor unless the user asks.
 
 ## Render honesty
 

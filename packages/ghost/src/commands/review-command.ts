@@ -28,10 +28,9 @@ export function registerReviewCommand(cli: CAC): void {
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
     })
-    .option("--json", "Emit the raw JSON packet")
     .action(async (opts) => {
       try {
-        const format = opts.json ? "json" : opts.format;
+        const format = opts.format;
         if (format !== "markdown" && format !== "json") {
           console.error("Error: --format must be 'markdown' or 'json'");
           await exitCli(2);

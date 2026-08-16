@@ -1,5 +1,5 @@
 ---
-name: concrete
+name: materials
 description: Bind ghost guidance to concrete material in formats agents can use directly.
 ---
 

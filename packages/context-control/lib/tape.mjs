@@ -1,6 +1,6 @@
 // Replay: parse a .ghost/.events NDJSON tape into a session timeline.
 // The tape is ground truth — real agents' asks, pulls, and re-gathers.
-// Malformed lines are skipped, same posture as ghost pulse.
+// Malformed lines are skipped, same posture as ghost stats.
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
