@@ -48,13 +48,13 @@ describe.runIf(hasBuiltExports)("built public exports", () => {
     expect(scanApi.writePackageContextBundle).toBeUndefined();
   });
 
-  it("exposes the source-ref parser from the core subpath", async () => {
+  it("exposes the guidance-ref parser from the core subpath", async () => {
     const core = (await import("@design-intelligence/ghost/core")) as Record<
       string,
       unknown
     >;
 
-    expect(core.parseSourceRef).toBeTypeOf("function");
+    expect(core.parseGuidanceRef).toBeTypeOf("function");
     expect(core.sliceNodeSection).toBeTypeOf("function");
     expect(core.materialLocator).toBeTypeOf("function");
     expect(core.normalizeMaterial).toBeTypeOf("function");

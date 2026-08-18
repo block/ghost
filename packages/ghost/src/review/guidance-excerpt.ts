@@ -1,23 +1,22 @@
 import {
   type GhostCatalog,
-  parseSourceRef,
+  parseGuidanceRef,
   sliceNodeSection,
 } from "#ghost-core";
 
-export interface BaselineProse {
+export interface GuidanceExcerpt {
   ref: string;
   nodeId: string;
   heading?: string;
   for?: string;
   body: string;
-  warning?: string;
 }
 
-export function resolveBaseline(
+export function resolveGuidanceExcerpt(
   raw: string,
   catalog: GhostCatalog,
-): BaselineProse | null {
-  const ref = parseSourceRef(raw);
+): GuidanceExcerpt | null {
+  const ref = parseGuidanceRef(raw);
   if (ref === null) return null;
   const node = catalog.nodes.get(ref.nodeId);
   if (node === undefined) return null;
@@ -30,16 +29,12 @@ export function resolveBaseline(
     };
   }
   const section = sliceNodeSection(node.body, ref.heading);
+  if (section === null) return null;
   return {
     ref: raw,
     nodeId: ref.nodeId,
     heading: ref.heading,
     ...(node.for !== undefined ? { for: node.for } : {}),
-    body: section ?? node.body,
-    ...(section === null
-      ? {
-          warning: `heading '${ref.heading}' not found in node '${ref.nodeId}' — embedding the whole body`,
-        }
-      : {}),
+    body: section,
   };
 }

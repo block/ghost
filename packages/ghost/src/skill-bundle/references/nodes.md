@@ -123,7 +123,7 @@ canonical; human curation does.
 | If the agent keeps... | Author... |
 | --- | --- |
 | missing guidance | sharper `for` payload; universal guidance may belong on the cover |
-| inventing values | a material-backed node with exact vocabulary |
+| inventing values | a node with exact material vocabulary |
 | producing generic output | replacement anti-goal plus a well-explained example |
 | choosing the wrong structure | bound/open pattern and, when needed, a Skeleton |
 | crossing a hard line | invariant prose plus a review check |

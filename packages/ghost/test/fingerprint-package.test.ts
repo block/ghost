@@ -396,7 +396,7 @@ Replacement rule.
     await writeChecks(dir, [
       [
         "logo-clearspace.md",
-        "---\nname: logo-clearspace\ndescription: Logo clearspace holds.\nseverity: high\nreferences:\n  - asset.logo\n---\n\nGrade it.\n",
+        "---\ncontext: Logo clearspace holds.\nseverity: high\nreferences:\n  - asset.logo\n---\n\nGrade it.\n",
       ],
     ]);
 
@@ -430,6 +430,61 @@ Replacement rule.
       rule: "check-invalid",
       path: "checks/nested",
     });
+  });
+
+  it("treats unresolved and missing-heading check references as validation errors", async () => {
+    await writeManifest(dir);
+    await writeFile(
+      join(dir, "asset.logo.md"),
+      "---\nfor: Logo.\n---\n\n## Clearspace\n\nKeep space.\n",
+    );
+    await writeChecks(dir, [
+      [
+        "logo-clearspace.md",
+        "---\ncontext: Logo clearspace holds.\nseverity: high\nreferences:\n  - asset.logo > Missing\n  - asset.missing\n---\n\nGrade it.\n",
+      ],
+    ]);
+
+    const report = await lintGhostPackage(dir);
+
+    expect(report.errors).toBe(2);
+    expect(report.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          severity: "error",
+          rule: "check-reference-heading-missing",
+          message: expect.stringContaining(
+            "if the heading was renamed, update this reference in the same change",
+          ),
+        }),
+        expect.objectContaining({
+          severity: "error",
+          rule: "check-reference-unresolved",
+          message: expect.stringContaining(
+            "write the guidance node first, or delete the check",
+          ),
+        }),
+      ]),
+    );
+  });
+
+  it("loads context-missing check files as invalidChecks", async () => {
+    await writeManifest(dir);
+    await writeChecks(dir, [
+      [
+        "legacy.md",
+        "---\nname: legacy\ndescription: Legacy check shape.\nseverity: high\nreferences:\n  - asset.logo\n---\n\nGrade it.\n",
+      ],
+    ]);
+
+    const loaded = await loadGhostPackage(resolveGhostPackage(dir));
+
+    expect(loaded.invalidChecks).toEqual([
+      expect.objectContaining({
+        file: "checks/legacy.md",
+        message: expect.stringContaining(".agents/checks format"),
+      }),
+    ]);
   });
 
   it("gives index.md the uniform id `index` — no core mapping", async () => {

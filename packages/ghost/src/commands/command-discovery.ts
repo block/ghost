@@ -153,9 +153,9 @@ const COMMAND_DISCOVERY = [
     name: "review",
     group: "core",
     defaultHelp: true,
-    compactName: "review",
+    compactName: "review [checks]",
     summary:
-      "Emit an advisory review packet for a diff (needs .ghost/checks/).",
+      "Emit a one-shot grounded review packet for a diff (needs .ghost/checks/).",
   },
   {
     name: "export",

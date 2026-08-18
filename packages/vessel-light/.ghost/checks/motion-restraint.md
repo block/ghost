@@ -1,6 +1,5 @@
 ---
-name: Motion restraint
-description: Flags non-token motion, looping decoration, and keyframes that do not explain state change.
+context: Changed transitions or animations introduce non-token motion, looping decoration, or keyframes that do not explain state change.
 severity: medium
 references:
   - grammar.motion

@@ -8,8 +8,7 @@ const EXAMPLE_CHECK_FILENAME = "example.md.example";
 const MEDIAN_TELLS_FILENAME = "median-tells.md";
 
 const EXAMPLE_CHECK_CONTENT = `---
-name: logo-clearspace-holds
-description: Logo usage preserves clearspace, lockup integrity, and glyph rules.
+context: Logo usage must preserve clearspace, lockup integrity, and glyph rules.
 severity: medium
 references:
   - asset.logo

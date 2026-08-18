@@ -86,6 +86,9 @@ const FORBIDDEN_PHRASES = [
   "app truth",
   "skeleton starter",
   "drift bill",
+  "unmatched-file",
+  "unchecked-material",
+  "material-backed",
 ];
 
 /**
@@ -134,7 +137,7 @@ const ALLOWED_MEMORY_TERMS = [
   "memory/decisions",
 ];
 
-const ALLOWED_VERSION_MARKERS = ["ghost.relay.gather/v2"];
+const ALLOWED_VERSION_MARKERS = ["ghost.check/v2", "ghost.relay.gather/v2"];
 
 const forbiddenPatterns = FORBIDDEN_PHRASES.map((phrase) => ({
   phrase,

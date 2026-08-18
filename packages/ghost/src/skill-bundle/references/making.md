@@ -73,9 +73,10 @@ pass fails, stop patching and re-inspect the pulled guidance, materials, and
 anchor, or ask for human review.
 
 When the artifact holds, run `ghost review` when `.ghost/checks/` exists and a
-diff is available. Judge the packet yourself. Report what was made, which node
-ids governed it, what was verified and how, what stayed provisional, and what
-was not inspected. Do not paste the anchor unless the user asks.
+diff is available. Judge the grounded packet yourself; ghost only assembles the
+checks, cited guidance, materials, and diff. Report what was made, which node ids
+governed it, what was verified and how, what stayed provisional, and what was
+not inspected. Do not paste the anchor unless the user asks.
 
 ## Render honesty
 

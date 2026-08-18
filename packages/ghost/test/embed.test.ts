@@ -86,7 +86,7 @@ async function writePackage(dir: string): Promise<void> {
   await mkdir(join(dir, ".ghost", "checks"), { recursive: true });
   await writeFile(
     join(dir, ".ghost", "checks", "tokens.md"),
-    "---\nname: Tokens\ndescription: Check tokens.\nseverity: medium\nreferences:\n  - asset.tokens\n---\n\nCheck body.\n",
+    "---\ncontext: Check tokens.\nseverity: medium\nreferences:\n  - asset.tokens\n---\n\nCheck body.\n",
   );
 }
 

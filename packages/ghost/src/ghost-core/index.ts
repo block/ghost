@@ -11,7 +11,7 @@ export {
   type GhostCatalogNode,
   type PlacedNode,
 } from "./catalog/index.js";
-// --- Check (ghost.check/v1) — markdown checks, agent-evaluated ---
+// --- Check (ghost.check/v2) — markdown checks, agent-evaluated ---
 export {
   GHOST_CHECK_SCHEMA,
   GHOST_CHECK_SEVERITIES,
@@ -24,9 +24,9 @@ export {
   lintGhostCheck,
   loadGhostCheck,
   type ParsedCheckMarkdown,
-  type ParsedSourceRef,
+  type ParsedGuidanceRef,
   parseCheckMarkdown,
-  parseSourceRef,
+  parseGuidanceRef,
   sliceNodeSection,
 } from "./check/index.js";
 // --- CLI exit-code contract ---

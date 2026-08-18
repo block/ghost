@@ -14,41 +14,26 @@ export function loadGhostCheck(raw: string): GhostCheckDocument {
     throw new Error("ghost check is missing a YAML frontmatter block.");
   }
 
-  const name = frontmatter.name;
-  const description = frontmatter.description;
+  const context = frontmatter.context;
   const severity = frontmatter.severity;
-  if (typeof name !== "string" || typeof description !== "string") {
-    throw new Error("ghost check frontmatter is missing name or description.");
+  const references = frontmatter.references;
+  if (
+    typeof context !== "string" ||
+    typeof severity !== "string" ||
+    !Array.isArray(references)
+  ) {
+    throw new Error(
+      "ghost check frontmatter is missing context, severity, or references.",
+    );
   }
-
-  const tools = Array.isArray(frontmatter.tools)
-    ? frontmatter.tools.filter(
-        (tool): tool is string => typeof tool === "string",
-      )
-    : undefined;
-  const turnLimit =
-    typeof frontmatter["turn-limit"] === "number"
-      ? (frontmatter["turn-limit"] as number)
-      : typeof frontmatter.turn_limit === "number"
-        ? (frontmatter.turn_limit as number)
-        : undefined;
-  const references = Array.isArray(frontmatter.references)
-    ? frontmatter.references.filter(
-        (reference): reference is string => typeof reference === "string",
-      )
-    : undefined;
-  const source =
-    typeof frontmatter.source === "string" ? frontmatter.source : undefined;
 
   return {
     frontmatter: {
-      name,
-      description,
+      context,
       severity: severity as GhostCheckMarkdownSeverity,
-      ...(tools ? { tools } : {}),
-      ...(turnLimit !== undefined ? { turn_limit: turnLimit } : {}),
-      ...(references ? { references } : {}),
-      ...(source ? { source } : {}),
+      references: references.filter(
+        (reference): reference is string => typeof reference === "string",
+      ),
     },
     body,
   };

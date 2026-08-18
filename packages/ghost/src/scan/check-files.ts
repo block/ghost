@@ -4,7 +4,6 @@ import {
   type GhostCheckDocument,
   lintGhostCheck,
   loadGhostCheck,
-  parseCheckMarkdown,
 } from "#ghost-core";
 
 /** Reserved package-root directory holding review checks. */
@@ -15,7 +14,6 @@ const CHECK_ID_PATTERN = /^[a-z0-9][a-z0-9._-]*$/;
 export interface LoadedCheck {
   id: string;
   doc: GhostCheckDocument;
-  references: string[];
 }
 
 export interface LoadedCheckFiles {
@@ -75,32 +73,12 @@ export async function loadCheckFiles(
       continue;
     }
 
-    const { frontmatter } = parseCheckMarkdown(raw);
-    const references = referencesFromFrontmatter(frontmatter);
-    if (references.length === 0) {
-      invalid.push({
-        file: `checks/${entry.name}`,
-        message: "check must declare at least one reference in `references`",
-      });
-      continue;
-    }
-
-    checks.set(id, { id, doc: loadGhostCheck(raw), references });
+    const doc = loadGhostCheck(raw);
+    checks.set(id, {
+      id,
+      doc,
+    });
   }
 
   return { hasChecksDir: true, checks, invalid };
-}
-
-function referencesFromFrontmatter(
-  frontmatter: Record<string, unknown> | null,
-): string[] {
-  if (frontmatter === null) return [];
-  if (Array.isArray(frontmatter.references)) {
-    return frontmatter.references.filter(
-      (reference): reference is string => typeof reference === "string",
-    );
-  }
-  // Deprecated compatibility for single-file linting; package checks should use
-  // `references`, but this keeps older check files loadable during local edits.
-  return typeof frontmatter.source === "string" ? [frontmatter.source] : [];
 }

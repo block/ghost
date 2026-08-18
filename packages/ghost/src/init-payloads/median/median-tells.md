@@ -1,6 +1,5 @@
 ---
-name: Median tells
-description: Flags the measured defaults of unsteered generation, the deterministic floor, and current model-signature tells — hover-lift, default accents, unprompted dark theme, gradient text, contrast, frequency tells, and per-model signatures.
+context: "Flags the measured defaults of unsteered generation, the deterministic floor, and current model-signature tells: hover-lift, default accents, unprompted dark theme, gradient text, contrast, frequency tells, and per-model signatures."
 severity: high
 references:
   - cliche.median > Hover-lift
@@ -20,8 +19,8 @@ references:
 These flags target the measured convergence patterns of unsteered model
 generation, the deterministic floor the median node licenses, and tells
 specific to individual models. Each is mechanically detectable in a diff.
-Pruning a rule from `cliche.median` orphans its paired reference here —
-`ghost validate` warns; delete the flag and its reference together.
+Pruning a rule from `cliche.median` orphans its paired reference here.
+`ghost validate` errors; delete the flag and its reference together.
 
 Flag `transform` with `translateY` inside a `:hover` rule on cards,
 buttons, or list items, especially paired with a shadow increase. Hover

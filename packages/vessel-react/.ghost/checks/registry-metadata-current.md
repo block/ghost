@@ -1,6 +1,5 @@
 ---
-name: registry-metadata-current
-description: Component additions and reworks keep the registry and its decision metadata in step.
+context: Component additions and reworks must keep the registry and its decision metadata in step.
 severity: medium
 references:
   - asset.registry
