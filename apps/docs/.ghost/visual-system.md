@@ -78,7 +78,7 @@ The prompt control is the reference state model for selectable controls.
 | focus-visible | retain current state, then add a `1px` current-color outline with `2px` offset | unchanged | unchanged |
 | disabled, error, destructive | `TBD` | `TBD` | `TBD` |
 
-Do not invent unspecified states from Vessel defaults. When a new state is needed, design and ratify it before adding it to the closed set.
+Do not invent unspecified states from Vessel defaults. When a new state is needed, design and confirm it before adding it to the closed set.
 
 ## Accessibility
 

@@ -69,11 +69,11 @@ few Skeletons. The reason for absence must be explicit.
 
 ## Bind a component library
 
-An OSS component library should ship its own `.ghost/` package beside the code,
-then let adopters copy and own both. The package is a taste floor, not the
+An OSS component library should ship its own `.ghost/` packet beside the code,
+then let adopters copy and own both. The packet is a taste floor, not the
 consumer's brand.
 
-1. Vendor or install the components and package together.
+1. Vendor or install the components and packet together.
 2. Repoint every `materials` locator to the receiving repo's exact files.
 3. State in the cover that local brand guidance overrides the vendored floor.
 4. Give prose only to components whose purpose or divergence is not generic.

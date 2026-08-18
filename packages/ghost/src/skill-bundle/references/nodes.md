@@ -40,7 +40,7 @@ A useful sentence rejects a plausible alternative. "We value clarity and
 trust" does not steer. "State what remains safe before asking the person to try
 again" does.
 
-Keep real absolutes. `Never` and `always` are correct for human-ratified hard
+Keep real absolutes. `Never` and `always` are correct for human-confirmed hard
 lines. Elsewhere, remove filler and unchosen hedges: "elevate," "delight,"
 "seamless," "best-in-class," "generally," "where possible," and "consider."
 If the human has not picked a side, return to authoring rather than laundering

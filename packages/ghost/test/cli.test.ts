@@ -233,7 +233,7 @@ describe("ghost CLI", () => {
     // The open questions ship unanswered and forbid freehanding.
     const layout = await runCli(["pull", "foundation.layout"], dir);
     expect(layout.code).toBe(0);
-    expect(layout.stdout).toContain("not yet ratified");
+    expect(layout.stdout).toContain("has not yet reviewed");
     expect(layout.stdout).toContain("Open — ask the human");
     expect(layout.stdout).toContain("freehand");
 

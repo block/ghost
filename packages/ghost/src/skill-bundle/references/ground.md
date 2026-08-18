@@ -13,8 +13,9 @@ should be shaped by a ghost package.
 Run `ghost gather <ask>` with the real task, not a generic label. The cover is
 inlined by gather, so do not pull it separately.
 
-Select against `context`; ghost never selects for you. When you are uncertain
-whether a node applies, pull it. Under-pull is silent and unrecoverable;
+`gather` presents every available node; it does not filter or rank. Judge each
+node's `context` against the actual task and pull what applies. When you are
+uncertain whether a node applies, pull it. Under-pull is silent and unrecoverable;
 over-pull is mild dilution. Skip only clear non-matches. Topic overlap alone is
 not applicability.
 
@@ -29,9 +30,9 @@ directly; [SKILL.md](../SKILL.md) gives the canonical pull-over-files rationale.
 Inspect decisive materials before generating. Follow the triage bullets in
 [making.md](making.md).
 
-The pulled id list is the resume token. `ghost pull` is idempotent: after
-compaction or a session handoff, re-run `ghost pull` with the same ids to
-restore steering.
+`ghost pull` records the pulled ids, so selection can be checked later. It is
+also idempotent: after compaction or a session handoff, re-run it with the same
+ids to restore steering.
 
 ## End with the anchor
 

@@ -2,7 +2,7 @@
 context: Choosing or applying color.
 ---
 
-Starter guidance, not yet ratified by the brand owner. Cite it as provisional
+Starter guidance the brand owner has not yet reviewed. Cite it as provisional
 until a human edits or confirms this chapter.
 
 ## Usage
