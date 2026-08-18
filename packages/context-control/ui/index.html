@@ -168,7 +168,7 @@ async function loadMenu() {
   const c = data.coverage;
   $("#coverage").textContent =
     `${c.nodes} nodes · ${c.concrete} concrete` +
-    (c.withoutContext ? ` · ${c.withoutContext} without context` : "");
+    (c.undescribed ? ` · ${c.undescribed} undescribed` : "");
   $("#menuRows").innerHTML = state.menu.map((n) => `
     <tr class="node" data-id="${n.id}">
       <td class="id">${n.id}${n.materials ? `<span class="badge mat">${n.materials} mat</span>` : ""}</td>
