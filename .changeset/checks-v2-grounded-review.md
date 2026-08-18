@@ -1,5 +1,5 @@
 ---
-"@design-intelligence/ghost": major
+"@design-intelligence/ghost": minor
 ---
 
 Break check format compatibility with `ghost.check/v2`: checks now require `context` and resolving `references`, remove `name`, `description`, `source`, `tools`, and `turn_limit`, end `.agents/checks` shape compatibility, make unresolved check references validation errors so check-first authoring is retired, reshape `ghost review` into one grounded packet with routing, offered checks, and gaps removed plus a new JSON shape, and rename `parseSourceRef` to `parseGuidanceRef`. Add `ghost review [...checkIds]` filtering with unknown-id suggestions and exit 2 when no requested ids resolve. Add the `ghost review --no-materials` flag for locator-only material output. Refuse review with exit 1 when checks are invalid or cite unresolvable guidance, matching `ghost validate`. Break `/core` typed consumers of the v1 check frontmatter shape because `GhostCheckFrontmatter` removes legacy fields and now requires `references`.
