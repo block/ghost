@@ -1,0 +1,44 @@
+---
+title: designing the selection system
+date: 2026-07-18
+summary: making guidance selection explicit so agents can take the context a task needs and authors can see what entered the work.
+---
+
+A brand can hold guidance that looks contradictory because each statement belongs to a different situation. A quiet product flow and an expressive campaign may both be right. A high-trust financial action and a casual social post should not use the same density, language, or persuasive moves.
+
+One universal prompt cannot preserve those conditions. The package needs to show the agent what exists, then let the task determine what enters the work.
+
+That is what gather and pull are for.
+
+## gather is the menu
+
+`ghost gather` presents the complete menu of guidance in a package. Each item has an id and a description. The host agent reads the menu against the task, then uses `ghost pull` to retrieve the applicable prose and materials. It can return for more as the work develops.
+
+This changes how authors write the package. A description is not a summary added for convenience. It is the retrieval payload. It must name the condition under which the guidance applies, not merely its topic. Guidance about trust may belong in an irreversible action without applying to every screen that contains money.
+
+The body can carry depth without forcing every node into every task.
+
+## ghost stops before the agent
+
+ghost emits the menu and retrieves the ids the host requests. It does not decide which nodes apply.
+
+The host already knows the task, the conversation behind it, the files being changed, and the medium it will produce. A separate ghost agent would duplicate that context and bind the package to one interpreter.
+
+ghost handles the repeatable work: validation, a complete menu, stable retrieval, and a local event record. The installed skill teaches the host how to judge applicability. This boundary keeps the package portable across models, harnesses, and editors.
+
+## selection is evidence
+
+A wrong output does not reveal where the process went wrong. The package might lack the right guidance. The menu might describe it poorly. The agent might skip it. The model might receive it and ignore it.
+
+gather and pull record which guidance was exposed and which nodes the agent requested. The trace does not grade the output. It shows the author which context participated in making it.
+
+Internal tests found agents pulling unexpected guidance and missing nodes we considered central. That evidence led us to revise descriptions, applicability, and the glossary. The final output alone could not have shown what to change.
+
+The feedback loop is explicit:
+
+1. An author states guidance and describes when it applies.
+2. An agent reads the menu and pulls a subset for a task.
+3. The local event trail shows what it used and missed.
+4. The author revises the package where selection was wrong.
+
+Selective context should also reduce cost, and we are running validations on that premise. The goal is not context minimalism. Some tasks need many nodes, and a serious package needs enough depth to change the work. Gather lets the agent take what the task requires without pretending the whole brand belongs in one prompt.

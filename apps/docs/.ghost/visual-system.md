@@ -3,7 +3,7 @@ context: Choosing or implementing color, typography, spacing, shape, elevation, 
 materials:
   - apps/docs/src/styles/marked-doc.css
   - apps/docs/src/styles/docs.css
-  - apps/docs/src/components/docs/docs-page-layout.tsx
+  - apps/docs/src/components/DocSection.astro
   - apps/docs/src/components/docs/gather-demo.tsx
 ---
 

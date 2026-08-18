@@ -1,0 +1,44 @@
+---
+import Navigation from "@/components/Navigation.astro";
+import "@/styles/docs.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = "ghost — brand steering for agents",
+  description = "ghost packs a brand into repo-local guidance that agents read before they make anything.",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <script is:inline>
+      (() => {
+        const media = window.matchMedia("(prefers-color-scheme: dark)");
+        const apply = () => {
+          const stored = localStorage.getItem("theme");
+          const dark = stored === "dark" ||
+            ((stored === null || stored === "system") && media.matches);
+          document.documentElement.classList.toggle("dark", dark);
+        };
+        apply();
+        media.addEventListener("change", apply);
+        window.addEventListener("storage", apply);
+      })();
+    </script>
+  </head>
+  <body>
+    <Navigation />
+    <main class="relative z-10 min-h-screen pb-16">
+      <slot />
+    </main>
+  </body>
+</html>

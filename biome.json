@@ -6,7 +6,12 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!**/test/fixtures", "!packages/vessel-light/demo/out"]
+    "includes": [
+      "**",
+      "!**/test/fixtures",
+      "!packages/vessel-light/demo/out",
+      "!apps/docs/**/*.astro"
+    ]
   },
   "formatter": {
     "enabled": true,

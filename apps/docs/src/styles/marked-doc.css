@@ -146,6 +146,10 @@ body {
   counter-reset: doc-section;
 }
 
+.doc-dock {
+  overflow: hidden;
+}
+
 .doc-section {
   position: relative;
   width: 100%;
@@ -209,8 +213,16 @@ body {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1ch;
-  width: min(120ch, calc(100vw - 4ch));
+  width: min(120ch, calc(100vw - 8ch));
   margin-block: 2rem;
+}
+
+@media (min-width: 64rem) {
+  .guidance-triptych {
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+  }
 }
 
 .guidance-triptych .doc-figure {

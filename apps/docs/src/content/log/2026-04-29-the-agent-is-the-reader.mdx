@@ -1,0 +1,17 @@
+---
+title: the agent is the reader
+date: 2026-04-29
+summary: ghost stops being a view humans read and becomes a layer the generating agent reaches into, which splits the tool into repeatable work and interpretation.
+---
+
+The drift work assumed a person at the end of it. Someone opens a fleet view, sees two products moving apart, and decides what to do. That person is real, but they are not who consumes most of what ghost produces now.
+
+Agents are writing the UI. When a model changes a component, it does not consult a similarity space or a history file. It works from whatever context arrives in the prompt.
+
+So the framing changes. ghost is the design-language layer an agent reaches into when the code it generates has to belong to a specific product.
+
+## what this does to the surface
+
+A scan now runs in stages. Topology comes first as `map.md`, then a concrete inventory of shipped values, then an interpretation written as `expression.md`. Each stage produces an artifact that can be inspected on its own, and the later stage cannot invent values the earlier one did not find.
+
+Two weeks ago the CLI was the headline and the model was an implementation detail inside it. That ordering was wrong. The model does the reading. The CLI exists to make what it reads stable.

@@ -2,6 +2,7 @@ node_modules
 dist
 dist-lib
 *.tsbuildinfo
+.astro/
 .DS_Store
 .claude/settings.local.json
 packages/ghost-ui/public/r/

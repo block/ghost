@@ -1,0 +1,25 @@
+---
+title: brand is not fixed buckets
+date: 2026-06-25
+summary: intent, inventory, and composition make ghost predictable for the machine while making authors translate their brand into the wrong shape.
+---
+
+Repository scans cannot be the source of truth. That leaves a harder problem: what should people write?
+
+The model under test divides brand guidance into three buckets. Intent holds the reasons behind the work. Inventory holds the concrete things available to use. Composition explains how those things come together.
+
+The buckets promise predictability. An agent knows where to look, and ghost can validate a stable package. But the structure comes from design systems and product design practice. It is a reasoned attempt, not a conclusion drawn from use.
+
+## where do we put this?
+
+Internal author testing is exposing the problem. People already have concepts, principles, examples, assets, and rules that make sense within their brands. ghost asks them to translate that knowledge into its terms.
+
+The translation is rarely clean. One piece of guidance may explain intent and prescribe composition at the same time. A concrete material may carry the clearest statement of a principle. Authors must choose where an idea belongs, then lose part of its meaning or repeat it across files.
+
+The terms also pull the artifact toward interfaces. Inventory and composition fit components, tokens, and screens. They fit less comfortably when the guidance concerns a stance in an email, a marketing claim, or an expression of trust.
+
+The facet files are already large, so the structure encourages loading broad files when a task needs only a small part of them.
+
+The next test is smaller: described files with clear conditions for when they apply, plus a way for the agent to inspect the available set before loading the full text.
+
+A loose pile of files could become as messy as three overconfident buckets. The bet is that an author's vocabulary, backed by precise descriptions and concrete examples, will carry more signal than ghost's theory of intent, inventory, and composition.

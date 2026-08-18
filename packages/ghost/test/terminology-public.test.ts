@@ -16,6 +16,10 @@ const PUBLIC_TEXT_ROOTS = [
   ".changeset",
 ] as const;
 
+// The development log narrates the project's history, including the removal
+// of retired structures. Those entries must be able to name what was removed.
+const EXEMPT_PATHS = ["apps/docs/src/content/log"] as const;
+
 const FORBIDDEN_TERMS = [
   /\bgraph\b/i,
   /\bcascade\b/i,
@@ -51,7 +55,14 @@ describe("public terminology", () => {
           publicTextFiles(resolve(REPO_ROOT, path)),
         ),
       )
-    ).flat();
+    )
+      .flat()
+      .filter(
+        (file) =>
+          !EXEMPT_PATHS.some((exempt) =>
+            relative(REPO_ROOT, file).replaceAll(sep, "/").startsWith(exempt),
+          ),
+      );
     const failures: string[] = [];
 
     for (const file of files) {

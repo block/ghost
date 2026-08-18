@@ -41,7 +41,7 @@ test-watch:
 
 # ── Run ──────────────────────────────────────────────────────
 
-# Run docs dev server (design language + drift docs + component catalogue)
+# Run the thesis site and development log
 dev:
     pnpm -F ghost-docs dev
 
@@ -63,7 +63,6 @@ build-pages:
     rm -rf dist
     mkdir -p dist
     cp -r apps/docs/dist/. dist/
-    cp dist/index.html dist/404.html
 
 # ── Utilities ────────────────────────────────────────────────
 

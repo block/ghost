@@ -1,9 +1,9 @@
 ---
 context: Translating the ghost visual expression into another surface or medium.
 materials:
-  - apps/docs/src/app/page.tsx
-  - apps/docs/src/components/docs/hero.tsx
-  - apps/docs/src/components/docs/docs-page-layout.tsx
+  - apps/docs/src/pages/index.astro
+  - apps/docs/src/components/Hero.astro
+  - apps/docs/src/components/DocSection.astro
   - apps/docs/src/components/docs/gather-demo.tsx
   - apps/docs/src/styles/marked-doc.css
 ---

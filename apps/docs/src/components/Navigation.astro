@@ -1,0 +1,40 @@
+---
+import { sitePath } from "@/utils/paths";
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const pathname = Astro.url.pathname.replace(base, "") || "/";
+const rootActive = pathname === "/";
+const logActive = pathname.startsWith("/log");
+---
+
+<nav
+  class="pointer-events-none fixed bottom-4 left-1/2 z-50 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center justify-center pb-[env(safe-area-inset-bottom)]"
+  aria-label="primary"
+>
+  <div class="doc-dock rounded-squircle pointer-events-auto flex items-stretch border border-[var(--doc-line)] bg-background">
+    <a
+      href={sitePath("/")}
+      aria-current={rootActive ? "page" : undefined}
+      class:list={[
+        "flex min-h-9 items-center border-r border-[var(--doc-line)] px-[1.5ch] text-xs lowercase no-underline",
+        rootActive
+          ? "bg-[var(--doc-mark)] text-[var(--doc-on-mark)]"
+          : "text-[var(--doc-middle)] hover:bg-[var(--doc-mark-soft)] hover:text-foreground",
+      ]}
+    >
+      root
+    </a>
+    <a
+      href={sitePath("/log/")}
+      aria-current={logActive ? "page" : undefined}
+      class:list={[
+        "flex min-h-9 items-center px-[1.5ch] text-xs lowercase no-underline",
+        logActive
+          ? "bg-[var(--doc-mark)] text-[var(--doc-on-mark)]"
+          : "text-[var(--doc-middle)] hover:bg-[var(--doc-mark-soft)] hover:text-foreground",
+      ]}
+    >
+      log
+    </a>
+  </div>
+</nav>
