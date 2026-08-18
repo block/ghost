@@ -1,5 +1,5 @@
 ---
-context: Any card, popover, modal, dialog, scrim, or bordered container.
+description: Any card, popover, modal, dialog, scrim, or bordered container.
 materials:
   - materials/primitives.css
   - materials/examples/composition.overlay.html

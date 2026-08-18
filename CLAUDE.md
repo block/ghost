@@ -50,7 +50,7 @@ glossary.md           # the author's category vocabulary + what each kind means
 checks/               # optional review assertions; never a node source
 ```
 
-The **corpus is flat**. A node is a markdown file: a `context` in
+The **corpus is flat**. A node is a markdown file: a `description` in
 frontmatter (the retrieval payload), optional `materials`, and brand guidance in
 the prose body. A node's identity is its filename minus `.md`; its kind is the
 filename prefix before the first dot, declared in the glossary. There is no

@@ -1,5 +1,5 @@
 ---
-context: Choosing or applying color.
+description: Choosing or applying color.
 ---
 
 Starter guidance the brand owner has not yet reviewed. Cite it as provisional

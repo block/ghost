@@ -59,8 +59,6 @@ export interface GhostGatherCoverage {
     fencedExamples: number;
     skeletons: number;
   };
-  withoutContext: number;
-  /** @deprecated Use `withoutContext`. */
   undescribed: number;
 }
 
@@ -110,8 +108,6 @@ export interface GhostPulledSkeleton {
 export interface GhostPulledNode {
   id: string;
   kind?: string;
-  context?: string;
-  /** @deprecated Use `context`. Mirrors the resolved context for one release. */
   description?: string;
   declaredMaterials?: readonly GhostMaterial[];
   materials?: readonly TransportedMaterial[];

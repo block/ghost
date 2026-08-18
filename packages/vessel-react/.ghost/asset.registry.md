@@ -1,5 +1,5 @@
 ---
-context: Changing registry distribution, registry metadata, or copy-and-own component delivery.
+description: Changing registry distribution, registry metadata, or copy-and-own component delivery.
 materials:
   - packages/vessel-react/registry.json
   - packages/vessel-react/public/r/registry.json

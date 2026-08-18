@@ -1,5 +1,5 @@
 ---
-context: Any task using the complete Vessel design language.
+description: Any task using the complete Vessel design language.
 materials:
   - materials/tokens.css
 ---

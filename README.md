@@ -107,13 +107,12 @@ repeatable commands for scaffolding, validation, retrieval, and review.
 The package is a **flat set of nodes**. The optional `cover:` in
 `manifest.yml` may name any node; `ghost gather` inlines it before the menu.
 The default skeleton calls that node `brand`, but the filename is not reserved.
-A node is one markdown file: a `context` in frontmatter, optional
-`materials`, and brand guidance in the prose body. `description` remains a
-deprecated read alias for one release, and `ghost validate` warns on its use.
+A node is one markdown file: a `description` in frontmatter, optional
+`materials`, and brand guidance in the prose body.
 
 ```markdown
 ---
-context: Placing, sizing, or choosing a logo lockup or glyph.
+description: Placing, sizing, or choosing a logo lockup or glyph.
 materials:
   - brand/logo-lockup.svg
   - brand/logo-glyph.svg

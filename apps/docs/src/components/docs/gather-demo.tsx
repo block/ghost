@@ -1,21 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 const nodes = [
-  { id: "brand", context: "any task that should express this brand" },
-  { id: "voice", context: "anything with words" },
-  { id: "motion", context: "anything that moves on screen" },
+  { id: "brand", description: "any task that should express this brand" },
+  { id: "voice", description: "anything with words" },
+  { id: "motion", description: "anything that moves on screen" },
   {
     id: "email.transactional",
-    context: "money moved and the reader is checking",
+    description: "money moved and the reader is checking",
   },
   {
     id: "layout.spacing",
-    context: "laying out a page",
+    description: "laying out a page",
   },
-  { id: "never.ai-defaults", context: "any first-draft visual surface" },
+  { id: "never.ai-defaults", description: "any first-draft visual surface" },
   {
     id: "logo.usage",
-    context: "placing or sizing the mark",
+    description: "placing or sizing the mark",
   },
 ] as const;
 
@@ -118,7 +118,7 @@ export function GatherDemo() {
             >
               <div className="font-bold">{node.id}</div>
               <div>
-                {node.context}
+                {node.description}
                 {node.id === "brand" ? (
                   <span className="text-[var(--doc-middle)]">
                     {" "}

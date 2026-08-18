@@ -1,5 +1,5 @@
 ---
-context: Any transition, animation, or hover treatment.
+description: Any transition, animation, or hover treatment.
 materials:
   - materials/tokens.css
 ---

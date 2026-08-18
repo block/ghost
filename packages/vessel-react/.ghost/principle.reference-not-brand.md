@@ -1,5 +1,5 @@
 ---
-context: Any Vessel change that could encode product-specific brand truth.
+description: Any Vessel change that could encode product-specific brand truth.
 ---
 
 Vessel provides a coherent implementation vocabulary — tokens, primitives, AI

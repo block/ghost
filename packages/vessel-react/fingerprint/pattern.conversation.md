@@ -1,5 +1,5 @@
 ---
-context: Any AI conversation, prompt input, reasoning display, or tool output.
+description: Any AI conversation, prompt input, reasoning display, or tool output.
 materials:
   - packages/vessel-react/src/components/ai-elements/conversation.tsx
   - packages/vessel-react/src/components/ai-elements/message.tsx

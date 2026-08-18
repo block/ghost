@@ -1,5 +1,5 @@
 ---
-context: Laying out any view.
+description: Laying out any view.
 materials:
   - materials/primitives.css
 ---

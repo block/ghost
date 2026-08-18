@@ -1,5 +1,5 @@
 ---
-context: Writing or editing any copy.
+description: Writing or editing any copy.
 ---
 
 Starter guidance the brand owner has not yet reviewed. Cite it as provisional

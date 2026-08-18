@@ -1,5 +1,5 @@
 ---
-context: Tables, dashboards, logs, monitoring, or other data-dense consoles.
+description: Tables, dashboards, logs, monitoring, or other data-dense consoles.
 materials:
   - materials/examples/composition.table.html
   - materials/primitives.css

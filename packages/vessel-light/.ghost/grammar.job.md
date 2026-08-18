@@ -1,5 +1,5 @@
 ---
-context: Any new view before its structure or register is chosen.
+description: Any new view before its structure or register is chosen.
 materials:
   - materials/examples/composition.form.html
   - materials/examples/composition.table.html

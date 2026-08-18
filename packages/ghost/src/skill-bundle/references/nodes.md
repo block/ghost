@@ -14,7 +14,7 @@ A node is one coherent decision with one applicability. Split only when a body
 contains another decision that should be gathered in a different situation.
 Do not split by destination or component name.
 
-Use `context` as retrieval payload, not summary. State the observable situation
+Use `description` as retrieval payload, not summary. State the observable situation
 in which the node applies. Read it alone: if it fits every brand or almost every
 task, it will not help selection. Put what to do and why in the body.
 
@@ -67,7 +67,7 @@ replacement.
 
 ```markdown
 ---
-context: Building or reviewing a performance dashboard.
+description: Building or reviewing a performance dashboard.
 ---
 
 Not rounded cards, celebratory gradients, and a wall of equal metrics.
@@ -109,7 +109,7 @@ Before curation, ask:
 | Dimension | Question |
 | --- | --- |
 | Testimony | Can you name the human words or evidence behind this? |
-| Discrimination | Does the context select a real situation rather than a topic? |
+| Discrimination | Does the description select a real situation rather than a topic? |
 | Force | Does the body decide something and reject a plausible alternative? |
 | Altitude | Is it universal on purpose, or conditioned? |
 | Residue | Is it free of starter prose, API mirroring, and brand-deck filler? |
@@ -121,7 +121,7 @@ canonical; human curation does.
 
 | If the agent keeps... | Author... |
 | --- | --- |
-| missing guidance | sharper `context`; universal guidance may belong on the cover |
+| missing guidance | sharper `description`; universal guidance may belong on the cover |
 | inventing values | a material-backed node with exact vocabulary |
 | producing generic output | replacement anti-goal plus a well-explained example |
 | choosing the wrong structure | bound/open pattern and, when needed, a Skeleton |
@@ -134,5 +134,5 @@ canonical; human curation does.
 - Never write a node the human neither said, showed, nor accepted.
 - Never make a node a container for observations or implementation inventory.
 - Never duplicate API documentation unless the API itself is the guidance.
-- Never use a broad context to compensate for unrelated decisions in one body.
+- Never use a broad description to compensate for unrelated decisions in one body.
 - Never ship a blacklist-only anti-goal.

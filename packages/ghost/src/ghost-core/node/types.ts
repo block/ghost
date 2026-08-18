@@ -17,8 +17,6 @@ export interface GhostNodeFrontmatter {
    * applicability. Optional, but strongly encouraged on any node worth
    * anchoring a task at.
    */
-  context?: string;
-  /** @deprecated Use `context`. Accepted as a read alias for one release. */
   description?: string;
   /**
    * Optional locators for the concrete materials this guidance is about:

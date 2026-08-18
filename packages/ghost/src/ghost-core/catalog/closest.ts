@@ -5,7 +5,7 @@
  * routing to nothing. This is that hint: deterministic, LLM-free, bounded.
  *
  * It is not a search engine. An inexact `gather <query>` shows the node menu
- * and lets the agent re-pick by context; this only nominates the few ids a
+ * and lets the agent re-pick by description; this only nominates the few ids a
  * typo most likely meant.
  */
 

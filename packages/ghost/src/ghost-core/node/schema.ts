@@ -40,15 +40,20 @@ const AnnotatedMaterialSchema = z
  *
  * Validates a node in isolation. Identity and containment are not here: they
  * come from the node's file path. Kind is the filename prefix, never a
- * frontmatter field. `description` is accepted as a deprecated read alias for
- * `context`; consumers resolve `context` first when both are present.
+ * frontmatter field.
  */
 export const GhostNodeFrontmatterSchema = z
   .object({
-    context: z.string().min(1).optional(),
     description: z.string().min(1).optional(),
     materials: z
       .array(z.union([MaterialLocatorSchema, AnnotatedMaterialSchema]))
+      .optional(),
+    // `context` was renamed back to `description`. Reject it with a message
+    // that names the rename so authors get a clear signal.
+    context: z
+      .never({
+        message: "`context` is a removed key (renamed to `description`)",
+      })
       .optional(),
     // `relates` (and all typed edges) were removed. Reject it with a message
     // that names the key so authors get a clear signal.

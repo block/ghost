@@ -22,7 +22,7 @@ export type { BaselineProse };
 export interface PacketMaterialNode {
   id: string;
   kind?: string;
-  context?: string;
+  description?: string;
   prose: string;
   materials: GhostMaterial[];
   matchedMaterials: string[];
@@ -112,7 +112,9 @@ function materialNodeFromMatch(
   return {
     id: node.id,
     ...(node.kind !== undefined ? { kind: node.kind } : {}),
-    ...(node.context !== undefined ? { context: node.context } : {}),
+    ...(node.description !== undefined
+      ? { description: node.description }
+      : {}),
     prose: node.body,
     materials: node.materials ?? [],
     matchedMaterials: matched.locators,
@@ -142,7 +144,7 @@ export function formatReviewPacket(packet: ReviewPacket): string {
     for (const node of packet.materialNodes) {
       const kind = node.kind ? ` _(${node.kind})_` : "";
       out.push(`### \`${node.id}\`${kind}`);
-      if (node.context) out.push(`_${node.context}_`, "");
+      if (node.description) out.push(`_${node.description}_`, "");
       out.push(node.prose, "");
       out.push("Matched materials:");
       for (const locator of node.matchedMaterials) {

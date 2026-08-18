@@ -1,5 +1,5 @@
 ---
-context: Choosing or applying color.
+description: Choosing or applying color.
 materials:
   - materials/tokens.css
 ---

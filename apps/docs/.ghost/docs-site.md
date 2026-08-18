@@ -1,5 +1,5 @@
 ---
-context: Translating the ghost visual expression into another surface or medium.
+description: Translating the ghost visual expression into another surface or medium.
 materials:
   - apps/docs/src/pages/index.astro
   - apps/docs/src/components/Hero.astro

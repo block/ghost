@@ -1,5 +1,5 @@
 ---
-context: Any text, hero, landing page, or editorial moment.
+description: Any text, hero, landing page, or editorial moment.
 materials:
   - materials/tokens.css
   - materials/fonts/HKGrotesk-Black.woff2

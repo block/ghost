@@ -1,5 +1,5 @@
 ---
-context: Any task that should express this brand.
+description: Any task that should express this brand.
 ---
 
 This cover is unwritten. ghost gather always places this page in an agent's

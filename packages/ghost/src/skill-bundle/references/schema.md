@@ -38,7 +38,7 @@ segment. A bare filename has no kind. Undeclared kind prefixes warn.
 
 ```markdown
 ---
-context: Placing, sizing, or choosing a logo lockup or glyph.
+description: Placing, sizing, or choosing a logo lockup or glyph.
 materials:
   - brand/logo-primary.svg
   - https://figma.com/file/example?node-id=logo-lockups
@@ -49,9 +49,7 @@ materials:
 Use the full lockup when recognition matters.
 ```
 
-- `context` is the retrieval payload shown by `ghost gather`.
-- `description` remains a deprecated read alias for one release; validation
-  warns until it is renamed.
+- `description` is the retrieval payload shown by `ghost gather`.
 - `materials` accepts explicit repo-relative file paths and external locators
   using `https:`, `mcp:`, `figma:`, or `github:`.
 - Glob patterns are invalid. Each local file must be named explicitly.

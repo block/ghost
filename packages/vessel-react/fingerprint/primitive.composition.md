@@ -1,5 +1,5 @@
 ---
-context: Composing layout, surfaces, text hierarchy, spacing, cards, separators, or loading states.
+description: Composing layout, surfaces, text hierarchy, spacing, cards, separators, or loading states.
 materials:
   - packages/vessel-react/src/components/ui/stack.tsx
   - packages/vessel-react/src/components/ui/surface.tsx

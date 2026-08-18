@@ -1,5 +1,5 @@
 ---
-context: Changing tokens, semantic roles, or the Tailwind utility bridge.
+description: Changing tokens, semantic roles, or the Tailwind utility bridge.
 materials:
   - packages/vessel-react/src/styles/main.css
   - packages/vessel-react/src/styles/font-faces.css

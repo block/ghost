@@ -1,5 +1,5 @@
 ---
-context: Any view containing text or actions.
+description: Any view containing text or actions.
 materials:
   - materials/primitives.css
   - materials/examples/composition.form.html

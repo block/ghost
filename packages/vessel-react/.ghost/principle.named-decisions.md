@@ -1,5 +1,5 @@
 ---
-context: Authoring or reviewing components, tokens, variants, or agent-safety checks.
+description: Authoring or reviewing components, tokens, variants, or agent-safety checks.
 materials:
   - packages/vessel-react/scripts/audit-agent-safety.mjs
 ---

@@ -1,5 +1,5 @@
 ---
-context: Any task using or changing the vendored component set.
+description: Any task using or changing the vendored component set.
 materials:
   - packages/vessel-react/src/styles/main.css
 ---

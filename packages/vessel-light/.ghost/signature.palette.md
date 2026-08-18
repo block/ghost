@@ -1,5 +1,5 @@
 ---
-context: Color beyond the base roles, in any register.
+description: Color beyond the base roles, in any register.
 materials:
   - materials/tokens.css
 ---

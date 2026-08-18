@@ -113,9 +113,7 @@ function formatPullJson(
     nodes: result.nodes.map((node) => ({
       id: node.id,
       ...(node.kind !== undefined ? { kind: node.kind } : {}),
-      ...(node.context
-        ? { context: node.context, description: node.context }
-        : {}),
+      ...(node.description ? { description: node.description } : {}),
       ...(node.declaredMaterials !== undefined
         ? {
             materials: inlineMaterials
@@ -134,7 +132,7 @@ function formatPullMarkdown(result: GhostPullResult): string {
   for (const node of result.nodes) {
     const kind = node.kind ? ` _(${node.kind})_` : "";
     const lines = [`# \`${node.id}\`${kind}`];
-    if (node.context) lines.push("", `> ${node.context}`);
+    if (node.description) lines.push("", `> ${node.description}`);
     lines.push("", node.body.trim());
     if (node.materials !== undefined && node.materials.length > 0) {
       lines.push("", "Materials:");

@@ -1,5 +1,5 @@
 ---
-context: Choosing or implementing color, typography, spacing, shape, elevation, interaction, or accessibility for ghost.
+description: Choosing or implementing color, typography, spacing, shape, elevation, interaction, or accessibility for ghost.
 materials:
   - apps/docs/src/styles/marked-doc.css
   - apps/docs/src/styles/docs.css

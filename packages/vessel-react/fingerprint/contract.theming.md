@@ -1,5 +1,5 @@
 ---
-context: Creating or changing a theme, token binding, font stack, radius, shadow, or gray ramp.
+description: Creating or changing a theme, token binding, font stack, radius, shadow, or gray ramp.
 materials:
   - packages/vessel-react/src/styles/main.css
 ---

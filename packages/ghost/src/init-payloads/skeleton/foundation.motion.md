@@ -1,5 +1,5 @@
 ---
-context: Any transition, animation, or hover treatment.
+description: Any transition, animation, or hover treatment.
 ---
 
 Starter guidance the brand owner has not yet reviewed. Cite it as provisional

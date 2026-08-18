@@ -1,5 +1,5 @@
 ---
-context: Choosing or implementing any radius or corner treatment.
+description: Choosing or implementing any radius or corner treatment.
 materials:
   - materials/tokens.css
   - materials/primitives.css
