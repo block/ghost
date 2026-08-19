@@ -48,18 +48,13 @@ export const GhostNodeFrontmatterSchema = z
     materials: z
       .array(z.union([MaterialLocatorSchema, AnnotatedMaterialSchema]))
       .optional(),
-    // The retrieval payload was renamed `description` → `context` → `for`.
-    // Reject both prior names with messages that name the rename so authors
-    // get a clear signal.
+    // The retrieval payload field is `for`. Reject near-miss keys that would
+    // otherwise ride along silently and leave the node invisible to gather.
     context: z
-      .never({
-        message: "`context` is a removed key (renamed to `for`)",
-      })
+      .never({ message: "`context` is not a node key; use `for`" })
       .optional(),
     description: z
-      .never({
-        message: "`description` is a removed key (renamed to `for`)",
-      })
+      .never({ message: "`description` is not a node key; use `for`" })
       .optional(),
     // `relates` (and all typed edges) were removed. Reject it with a message
     // that names the key so authors get a clear signal.

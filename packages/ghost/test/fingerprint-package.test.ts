@@ -184,7 +184,7 @@ Replacement rule.
     );
   });
 
-  it("rejects the removed context key with a rename message", async () => {
+  it("rejects the context key and points to `for`", async () => {
     await writeManifest(dir);
     await writeGlossary(dir, ["principle"]);
     await writeFile(
@@ -195,11 +195,11 @@ Replacement rule.
     const report = await lintGhostPackage(dir);
     expect(report.errors).toBeGreaterThan(0);
     expect(
-      report.issues.some((issue) => issue.message.includes("renamed to `for`")),
+      report.issues.some((issue) => issue.message.includes("use `for`")),
     ).toBe(true);
   });
 
-  it("rejects the removed description key with a rename message", async () => {
+  it("rejects the description key and points to `for`", async () => {
     await writeManifest(dir);
     await writeGlossary(dir, ["principle"]);
     await writeFile(
@@ -210,7 +210,7 @@ Replacement rule.
     const report = await lintGhostPackage(dir);
     expect(report.errors).toBeGreaterThan(0);
     expect(
-      report.issues.some((issue) => issue.message.includes("renamed to `for`")),
+      report.issues.some((issue) => issue.message.includes("use `for`")),
     ).toBe(true);
   });
 

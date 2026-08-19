@@ -47,19 +47,19 @@ describe("ghost.node/v1 schema", () => {
     expect(lintGhostNode(node("for: Lifecycle email.")).errors).toBe(0);
   });
 
-  it("rejects the removed context key with a rename message", () => {
+  it("rejects the context key and points to `for`", () => {
     const report = lintGhostNode(node("context: Lifecycle email."));
     expect(report.errors).toBeGreaterThan(0);
     expect(
-      report.issues.some((issue) => issue.message.includes("renamed to `for`")),
+      report.issues.some((issue) => issue.message.includes("use `for`")),
     ).toBe(true);
   });
 
-  it("rejects the removed description key with a rename message", () => {
+  it("rejects the description key and points to `for`", () => {
     const report = lintGhostNode(node("description: Lifecycle email."));
     expect(report.errors).toBeGreaterThan(0);
     expect(
-      report.issues.some((issue) => issue.message.includes("renamed to `for`")),
+      report.issues.some((issue) => issue.message.includes("use `for`")),
     ).toBe(true);
   });
 
