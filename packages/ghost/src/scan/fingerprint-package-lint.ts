@@ -80,7 +80,7 @@ export async function lintGhostPackage(
       await lintGlossary(paths.glossary, issues);
       lintCover(manifest.cover, catalog, issues);
       await lintKindPrefixes(paths, catalog, issues);
-      lintNodeDescriptions(catalog, issues);
+      lintNodeForPayloads(catalog, issues);
       lintSkeletonSections(catalog, issues);
       await lintMaterialLocators(paths, catalog, issues, cwd);
       lintCheckReferences(catalog, checks, issues);
@@ -187,23 +187,20 @@ async function lintKindPrefixes(
 }
 
 /**
- * `description` is a node's entire retrieval payload: `gather` lists it as
- * the text the agent selects against. A node without one renders as a bare id
- * and cannot show when it applies, so `validate` makes that loud.
+ * `for` is a node's entire retrieval payload: `gather` lists it as the text
+ * the agent selects against. A node without one renders as a bare id and
+ * cannot show when it applies, so `validate` makes that loud.
  */
-function lintNodeDescriptions(
-  catalog: GhostCatalog,
-  issues: LintIssue[],
-): void {
+function lintNodeForPayloads(catalog: GhostCatalog, issues: LintIssue[]): void {
   for (const node of catalog.nodes.values()) {
-    if (node.description !== undefined && node.description.trim().length > 0) {
+    if (node.for !== undefined && node.for.trim().length > 0) {
       continue;
     }
     issues.push({
       severity: "warning",
-      rule: "node-description-missing",
+      rule: "node-for-missing",
       message:
-        "node has no `description`, so `gather` lists it as a bare id without applicability context; add one line naming the observable condition under which this node applies",
+        "node has no `for`, so `gather` lists it as a bare id without applicability context; add one line naming the situation or activity this guidance is for",
       path: `${node.id}.md`,
     });
   }

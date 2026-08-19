@@ -1,5 +1,5 @@
 ---
-description: Choosing or applying color.
+for: Choosing or applying color.
 ---
 
 Starter guidance the brand owner has not yet reviewed. Cite it as provisional

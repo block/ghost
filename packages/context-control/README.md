@@ -6,9 +6,9 @@ measures whether the right guidance even makes it into context. Selection is
 the unit. No generation, ever.
 
 `ghost gather` does no filtering: the menu is always the whole catalog, and
-selection happens in the model's head against each node's `description`.
-So what this bench actually tests is whether descriptions are good enough
-retrieval payloads — a node with a vague description is invisible at
+selection happens in the model's head against each node's `for` payload.
+So what this bench actually tests is whether `for` payloads are good enough
+retrieval payloads — a node with a vague `for` is invisible at
 selection time no matter how good its body is.
 
 ## Run
@@ -30,15 +30,15 @@ else `ghost` on PATH).
 ## Screens
 
 **package** — the catalog rendered as the selection surface the model
-sees: id, kind, description, material count, coverage line. Click a node to
-see its real `ghost pull` output in a drawer. Review descriptions as
-retrieval payloads, not file contents; a node with no description is flagged
+sees: id, kind, `for` payload, material count, coverage line. Click a node to
+see its real `ghost pull` output in a drawer. Review `for` payloads as
+retrieval payloads, not file contents; a node with no `for` is flagged
 as invisible.
 
 **bench** — type an ask (or run the whole asks suite), fire N single-shot
 selection trials, and read the heatmap: nodes × asks, each cell the
 fraction of trials that selected the node. Solid column = confident
-description. Speckled = coin-flip. Empty row = dead node. Blue outline =
+`for` payload. Speckled = coin-flip. Empty row = dead node. Blue outline =
 the ask's expected set. Scores above the map: consistency (mean pairwise
 Jaccard), mean per-trial precision and recall, poison-selection rate, unknown
 ids, and nodes ever selected.

@@ -36,7 +36,7 @@ it applies, and an agent reads the relevant guidance before building.
 
 ## The model in one breath
 
-- A **node** is a markdown file: a `description`, optional `materials`, and prose brand guidance.
+- A **node** is a markdown file: a `for` payload, optional `materials`, and prose brand guidance.
 - `materials` is one list of locators for the concrete stuff the guidance is about:
   explicit repo-relative file paths or supported external locators (see
   [schema.md](references/schema.md)); name each file rather than

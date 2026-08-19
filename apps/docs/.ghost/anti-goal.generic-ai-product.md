@@ -1,5 +1,5 @@
 ---
-description: Any visual surface at risk of generic AI-product spectacle or card chrome.
+for: Any visual surface at risk of generic AI-product spectacle or card chrome.
 materials:
   - apps/docs/src/pages/index.astro
   - apps/docs/src/styles/marked-doc.css

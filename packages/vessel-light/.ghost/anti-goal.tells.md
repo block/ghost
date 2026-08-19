@@ -1,5 +1,5 @@
 ---
-description: Any work applying this brand's signature.
+for: Any work applying this brand's signature.
 ---
 
 These are the near-misses of Vessel's own signature: outputs that got close

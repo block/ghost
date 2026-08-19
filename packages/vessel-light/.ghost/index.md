@@ -1,5 +1,5 @@
 ---
-description: Any task using the complete Vessel design language.
+for: Any task using the complete Vessel design language.
 materials:
   - materials/tokens.css
 ---

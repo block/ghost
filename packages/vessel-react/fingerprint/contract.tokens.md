@@ -1,5 +1,5 @@
 ---
-description: Changing tokens, component styles, semantic roles, or the Tailwind utility bridge.
+for: Changing tokens, component styles, semantic roles, or the Tailwind utility bridge.
 materials:
   - packages/vessel-react/src/styles/main.css
   - packages/vessel-react/src/components/ui/button.tsx

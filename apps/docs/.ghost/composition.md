@@ -1,5 +1,5 @@
 ---
-description: Composing any ghost page or adapting its layout across viewport sizes.
+for: Composing any ghost page or adapting its layout across viewport sizes.
 materials:
   - apps/docs/src/components/DocSection.astro
   - apps/docs/src/components/SectionWrapper.astro

@@ -59,7 +59,7 @@ export interface GhostGatherCoverage {
     fencedExamples: number;
     skeletons: number;
   };
-  undescribed: number;
+  withoutFor: number;
 }
 
 export interface GhostGatherContract {
@@ -108,7 +108,7 @@ export interface GhostPulledSkeleton {
 export interface GhostPulledNode {
   id: string;
   kind?: string;
-  description?: string;
+  for?: string;
   declaredMaterials?: readonly GhostMaterial[];
   materials?: readonly TransportedMaterial[];
   body: string;

@@ -30,13 +30,13 @@ Report first:
 - **Pull rate by concreteness:** concrete-material exposure/pull rate vs prose-only
   exposure/pull rate. In markdown this is the `Concrete material` row. This is
   the tuning instrument: if concrete nodes are not pulled when applicable,
-  descriptions or task selection are failing.
+  `for` payloads or task selection are failing.
 
 ## Corpus-level table
 
 | Row | Status | Evidence | Next move |
 | --- | --- | --- | --- |
-| Retrieval | strong / weak | descriptions, ids, cover | sharpen descriptions or move universal guidance to the cover |
+| Retrieval | strong / weak | `for` payloads, ids, cover | sharpen `for` payloads or move universal guidance to the cover |
 | Concreteness | strong / thin | materials, fenced examples, Skeletons | add concrete locators, examples, or opening structures |
 | Anti-goals | present / missing / vague | `anti-goal.*`, review packet | write not-X-instead-Y replacements and material locators |
 | Consistency | clean / conflicting | guidance vs concrete material | update or remove stale material |

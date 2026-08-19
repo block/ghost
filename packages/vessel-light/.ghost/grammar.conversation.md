@@ -1,5 +1,5 @@
 ---
-description: Any AI thread, agent console, review assistant, or prompt composer.
+for: Any AI thread, agent console, review assistant, or prompt composer.
 materials:
   - materials/examples/composition.conversation.html
 ---

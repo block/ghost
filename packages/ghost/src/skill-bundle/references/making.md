@@ -17,7 +17,7 @@ judges, repairs, and reviews in the same session.
 ## Ground
 
 Follow [ground.md](ground.md), which ends with the anchor: gather with the real
-ask, select against each node's `description`, pull with an over-pull bias, and inspect decisive
+ask, select against each node's `for` payload, pull with an over-pull bias, and inspect decisive
 materials before generating.
 
 Use this triage for material inspection:

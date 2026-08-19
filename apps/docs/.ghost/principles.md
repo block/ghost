@@ -1,5 +1,5 @@
 ---
-description: Any ghost visual expression, independent of surface, medium, or implementation.
+for: Any ghost visual expression, independent of surface, medium, or implementation.
 materials:
   - apps/docs/src/pages/index.astro
   - apps/docs/src/components/DocSection.astro

@@ -32,11 +32,11 @@ async function writeBareTestPackage(dir: string): Promise<void> {
     ),
     writeFile(
       join(packageDir, "index.md"),
-      "---\ndescription: Test package cover.\n---\n\nTest package.\n",
+      "---\nfor: Test package cover.\n---\n\nTest package.\n",
     ),
     writeFile(
       join(packageDir, "cliche.median.md"),
-      "---\ndescription: Test cliche floor.\n---\n\nAvoid generic defaults.\n",
+      "---\nfor: Test cliche floor.\n---\n\nAvoid generic defaults.\n",
     ),
   ]);
 }
@@ -595,7 +595,7 @@ describe("ghost CLI", () => {
       nodes: 9,
       concrete: 0,
       payloads: { materials: 0, fencedExamples: 0, skeletons: 0 },
-      undescribed: 0,
+      withoutFor: 0,
     });
   });
 
@@ -745,15 +745,15 @@ describe("ghost CLI", () => {
     );
     await writeFile(
       join(dir, ".ghost", "asset.tokens.md"),
-      "---\ndescription: Tokens.\nmaterials:\n  - missing.css\n---\n\nUse exact tokens.\n",
+      "---\nfor: Tokens.\nmaterials:\n  - missing.css\n---\n\nUse exact tokens.\n",
     );
     await writeFile(
       join(dir, ".ghost", "principle.rule.md"),
-      "---\ndescription: Rule.\n---\n\nPlain rule.\n",
+      "---\nfor: Rule.\n---\n\nPlain rule.\n",
     );
     await writeFile(
       join(dir, ".ghost", "anti-goal.generic.md"),
-      "---\ndescription: Generic replacement.\n---\n\nNot vague; instead exact.\n",
+      "---\nfor: Generic replacement.\n---\n\nNot vague; instead exact.\n",
     );
 
     // The seeded cover (`index`) is inlined above the menu, not counted in it.
@@ -763,16 +763,16 @@ describe("ghost CLI", () => {
       nodes: 4,
       concrete: 1,
       payloads: { materials: 1, fencedExamples: 0, skeletons: 0 },
-      undescribed: 0,
+      withoutFor: 0,
     });
     const markdown = await runCli(["gather"], dir);
     expect(markdown.stdout).toContain(
       "4 nodes · 1 carry payloads (1 with materials, 0 with substantial fenced examples, 0 with Skeletons)",
     );
-    // No undescribed nodes: the coverage line stays quiet about them.
-    expect(markdown.stdout).not.toContain("lack descriptions");
+    // No nodes lacking `for`: the coverage line stays quiet about them.
+    expect(markdown.stdout).not.toContain("lack `for` payloads");
 
-    // A node without a description is invisible to selection — the coverage
+    // A node without a `for` payload is invisible to selection — the coverage
     // line says so, and validate warns on it.
     await writeFile(
       join(dir, ".ghost", "principle.mute.md"),
@@ -780,10 +780,10 @@ describe("ghost CLI", () => {
     );
     const gatherMute = await runCli(["gather"], dir);
     expect(gatherMute.stdout).toContain(
-      "5 nodes · 1 carry payloads (1 with materials, 0 with substantial fenced examples, 0 with Skeletons) · 1 lack descriptions",
+      "5 nodes · 1 carry payloads (1 with materials, 0 with substantial fenced examples, 0 with Skeletons) · 1 lack `for` payloads",
     );
     const gatherMuteJson = await runCli(["gather", "--format", "json"], dir);
-    expect(JSON.parse(gatherMuteJson.stdout).coverage.undescribed).toBe(1);
+    expect(JSON.parse(gatherMuteJson.stdout).coverage.withoutFor).toBe(1);
 
     const steering = await runCli(
       ["pull", "principle.rule", "asset.tokens"],
@@ -809,7 +809,7 @@ describe("ghost CLI", () => {
       join(dir, ".ghost", "asset.tokens.md"),
       [
         "---",
-        "description: Token material.",
+        "for: Token material.",
         "materials:",
         "  - materials/tokens.css",
         "---",
@@ -822,7 +822,7 @@ describe("ghost CLI", () => {
       join(dir, ".ghost", "copy.md"),
       [
         "---",
-        "description: Copy sample.",
+        "for: Copy sample.",
         "---",
         "",
         "```txt",
@@ -837,7 +837,7 @@ describe("ghost CLI", () => {
       join(dir, ".ghost", "pattern.card.md"),
       [
         "---",
-        "description: Card pattern.",
+        "for: Card pattern.",
         "---",
         "",
         "## Skeleton",
@@ -888,11 +888,11 @@ describe("ghost CLI", () => {
     await writeBareTestPackage(dir);
     await writeFile(
       join(dir, ".ghost", "pattern.card.md"),
-      "---\ndescription: Card pattern.\n---\n\nPattern prose.\n\n## Skeleton\n\n```tsx\n<section>{children}</section>\n```\n\nAfter skeleton should be stripped.\n",
+      "---\nfor: Card pattern.\n---\n\nPattern prose.\n\n## Skeleton\n\n```tsx\n<section>{children}</section>\n```\n\nAfter skeleton should be stripped.\n",
     );
     await writeFile(
       join(dir, ".ghost", "pattern.bad.md"),
-      "---\ndescription: Bad skeleton.\n---\n\n## Skeleton\n\nNo fence here.\n",
+      "---\nfor: Bad skeleton.\n---\n\n## Skeleton\n\nNo fence here.\n",
     );
 
     const pull = await runCli(["pull", "pattern.card"], dir);
@@ -933,7 +933,7 @@ describe("ghost CLI", () => {
       join(dir, ".ghost", "pattern.safe.md"),
       [
         "---",
-        "description: Fence safety.",
+        "for: Fence safety.",
         "materials:",
         "  - brand/example.md",
         "---",
@@ -984,7 +984,7 @@ describe("ghost CLI", () => {
     );
     await writeFile(
       join(dir, ".ghost", "asset.hostile.md"),
-      "---\ndescription: Hostile material.\nmaterials:\n  - brand/hostile.md\n---\n\nRead the material.\n",
+      "---\nfor: Hostile material.\nmaterials:\n  - brand/hostile.md\n---\n\nRead the material.\n",
     );
 
     const pull = await runCli(["pull", "asset.hostile"], dir);
@@ -1006,7 +1006,7 @@ describe("ghost CLI", () => {
     await writeFile(join(dir, "brand", "mark.png"), Buffer.from([0, 1, 2]));
     await writeFile(
       join(dir, ".ghost", "asset.logo.md"),
-      "---\ndescription: Logo.\nmaterials:\n  - brand/mark.png\n---\n\nInspect the blessed mark.\n",
+      "---\nfor: Logo.\nmaterials:\n  - brand/mark.png\n---\n\nInspect the blessed mark.\n",
     );
 
     const md = await runCli(["pull", "asset.logo"], dir);
@@ -1028,11 +1028,11 @@ describe("ghost CLI", () => {
     await runCli(["init"], dir);
     await writeFile(
       join(dir, ".ghost", "principle.trust.md"),
-      "---\ndescription: Trust at the payment moment.\n---\n\nNear payment, reduce felt risk.\n",
+      "---\nfor: Trust at the payment moment.\n---\n\nNear payment, reduce felt risk.\n",
     );
     await writeFile(
       join(dir, ".ghost", "voice.md"),
-      "---\ndescription: The brand voice.\n---\n\nPlain words. No hype.\n",
+      "---\nfor: The brand voice.\n---\n\nPlain words. No hype.\n",
     );
 
     const gather = await runCli(
@@ -1076,7 +1076,7 @@ describe("ghost CLI", () => {
     expect(pull.stdout).toContain("Near payment, reduce felt risk.");
     expect(pull.stdout).toContain("Plain words. No hype.");
 
-    // JSON format carries id, kind, description, and body.
+    // JSON format carries id, kind, for, and body.
     const json = await runCli(
       ["pull", "principle.trust", "--format", "json"],
       dir,
@@ -1087,7 +1087,7 @@ describe("ghost CLI", () => {
     expect(payload.nodes[0]).toMatchObject({
       id: "principle.trust",
       kind: "principle",
-      description: "Trust at the payment moment.",
+      for: "Trust at the payment moment.",
     });
     expect(payload.nodes[0].body).toContain("reduce felt risk");
 
@@ -1171,7 +1171,7 @@ describe("ghost CLI", () => {
     await writeFile(join(dir, "brand", "large.txt"), "x".repeat(8 * 1024 + 1));
     await writeFile(
       join(dir, ".ghost", "asset.materials.md"),
-      "---\ndescription: Materials.\nmaterials:\n  - locator: materials/tokens.css\n    note: Canonical token values\n  - brand/voice.txt\n  - brand/mark.bin\n  - brand/large.txt\n  - https://example.com/brand-kit\n  - locator: mcp://brand-assets/brand-kit\n    note: Approved source artwork\n---\n\nRead these materials.\n",
+      "---\nfor: Materials.\nmaterials:\n  - locator: materials/tokens.css\n    note: Canonical token values\n  - brand/voice.txt\n  - brand/mark.bin\n  - brand/large.txt\n  - https://example.com/brand-kit\n  - locator: mcp://brand-assets/brand-kit\n    note: Approved source artwork\n---\n\nRead these materials.\n",
     );
 
     const md = await runCli(["pull", "asset.materials"], dir);
@@ -1232,7 +1232,7 @@ describe("ghost CLI", () => {
     );
     await writeFile(
       join(dir, ".ghost", "asset.tokens.md"),
-      "---\ndescription: Tokens.\nmaterials:\n  - materials/tokens.css\n---\n\nToken prose.\n",
+      "---\nfor: Tokens.\nmaterials:\n  - materials/tokens.css\n---\n\nToken prose.\n",
     );
 
     const md = await runCli(["pull", "asset.tokens", "--no-materials"], dir);
@@ -1263,7 +1263,7 @@ describe("ghost CLI", () => {
     await writeFile(join(dir, "brand", "voice.txt"), "Plain.\n");
     await writeFile(
       join(dir, ".ghost", "asset.tokens.md"),
-      "---\ndescription: Tokens.\nmaterials:\n  - materials/tokens.css\n  - brand/voice.txt\n  - locator: mcp://brand-assets/tokens\n    note: Canonical token source\n---\n\nToken prose.\n",
+      "---\nfor: Tokens.\nmaterials:\n  - materials/tokens.css\n  - brand/voice.txt\n  - locator: mcp://brand-assets/tokens\n    note: Canonical token source\n---\n\nToken prose.\n",
     );
 
     const json = await runCli(
@@ -1304,7 +1304,7 @@ describe("ghost CLI", () => {
     await writeFile(join(dir, "brand", "samples", "b.txt"), "sample b\n");
     await writeFile(
       join(dir, ".ghost", "asset.samples.md"),
-      "---\ndescription: Samples.\nmaterials:\n  - brand/samples/a.txt\n  - brand/samples/b.txt\n---\n\nSample prose.\n",
+      "---\nfor: Samples.\nmaterials:\n  - brand/samples/a.txt\n  - brand/samples/b.txt\n---\n\nSample prose.\n",
     );
 
     const json = await runCli(
@@ -1342,11 +1342,11 @@ describe("ghost CLI", () => {
     );
     await writeFile(
       join(dir, ".ghost", "asset.first.md"),
-      "---\ndescription: First.\nmaterials:\n  - materials/shared.css\n---\n\nFirst prose.\n",
+      "---\nfor: First.\nmaterials:\n  - materials/shared.css\n---\n\nFirst prose.\n",
     );
     await writeFile(
       join(dir, ".ghost", "asset.second.md"),
-      "---\ndescription: Second.\nmaterials:\n  - materials/shared.css\n---\n\nSecond prose.\n",
+      "---\nfor: Second.\nmaterials:\n  - materials/shared.css\n---\n\nSecond prose.\n",
     );
 
     const json = await runCli(
@@ -1380,7 +1380,7 @@ describe("ghost CLI", () => {
     );
     await writeFile(
       join(dir, ".ghost", "asset.tokens.md"),
-      "---\ndescription: Tokens.\nmaterials:\n  - materials/tokens.css\n---\n\nToken prose.\n\n## Skeleton\n\n```css\n:root { }\n```\n\nStrip me.\n",
+      "---\nfor: Tokens.\nmaterials:\n  - materials/tokens.css\n---\n\nToken prose.\n\n## Skeleton\n\n```css\n:root { }\n```\n\nStrip me.\n",
     );
 
     const snapshot = await loadGhostSnapshot(
@@ -1405,7 +1405,7 @@ describe("ghost CLI", () => {
     );
     expect(cliPull.nodes[0]).toMatchObject({
       id: embedPull.nodes[0].id,
-      description: embedPull.nodes[0].description,
+      for: embedPull.nodes[0].for,
       body: embedPull.nodes[0].body,
     });
     expect(cliPull.nodes[0].materials).toEqual(
@@ -1425,7 +1425,7 @@ describe("ghost CLI", () => {
     await runCli(["init"], dir);
     await writeFile(
       join(dir, ".ghost", "principle.trust.md"),
-      "---\ndescription: Trust.\n---\n\nBody.\n",
+      "---\nfor: Trust.\n---\n\nBody.\n",
     );
 
     const partial = await runCli(
@@ -1499,11 +1499,11 @@ describe("ghost CLI", () => {
     await writeBareTestPackage(dir);
     await writeFile(
       join(dir, ".ghost", "principle.trust.md"),
-      "---\ndescription: Trust.\n---\n\nBody.\n",
+      "---\nfor: Trust.\n---\n\nBody.\n",
     );
     await writeFile(
       join(dir, ".ghost", "voice.md"),
-      "---\ndescription: Voice.\n---\n\nPlain.\n",
+      "---\nfor: Voice.\n---\n\nPlain.\n",
     );
 
     await runCli(["gather", "checkout"], dir);
@@ -1679,7 +1679,7 @@ describe("ghost CLI", () => {
     await mkdir(checksDir, { recursive: true });
     await writeFile(
       join(dir, ".ghost", "asset.logo.md"),
-      "---\ndescription: Logo.\nmaterials:\n  - brand/logo.svg\n  - https://example.com/logo\n---\n\nLogo prose.\n",
+      "---\nfor: Logo.\nmaterials:\n  - brand/logo.svg\n  - https://example.com/logo\n---\n\nLogo prose.\n",
     );
     await writeFile(
       join(checksDir, "secret-check.md"),
@@ -1741,7 +1741,7 @@ describe("ghost CLI", () => {
     await runCli(["init", "--with", "checks"], dir);
     await writeFile(
       join(dir, ".ghost", "asset.logo.md"),
-      "---\ndescription: Logo.\nmaterials:\n  - locator: brand/logo.svg\n    note: Use the approved clearspace source\n  - brand/icon.svg\n---\n\nLogo prose.\n",
+      "---\nfor: Logo.\nmaterials:\n  - locator: brand/logo.svg\n    note: Use the approved clearspace source\n  - brand/icon.svg\n---\n\nLogo prose.\n",
     );
     await writeFile(
       join(dir, ".ghost", "checks", "logo-clearspace.md"),
@@ -1802,7 +1802,7 @@ describe("ghost CLI", () => {
     await runCli(["init", "--with", "checks"], dir);
     await writeFile(
       join(dir, ".ghost", "asset.logo.md"),
-      "---\ndescription: Logo.\nmaterials:\n  - brand/logo.svg\n---\n\nLogo prose.\n",
+      "---\nfor: Logo.\nmaterials:\n  - brand/logo.svg\n---\n\nLogo prose.\n",
     );
     await writeFile(
       join(dir, ".ghost", "checks", "logo-clearspace.md"),
@@ -1846,7 +1846,7 @@ describe("ghost CLI", () => {
     );
     await writeFile(
       join(dir, packageDir, "asset.tokens.md"),
-      "---\ndescription: Tokens.\nmaterials:\n  - materials/tokens.css\n---\n\nTokens prose.\n",
+      "---\nfor: Tokens.\nmaterials:\n  - materials/tokens.css\n---\n\nTokens prose.\n",
     );
     await mkdir(join(dir, packageDir, "checks"), { recursive: true });
     await writeFile(
@@ -1888,7 +1888,7 @@ describe("ghost CLI", () => {
     );
     await writeFile(
       join(dir, ".ghost", "anti-goal.generic-logo.md"),
-      "---\ndescription: Replace generic marks.\nmaterials:\n  - brand/logo.svg\n---\n\nNot a stock spark; instead use the wordmark and measured clearspace.\n",
+      "---\nfor: Replace generic marks.\nmaterials:\n  - brand/logo.svg\n---\n\nNot a stock spark; instead use the wordmark and measured clearspace.\n",
     );
     await writeFile(
       join(dir, ".ghost", "checks", "unrelated.md"),
@@ -1922,7 +1922,7 @@ describe("ghost CLI", () => {
     );
     await writeFile(
       join(dir, ".ghost", "asset.tokens.md"),
-      "---\ndescription: Tokens.\nmaterials:\n  - materials/tokens.css\n  - https://example.com/tokens\n  - mcp://brand-assets/tokens\n---\n\nToken prose.\n",
+      "---\nfor: Tokens.\nmaterials:\n  - materials/tokens.css\n  - https://example.com/tokens\n  - mcp://brand-assets/tokens\n---\n\nToken prose.\n",
     );
 
     const out = join(dir, "brand.tgz");
@@ -1981,7 +1981,7 @@ describe("ghost CLI", () => {
     await writeFile(join(dir, "brand", "voice.txt"), "Plain.\n");
     await writeFile(
       join(dir, ".ghost", "asset.tokens.md"),
-      "---\ndescription: Tokens.\nmaterials:\n  - materials/tokens.css\n  - brand/voice.txt\n  - https://example.com/tokens\n  - figma://file/abc\n---\n\nToken prose.\n",
+      "---\nfor: Tokens.\nmaterials:\n  - materials/tokens.css\n  - brand/voice.txt\n  - https://example.com/tokens\n  - figma://file/abc\n---\n\nToken prose.\n",
     );
 
     const result = await runCli(["export", "--format", "json"], dir);
@@ -2021,7 +2021,7 @@ describe("ghost CLI", () => {
     await writeBareTestPackage(dir);
     await writeFile(
       join(dir, ".ghost", "asset.remote.md"),
-      "---\ndescription: Remote material.\nmaterials:\n  - mcp://brand-assets/tokens\n  - figma://file/abc\n  - github:acme/brand-assets\n---\n\nRemote prose.\n",
+      "---\nfor: Remote material.\nmaterials:\n  - mcp://brand-assets/tokens\n  - figma://file/abc\n  - github:acme/brand-assets\n---\n\nRemote prose.\n",
     );
 
     const result = await runCli(["export", "--strict"], dir);
@@ -2045,7 +2045,7 @@ describe("ghost CLI", () => {
     await writeBareTestPackage(dir);
     await writeFile(
       join(dir, ".ghost", "asset.voice.md"),
-      "---\ndescription: Voice.\nmaterials:\n  - brand/voice.txt\n---\n\nVoice prose.\n",
+      "---\nfor: Voice.\nmaterials:\n  - brand/voice.txt\n---\n\nVoice prose.\n",
     );
 
     const result = await runCli(["export", "--strict"], dir);
@@ -2064,7 +2064,7 @@ describe("ghost CLI", () => {
     );
     await writeFile(
       join(dir, ".ghost", "asset.tokens.md"),
-      "---\ndescription: Tokens.\nmaterials:\n  - materials/tokens.css\n---\n\nToken prose.\n",
+      "---\nfor: Tokens.\nmaterials:\n  - materials/tokens.css\n---\n\nToken prose.\n",
     );
     const out = join(dir, "portable.tgz");
     await runCli(["export", "--out", out], dir);
@@ -2251,15 +2251,15 @@ async function writeGatherPackage(dir: string): Promise<void> {
   // Directories are a browsing convenience only; ids are paths minus .md.
   await writeFile(
     join(ghost, "index.md"),
-    "---\ndescription: Brand voice.\n---\n\nWarm and concise.\n",
+    "---\nfor: Brand voice.\n---\n\nWarm and concise.\n",
   );
   await writeFile(
     join(ghost, "email", "index.md"),
-    "---\ndescription: Email surface.\n---\n\nEmail.\n",
+    "---\nfor: Email surface.\n---\n\nEmail.\n",
   );
   await writeFile(
     join(ghost, "email", "marketing", "index.md"),
-    "---\ndescription: Marketing email.\n---\n\nMarketing may use urgency.\n",
+    "---\nfor: Marketing email.\n---\n\nMarketing may use urgency.\n",
   );
   await writeFile(
     join(ghost, "checkout", "clarity.md"),

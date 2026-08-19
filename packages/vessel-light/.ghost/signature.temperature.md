@@ -1,5 +1,5 @@
 ---
-description: Writing any copy or choosing the character of motion.
+for: Writing any copy or choosing the character of motion.
 materials:
   - materials/tokens.css
 ---

@@ -1,5 +1,5 @@
 ---
-description: Any expression of the ghost brand.
+for: Any expression of the ghost brand.
 materials:
   - apps/docs/src/styles/marked-doc.css
   - apps/docs/src/pages/index.astro

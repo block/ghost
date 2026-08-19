@@ -1,5 +1,5 @@
 ---
-description: Choosing or implementing any radius or corner treatment.
+for: Choosing or implementing any radius or corner treatment.
 materials:
   - materials/tokens.css
   - materials/primitives.css

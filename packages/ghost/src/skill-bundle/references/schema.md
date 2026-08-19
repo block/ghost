@@ -38,7 +38,7 @@ segment. A bare filename has no kind. Undeclared kind prefixes warn.
 
 ```markdown
 ---
-description: Placing, sizing, or choosing a logo lockup or glyph.
+for: Placing, sizing, or choosing a logo lockup or glyph.
 materials:
   - brand/logo-primary.svg
   - https://figma.com/file/example?node-id=logo-lockups
@@ -49,7 +49,8 @@ materials:
 Use the full lockup when recognition matters.
 ```
 
-- `description` is the retrieval payload shown by `ghost gather`.
+- `for` is the retrieval payload shown by `ghost gather`: the situation or
+  activity the guidance is for, never an audience.
 - `materials` accepts explicit repo-relative file paths and external locators
   using `https:`, `mcp:`, `figma:`, or `github:`.
 - Glob patterns are invalid. Each local file must be named explicitly.

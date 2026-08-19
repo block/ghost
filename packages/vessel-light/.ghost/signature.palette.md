@@ -1,5 +1,5 @@
 ---
-description: Color beyond the base roles, in any register.
+for: Color beyond the base roles, in any register.
 materials:
   - materials/tokens.css
 ---

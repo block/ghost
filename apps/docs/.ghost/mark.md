@@ -1,5 +1,5 @@
 ---
-description: Using yellow, selection, intervention, or active-choice states.
+for: Using yellow, selection, intervention, or active-choice states.
 materials:
   - apps/docs/src/styles/marked-doc.css
   - apps/docs/src/components/docs/gather-demo.tsx

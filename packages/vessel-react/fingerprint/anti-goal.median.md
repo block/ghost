@@ -1,5 +1,5 @@
 ---
-description: Any build using the vendored component set.
+for: Any build using the vendored component set.
 ---
 
 These are not aesthetic opinions. They are the measured convergence of 300

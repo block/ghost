@@ -1,5 +1,5 @@
 ---
-description: Heroes, marketing pages, pull quotes, or full-bleed dark moments.
+for: Heroes, marketing pages, pull quotes, or full-bleed dark moments.
 materials:
   - materials/examples/composition.editorial.html
   - materials/tokens.css

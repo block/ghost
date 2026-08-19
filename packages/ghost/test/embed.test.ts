@@ -45,7 +45,7 @@ async function writePackage(dir: string): Promise<void> {
   );
   await writeFile(
     join(dir, ".ghost", "cover.md"),
-    "---\ndescription: Cover.\n---\n\nSilence posture.\n",
+    "---\nfor: Cover.\n---\n\nSilence posture.\n",
   );
   await writeFile(join(dir, ".ghost", "materials", "tokens.css"), ":root{}\n");
   await writeFile(join(dir, "brand", "voice.txt"), "Plain.\n");
@@ -57,7 +57,7 @@ async function writePackage(dir: string): Promise<void> {
     join(dir, ".ghost", "asset.tokens.md"),
     [
       "---",
-      "description: Tokens.",
+      "for: Tokens.",
       "materials:",
       "  - materials/tokens.css",
       "  - brand/voice.txt",
@@ -81,7 +81,7 @@ async function writePackage(dir: string): Promise<void> {
   );
   await writeFile(
     join(dir, ".ghost", "principle.rule.md"),
-    "---\ndescription: Rule.\n---\n\nRule prose.\n",
+    "---\nfor: Rule.\n---\n\nRule prose.\n",
   );
   await mkdir(join(dir, ".ghost", "checks"), { recursive: true });
   await writeFile(
@@ -150,7 +150,7 @@ describe("embed contract", () => {
       nodes: 2,
       concrete: 1,
       payloads: { materials: 1, fencedExamples: 0, skeletons: 1 },
-      undescribed: 0,
+      withoutFor: 0,
     });
     expect(result.kinds).toContainEqual({
       name: "asset",
@@ -417,11 +417,11 @@ describe("embed contract", () => {
     await writePackage(dir);
     await writeFile(
       join(dir, ".ghost", "asset.traversal.md"),
-      "---\ndescription: Traversal.\nmaterials:\n  - ../outside.txt\n---\n\nTraversal prose.\n",
+      "---\nfor: Traversal.\nmaterials:\n  - ../outside.txt\n---\n\nTraversal prose.\n",
     );
     await writeFile(
       join(dir, ".ghost", "asset.absolute.md"),
-      `---\ndescription: Absolute.\nmaterials:\n  - ${join(dir, "brand", "voice.txt")}\n---\n\nAbsolute prose.\n`,
+      `---\nfor: Absolute.\nmaterials:\n  - ${join(dir, "brand", "voice.txt")}\n---\n\nAbsolute prose.\n`,
     );
     const baseSnapshot = await loadGhostSnapshot(
       resolveGhostPackage(undefined, dir),
@@ -492,7 +492,7 @@ describe("embed contract", () => {
     );
     await writeFile(
       join(dir, ".ghost", "asset.escape.md"),
-      "---\ndescription: Escape.\nmaterials:\n  - brand/escape.txt\n---\n\nEscape prose.\n",
+      "---\nfor: Escape.\nmaterials:\n  - brand/escape.txt\n---\n\nEscape prose.\n",
     );
     try {
       const snapshot = await loadGhostSnapshot(

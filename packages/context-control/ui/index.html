@@ -126,7 +126,7 @@
     </div>
     <div class="legend">
       Each column is one ask; each cell is the fraction of trials that selected the node.
-      Solid = confident description. Speckled = coin-flip. Empty row = invisible node.
+      Solid = confident `for` payload. Speckled = coin-flip. Empty row = invisible node.
       Blue outline = in the ask's expected set. The cover is already in context and
       is not part of the menu. Selection runs the ghost skill's recall protocol;
       live agents additionally carry task
@@ -168,12 +168,12 @@ async function loadMenu() {
   const c = data.coverage;
   $("#coverage").textContent =
     `${c.nodes} nodes · ${c.concrete} concrete` +
-    (c.undescribed ? ` · ${c.undescribed} undescribed` : "");
+    (c.withoutFor ? ` · ${c.withoutFor} lack for` : "");
   $("#menuRows").innerHTML = state.menu.map((n) => `
     <tr class="node" data-id="${n.id}">
       <td class="id">${n.id}${n.materials ? `<span class="badge mat">${n.materials} mat</span>` : ""}</td>
       <td class="kind">${n.kind ?? ""}</td>
-      <td>${n.description ?? '<span style="color:var(--danger)">no description — invisible at selection time</span>'}</td>
+      <td>${n.for ?? '<span style="color:var(--danger)">no for payload — invisible at selection time</span>'}</td>
     </tr>`).join("");
   document.querySelectorAll("tr.node").forEach((row) => {
     row.onclick = () => openDrawer(row.dataset.id);
@@ -189,7 +189,7 @@ async function openDrawer(id) {
   const node = data.nodes?.[0];
   drawer.innerHTML = `<button class="close">close ×</button><h2>${id}</h2>` +
     (node
-      ? `<p style="color:var(--dim)">${node.description ?? ""}</p><hr style="border:0;border-top:1px solid var(--line)" />${escapeHtml(node.body)}`
+      ? `<p style="color:var(--dim)">${node.for ?? ""}</p><hr style="border:0;border-top:1px solid var(--line)" />${escapeHtml(node.body)}`
       : `<p class="flag">pull returned nothing (${escapeHtml(JSON.stringify(data))})</p>`);
   drawer.querySelector(".close").onclick = () => drawer.classList.add("hidden");
 }

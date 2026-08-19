@@ -1,5 +1,5 @@
 ---
-description: Any task using or changing the vendored component set.
+for: Any task using or changing the vendored component set.
 materials:
   - packages/vessel-react/src/styles/main.css
 ---

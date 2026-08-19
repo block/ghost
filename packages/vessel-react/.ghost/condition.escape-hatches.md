@@ -1,5 +1,5 @@
 ---
-description: Component work needs className, inline style, arbitrary values, or a local primitive fork.
+for: Component work needs className, inline style, arbitrary values, or a local primitive fork.
 materials:
   - packages/vessel-react/scripts/audit-agent-safety.mjs
 ---

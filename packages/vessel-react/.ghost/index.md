@@ -1,5 +1,5 @@
 ---
-description: Any task changing the Vessel workspace.
+for: Any task changing the Vessel workspace.
 ---
 
 Vessel is ghost's reference body: an agnostic, agent-safe shadcn-compatible

@@ -1,5 +1,5 @@
 ---
-description: Any view with actions or inputs.
+for: Any view with actions or inputs.
 ---
 
 Starter guidance the brand owner has not yet reviewed. Cite it as provisional

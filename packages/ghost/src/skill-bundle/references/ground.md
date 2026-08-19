@@ -14,7 +14,7 @@ Run `ghost gather <ask>` with the real task, not a generic label. The cover is
 inlined by gather, so do not pull it separately.
 
 `gather` presents every available node; it does not filter or rank. Judge each
-node's `description` against the actual task and pull what applies. When you are
+node's `for` payload against the actual task and pull what applies. When you are
 uncertain whether a node applies, pull it. Under-pull is silent and unrecoverable;
 over-pull is mild dilution. Skip only clear non-matches. Topic overlap alone is
 not applicability.

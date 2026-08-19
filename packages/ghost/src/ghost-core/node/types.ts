@@ -12,12 +12,12 @@ export interface GhostNodeFrontmatter {
   /** Free-form descriptive properties parsed from node frontmatter. */
   [key: string]: unknown;
   /**
-   * Retrieval payload shown by gather: the observable condition under which
-   * this node applies. Together with the node's id, it is how an agent decides
-   * applicability. Optional, but strongly encouraged on any node worth
-   * anchoring a task at.
+   * Retrieval payload shown by gather: the situation or activity this
+   * guidance is for, never an audience. Together with the node's id, it is
+   * how an agent decides applicability. Optional, but strongly encouraged on
+   * any node worth anchoring a task at.
    */
-  description?: string;
+  for?: string;
   /**
    * Optional locators for the concrete materials this guidance is about:
    * explicit repo-relative file paths and supported external locators. Glob

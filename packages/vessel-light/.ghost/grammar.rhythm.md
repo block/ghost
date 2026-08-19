@@ -1,5 +1,5 @@
 ---
-description: Laying out any view.
+for: Laying out any view.
 materials:
   - materials/primitives.css
 ---

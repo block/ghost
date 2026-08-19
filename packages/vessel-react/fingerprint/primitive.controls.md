@@ -1,5 +1,5 @@
 ---
-description: Any view with buttons, inputs, forms, labels, or field errors.
+for: Any view with buttons, inputs, forms, labels, or field errors.
 materials:
   - packages/vessel-react/src/components/ui/button.tsx
   - packages/vessel-react/src/components/ui/button-group.tsx

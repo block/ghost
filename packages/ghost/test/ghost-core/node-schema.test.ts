@@ -43,24 +43,30 @@ describe("ghost.node/v1 schema", () => {
     expect(lintGhostNode(node("audience: enterprise")).errors).toBe(0);
   });
 
-  it("accepts description (the retrieval payload)", () => {
-    expect(lintGhostNode(node("description: Lifecycle email.")).errors).toBe(0);
+  it("accepts for (the retrieval payload)", () => {
+    expect(lintGhostNode(node("for: Lifecycle email.")).errors).toBe(0);
   });
 
   it("rejects the removed context key with a rename message", () => {
     const report = lintGhostNode(node("context: Lifecycle email."));
     expect(report.errors).toBeGreaterThan(0);
     expect(
-      report.issues.some((issue) =>
-        issue.message.includes("renamed to `description`"),
-      ),
+      report.issues.some((issue) => issue.message.includes("renamed to `for`")),
+    ).toBe(true);
+  });
+
+  it("rejects the removed description key with a rename message", () => {
+    const report = lintGhostNode(node("description: Lifecycle email."));
+    expect(report.errors).toBeGreaterThan(0);
+    expect(
+      report.issues.some((issue) => issue.message.includes("renamed to `for`")),
     ).toBe(true);
   });
 
   it("round-trips through serialize/parse (frontmatter is properties only)", () => {
     const original: GhostNodeDocument = {
       frontmatter: {
-        description: "Near payment, reduce felt risk.",
+        for: "Near payment, reduce felt risk.",
       },
       body: "Near payment, reduce felt risk.",
     };
@@ -73,7 +79,7 @@ describe("ghost.node/v1 schema", () => {
   it("round-trips complete frontmatter through serialize/parse", () => {
     const original = {
       frontmatter: {
-        description: "Checkout trust signals.",
+        for: "Checkout trust signals.",
         materials: [
           "src/components/checkout/trust-signals.tsx",
           "https://example.com/logo.svg",
@@ -164,7 +170,7 @@ describe("ghost.node/v1 schema", () => {
     const serialized = serializeNode({
       frontmatter: {
         stage: "purchase",
-        description: "Checkout trust signals.",
+        for: "Checkout trust signals.",
         audience: "enterprise",
         materials: ["src/components/checkout/**"],
       },
@@ -173,7 +179,7 @@ describe("ghost.node/v1 schema", () => {
 
     expect(serialized).toMatchInlineSnapshot(`
       "---
-      description: Checkout trust signals.
+      for: Checkout trust signals.
       materials:
         - src/components/checkout/**
       audience: enterprise

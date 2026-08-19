@@ -1,5 +1,5 @@
 ---
-description: Chat threads, agent consoles, and prompt composers.
+for: Chat threads, agent consoles, and prompt composers.
 ---
 
 In this context: AI conversation threads, agent consoles, review assistants,

@@ -58,7 +58,7 @@ describe("ghost package", () => {
     await mkdir(join(dir, "checkout"), { recursive: true });
     await writeFile(
       join(dir, "checkout", "principle.trust.md"),
-      "---\ndescription: Trust at the payment moment.\n---\n\nReduce felt risk near payment.\n",
+      "---\nfor: Trust at the payment moment.\n---\n\nReduce felt risk near payment.\n",
     );
 
     const loaded = await loadGhostPackage(resolveGhostPackage(dir));
@@ -66,7 +66,7 @@ describe("ghost package", () => {
     // id is the path; kind/slug come from the filename.
     const authored = loaded.catalog.nodes.get("checkout/principle.trust");
     expect(authored?.body).toBe("Reduce felt risk near payment.");
-    expect(authored?.description).toBe("Trust at the payment moment.");
+    expect(authored?.for).toBe("Trust at the payment moment.");
     expect(authored?.kind).toBe("principle");
     expect(authored?.slug).toBe("trust");
   });
@@ -78,7 +78,7 @@ describe("ghost package", () => {
     // while loading, but must not vanish silently.
     await writeFile(
       join(dir, "features", "index.md"),
-      "---\ndescription: All feature UI.\nrelates:\n  - to: core\n---\n\nFeature prose.\n",
+      "---\nfor: All feature UI.\nrelates:\n  - to: core\n---\n\nFeature prose.\n",
     );
 
     const loaded = await loadGhostPackage(resolveGhostPackage(dir));
@@ -131,7 +131,7 @@ Replacement rule.
     await writeGlossary(dir, ["principle"]);
     await writeFile(
       join(dir, "principle.density.md"),
-      "---\ndescription: Density stance.\n---\n\nUse density deliberately.\n",
+      "---\nfor: Density stance.\n---\n\nUse density deliberately.\n",
     );
 
     const report = await lintGhostPackage(dir);
@@ -149,7 +149,7 @@ Replacement rule.
     await writeGlossary(dir, ["principle"]);
     await writeFile(
       join(dir, "voice.md"),
-      "---\ndescription: Voice.\n---\n\nSpeak plainly.\n",
+      "---\nfor: Voice.\n---\n\nSpeak plainly.\n",
     );
 
     const report = await lintGhostPackage(dir);
@@ -162,7 +162,7 @@ Replacement rule.
     );
   });
 
-  it("warns when a node has no description", async () => {
+  it("warns when a node has no for payload", async () => {
     await writeManifest(dir);
     await writeGlossary(dir, ["principle"]);
     await writeFile(
@@ -173,12 +173,12 @@ Replacement rule.
     const report = await lintGhostPackage(dir);
 
     expect(report.errors).toBe(0);
-    // Undeclared cover + missing description.
+    // Undeclared cover + missing `for`.
     expect(report.warnings).toBe(2);
     expect(report.issues).toContainEqual(
       expect.objectContaining({
         severity: "warning",
-        rule: "node-description-missing",
+        rule: "node-for-missing",
         path: "principle.density.md",
       }),
     );
@@ -195,13 +195,11 @@ Replacement rule.
     const report = await lintGhostPackage(dir);
     expect(report.errors).toBeGreaterThan(0);
     expect(
-      report.issues.some((issue) =>
-        issue.message.includes("renamed to `description`"),
-      ),
+      report.issues.some((issue) => issue.message.includes("renamed to `for`")),
     ).toBe(true);
   });
 
-  it("does not warn about descriptions when every node has one", async () => {
+  it("rejects the removed description key with a rename message", async () => {
     await writeManifest(dir);
     await writeGlossary(dir, ["principle"]);
     await writeFile(
@@ -210,10 +208,25 @@ Replacement rule.
     );
 
     const report = await lintGhostPackage(dir);
+    expect(report.errors).toBeGreaterThan(0);
+    expect(
+      report.issues.some((issue) => issue.message.includes("renamed to `for`")),
+    ).toBe(true);
+  });
+
+  it("does not warn about for payloads when every node has one", async () => {
+    await writeManifest(dir);
+    await writeGlossary(dir, ["principle"]);
+    await writeFile(
+      join(dir, "principle.density.md"),
+      "---\nfor: Density stance.\n---\n\nUse density deliberately.\n",
+    );
+
+    const report = await lintGhostPackage(dir);
 
     expect(report.errors).toBe(0);
     expect(report.issues).not.toContainEqual(
-      expect.objectContaining({ rule: "node-description-missing" }),
+      expect.objectContaining({ rule: "node-for-missing" }),
     );
   });
 
@@ -222,7 +235,7 @@ Replacement rule.
     await writeGlossary(dir, ["principle"]);
     await writeFile(
       join(dir, "principles.density.md"),
-      "---\ndescription: Density stance.\n---\n\nUse density deliberately.\n",
+      "---\nfor: Density stance.\n---\n\nUse density deliberately.\n",
     );
 
     const report = await lintGhostPackage(dir);
@@ -246,7 +259,7 @@ Replacement rule.
     await writeManifest(dir);
     await writeFile(
       join(dir, "principles.density.md"),
-      "---\ndescription: Density stance.\n---\n\nUse density deliberately.\n",
+      "---\nfor: Density stance.\n---\n\nUse density deliberately.\n",
     );
 
     const report = await lintGhostPackage(dir);
@@ -263,7 +276,7 @@ Replacement rule.
     await writeManifest(dir);
     await writeFile(
       join(dir, "asset.logo.md"),
-      "---\ndescription: Logo.\nmaterials:\n  - brand/logo.svg\n  - https://example.com/logo\n---\n\nLogo prose.\n",
+      "---\nfor: Logo.\nmaterials:\n  - brand/logo.svg\n  - https://example.com/logo\n---\n\nLogo prose.\n",
     );
 
     const loaded = await loadGhostPackage(resolveGhostPackage(dir));
@@ -279,7 +292,7 @@ Replacement rule.
     await mkdir(join(dir, "materials"), { recursive: true });
     await writeFile(
       join(dir, "materials", "asset.logo.md"),
-      "---\ndescription: Bundled material.\n---\n\nNot a node.\n",
+      "---\nfor: Bundled material.\n---\n\nNot a node.\n",
     );
 
     const loadedFiles = await loadNodeFiles(dir);
@@ -304,7 +317,7 @@ Replacement rule.
     await writeFile(join(dir, "materials", "orphan.txt"), "orphan\n");
     await writeFile(
       join(dir, "asset.logo.md"),
-      "---\ndescription: Logo.\nmaterials:\n  - materials/claimed.txt\n  - missing/logo.svg\n  - https://example.com/logo.svg\n---\n\nLogo prose.\n",
+      "---\nfor: Logo.\nmaterials:\n  - materials/claimed.txt\n  - missing/logo.svg\n  - https://example.com/logo.svg\n---\n\nLogo prose.\n",
     );
 
     const report = await lintGhostPackage(dir, dir);
@@ -338,7 +351,7 @@ Replacement rule.
     await writeFile(join(dir, "materials", "tokens.css"), ":root {}\n");
     await writeFile(
       join(dir, "asset.tokens.md"),
-      "---\ndescription: Tokens.\nmaterials:\n  - materials/*.css\n---\n\nToken prose.\n",
+      "---\nfor: Tokens.\nmaterials:\n  - materials/*.css\n---\n\nToken prose.\n",
     );
 
     const report = await lintGhostPackage(dir, dir);
@@ -362,7 +375,7 @@ Replacement rule.
     await writeManifest(dir);
     await writeFile(
       join(dir, "asset.logo.md"),
-      "---\ndescription: Logo.\nmaterials:\n  - /absolute/logo.svg\n---\n\nLogo prose.\n",
+      "---\nfor: Logo.\nmaterials:\n  - /absolute/logo.svg\n---\n\nLogo prose.\n",
     );
 
     const report = await lintGhostPackage(dir);
@@ -378,7 +391,7 @@ Replacement rule.
     await writeManifest(dir);
     await writeFile(
       join(dir, "asset.logo.md"),
-      "---\ndescription: Logo.\nmaterials:\n  - brand/logo.svg\n---\n\nLogo prose.\n",
+      "---\nfor: Logo.\nmaterials:\n  - brand/logo.svg\n---\n\nLogo prose.\n",
     );
     await writeChecks(dir, [
       [
@@ -423,12 +436,12 @@ Replacement rule.
     await writeManifest(dir);
     await writeFile(
       join(dir, "index.md"),
-      "---\ndescription: The package cover and coverage map.\n---\n\nFront door prose.\n",
+      "---\nfor: The package cover and coverage map.\n---\n\nFront door prose.\n",
     );
     await mkdir(join(dir, "email"), { recursive: true });
     await writeFile(
       join(dir, "email", "index.md"),
-      "---\ndescription: Email surface.\n---\n\nEmail.\n",
+      "---\nfor: Email surface.\n---\n\nEmail.\n",
     );
 
     const loaded = await loadGhostPackage(resolveGhostPackage(dir));

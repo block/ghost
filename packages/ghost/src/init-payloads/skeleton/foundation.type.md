@@ -1,5 +1,5 @@
 ---
-description: Any view containing text.
+for: Any view containing text.
 ---
 
 Starter guidance the brand owner has not yet reviewed. Cite it as provisional

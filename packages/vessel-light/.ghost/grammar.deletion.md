@@ -1,5 +1,5 @@
 ---
-description: The final pass over any composition, or whenever a view feels crowded, busy, or dressed up.
+for: The final pass over any composition, or whenever a view feels crowded, busy, or dressed up.
 ---
 
 Restraint is not a mood; it is a test every element has to pass. Before a

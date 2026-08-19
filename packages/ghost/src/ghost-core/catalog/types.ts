@@ -12,8 +12,8 @@ export interface GhostCatalogNode {
   kind?: string;
   /** Filename slug: bare name, or the part after the first dot. */
   slug: string;
-  /** Retrieval payload shown in gather: the condition under which this node applies. */
-  description?: string;
+  /** Retrieval payload shown in gather: the situation or activity this guidance is for. */
+  for?: string;
   /** Optional bare or annotated material locators carried by the authored node. */
   materials?: GhostMaterial[];
   /** True when the node carries a material locator, substantial fence, or Skeleton. */

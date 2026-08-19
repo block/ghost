@@ -60,7 +60,7 @@ export function fakeModel() {
       const selected = [];
       for (const entry of menu) {
         const nodeTokens = tokens(
-          [entry.id.replaceAll(/[.-]/g, " "), entry.kind, entry.description]
+          [entry.id.replaceAll(/[.-]/g, " "), entry.kind, entry.for]
             .filter(Boolean)
             .join(" "),
         );
@@ -101,7 +101,7 @@ function selectUser(ask, menu, cover) {
     const flags = [entry.materials ? `${entry.materials} materials` : null]
       .filter(Boolean)
       .join(", ");
-    return `- ${entry.id}${entry.kind ? ` [${entry.kind}]` : ""}${flags ? ` (${flags})` : ""}: ${entry.description ?? "(no description)"}`;
+    return `- ${entry.id}${entry.kind ? ` [${entry.kind}]` : ""}${flags ? ` (${flags})` : ""}: ${entry.for ?? "(no for payload)"}`;
   });
   const coverLine = cover
     ? `Cover already in context: ${cover.id}\n\n${cover.body}\n\n`

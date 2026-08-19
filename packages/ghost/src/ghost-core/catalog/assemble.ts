@@ -43,7 +43,7 @@ export function assembleCatalog(input: AssembleCatalogInput): GhostCatalog {
       id: placed.id,
       ...(placed.kind !== undefined ? { kind: placed.kind } : {}),
       slug: placed.slug ?? placed.id.split("/").pop() ?? placed.id,
-      ...(fm.description !== undefined ? { description: fm.description } : {}),
+      ...(fm.for !== undefined ? { for: fm.for } : {}),
       ...(fm.materials !== undefined ? { materials: fm.materials } : {}),
       concrete,
       hasFencedExample: hasSubstantialFencedExample(placed.doc.body),

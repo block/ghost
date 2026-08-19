@@ -100,8 +100,8 @@ function menuCoverageLine(menu: GhostGatherResult): string {
     `${coverage.nodes} nodes`,
     `${coverage.concrete} carry payloads (${payloadParts.join(", ")})`,
   ];
-  if (coverage.undescribed > 0) {
-    parts.push(`${coverage.undescribed} lack descriptions`);
+  if (coverage.withoutFor > 0) {
+    parts.push(`${coverage.withoutFor} lack \`for\` payloads`);
   }
   return parts.join(" · ");
 }
@@ -125,7 +125,7 @@ function formatMenuMarkdown(menu: GhostGatherResult): string {
   if (menu.ask) {
     lines.push(
       "Complete, unfiltered, unranked list from the ghost package. ghost has not selected nodes for this ask.",
-      "Pull every node whose description indicates its stated situation applies and whose guidance, material, structure, or refusal governs the work. Skip inapplicable nodes. Topic overlap alone is not applicability. Do not add nodes for completeness or omit applicable nodes to meet a count.",
+      "Pull every node whose `for` payload indicates its stated situation applies and whose guidance, material, structure, or refusal governs the work. Skip inapplicable nodes. Topic overlap alone is not applicability. Do not add nodes for completeness or omit applicable nodes to meet a count.",
       "Next: `ghost pull <id> [<id>…]`.",
       "If nothing applies, name the package's silence, follow the cover silence posture, and do not invent ghost-backed guidance.",
       "",
@@ -147,7 +147,7 @@ function formatMenuMarkdown(menu: GhostGatherResult): string {
   for (const entry of menu.nodes) {
     const kind = entry.kind ? ` _(${entry.kind})_` : "";
     lines.push(`- \`${entry.id}\`${kind}`);
-    if (entry.description) lines.push(`  - ${entry.description}`);
+    if (entry.for) lines.push(`  - ${entry.for}`);
     if (entry.materials !== undefined) {
       lines.push(`  - materials: ${entry.materials}`);
     }

@@ -1,5 +1,5 @@
 ---
-description: Any greenfield visual surface or first-draft copy.
+for: Any greenfield visual surface or first-draft copy.
 ---
 
 This is the model's median, not your brand. Each rule is reject→replace.

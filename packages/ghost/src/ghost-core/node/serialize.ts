@@ -1,7 +1,7 @@
 import { stringify as stringifyYaml } from "yaml";
 import type { GhostNodeDocument, GhostNodeFrontmatter } from "./types.js";
 
-const FRONTMATTER_KEY_ORDER = ["description", "materials"] as const;
+const FRONTMATTER_KEY_ORDER = ["for", "materials"] as const;
 
 function shouldSerializeFrontmatterValue(value: unknown): boolean {
   return value !== undefined;
@@ -9,7 +9,7 @@ function shouldSerializeFrontmatterValue(value: unknown): boolean {
 
 /**
  * Serialize a node back to its `---\n<yaml>\n---\n<body>` markdown form. Known
- * keys are emitted first in a stable order (description, materials), followed
+ * keys are emitted first in a stable order (for, materials), followed
  * by any free-form descriptive keys in alphabetical order so round-trips and
  * diffs are deterministic. Identity and kind are not serialized; they come
  * from the node's file path and optional filename prefix. Undefined fields are

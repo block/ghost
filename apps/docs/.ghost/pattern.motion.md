@@ -1,5 +1,5 @@
 ---
-description: Anything that moves, transitions, reveals in sequence, or changes position or emphasis.
+for: Anything that moves, transitions, reveals in sequence, or changes position or emphasis.
 materials:
   - apps/docs/src/components/docs/gather-demo.tsx
   - apps/docs/src/styles/marked-doc.css

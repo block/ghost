@@ -1,5 +1,5 @@
 ---
-description: Laying out any view.
+for: Laying out any view.
 ---
 
 Starter guidance the brand owner has not yet reviewed. Cite it as provisional

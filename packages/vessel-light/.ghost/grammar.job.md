@@ -1,5 +1,5 @@
 ---
-description: Any new view before its structure or register is chosen.
+for: Any new view before its structure or register is chosen.
 materials:
   - materials/examples/composition.form.html
   - materials/examples/composition.table.html
