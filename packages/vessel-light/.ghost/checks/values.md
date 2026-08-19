@@ -1,6 +1,5 @@
 ---
-name: Value discipline
-description: Flags off-signature values — non-pill controls, off-palette hues, raw color literals, expression over budget. Adapting the dials rewrites this check alongside the signature nodes.
+for: Changed HTML or CSS must preserve Vessel signature values across controls, surfaces, color roles, and register budgets.
 severity: high
 references:
   - signature.shape

@@ -9,12 +9,10 @@ import {
   materialLocator,
   materialLocatorClaimsPath,
   parseGlossary,
-  parseSourceRef,
   resolveLocalMaterialFile,
-  sliceNodeSection,
 } from "#ghost-core";
 import { isMissingPathError } from "../internal/fs.js";
-import type { LoadedCheck } from "./check-files.js";
+import { lintCheckReferences } from "./check-reference-lint.js";
 import { GHOST_GLOSSARY_FILENAME, GHOST_MATERIALS_DIR } from "./constants.js";
 import {
   type GhostPackagePaths,
@@ -83,7 +81,14 @@ export async function lintGhostPackage(
       lintNodeForPayloads(catalog, issues);
       lintSkeletonSections(catalog, issues);
       await lintMaterialLocators(paths, catalog, issues, cwd);
-      lintCheckReferences(catalog, checks, issues);
+      issues.push(
+        ...lintCheckReferences(catalog, checks).map((issue) => ({
+          severity: "error" as const,
+          rule: issue.rule,
+          message: formatCheckReferenceLintMessage(issue),
+          path: `${issue.file}.references`,
+        })),
+      );
     } catch (err) {
       issues.push({
         severity: "error",
@@ -285,46 +290,16 @@ function toPackageRelative(
   return packageRelative.startsWith("../") ? repoRelativePath : packageRelative;
 }
 
-function lintCheckReferences(
-  catalog: GhostCatalog,
-  checks: Map<string, LoadedCheck>,
-  issues: LintIssue[],
-): void {
-  for (const check of checks.values()) {
-    for (const raw of check.references) {
-      const parsed = parseSourceRef(raw);
-      if (parsed === null) {
-        issues.push({
-          severity: "error",
-          rule: "check-reference-malformed",
-          message: `check reference '${raw}' is not a node id with optional '> Heading' anchor`,
-          path: `checks/${check.id}.md.references`,
-        });
-        continue;
-      }
-      const node = catalog.nodes.get(parsed.nodeId);
-      if (node === undefined) {
-        issues.push({
-          severity: "warning",
-          rule: "check-reference-unresolved",
-          message: `check reference '${raw}' does not resolve to a ghost package node — if you pruned this rule from the node, delete its paired flag in the check too`,
-          path: `checks/${check.id}.md.references`,
-        });
-        continue;
-      }
-      if (
-        parsed.heading !== undefined &&
-        sliceNodeSection(node.body, parsed.heading) === null
-      ) {
-        issues.push({
-          severity: "warning",
-          rule: "check-reference-heading-missing",
-          message: `check reference '${raw}' names a heading that was not found — if you pruned this rule from the node, delete its paired flag in the check too`,
-          path: `checks/${check.id}.md.references`,
-        });
-      }
-    }
+function formatCheckReferenceLintMessage(
+  issue: ReturnType<typeof lintCheckReferences>[number],
+): string {
+  if (issue.rule === "check-reference-unresolved") {
+    return `check reference '${issue.reference}' ${issue.message}; write the guidance node first, or delete the check; a check cannot maintain guidance that is not written`;
   }
+  if (issue.rule === "check-reference-heading-missing") {
+    return `check reference '${issue.reference}' ${issue.message}; if the heading was renamed, update this reference in the same change`;
+  }
+  return `check reference '${issue.reference}' ${issue.message}`;
 }
 
 async function readDeclaredGlossaryKinds(

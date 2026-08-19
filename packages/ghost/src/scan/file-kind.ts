@@ -33,8 +33,9 @@ export function detectFileKind(path: string, raw: string): DetectedFileKind {
   if (new RegExp(`(^|[\\\\/])${GHOST_MATERIALS_DIR}[\\\\/]`).test(lowerPath)) {
     return "material";
   }
-  // A markdown check lives under a `checks/` directory. Detected by location
-  // so the established agent-check format (no `schema:` field) is recognized.
+  // A markdown check lives under a `checks/` directory. Location detection
+  // remains, but .agents/checks shape compatibility deliberately ended because
+  // grounding each check in written guidance is mandatory.
   if (filename.endsWith(".md") && /(^|[\\/])checks[\\/]/.test(lowerPath)) {
     return "check";
   }

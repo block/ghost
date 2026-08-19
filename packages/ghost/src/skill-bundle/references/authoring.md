@@ -128,7 +128,9 @@ A starter is owned after copy. Its inherited answers remain provisional until th
 6. Remove generic refusals the brand does not hold and update checks that
    reference them.
 7. Update or remove examples that now teach the wrong thing.
-8. Rewrite checks so every asserted obligation is stated in guidance.
+8. Write or update the guidance first, then rewrite checks so every asserted
+   obligation references that guidance. Heading coupling is intentional: if a
+   heading changes, update the check reference in the same change.
 9. Run `ghost validate`.
 
 Do this in one sitting when possible. A half-adapted package can contradict

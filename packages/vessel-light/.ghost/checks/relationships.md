@@ -1,6 +1,5 @@
 ---
-name: Relationship discipline
-description: Flags structural violations of the grammar — emphasis-ladder breaks, sibling margins, decorative borders, nested cards. These rules survive any adaptation.
+for: "Structural changes risk breaking the grammar: emphasis ladders, sibling margins, decorative borders, nested cards, or elevation tiers."
 severity: high
 references:
   - grammar.hierarchy

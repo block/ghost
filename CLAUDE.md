@@ -9,8 +9,8 @@ ghost hands it the brand as a portable steering packet: a repo-local `.ghost/`
 package, a flat corpus of prose nodes read before anything is made. The public npm shape is one package,
 `@design-intelligence/ghost`, with one user-facing bin, `ghost`. The CLI
 validates the corpus, emits the guidance menu, pulls selected nodes, records
-local selection events, and assembles advisory review packets from checks. Optional
-review checks attach under `.ghost/checks/`. The host agent does all
+local selection events, and assembles one-shot grounded review packets from checks,
+cited guidance, materials, and diffs. Optional review checks attach under `.ghost/checks/`. The host agent does all
 selection and interpretive BYOA work through the installed `ghost` skill.
 
 ## Build & Run
@@ -77,15 +77,15 @@ guidance names its **condition**, the situation it applies in, never a filing
 destination. `ghost gather` emits the complete menu (every node's id, kind,
 context, material count, and payload labels); the agent pulls every node
 whose stated situation applies to the actual task. `ghost pull` emits selected node bodies and materials. `ghost
-review` reads a diff, matches touched files to node materials, offers relevant
-checks, and emits an advisory packet for the host agent to judge.
+review` reads a diff and emits a one-shot grounded packet with touched files,
+selected checks, cited guidance excerpts, guidance materials, and the diff.
 
 **Checks** (`.ghost/checks/*.md`) are optional review assertions that declare
-`references` to guidance node ids (with optional heading anchors) and prose
-instructions for the reviewing agent. Checks are feed-back only and never leak
-into generation context. Scaffold them with `ghost checks init` or `ghost init
---with checks`. Ordinary Git review is the approval boundary for guidance
-edits and checks.
+`for`, `severity`, and resolving `references` to guidance node ids (with
+optional heading anchors), plus prose instructions for the reviewing agent.
+Checks are feed-back only and never leak into generation context. Scaffold them
+with `ghost checks init` or `ghost init --with checks`. Ordinary Git review is
+the approval boundary for guidance edits and checks.
 
 ## Packages
 
@@ -108,7 +108,7 @@ Core workflow:
 | `ghost validate` | Validate the package: manifest shape, node validity, material locators, check references, and glossary kind prefixes. |
 | `ghost gather [ask…]` | Emit the complete guidance menu so the agent can pull applicable nodes. |
 | `ghost pull <id> [<id>…]` | Emit selected nodes' bodies and materials; append the selection to the local `.ghost/.events` tape. |
-| `ghost review` | Emit an advisory review packet for a diff using material-backed nodes and checks (requires `.ghost/checks/`). |
+| `ghost review` | Emit a one-shot grounded review packet for a diff using checks and cited guidance (requires `.ghost/checks/`). |
 | `ghost stats` | Summarize local gather/pull events from `.ghost/.events`. |
 | `ghost export` | Bundle the guidance as a portable tarball with a materials audit (`--strict` fails on stranded locators). |
 | `ghost skill install` | Install the unified `ghost` skill bundle. |

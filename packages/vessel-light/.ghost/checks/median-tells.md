@@ -1,6 +1,5 @@
 ---
-name: Median tells
-description: Flags the measured defaults of unsteered generation and current model-signature tells — hover-lift, default accents, unprompted dark theme, gradient text, frequency tells, and per-model signatures.
+for: "Changed UI output could carry the measured defaults of unsteered generation or current model-signature tells: hover-lift, default accents, unprompted dark theme, gradient text, frequency tells, and per-model signatures."
 severity: high
 references:
   - anti-goal.median > Hover-lift
@@ -21,7 +20,7 @@ This is Vessel's adaptation of the shared median check; the fidelity carve-outs
 below are the body's own. These flags target the measured convergence patterns
 of unsteered model generation, plus tells specific to individual models. Each
 is mechanically detectable in a diff. Pruning a rule from `anti-goal.median`
-orphans its paired reference here — `ghost validate` warns; delete the flag and
+orphans its paired reference here. `ghost validate` errors; delete the flag and
 its reference together.
 
 Flag `transform` with `translateY` inside a `:hover` rule on cards, buttons,

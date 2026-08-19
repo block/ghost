@@ -87,19 +87,27 @@ Checks live under `.ghost/checks/*.md` and are never gathered or pulled:
 
 ```markdown
 ---
-name: logo-clearspace-holds
-description: Logo usage preserves clearspace and lockup integrity.
+for: Logo usage must preserve clearspace and lockup integrity.
 severity: medium
 references:
-  - asset.logo
+  - asset.logo > Clearspace
 ---
 
-Grade whether the change preserves the logo guidance in `asset.logo`.
+Grade whether the change preserves the logo guidance in `asset.logo > Clearspace`.
 ```
 
-`references` contains node ids with optional heading anchors. Check bodies are
-review instructions for the host agent. ghost validates and transports checks;
-it does not grade them.
+A `ghost.check/v2` frontmatter block contains exactly `for`, `severity`, and
+`references`. `for` is the non-empty semantic situation where the check
+applies, never a path; it is the same field nodes use for their retrieval
+payload. `severity` is `high`, `medium`, or `low`. `references` is
+a non-empty list of node ids with optional `> Heading` anchors. Every reference
+must resolve during `ghost validate`; unresolved nodes and missing headings are
+errors. Write the guidance node first, then the check in the same change.
+
+The removed check keys are `context`, `name`, `description`, `source`, `tools`,
+and `turn_limit`. Compatibility with `.agents/checks` ended because grounding every
+check in written guidance is mandatory. Check bodies are review instructions for
+the host agent. ghost validates and transports checks; it does not grade them.
 
 ## Command behavior
 
@@ -108,7 +116,9 @@ it does not grade them.
 - `ghost pull` emits selected nodes in steering order, inlines eligible local
   text materials once, leaves later duplicate pointers, turns binary materials
   into inspect-pointers, and leaves external materials as locators.
-- `ghost review` matches touched files to exact local material paths, offers
-  relevant checks, and emits a review packet for the host agent.
+- `ghost review [...checkIds]` emits a one-shot grounded review packet with
+  touched files, selected checks, cited guidance excerpts, guidance materials,
+  and the diff. With no ids it includes all checks; with ids it filters by check
+  id and suggests close matches for unknown ids.
 - `ghost export` bundles the package and audits which locators travel.
 - `ghost stats` summarizes local gather and pull events.

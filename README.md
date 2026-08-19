@@ -59,7 +59,7 @@ ghost checks init   # opt in to review assertions
 ghost validate      # make sure the package is well-formed
 ghost gather [ask]  # before building: show the complete guidance menu
 ghost pull <ids>    # read the picked nodes' full bodies
-ghost review        # during review: match a diff to guidance and checks
+ghost review        # during review: assemble a grounded check packet
 ghost export        # bundle the guidance as a portable artifact
 ghost stats         # while tuning: see what agents reached for
 ```
@@ -143,20 +143,19 @@ Checks are not nodes. They are review assertions used by `ghost review`:
 
 ```markdown
 ---
-name: logo-clearspace-holds
-description: Logo usage preserves clearspace, lockup integrity, and glyph rules.
+context: Logo usage must preserve clearspace, lockup integrity, and glyph rules.
 severity: medium
 references:
-  - asset.logo
+  - asset.logo > Clearspace
 ---
 
-Grade whether the change preserves the logo guidance in `asset.logo`.
+Grade whether the change preserves the logo guidance in `asset.logo > Clearspace`.
 ```
 
 `gather` and `pull` give your agent applicable guidance before it builds.
-`review` supports the same agent after a change exists: the CLI reads a diff,
-matches touched files to node `materials`, and offers relevant checks for the
-agent to weigh. Review output never enters generation context.
+`review` supports the same agent after a change exists: the CLI reads a diff and
+assembles selected checks, cited guidance excerpts, guidance materials, and the
+diff into one grounded packet. Review output never enters generation context.
 
 ## The Package Travels
 

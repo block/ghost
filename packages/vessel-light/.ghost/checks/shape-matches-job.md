@@ -1,6 +1,5 @@
 ---
-name: Shape matches the job
-description: Flags views composed for the wrong reader job — a form styled as a table, an announcement headline over a reviewable artifact, a live state presented as settled fact, a second primary, or a skeleton loader standing in for content.
+for: A diff adds or restructures a view whose composition must match the reader job.
 severity: high
 references:
   - grammar.job

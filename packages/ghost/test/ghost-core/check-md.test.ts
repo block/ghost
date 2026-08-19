@@ -6,11 +6,8 @@ import {
 } from "../../src/ghost-core/index.js";
 
 const VALID = `---
-name: design-token
-description: Flag hardcoded colors.
+for: Token changes must preserve semantic roles.
 severity: high
-tools: [Read, Grep]
-turn-limit: 20
 references:
   - principle.trust
 ---
@@ -25,7 +22,9 @@ Use semantic tokens.
 describe("parseCheckMarkdown", () => {
   it("splits frontmatter from body", () => {
     const parsed = parseCheckMarkdown(VALID);
-    expect(parsed.frontmatter?.name).toBe("design-token");
+    expect(parsed.frontmatter?.for).toBe(
+      "Token changes must preserve semantic roles.",
+    );
     expect(parsed.body).toContain("## Purpose");
   });
 
@@ -36,25 +35,97 @@ describe("parseCheckMarkdown", () => {
 });
 
 describe("lintGhostCheck", () => {
-  it("passes a well-formed check", () => {
+  it("passes a well-formed grounded check", () => {
     const report = lintGhostCheck(VALID);
     expect(report.errors).toBe(0);
     expect(report.warnings).toBe(0);
   });
 
-  it("errors when frontmatter is missing", () => {
-    const report = lintGhostCheck("## Purpose\nNo frontmatter.\n");
-    expect(
-      report.issues.some((i) => i.rule === "check-frontmatter-missing"),
-    ).toBe(true);
+  it("requires for", () => {
+    const report = lintGhostCheck(
+      VALID.replace("for: Token changes must preserve semantic roles.\n", ""),
+    );
+    expect(report.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ rule: "check-for-missing" }),
+      ]),
+    );
   });
 
-  it("errors on an unknown severity", () => {
-    const report = lintGhostCheck(
-      VALID.replace("severity: high", "severity: critical"),
+  it("gives a migration message for .agents/checks-shaped files", () => {
+    const report = lintGhostCheck(`---
+name: token-contract
+description: Token changes preserve semantic roles.
+severity: high
+references:
+  - principle.trust
+---
+
+Grade it.
+`);
+    expect(report.errors).toBeGreaterThan(0);
+    expect(report.issues[0]).toMatchObject({
+      rule: "check-for-missing",
+      message: expect.stringContaining(".agents/checks format"),
+    });
+    expect(report.issues[0].message).toContain(
+      "move the applicability statement from `description` to `for`",
     );
-    expect(report.issues.some((i) => i.rule === "check-severity-invalid")).toBe(
-      true,
+    expect(report.issues[0].message).toContain("add resolving `references`");
+  });
+
+  it("rejects the context key and points to `for`", () => {
+    const report = lintGhostCheck(
+      VALID.replace(
+        "for: Token changes must preserve semantic roles.\n",
+        "context: Token changes must preserve semantic roles.\n",
+      ),
+    );
+    expect(report.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          rule: "check-frontmatter-unknown-key",
+          message: "`context` is not a check key; use `for`",
+          path: "context",
+        }),
+        expect.objectContaining({ rule: "check-for-missing" }),
+      ]),
+    );
+  });
+
+  it("rejects retired frontmatter keys", () => {
+    const report = lintGhostCheck(
+      VALID.replace(
+        "severity: high\n",
+        "severity: high\nname: token-contract\ntools: [Read]\n",
+      ),
+    );
+    expect(report.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ rule: "check-frontmatter-unknown-key" }),
+      ]),
+    );
+  });
+
+  it("requires references", () => {
+    const report = lintGhostCheck(
+      VALID.replace("references:\n  - principle.trust\n", ""),
+    );
+    expect(report.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ rule: "check-references-missing" }),
+      ]),
+    );
+  });
+
+  it("errors on malformed references", () => {
+    const report = lintGhostCheck(
+      VALID.replace("  - principle.trust\n", "  - /bad\n"),
+    );
+    expect(report.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ rule: "check-reference-malformed" }),
+      ]),
     );
   });
 
@@ -70,33 +141,21 @@ describe("lintGhostCheck", () => {
     ).toBe(false);
   });
 
-  it("accepts a source pointer with a heading anchor", () => {
+  it("errors on an unknown severity", () => {
     const report = lintGhostCheck(
-      VALID.replace(
-        "references:\n  - principle.trust\n",
-        "source: checkout/payment > Confirmation\n",
-      ),
+      VALID.replace("severity: high", "severity: critical"),
     );
-    expect(report.issues.some((i) => i.rule === "check-source-malformed")).toBe(
-      false,
-    );
-  });
-
-  it("warns (does not error) on a malformed source", () => {
-    const report = lintGhostCheck(
-      VALID.replace("references:\n  - principle.trust\n", "source: /bad\n"),
-    );
-    expect(report.errors).toBe(0);
-    expect(report.issues.some((i) => i.rule === "check-source-malformed")).toBe(
+    expect(report.issues.some((i) => i.rule === "check-severity-invalid")).toBe(
       true,
     );
   });
 
   it("errors on an empty body", () => {
     const report = lintGhostCheck(`---
-name: x
-description: y
+for: Empty body.
 severity: low
+references:
+  - principle.trust
 ---
 `);
     expect(report.issues.some((i) => i.rule === "check-body-empty")).toBe(true);
@@ -104,30 +163,13 @@ severity: low
 });
 
 describe("loadGhostCheck", () => {
-  it("produces a typed document", () => {
+  it("produces a typed grounded document", () => {
     const doc = loadGhostCheck(VALID);
-    expect(doc.frontmatter).toMatchObject({
-      name: "design-token",
-      description: "Flag hardcoded colors.",
+    expect(doc.frontmatter).toEqual({
+      for: "Token changes must preserve semantic roles.",
       severity: "high",
-      tools: ["Read", "Grep"],
-      turn_limit: 20,
+      references: ["principle.trust"],
     });
     expect(doc.body).toContain("Flag hex literals");
-  });
-
-  it("carries references through", () => {
-    const doc = loadGhostCheck(VALID);
-    expect(doc.frontmatter.references).toEqual(["principle.trust"]);
-  });
-
-  it("carries an optional source pointer through", () => {
-    const doc = loadGhostCheck(
-      VALID.replace(
-        "references:\n  - principle.trust\n",
-        "source: checkout/payment > Confirmation\n",
-      ),
-    );
-    expect(doc.frontmatter.source).toBe("checkout/payment > Confirmation");
   });
 });

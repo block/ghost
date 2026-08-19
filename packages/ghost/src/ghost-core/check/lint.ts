@@ -1,5 +1,5 @@
+import { parseGuidanceRef } from "./guidance-ref.js";
 import { parseCheckMarkdown } from "./parse.js";
-import { parseSourceRef } from "./source-ref.js";
 import {
   GHOST_CHECK_SEVERITIES,
   type GhostCheckLintIssue,
@@ -7,10 +7,10 @@ import {
 } from "./types.js";
 
 /**
- * Lint a ghost check markdown file (`ghost.check/v1`): required frontmatter
- * (`name`, `description`, `severity`), an optional `source:` provenance pointer,
- * and a non-empty body. ghost never executes the check — this only validates
- * that it is well-formed.
+ * Lint a ghost check markdown file (`ghost.check/v2`): required frontmatter
+ * (`for`, `severity`, `references`) and a non-empty body. ghost never
+ * executes the check, it only validates that review assertions are grounded in
+ * guidance refs.
  */
 export function lintGhostCheck(raw: string): GhostCheckLintReport {
   const issues: GhostCheckLintIssue[] = [];
@@ -27,71 +27,10 @@ export function lintGhostCheck(raw: string): GhostCheckLintReport {
     return finalize(issues);
   }
 
-  requireString(frontmatter, "name", issues);
-  requireString(frontmatter, "description", issues);
-
-  const severity = frontmatter.severity;
-  if (severity === undefined) {
-    issues.push({
-      severity: "error",
-      rule: "check-severity-missing",
-      message: "frontmatter must declare a severity",
-      path: "severity",
-    });
-  } else if (
-    typeof severity !== "string" ||
-    !GHOST_CHECK_SEVERITIES.includes(severity as never)
-  ) {
-    issues.push({
-      severity: "error",
-      rule: "check-severity-invalid",
-      message: `severity must be one of: ${GHOST_CHECK_SEVERITIES.join(", ")}`,
-      path: "severity",
-    });
-  }
-
-  const references = frontmatter.references;
-  if (references !== undefined) {
-    if (!Array.isArray(references)) {
-      issues.push({
-        severity: "error",
-        rule: "check-references-invalid",
-        message: "references must be an array of node refs",
-        path: "references",
-      });
-    } else {
-      references.forEach((reference, index) => {
-        if (
-          typeof reference !== "string" ||
-          parseSourceRef(reference) === null
-        ) {
-          issues.push({
-            severity: "warning",
-            rule: "check-reference-malformed",
-            message:
-              "references entries should be node path ids with optional `> Heading` anchors (e.g. 'checkout/payment > Confirmation')",
-            path: `references[${index}]`,
-          });
-        }
-      });
-    }
-  }
-
-  const source = frontmatter.source;
-  if (source !== undefined) {
-    // `source:` is a deprecated soft provenance pointer: `<node-id>` with an
-    // optional `> <heading>` anchor. Keep linting it so older standalone check
-    // files still get useful feedback.
-    if (typeof source !== "string" || parseSourceRef(source) === null) {
-      issues.push({
-        severity: "warning",
-        rule: "check-source-malformed",
-        message:
-          "source should be a node path id with an optional `> Heading` anchor (e.g. 'checkout/payment > Confirmation')",
-        path: "source",
-      });
-    }
-  }
+  requireFor(frontmatter, issues);
+  requireSeverity(frontmatter, issues);
+  requireReferences(frontmatter, issues);
+  rejectUnknownFrontmatter(frontmatter, issues);
 
   if (body.trim().length === 0) {
     issues.push({
@@ -105,17 +44,120 @@ export function lintGhostCheck(raw: string): GhostCheckLintReport {
   return finalize(issues);
 }
 
-function requireString(
+function requireFor(
   frontmatter: Record<string, unknown>,
-  key: string,
   issues: GhostCheckLintIssue[],
 ): void {
-  const value = frontmatter[key];
-  if (typeof value !== "string" || value.trim().length === 0) {
+  const value = frontmatter.for;
+  if (typeof value === "string" && value.trim().length > 0) return;
+
+  const hasContextKey =
+    typeof frontmatter.context === "string" &&
+    frontmatter.context.trim().length > 0;
+  const hasAgentsShape =
+    typeof frontmatter.name === "string" &&
+    frontmatter.name.trim().length > 0 &&
+    typeof frontmatter.description === "string" &&
+    frontmatter.description.trim().length > 0;
+  issues.push({
+    severity: "error",
+    rule: "check-for-missing",
+    message: hasContextKey
+      ? "`context` is not a check key; move the applicability statement to `for`"
+      : hasAgentsShape
+        ? "check uses the .agents/checks format; move the applicability statement from `description` to `for`, and add resolving `references` to guidance nodes"
+        : "frontmatter must declare a non-empty `for` (the situation in which the check applies)",
+    path: "for",
+  });
+}
+
+function requireSeverity(
+  frontmatter: Record<string, unknown>,
+  issues: GhostCheckLintIssue[],
+): void {
+  const severity = frontmatter.severity;
+  if (severity === undefined) {
     issues.push({
       severity: "error",
-      rule: `check-${key}-missing`,
-      message: `frontmatter must declare a non-empty ${key}`,
+      rule: "check-severity-missing",
+      message: "frontmatter must declare a severity",
+      path: "severity",
+    });
+    return;
+  }
+  if (
+    typeof severity !== "string" ||
+    !GHOST_CHECK_SEVERITIES.includes(severity as never)
+  ) {
+    issues.push({
+      severity: "error",
+      rule: "check-severity-invalid",
+      message: `severity must be one of: ${GHOST_CHECK_SEVERITIES.join(", ")}`,
+      path: "severity",
+    });
+  }
+}
+
+function requireReferences(
+  frontmatter: Record<string, unknown>,
+  issues: GhostCheckLintIssue[],
+): void {
+  const references = frontmatter.references;
+  if (references === undefined) {
+    issues.push({
+      severity: "error",
+      rule: "check-references-missing",
+      message: "frontmatter must declare non-empty references",
+      path: "references",
+    });
+    return;
+  }
+  if (!Array.isArray(references)) {
+    issues.push({
+      severity: "error",
+      rule: "check-references-invalid",
+      message: "references must be an array of node refs",
+      path: "references",
+    });
+    return;
+  }
+  if (references.length === 0) {
+    issues.push({
+      severity: "error",
+      rule: "check-references-missing",
+      message: "frontmatter must declare at least one reference",
+      path: "references",
+    });
+    return;
+  }
+
+  references.forEach((reference, index) => {
+    if (typeof reference !== "string" || parseGuidanceRef(reference) === null) {
+      issues.push({
+        severity: "error",
+        rule: "check-reference-malformed",
+        message:
+          "references entries must be node ids with optional `> Heading` anchors (e.g. 'checkout/payment > Confirmation')",
+        path: `references[${index}]`,
+      });
+    }
+  });
+}
+
+function rejectUnknownFrontmatter(
+  frontmatter: Record<string, unknown>,
+  issues: GhostCheckLintIssue[],
+): void {
+  const allowed = new Set(["for", "severity", "references"]);
+  for (const key of Object.keys(frontmatter).sort()) {
+    if (allowed.has(key)) continue;
+    issues.push({
+      severity: "error",
+      rule: "check-frontmatter-unknown-key",
+      message:
+        key === "context"
+          ? "`context` is not a check key; use `for`"
+          : "check frontmatter may only declare `for`, `severity`, and `references`; remove retired keys such as `name`, `description`, `source`, `tools`, or `turn_limit`",
       path: key,
     });
   }

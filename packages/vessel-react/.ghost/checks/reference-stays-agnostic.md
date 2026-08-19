@@ -1,6 +1,5 @@
 ---
-name: reference-stays-agnostic
-description: Vessel changes stay reference-agnostic — no product brand truth, chrome, or licensed fonts leak in.
+for: "Vessel changes must stay reference-agnostic: no product brand truth, chrome, or licensed fonts leak in."
 severity: high
 references:
   - principle.reference-not-brand

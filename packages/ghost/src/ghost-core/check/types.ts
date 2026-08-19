@@ -1,32 +1,21 @@
-export const GHOST_CHECK_SCHEMA = "ghost.check/v1" as const;
+export const GHOST_CHECK_SCHEMA = "ghost.check/v2" as const;
 
-/** Severity vocabulary, matching the established agent-check format. */
+/** Severity vocabulary for agent-evaluated review assertions. */
 export const GHOST_CHECK_SEVERITIES = ["high", "medium", "low"] as const;
 export type GhostCheckMarkdownSeverity =
   (typeof GHOST_CHECK_SEVERITIES)[number];
 
 /**
- * A ghost check: markdown + frontmatter, evaluated by an agent — never run by
- * ghost. Shape-compatible with the established `.agents/checks` format, plus the
- * ghost addition `source:` (the fingerprint prose the check enforces). Every
- * check is offered to the reviewer; the agent judges relevance.
+ * A ghost check: markdown + frontmatter, evaluated by an agent, never run by
+ * ghost. Compatibility with `.agents/checks` deliberately ended because
+ * grounding every check in written guidance is mandatory.
  */
 export interface GhostCheckFrontmatter {
-  name: string;
-  description: string;
+  /** Durable semantic situation in which the check applies. */
+  for: string;
   severity: GhostCheckMarkdownSeverity;
-  /** Tools the check is allowed to use (passthrough for the review pipeline). */
-  tools?: string[];
-  /** Max tool-use turns the check should spend (passthrough). */
-  turn_limit?: number;
-  /**
-   * The fingerprint prose this check enforces, as node path ids with optional
-   * `> Heading` anchors (`checkout/payment > Confirmation`). Unresolved refs are
-   * tolerated by validation as warnings: they may name not-yet-written prose.
-   */
-  references?: string[];
-  /** Deprecated single-reference alias retained for artifact-level linting. */
-  source?: string;
+  /** Guidance node ids with optional `> Heading` anchors. */
+  references: string[];
 }
 
 export interface GhostCheckDocument {

@@ -70,7 +70,6 @@ function cloneCheckMap(
           frontmatter: cloneCheckFrontmatter(check.doc.frontmatter),
           body: check.doc.body,
         },
-        references: [...check.references],
       }),
     ]),
   );
@@ -80,11 +79,9 @@ function cloneCheckFrontmatter(
   frontmatter: GhostCheckFrontmatter,
 ): GhostCheckFrontmatter {
   return {
-    ...frontmatter,
-    ...(frontmatter.tools ? { tools: [...frontmatter.tools] } : {}),
-    ...(frontmatter.references
-      ? { references: [...frontmatter.references] }
-      : {}),
+    for: frontmatter.for,
+    severity: frontmatter.severity,
+    references: [...frontmatter.references],
   };
 }
 

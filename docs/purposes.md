@@ -70,7 +70,7 @@ Two rules keep the reservation honest:
 | **Authoring** | `ghost init`, `ghost validate`, `ghost checks init` | The raw nodes, checks, and glossary for a human or agent writing the guidance. | the package | **No**, this is the model. |
 | **Generation** | `ghost gather [ask…]`, `ghost pull <ids>` | The flat menu, then selected node bodies and materials. | nodes only | **No** if selection stays with the agent and checks stay invisible. |
 | **Local signal** | `ghost stats` | The gitignored event tape (`.ghost/.events`) written by `gather` and `pull`, used to tune contexts and menu ergonomics. | event ids and miss suggestions | **No**, observability must not become ranking, memory, or canonical state. |
-| **Diff review** | `ghost review` | Touched files matched to node `materials`, relevant checks, referenced prose, gaps, and the diff. | nodes, checks, diff | **No** if checks bind by `references` and are not gathered. |
+| **Diff review** | `ghost review` | Touched files, selected checks, cited guidance excerpts, guidance materials, and the diff. | nodes, checks, diff | **No** if checks bind by `references` and are not gathered. |
 | **Fleet** | (future) | Many ghost packages at once: distances, cohorts, summaries. | many corpora, read-only | **No**, consumes exports read-only. |
 
 ## Known leaks

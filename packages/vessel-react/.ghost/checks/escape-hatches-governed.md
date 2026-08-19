@@ -1,6 +1,5 @@
 ---
-name: escape-hatches-governed
-description: New escape hatches in component source are justified, minimal, and visible.
+for: New escape hatches in component source must be justified, minimal, and visible.
 severity: medium
 references:
   - condition.escape-hatches

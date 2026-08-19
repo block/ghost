@@ -1,6 +1,5 @@
 ---
-name: token-contract-holds
-description: Token and component changes preserve the semantic-role contract and add no broad aliases or raw palette usage.
+for: Token and component changes must preserve the semantic-role contract and add no broad aliases or raw palette usage.
 severity: high
 references:
   - asset.tokens
