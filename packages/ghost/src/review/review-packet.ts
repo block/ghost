@@ -28,7 +28,7 @@ export type { GuidanceExcerpt };
 
 export interface PacketCheck {
   id: string;
-  context: string;
+  for: string;
   severity: string;
   references: string[];
   body: string;
@@ -81,7 +81,7 @@ export async function buildReviewPacket(
     touchedFiles: parseTouchedFiles(diffText).map((file) => file.path),
     checks: selected.checks.map((check) => ({
       id: check.id,
-      context: check.doc.frontmatter.context,
+      for: check.doc.frontmatter.for,
       severity: check.doc.frontmatter.severity,
       references: [...check.doc.frontmatter.references],
       body: check.doc.body.trim(),
@@ -220,7 +220,7 @@ export function formatReviewPacket(packet: ReviewPacket): string {
   } else {
     for (const check of packet.checks) {
       out.push(`### checks/${check.id} · ${check.severity}`, "");
-      out.push(`> ${check.context}`, "");
+      out.push(`> ${check.for}`, "");
       out.push("Maintains:");
       for (const ref of check.references) out.push(`- \`${ref}\``);
       out.push("", check.body, "");

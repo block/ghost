@@ -1,5 +1,5 @@
 ---
-context: Component additions and reworks must keep the registry and its decision metadata in step.
+for: Component additions and reworks must keep the registry and its decision metadata in step.
 severity: medium
 references:
   - asset.registry

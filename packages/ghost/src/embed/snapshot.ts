@@ -79,7 +79,7 @@ function cloneCheckFrontmatter(
   frontmatter: GhostCheckFrontmatter,
 ): GhostCheckFrontmatter {
   return {
-    context: frontmatter.context,
+    for: frontmatter.for,
     severity: frontmatter.severity,
     references: [...frontmatter.references],
   };

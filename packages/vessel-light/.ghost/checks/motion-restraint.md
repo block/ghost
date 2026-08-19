@@ -1,5 +1,5 @@
 ---
-context: Changed transitions or animations introduce non-token motion, looping decoration, or keyframes that do not explain state change.
+for: Changed transitions or animations introduce non-token motion, looping decoration, or keyframes that do not explain state change.
 severity: medium
 references:
   - grammar.motion

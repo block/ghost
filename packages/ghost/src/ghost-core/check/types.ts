@@ -12,7 +12,7 @@ export type GhostCheckMarkdownSeverity =
  */
 export interface GhostCheckFrontmatter {
   /** Durable semantic situation in which the check applies. */
-  context: string;
+  for: string;
   severity: GhostCheckMarkdownSeverity;
   /** Guidance node ids with optional `> Heading` anchors. */
   references: string[];

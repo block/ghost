@@ -6,7 +6,7 @@ import {
 } from "../../src/ghost-core/index.js";
 
 const VALID = `---
-context: Token changes must preserve semantic roles.
+for: Token changes must preserve semantic roles.
 severity: high
 references:
   - principle.trust
@@ -22,7 +22,7 @@ Use semantic tokens.
 describe("parseCheckMarkdown", () => {
   it("splits frontmatter from body", () => {
     const parsed = parseCheckMarkdown(VALID);
-    expect(parsed.frontmatter?.context).toBe(
+    expect(parsed.frontmatter?.for).toBe(
       "Token changes must preserve semantic roles.",
     );
     expect(parsed.body).toContain("## Purpose");
@@ -41,16 +41,13 @@ describe("lintGhostCheck", () => {
     expect(report.warnings).toBe(0);
   });
 
-  it("requires context", () => {
+  it("requires for", () => {
     const report = lintGhostCheck(
-      VALID.replace(
-        "context: Token changes must preserve semantic roles.\n",
-        "",
-      ),
+      VALID.replace("for: Token changes must preserve semantic roles.\n", ""),
     );
     expect(report.issues).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ rule: "check-context-missing" }),
+        expect.objectContaining({ rule: "check-for-missing" }),
       ]),
     );
   });
@@ -68,13 +65,32 @@ Grade it.
 `);
     expect(report.errors).toBeGreaterThan(0);
     expect(report.issues[0]).toMatchObject({
-      rule: "check-context-missing",
+      rule: "check-for-missing",
       message: expect.stringContaining(".agents/checks format"),
     });
     expect(report.issues[0].message).toContain(
-      "move the applicability statement from `description` to `context`",
+      "move the applicability statement from `description` to `for`",
     );
     expect(report.issues[0].message).toContain("add resolving `references`");
+  });
+
+  it("rejects the context key and points to `for`", () => {
+    const report = lintGhostCheck(
+      VALID.replace(
+        "for: Token changes must preserve semantic roles.\n",
+        "context: Token changes must preserve semantic roles.\n",
+      ),
+    );
+    expect(report.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          rule: "check-frontmatter-unknown-key",
+          message: "`context` is not a check key; use `for`",
+          path: "context",
+        }),
+        expect.objectContaining({ rule: "check-for-missing" }),
+      ]),
+    );
   });
 
   it("rejects retired frontmatter keys", () => {
@@ -136,7 +152,7 @@ Grade it.
 
   it("errors on an empty body", () => {
     const report = lintGhostCheck(`---
-context: Empty body.
+for: Empty body.
 severity: low
 references:
   - principle.trust
@@ -150,7 +166,7 @@ describe("loadGhostCheck", () => {
   it("produces a typed grounded document", () => {
     const doc = loadGhostCheck(VALID);
     expect(doc.frontmatter).toEqual({
-      context: "Token changes must preserve semantic roles.",
+      for: "Token changes must preserve semantic roles.",
       severity: "high",
       references: ["principle.trust"],
     });

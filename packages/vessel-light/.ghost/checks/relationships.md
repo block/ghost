@@ -1,5 +1,5 @@
 ---
-context: "Structural changes risk breaking the grammar: emphasis ladders, sibling margins, decorative borders, nested cards, or elevation tiers."
+for: "Structural changes risk breaking the grammar: emphasis ladders, sibling margins, decorative borders, nested cards, or elevation tiers."
 severity: high
 references:
   - grammar.hierarchy

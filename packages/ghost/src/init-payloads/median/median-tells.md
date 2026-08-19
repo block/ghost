@@ -1,5 +1,5 @@
 ---
-context: "Flags the measured defaults of unsteered generation, the deterministic floor, and current model-signature tells: hover-lift, default accents, unprompted dark theme, gradient text, contrast, frequency tells, and per-model signatures."
+for: "Changed UI output could carry the measured defaults of unsteered generation, the deterministic floor, or current model-signature tells: hover-lift, default accents, unprompted dark theme, gradient text, contrast, frequency tells, and per-model signatures."
 severity: high
 references:
   - cliche.median > Hover-lift

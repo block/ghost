@@ -14,22 +14,22 @@ export function loadGhostCheck(raw: string): GhostCheckDocument {
     throw new Error("ghost check is missing a YAML frontmatter block.");
   }
 
-  const context = frontmatter.context;
+  const forValue = frontmatter.for;
   const severity = frontmatter.severity;
   const references = frontmatter.references;
   if (
-    typeof context !== "string" ||
+    typeof forValue !== "string" ||
     typeof severity !== "string" ||
     !Array.isArray(references)
   ) {
     throw new Error(
-      "ghost check frontmatter is missing context, severity, or references.",
+      "ghost check frontmatter is missing for, severity, or references.",
     );
   }
 
   return {
     frontmatter: {
-      context,
+      for: forValue,
       severity: severity as GhostCheckMarkdownSeverity,
       references: references.filter(
         (reference): reference is string => typeof reference === "string",

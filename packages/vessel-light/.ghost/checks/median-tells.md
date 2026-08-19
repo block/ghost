@@ -1,5 +1,5 @@
 ---
-context: "Flags the measured defaults of unsteered generation and current model-signature tells: hover-lift, default accents, unprompted dark theme, gradient text, frequency tells, and per-model signatures."
+for: "Changed UI output could carry the measured defaults of unsteered generation or current model-signature tells: hover-lift, default accents, unprompted dark theme, gradient text, frequency tells, and per-model signatures."
 severity: high
 references:
   - anti-goal.median > Hover-lift

@@ -1,5 +1,5 @@
 ---
-context: A diff adds or restructures a view whose composition must match the reader job.
+for: A diff adds or restructures a view whose composition must match the reader job.
 severity: high
 references:
   - grammar.job

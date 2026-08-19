@@ -1,5 +1,5 @@
 ---
-context: Changed HTML or CSS must preserve Vessel signature values across controls, surfaces, color roles, and register budgets.
+for: Changed HTML or CSS must preserve Vessel signature values across controls, surfaces, color roles, and register budgets.
 severity: high
 references:
   - signature.shape

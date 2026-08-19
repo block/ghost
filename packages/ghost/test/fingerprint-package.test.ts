@@ -396,7 +396,7 @@ Replacement rule.
     await writeChecks(dir, [
       [
         "logo-clearspace.md",
-        "---\ncontext: Logo clearspace holds.\nseverity: high\nreferences:\n  - asset.logo\n---\n\nGrade it.\n",
+        "---\nfor: Logo clearspace holds.\nseverity: high\nreferences:\n  - asset.logo\n---\n\nGrade it.\n",
       ],
     ]);
 
@@ -441,7 +441,7 @@ Replacement rule.
     await writeChecks(dir, [
       [
         "logo-clearspace.md",
-        "---\ncontext: Logo clearspace holds.\nseverity: high\nreferences:\n  - asset.logo > Missing\n  - asset.missing\n---\n\nGrade it.\n",
+        "---\nfor: Logo clearspace holds.\nseverity: high\nreferences:\n  - asset.logo > Missing\n  - asset.missing\n---\n\nGrade it.\n",
       ],
     ]);
 

@@ -87,7 +87,7 @@ Checks live under `.ghost/checks/*.md` and are never gathered or pulled:
 
 ```markdown
 ---
-context: Logo usage must preserve clearspace and lockup integrity.
+for: Logo usage must preserve clearspace and lockup integrity.
 severity: medium
 references:
   - asset.logo > Clearspace
@@ -96,15 +96,16 @@ references:
 Grade whether the change preserves the logo guidance in `asset.logo > Clearspace`.
 ```
 
-A `ghost.check/v2` frontmatter block contains exactly `context`, `severity`, and
-`references`. `context` is the non-empty semantic situation where the check
-applies, never a path. `severity` is `high`, `medium`, or `low`. `references` is
+A `ghost.check/v2` frontmatter block contains exactly `for`, `severity`, and
+`references`. `for` is the non-empty semantic situation where the check
+applies, never a path; it is the same field nodes use for their retrieval
+payload. `severity` is `high`, `medium`, or `low`. `references` is
 a non-empty list of node ids with optional `> Heading` anchors. Every reference
 must resolve during `ghost validate`; unresolved nodes and missing headings are
 errors. Write the guidance node first, then the check in the same change.
 
-The removed check keys are `name`, `description`, `source`, `tools`, and
-`turn_limit`. Compatibility with `.agents/checks` ended because grounding every
+The removed check keys are `context`, `name`, `description`, `source`, `tools`,
+and `turn_limit`. Compatibility with `.agents/checks` ended because grounding every
 check in written guidance is mandatory. Check bodies are review instructions for
 the host agent. ghost validates and transports checks; it does not grade them.
 

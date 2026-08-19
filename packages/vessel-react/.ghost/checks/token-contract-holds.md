@@ -1,5 +1,5 @@
 ---
-context: Token and component changes must preserve the semantic-role contract and add no broad aliases or raw palette usage.
+for: Token and component changes must preserve the semantic-role contract and add no broad aliases or raw palette usage.
 severity: high
 references:
   - asset.tokens

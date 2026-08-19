@@ -8,7 +8,7 @@ import {
 
 /**
  * Lint a ghost check markdown file (`ghost.check/v2`): required frontmatter
- * (`context`, `severity`, `references`) and a non-empty body. ghost never
+ * (`for`, `severity`, `references`) and a non-empty body. ghost never
  * executes the check, it only validates that review assertions are grounded in
  * guidance refs.
  */
@@ -27,7 +27,7 @@ export function lintGhostCheck(raw: string): GhostCheckLintReport {
     return finalize(issues);
   }
 
-  requireContext(frontmatter, issues);
+  requireFor(frontmatter, issues);
   requireSeverity(frontmatter, issues);
   requireReferences(frontmatter, issues);
   rejectUnknownFrontmatter(frontmatter, issues);
@@ -44,13 +44,16 @@ export function lintGhostCheck(raw: string): GhostCheckLintReport {
   return finalize(issues);
 }
 
-function requireContext(
+function requireFor(
   frontmatter: Record<string, unknown>,
   issues: GhostCheckLintIssue[],
 ): void {
-  const value = frontmatter.context;
+  const value = frontmatter.for;
   if (typeof value === "string" && value.trim().length > 0) return;
 
+  const hasContextKey =
+    typeof frontmatter.context === "string" &&
+    frontmatter.context.trim().length > 0;
   const hasAgentsShape =
     typeof frontmatter.name === "string" &&
     frontmatter.name.trim().length > 0 &&
@@ -58,11 +61,13 @@ function requireContext(
     frontmatter.description.trim().length > 0;
   issues.push({
     severity: "error",
-    rule: "check-context-missing",
-    message: hasAgentsShape
-      ? "check uses the .agents/checks format; move the applicability statement from `description` to `context`, and add resolving `references` to guidance nodes"
-      : "frontmatter must declare a non-empty context",
-    path: "context",
+    rule: "check-for-missing",
+    message: hasContextKey
+      ? "`context` is not a check key; move the applicability statement to `for`"
+      : hasAgentsShape
+        ? "check uses the .agents/checks format; move the applicability statement from `description` to `for`, and add resolving `references` to guidance nodes"
+        : "frontmatter must declare a non-empty `for` (the situation in which the check applies)",
+    path: "for",
   });
 }
 
@@ -143,14 +148,16 @@ function rejectUnknownFrontmatter(
   frontmatter: Record<string, unknown>,
   issues: GhostCheckLintIssue[],
 ): void {
-  const allowed = new Set(["context", "severity", "references"]);
+  const allowed = new Set(["for", "severity", "references"]);
   for (const key of Object.keys(frontmatter).sort()) {
     if (allowed.has(key)) continue;
     issues.push({
       severity: "error",
       rule: "check-frontmatter-unknown-key",
       message:
-        "check frontmatter may only declare `context`, `severity`, and `references`; remove retired keys such as `name`, `description`, `source`, `tools`, or `turn_limit`",
+        key === "context"
+          ? "`context` is not a check key; use `for`"
+          : "check frontmatter may only declare `for`, `severity`, and `references`; remove retired keys such as `name`, `description`, `source`, `tools`, or `turn_limit`",
       path: key,
     });
   }

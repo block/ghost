@@ -81,7 +81,7 @@ review` reads a diff and emits a one-shot grounded packet with touched files,
 selected checks, cited guidance excerpts, guidance materials, and the diff.
 
 **Checks** (`.ghost/checks/*.md`) are optional review assertions that declare
-`context`, `severity`, and resolving `references` to guidance node ids (with
+`for`, `severity`, and resolving `references` to guidance node ids (with
 optional heading anchors), plus prose instructions for the reviewing agent.
 Checks are feed-back only and never leak into generation context. Scaffold them
 with `ghost checks init` or `ghost init --with checks`. Ordinary Git review is

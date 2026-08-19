@@ -1,5 +1,5 @@
 ---
-context: Conversation UI touches AI threads, agent consoles, prompt composers, chat messages, or tool-call rendering.
+for: Conversation UI touches AI threads, agent consoles, prompt composers, chat messages, or tool-call rendering.
 severity: high
 references:
   - grammar.conversation

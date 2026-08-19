@@ -56,7 +56,7 @@ it applies, and an agent reads the relevant guidance before building.
   only; the model reads a flat menu.
 - **Checks** are optional review assertions in a flat `.ghost/checks/*.md`
   directory. Checks are feed-back only; they never leak into generation
-  context. Each check declares `context`, `severity`, and resolving
+  context. Each check declares `for`, `severity`, and resolving
   `references` to node ids with optional heading anchors. `ghost review` emits
   all requested checks with their cited guidance. Checks are never emitted by
   `ghost gather` or `ghost pull`.

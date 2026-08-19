@@ -79,11 +79,11 @@ async function writeReviewFixture(
   );
   await writeFile(
     join(dir, ".ghost", "checks", "logo-clearspace.md"),
-    "---\ncontext: Logo usage must preserve clearspace.\nseverity: medium\nreferences:\n  - asset.logo > Clearspace\n---\n\nGrade logo clearspace.\n",
+    "---\nfor: Logo usage must preserve clearspace.\nseverity: medium\nreferences:\n  - asset.logo > Clearspace\n---\n\nGrade logo clearspace.\n",
   );
   await writeFile(
     join(dir, ".ghost", "checks", "logo-tone.md"),
-    "---\ncontext: Logo changes must keep the same clearspace tone.\nseverity: low\nreferences:\n  - asset.logo > Clearspace\n---\n\nGrade logo tone.\n",
+    "---\nfor: Logo changes must keep the same clearspace tone.\nseverity: low\nreferences:\n  - asset.logo > Clearspace\n---\n\nGrade logo tone.\n",
   );
 }
 
@@ -1729,7 +1729,7 @@ describe("ghost CLI", () => {
     );
     await writeFile(
       join(checksDir, "secret-check.md"),
-      "---\ncontext: Never served.\nseverity: high\nreferences:\n  - asset.logo\n---\n\nGrade it.\n",
+      "---\nfor: Never served.\nseverity: high\nreferences:\n  - asset.logo\n---\n\nGrade it.\n",
     );
 
     const md = await runCli(["gather", "--package", ".ghost"], dir);
@@ -1939,7 +1939,7 @@ describe("ghost CLI", () => {
     expect(packet.touchedFiles).toEqual(["x"]);
     expect(packet.checks[0]).toMatchObject({
       id: "logo-clearspace",
-      context: "Logo usage must preserve clearspace.",
+      for: "Logo usage must preserve clearspace.",
       severity: "medium",
       references: ["asset.logo > Clearspace"],
       body: "Grade logo clearspace.",
@@ -2033,7 +2033,7 @@ describe("ghost CLI", () => {
     await writeReviewFixture(dir);
     await writeFile(
       join(dir, ".ghost", "checks", "logo-clearspace.md"),
-      "---\ncontext: Logo usage must preserve clearspace.\nseverity: medium\nreferences:\n  - asset.missing\n---\n\nGrade logo clearspace.\n",
+      "---\nfor: Logo usage must preserve clearspace.\nseverity: medium\nreferences:\n  - asset.missing\n---\n\nGrade logo clearspace.\n",
     );
 
     const result = await runCli(["review", "--diff=-"], dir, { stdin: "" });
@@ -2050,7 +2050,7 @@ describe("ghost CLI", () => {
     await writeReviewFixture(dir);
     await writeFile(
       join(dir, ".ghost", "checks", "logo-clearspace.md"),
-      "---\ncontext: Logo usage must preserve clearspace.\nseverity: medium\nreferences:\n  - asset.logo > Missing heading\n---\n\nGrade logo clearspace.\n",
+      "---\nfor: Logo usage must preserve clearspace.\nseverity: medium\nreferences:\n  - asset.logo > Missing heading\n---\n\nGrade logo clearspace.\n",
     );
 
     const result = await runCli(["review", "--diff=-"], dir, { stdin: "" });
