@@ -1,5 +1,19 @@
 # @design-intelligence/ghost
 
+## 0.30.0
+
+### Minor Changes
+
+- [#262](https://github.com/block/ghost/pull/262) [`977e0a0`](https://github.com/block/ghost/commit/977e0a07fe35cc4d5fa0d8b2720fd27ecfd66305) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - The node retrieval frontmatter field is `for`: the situation or activity the guidance is for. `context` and `description` are rejected at validation with a pointer to `for`; gather/pull output, the embed API, coverage reporting (`withoutFor`), and the lint rule (`node-for-missing`) all use `for`.
+
+- [#260](https://github.com/block/ghost/pull/260) [`71f6c37`](https://github.com/block/ghost/commit/71f6c37910830cc419fefac2e49c0e5ea1e3c13b) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Rename `ghost pulse` to `ghost stats` (keeping `pulse` as a deprecated one-release alias) and remove the redundant `ghost review --json` flag in favor of `--format json`.
+
+- [#260](https://github.com/block/ghost/pull/260) [`71f6c37`](https://github.com/block/ghost/commit/71f6c37910830cc419fefac2e49c0e5ea1e3c13b) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Wraps inlined pull materials and review diffs in explicit untrusted-content delimiters, marks inlined material and review packets `untrusted` in JSON output, and reports pull-without-gather sequence observations in `ghost stats`.
+
+### Patch Changes
+
+- [#260](https://github.com/block/ghost/pull/260) [`71f6c37`](https://github.com/block/ghost/commit/71f6c37910830cc419fefac2e49c0e5ea1e3c13b) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Consolidates the skill bundle around a five-phase making loop (Ground → Anchor → Make → Verify → Close) and merges the pre-generation references into one.
+
 ## 0.29.0
 
 ### Minor Changes
