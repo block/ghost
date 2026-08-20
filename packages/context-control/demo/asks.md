@@ -16,7 +16,7 @@ poison: context.conversation
 Build a pricing landing page with a hero, three plan tiers, a customer quote,
 and a closing call to action.
 
-expect: foundation.composition, foundation.color, foundation.type, cliche.median
+expect: foundation.composition, foundation.color, foundation.type, standard.model-defaults
 poison: context.conversation
 
 ## Ask 3 — assistant conversation

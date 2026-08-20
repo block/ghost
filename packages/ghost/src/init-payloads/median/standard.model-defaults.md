@@ -2,9 +2,13 @@
 for: Any greenfield visual surface or first-draft copy.
 ---
 
-This is the model's median, not your brand. Each rule is reject→replace.
-Delete every line your brand legitimately violates — `ghost validate` will
-warn on any check reference the deletion orphans — delete the paired flag too.
+Shared defaults: the model's median, not your brand. Every rule below is a
+**Default** — a starting position that protects unsteered work from generic
+model behavior, never an obligation. Explicit brand guidance in the cover, a
+foundation, or a matching context may deliberately replace any of them.
+Each rule is reject→replace. Delete every line your brand legitimately
+violates — `ghost validate` will warn on any check reference the deletion
+orphans — delete the paired flag too.
 
 These are not aesthetic opinions. Where a count is given, it is the measured
 convergence of 300 unsteered generations across three frontier models (the

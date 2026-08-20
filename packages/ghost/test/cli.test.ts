@@ -28,15 +28,15 @@ async function writeBareTestPackage(dir: string): Promise<void> {
     ),
     writeFile(
       join(packageDir, "glossary.md"),
-      "---\nkinds:\n  - name: principle\n  - name: condition\n  - name: anti-goal\n  - name: cliche\n  - name: asset\n  - name: pattern\n---\n",
+      "---\nkinds:\n  - name: principle\n  - name: condition\n  - name: anti-goal\n  - name: standard\n  - name: asset\n  - name: pattern\n---\n",
     ),
     writeFile(
       join(packageDir, "index.md"),
       "---\nfor: Test package cover.\n---\n\nTest package.\n",
     ),
     writeFile(
-      join(packageDir, "cliche.median.md"),
-      "---\nfor: Test cliche floor.\n---\n\nAvoid generic defaults.\n",
+      join(packageDir, "standard.model-defaults.md"),
+      "---\nfor: Test shared defaults floor.\n---\n\nAvoid generic defaults.\n",
     ),
   ]);
 }
@@ -162,7 +162,7 @@ describe("ghost CLI", () => {
     ".gitignore",
     "glossary.md",
     "brand.md",
-    "cliche.median.md",
+    "standard.model-defaults.md",
     "foundation.composition.md",
     "foundation.color.md",
     "foundation.type.md",
@@ -208,7 +208,7 @@ describe("ghost CLI", () => {
     );
     expect(byId.get("brand")).toBeUndefined;
     expect(byId.has("brand")).toBe(false);
-    expect(byId.get("cliche.median")).toBe("cliche");
+    expect(byId.get("standard.model-defaults")).toBe("standard");
     for (const slug of [
       "composition",
       "color",
@@ -223,19 +223,17 @@ describe("ghost CLI", () => {
     expect(byId.get("context.conversation")).toBe("context");
 
     // The median floor survives intact: prune header + rule anchors.
-    const median = await runCli(["pull", "cliche.median"], dir);
+    const median = await runCli(["pull", "standard.model-defaults"], dir);
     expect(median.code).toBe(0);
-    expect(median.stdout).toContain(
-      "This is the model's median, not your brand.",
-    );
+    expect(median.stdout).toContain("the model's median, not your brand");
     expect(median.stdout).toContain("### Side-stripe");
 
     // The open questions ship unanswered and forbid freehanding.
     const layout = await runCli(["pull", "foundation.layout"], dir);
     expect(layout.code).toBe(0);
     expect(layout.stdout).toContain("has not yet reviewed");
-    expect(layout.stdout).toContain("Open — ask the human");
-    expect(layout.stdout).toContain("freehand");
+    expect(layout.stdout).toContain("Known gap");
+    expect(layout.stdout).toContain("invent values");
 
     // No Vessel strings anywhere in the scaffolded package.
     const forbidden = [
@@ -693,12 +691,14 @@ describe("ghost CLI", () => {
     const foundation = menu.kinds.find(
       (k: { name: string }) => k.name === "foundation",
     );
-    expect(foundation.purpose).toContain("core elements");
+    expect(foundation.purpose).toContain("load-bearing decisions");
 
     // Markdown renders the same legend above the node list.
     const markdown = await runCli(["gather"], dir);
     expect(markdown.stdout).toContain("Kinds:");
-    expect(markdown.stdout).toContain("- **foundation** — The core elements");
+    expect(markdown.stdout).toContain(
+      "- **foundation** — The brand's load-bearing decisions",
+    );
 
     // A missing glossary degrades to no legend, not an error.
     await rm(join(dir, ".ghost", "glossary.md"));
@@ -2108,13 +2108,13 @@ describe("ghost CLI", () => {
       readFile(join(dir, ".ghost", "checks", "example.md.example"), "utf-8"),
     ).resolves.toContain("references:");
 
-    // The live median check pairs with the skeleton's cliche.median node.
+    // The live median check pairs with the skeleton's standard.model-defaults node.
     const median = await readFile(
       join(dir, ".ghost", "checks", "median-tells.md"),
       "utf-8",
     );
-    expect(median).toContain("cliche.median");
-    expect(median).toContain("cliche.median > Hover-lift");
+    expect(median).toContain("standard.model-defaults");
+    expect(median).toContain("standard.model-defaults > Hover-lift");
     expect(median).toContain("prefers-reduced-motion");
     expect(median).toContain(
       "`ghost validate` warns; delete the flag and its reference together.",
@@ -2127,7 +2127,7 @@ describe("ghost CLI", () => {
     expect(again.stderr).toContain("already exists");
 
     // The scaffold validates cleanly on the default skeleton: median-tells
-    // references resolve against cliche.median.
+    // references resolve against standard.model-defaults.
     const validate = await runCli(["validate", "--format", "json"], dir);
     expect(validate.code).toBe(0);
     const report = JSON.parse(validate.stdout);
@@ -2137,14 +2137,34 @@ describe("ghost CLI", () => {
     expect(unresolved).toEqual([]);
   });
 
+  it("checks init rewrites median-tells references for a legacy cliche.median package", async () => {
+    await writeBareTestPackage(dir);
+    await rm(join(dir, ".ghost", "standard.model-defaults.md"));
+    await writeFile(
+      join(dir, ".ghost", "cliche.median.md"),
+      "---\nfor: Legacy cliche floor.\n---\n\nAvoid generic defaults.\n",
+    );
+
+    const add = await runCli(["checks", "init", "--format", "json"], dir);
+    expect(add.code).toBe(0);
+    expect(JSON.parse(add.stdout).written).toContain("median-tells.md");
+
+    const median = await readFile(
+      join(dir, ".ghost", "checks", "median-tells.md"),
+      "utf-8",
+    );
+    expect(median).toContain("cliche.median > Hover-lift");
+    expect(median).not.toContain("standard.model-defaults");
+  });
+
   it("checks init skips median tells when the median node is absent", async () => {
     await writeBareTestPackage(dir);
-    await rm(join(dir, ".ghost", "cliche.median.md"));
+    await rm(join(dir, ".ghost", "standard.model-defaults.md"));
 
     const add = await runCli(["checks", "init"], dir);
     expect(add.code).toBe(0);
     expect(add.stdout).toContain(
-      "skipped median-tells.md (no cliche.median node)",
+      "skipped median-tells.md (no standard.model-defaults node)",
     );
 
     await expect(
@@ -2161,7 +2181,7 @@ describe("ghost CLI", () => {
   it("validate warns when a pruned median heading orphans its paired check", async () => {
     await runCli(["init"], dir);
     await runCli(["checks", "init"], dir);
-    const path = join(dir, ".ghost", "cliche.median.md");
+    const path = join(dir, ".ghost", "standard.model-defaults.md");
     const median = await readFile(path, "utf-8");
     await writeFile(
       path,
@@ -2176,7 +2196,9 @@ describe("ghost CLI", () => {
       expect.objectContaining({
         severity: "warning",
         rule: "check-reference-heading-missing",
-        message: expect.stringContaining("cliche.median > Side-stripe"),
+        message: expect.stringContaining(
+          "standard.model-defaults > Side-stripe",
+        ),
       }),
     ]);
     expect(report.issues[0].message).toContain(

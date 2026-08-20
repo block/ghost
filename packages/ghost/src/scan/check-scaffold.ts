@@ -7,6 +7,14 @@ import { loadPayloadFile } from "./packed-payloads.js";
 const EXAMPLE_CHECK_FILENAME = "example.md.example";
 const MEDIAN_TELLS_FILENAME = "median-tells.md";
 
+/**
+ * Node ids that carry the measured model-defaults floor. The packed
+ * median-tells check references the current id; when a package still uses a
+ * legacy id, the references are rewritten so the scaffolded check resolves.
+ */
+const MODEL_DEFAULTS_NODE_ID = "standard.model-defaults";
+const LEGACY_MODEL_DEFAULTS_NODE_IDS = ["cliche.median"];
+
 const EXAMPLE_CHECK_CONTENT = `---
 name: logo-clearspace-holds
 description: Logo usage preserves clearspace, lockup integrity, and glyph rules.
@@ -39,15 +47,18 @@ export async function addChecksDir(
   const skipped: string[] = [];
 
   await mkdir(checksDir, { recursive: true });
-  if (await exists(join(packageDir, "cliche.median.md"))) {
-    await writeFile(
-      join(checksDir, MEDIAN_TELLS_FILENAME),
-      await loadPayloadFile("median", MEDIAN_TELLS_FILENAME),
-      "utf-8",
-    );
+  const modelDefaultsId = await findModelDefaultsNode(packageDir);
+  if (modelDefaultsId !== undefined) {
+    let check = await loadPayloadFile("median", MEDIAN_TELLS_FILENAME);
+    if (modelDefaultsId !== MODEL_DEFAULTS_NODE_ID) {
+      check = check.replaceAll(MODEL_DEFAULTS_NODE_ID, modelDefaultsId);
+    }
+    await writeFile(join(checksDir, MEDIAN_TELLS_FILENAME), check, "utf-8");
     written.push(MEDIAN_TELLS_FILENAME);
   } else {
-    skipped.push(`${MEDIAN_TELLS_FILENAME} (no cliche.median node)`);
+    skipped.push(
+      `${MEDIAN_TELLS_FILENAME} (no ${MODEL_DEFAULTS_NODE_ID} node)`,
+    );
   }
 
   await writeFile(
@@ -62,6 +73,18 @@ export async function addChecksDir(
     written,
     skipped,
   };
+}
+
+async function findModelDefaultsNode(
+  packageDir: string,
+): Promise<string | undefined> {
+  for (const id of [
+    MODEL_DEFAULTS_NODE_ID,
+    ...LEGACY_MODEL_DEFAULTS_NODE_IDS,
+  ]) {
+    if (await exists(join(packageDir, `${id}.md`))) return id;
+  }
+  return undefined;
 }
 
 async function exists(path: string): Promise<boolean> {

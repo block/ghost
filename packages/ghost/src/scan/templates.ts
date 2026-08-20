@@ -46,7 +46,7 @@ const SKELETON_FILE_ORDER = new Map(
   [
     "glossary.md",
     "brand.md",
-    "cliche.median.md",
+    "standard.model-defaults.md",
     "foundation.composition.md",
     "foundation.color.md",
     "foundation.type.md",
@@ -61,7 +61,7 @@ const SKELETON_FILE_ORDER = new Map(
 const SKELETON_TEMPLATE: GhostInitTemplate = {
   name: "skeleton",
   description:
-    "Naked skeleton: a brand cover, foundation chapters with open questions, and the cliche floor.",
+    "Naked skeleton: a brand cover, foundation chapters with open questions, and the shared model-defaults floor.",
   async files() {
     const skeletonFiles = [
       ...(await loadPackedPayload("skeleton")),
@@ -80,8 +80,8 @@ const SKELETON_TEMPLATE: GhostInitTemplate = {
 
 async function medianTemplateFile(): Promise<TemplateFile> {
   return {
-    relativePath: "cliche.median.md",
-    content: await loadPayloadFile("median", "cliche.median.md"),
+    relativePath: "standard.model-defaults.md",
+    content: await loadPayloadFile("median", "standard.model-defaults.md"),
   };
 }
 

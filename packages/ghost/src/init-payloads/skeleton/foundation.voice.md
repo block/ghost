@@ -15,18 +15,20 @@ Voice and motion carry the same temperature: a brand whose copy is warm does
 not move coldly, and a brand whose copy is spare does not bounce. When you
 set one, check the other.
 
-## Warmth
+## Rules
 
-Open — ask the human; do not freehand. The open question: how warm or cool
-does this brand sound — and, by the shared temperature, how does it move?
-See the motion foundation for the other half. When answered, restate this
-section as the brand's current answer. Until then, write plainly and label
-the tone provisional.
+- Error and failure copy states the fact and the next step.
+- Known gap — the warmth is unanswered. The open question: how warm or cool
+  does this brand sound — and, by the shared temperature, how does it move?
+  See the motion foundation for the other half. Ask the human; do not invent
+  an answer. Until answered, write plainly and label the tone provisional.
+  When answered, restate this rule as the brand's current answer.
 
-## Misuse
+## Never
 
-- No exclamation points as a substitute for having something to say.
-- No apologizing for the interface ("Oops!"). State the fact and the next
+- Never use exclamation points as a substitute for having something to
+  say — state the fact.
+- Never apologize for the interface ("Oops!") — state the fact and the next
   step.
-- Never restate this section as answered when it was your own provisional
-  choice.
+- Never restate an open question as answered when the answer was your own
+  provisional choice — label it provisional until a human confirms it.
