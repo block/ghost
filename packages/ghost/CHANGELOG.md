@@ -1,5 +1,11 @@
 # @design-intelligence/ghost
 
+## 0.31.0
+
+### Minor Changes
+
+- [#264](https://github.com/block/ghost/pull/264) [`5ef9ab5`](https://github.com/block/ghost/commit/5ef9ab5eb1de4d32a97e99d8e6b1d1cc81c582d0) Thanks [@awinther1](https://github.com/awinther1)! - The starter package follows the semantic model: kinds are `standard`, `foundation`, and `context`; the median floor ships as `standard.model-defaults` with rules labeled as shared Defaults; foundation and context bodies use `Usage`/`Rules`/`Never` sections; `ghost checks init` pairs the median check with the new node id and still supports legacy `cliche.median` packages.
+
 ## 0.30.0
 
 ### Minor Changes
