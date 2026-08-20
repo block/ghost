@@ -23,7 +23,7 @@ jobs:
       # `secrets` context can't be used in step-level `if:`, so surface a
       # presence flag here. Skips the tap bump on forks / unconfigured repos.
       HAS_TAP_APP: ${{ secrets.BLOCK_HOMEBREW_TAP_APP_ID != '' && secrets.BLOCK_HOMEBREW_TAP_PRIVATE_KEY != '' }}
-      HAS_GHOST_SYNC_APP: ${{ vars.GHOST_SYNC_VERSION_APP_ID != '' && secrets.GHOST_SYNC_VERSION_PRIVATE_KEY != '' }}
+      HAS_GHOST_SYNC_APP: ${{ vars.GHOST_SYNC_VERSION_APP_ID != '' && secrets.GHOST_SYNC_VERSION_PRIVATE_KEY != '' && vars.GHOST_SYNC_VERSION_OWNER != '' && vars.GHOST_SYNC_VERSION_REPOSITORY != '' }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -129,8 +129,8 @@ jobs:
         with:
           app-id: ${{ vars.GHOST_SYNC_VERSION_APP_ID }}
           private-key: ${{ secrets.GHOST_SYNC_VERSION_PRIVATE_KEY }}
-          owner: squareup
-          repositories: agents
+          owner: ${{ vars.GHOST_SYNC_VERSION_OWNER }}
+          repositories: ${{ vars.GHOST_SYNC_VERSION_REPOSITORY }}
 
       - name: Trigger internal version sync
         if: ${{ steps.changesets.outputs.published == 'true' && env.HAS_GHOST_SYNC_APP == 'true' }}
@@ -139,6 +139,6 @@ jobs:
           TAG: ${{ steps.tarball.outputs.tag }}
         run: |
           VERSION="${TAG#design-intelligence-ghost@}"
-          gh api repos/squareup/agents/dispatches \
+          gh api "repos/${{ vars.GHOST_SYNC_VERSION_OWNER }}/${{ vars.GHOST_SYNC_VERSION_REPOSITORY }}/dispatches" \
             -f event_type=bump_ghost \
             -F "client_payload[version]=$VERSION"
