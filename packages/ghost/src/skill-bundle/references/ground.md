@@ -41,8 +41,9 @@ Do not call it a pull packet or review packet.
 
 Keep it to three parts:
 
-1. Up to five non-negotiables, each cited to a pulled node id. Anti-goals state
-   the positive replacement, never just the rejection. Include conditional
+1. Up to five non-negotiables, each cited to a pulled node id. Guidance from a
+   `Never` section states the positive replacement, never just the rejection.
+   Include conditional
    guidance only when its stated situation actually holds, including guidance
    whose kind has scoped meaning in the glossary.
 2. One readiness color: Green when the surface is covered by inspected concrete

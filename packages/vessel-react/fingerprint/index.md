@@ -5,8 +5,8 @@ materials:
 ---
 
 This ghost package ships with the Vessel component set. It is not a brand. It is
-the taste floor: the contracts, usage grammar, and anti-goals that keep the
-vendored components coherent as this repo builds on and modifies them.
+the taste floor: the contracts, usage grammar, and shared model-defaults that
+keep the vendored components coherent as this repo builds on and modifies them.
 
 The components are owned-after-copy, and so is this package. Edit these
 nodes when this repo's decisions diverge; delete nodes that stop being true.

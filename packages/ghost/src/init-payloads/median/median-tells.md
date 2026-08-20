@@ -108,7 +108,8 @@ Model-signature tells — skip any block whose model did not produce the diff
 Codex: flag a 1px border paired with a box-shadow of 16px blur or more on
 the same element — pick a solid border or a tight shadow, not both. Flag
 border-radius of 32px or more on cards, sections, or inputs unless an
-answered shape dial (`signature.shape`) sanctions large radii — then it is
+answered shape foundation (for example, `foundation.shape`) sanctions large
+radii — then it is
 fidelity, not a tell. Flag 1px linear-gradient grid or repeating-stripe
 backgrounds used as decoration.
 

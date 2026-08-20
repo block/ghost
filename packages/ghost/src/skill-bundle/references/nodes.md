@@ -81,11 +81,13 @@ Everything bound is a template. Nothing bound is vibes. Use a Skeleton only
 when the opening structure itself must arrive verbatim; see
 [materials.md](materials.md).
 
-## Anti-goals replace
+## Never sections replace
 
-A strong anti-goal says **not X; instead Y; recognize the switch by Z**.
+A strong `Never` entry says **not X; instead Y; recognize the switch by Z**.
 Negation alone makes the rejected default more salient without committing the
-replacement.
+replacement. Put shared, measured model behavior in `standard.model-defaults`;
+put a brand-specific rejection in the applicable foundation, context, or
+pattern node.
 
 ```markdown
 ---
@@ -99,7 +101,7 @@ SaaS dashboard behind.
 ```
 
 Purge the rejected pattern from examples and starter structures. Use checks to
-catch the hard regression; do not make anti-goal prose carry review alone.
+catch the hard regression; do not make `Never` prose carry review alone.
 
 ## Explain examples
 
@@ -145,7 +147,7 @@ canonical; human curation does.
 | --- | --- |
 | missing guidance | sharper `for` payload; universal guidance may belong on the cover |
 | inventing values | a material-backed node with exact vocabulary |
-| producing generic output | replacement anti-goal plus a well-explained example |
+| producing generic output | a reject-and-replace `Never` entry plus a well-explained example |
 | choosing the wrong structure | bound/open pattern and, when needed, a Skeleton |
 | crossing a hard line | invariant prose plus a review check |
 | applying guidance too broadly | a condition or reversal condition |
@@ -157,4 +159,4 @@ canonical; human curation does.
 - Never make a node a container for observations or implementation inventory.
 - Never duplicate API documentation unless the API itself is the guidance.
 - Never use a broad `for` payload to compensate for unrelated decisions in one body.
-- Never ship a blacklist-only anti-goal.
+- Never ship a blacklist-only `Never` section; name the replacement.

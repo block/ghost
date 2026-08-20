@@ -38,9 +38,9 @@ Report first:
 | --- | --- | --- | --- |
 | Retrieval | strong / weak | `for` payloads, ids, cover | sharpen `for` payloads or move universal guidance to the cover |
 | Concreteness | strong / thin | materials, fenced examples, Skeletons | add concrete locators, examples, or opening structures |
-| Anti-goals | present / missing / vague | `anti-goal.*`, review packet | write not-X-instead-Y replacements and material locators |
+| Replacements | present / missing / vague | `Never` sections, `standard.model-defaults`, review packet | write not-X-instead-Y replacements and material locators |
 | Consistency | clean / conflicting | guidance vs concrete material | update or remove stale material |
-| Stance | present / missing | cover, `principle.*` | write forced-choice principles |
+| Stance | present / missing | cover, `foundation.*` | write forced-choice foundations |
 | Materials | present / missing | `materials`, inspect-pointers | point at real assets/components/tokens |
 | Patterns | bound-open / loose / missing | `pattern.*`, Skeletons | state applies / bound / open and add a Skeleton when opening structure matters |
 | Checks | covered / partial / missing | checks/, review packet | add checks for high-risk invariants |

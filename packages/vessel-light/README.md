@@ -29,4 +29,4 @@ The corpus is factored by rate of change under adaptation: `foundation.*` nodes 
 
 ## Curation
 
-Each example says what to keep and what to change. Together they demonstrate every closed set the grammar enumerates: the emphasis ladder, text variants, tones, and elevation tiers. Regenerate examples whenever tokens or signature nodes change. Add one when repeated work proves a gap, not because a surface might exist someday.
+Each example says what to keep and what to change. Together they demonstrate every closed set the foundations enumerate: the emphasis ladder, text variants, tones, and elevation tiers. Regenerate examples whenever tokens or answered foundation values change. Add one when repeated work proves a gap, not because a surface might exist someday.
