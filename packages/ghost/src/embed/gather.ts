@@ -38,7 +38,7 @@ export function gatherGhostPackage(
     cover: snapshot.cover,
     silence: {
       ifNoneApply:
-        "Name the package's silence, follow the cover silence posture when present, and do not invent ghost-backed guidance.",
+        "If no node applies, say the package is silent on the task. Check whether the cover above states its own rule for missing guidance and follow that; otherwise reason provisionally and label it as such. Never invent ghost-backed guidance.",
     },
     coverage: menuCoverage(menu),
     ...(kinds.length > 0 ? { kinds } : {}),
@@ -51,6 +51,21 @@ export function normalizeAsk(ask: string | undefined): string | undefined {
   return normalized.length > 0 ? normalized : undefined;
 }
 
+/**
+ * The gather selection contract, worded once and shared by both the markdown
+ * and JSON emitters so the two surfaces cannot drift apart. `context.*`
+ * nodes get a stricter uncertainty rule than other kinds: a wrong-situation
+ * context node is contamination (see the context kind's own glossary
+ * convention), so "when uncertain, pull" is qualified rather than blanket.
+ * Leads with an instruction, not a description, since this is a contract,
+ * not a label.
+ */
+export const GATHER_SELECTION_INSTRUCTION =
+  "Pull every node whose `for` payload matches the task; do not filter or rank beyond that. Skip clear non-matches. Topic overlap alone is not a match. When uncertain, pull — except for `context.*` nodes: a wrong-situation rule is contamination, so when unsure there, skip or ask instead.";
+
+export const GATHER_NO_ASK_INSTRUCTION =
+  "No ask supplied. Re-run `ghost gather <ask>` with the real task before pulling.";
+
 export function gatherContract(ask: string | undefined): GhostGatherContract {
   return {
     completeness: {
@@ -61,15 +76,12 @@ export function gatherContract(ask: string | undefined): GhostGatherContract {
     },
     selection: {
       basis: "applicability",
-      instruction: ask
-        ? "Pull every node whose `for` payload indicates its stated situation applies and whose guidance, material, structure, or refusal governs the work; skip inapplicable nodes."
-        : "Bare gather is catalog inspection. Do not treat the menu as task grounding until an ask is supplied; when grounding a task, pull every applicable node and skip inapplicable nodes.",
+      instruction: GATHER_SELECTION_INSTRUCTION,
       topicOverlapAloneIsApplicability: false,
       addForCompleteness: false,
       omitApplicableForCount: false,
     },
-    noAsk:
-      "Bare gather is catalog inspection and does not imply task grounding.",
+    ...(ask ? {} : { noAsk: GATHER_NO_ASK_INSTRUCTION }),
   };
 }
 
@@ -89,6 +101,36 @@ export function menuCoverage(
     },
     withoutFor,
   };
+}
+
+/**
+ * Group menu entries by kind, in the glossary's declared order, falling back
+ * to id order within a kind and for any kind the glossary does not declare.
+ * Grouping puts each kind's legend adjacent to the nodes it governs instead
+ * of relying on a per-entry kind tag the model must cross-reference.
+ */
+export function groupMenuByKind(
+  menu: readonly CatalogMenuEntry[],
+  kinds: readonly GhostMenuKind[],
+): { kind: string | undefined; entries: CatalogMenuEntry[] }[] {
+  const order = kinds.map((kind) => kind.name);
+  const groups = new Map<string | undefined, CatalogMenuEntry[]>();
+  for (const entry of menu) {
+    const key = entry.kind;
+    const group = groups.get(key);
+    if (group) {
+      group.push(entry);
+    } else {
+      groups.set(key, [entry]);
+    }
+  }
+  const orderedKeys = [
+    ...order.filter((name) => groups.has(name)),
+    ...[...groups.keys()]
+      .filter((key) => key === undefined || !order.includes(key))
+      .sort((a, b) => (a ?? "").localeCompare(b ?? "")),
+  ];
+  return orderedKeys.map((kind) => ({ kind, entries: groups.get(kind) ?? [] }));
 }
 
 function menuKinds(snapshot: GhostEmbedSnapshot): GhostMenuKind[] {

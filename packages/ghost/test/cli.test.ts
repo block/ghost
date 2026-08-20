@@ -566,12 +566,15 @@ describe("ghost CLI", () => {
 
     const markdown = await runCli(["gather"], dir);
     expect(markdown.code).toBe(0);
-    expect(markdown.stdout).toContain("## Cover in context: `brand`");
+    expect(markdown.stdout).toContain("## brand");
+    expect(markdown.stdout).toContain(
+      "Not part of the menu below; nothing to pull here.",
+    );
     expect(markdown.stdout).toContain("This cover is unwritten.");
     expect(markdown.stdout).toContain(
-      "9 nodes · 0 carry payloads (0 with materials, 0 with substantial fenced examples, 0 with Skeletons)",
+      "9 nodes · all prose, no concrete support; readiness caps at Yellow",
     );
-    expect(markdown.stdout).not.toContain("- `brand`");
+    expect(markdown.stdout).not.toMatch(/\d+\.\s+`brand`/);
 
     const json = await runCli(["gather", "--format", "json"], dir);
     expect(json.code).toBe(0);
@@ -602,12 +605,12 @@ describe("ghost CLI", () => {
 
     const markdown = await runCli(["gather"], dir);
     expect(markdown.code).toBe(0);
-    expect(markdown.stdout).not.toContain("## Cover");
+    expect(markdown.stdout).not.toContain("## Always-on guidance");
     // With no resolvable cover, brand stays a selectable menu node.
     expect(markdown.stdout).toContain(
-      "10 nodes · 0 carry payloads (0 with materials, 0 with substantial fenced examples, 0 with Skeletons)",
+      "10 nodes · all prose, no concrete support; readiness caps at Yellow",
     );
-    expect(markdown.stdout).toContain("- `brand`");
+    expect(markdown.stdout).toMatch(/\d+\.\s+`brand`/);
 
     const json = await runCli(["gather", "--format", "json"], dir);
     expect(json.code).toBe(0);
@@ -688,12 +691,13 @@ describe("ghost CLI", () => {
       (k: { name: string }) => k.name === "foundation",
     );
     expect(foundation.purpose).toContain("load-bearing decisions");
+    expect(foundation.purpose).toContain("Pull every foundation chapter");
 
-    // Markdown renders the same legend above the node list.
+    // Markdown renders the same legend inline above that kind's group.
     const markdown = await runCli(["gather"], dir);
-    expect(markdown.stdout).toContain("Kinds:");
+    expect(markdown.stdout).not.toContain("Kinds:");
     expect(markdown.stdout).toContain(
-      "- **foundation** — The brand's load-bearing decisions",
+      "### foundation — The brand's load-bearing decisions",
     );
 
     // A missing glossary degrades to no legend, not an error.
@@ -762,9 +766,7 @@ describe("ghost CLI", () => {
       withoutFor: 0,
     });
     const markdown = await runCli(["gather"], dir);
-    expect(markdown.stdout).toContain(
-      "4 nodes · 1 carry payloads (1 with materials, 0 with substantial fenced examples, 0 with Skeletons)",
-    );
+    expect(markdown.stdout).toContain("4 nodes · 1 with concrete support");
     // No nodes lacking `for`: the coverage line stays quiet about them.
     expect(markdown.stdout).not.toContain("lack `for` payloads");
 
@@ -776,7 +778,7 @@ describe("ghost CLI", () => {
     );
     const gatherMute = await runCli(["gather"], dir);
     expect(gatherMute.stdout).toContain(
-      "5 nodes · 1 carry payloads (1 with materials, 0 with substantial fenced examples, 0 with Skeletons) · 1 lack `for` payloads",
+      "5 nodes · 1 with concrete support · 1 lack `for` payloads",
     );
     const gatherMuteJson = await runCli(["gather", "--format", "json"], dir);
     expect(JSON.parse(gatherMuteJson.stdout).coverage.withoutFor).toBe(1);
@@ -1057,7 +1059,9 @@ describe("ghost CLI", () => {
       },
     });
     expect(menuPayload.next.command).toBe("ghost pull <id> [<id>…]");
-    expect(menuPayload.silence.ifNoneApply).toContain("do not invent");
+    expect(menuPayload.silence.ifNoneApply).toContain(
+      "Never invent ghost-backed guidance",
+    );
     expect(
       menuPayload.nodes.some((n: { id: string }) => n.id === "voice"),
     ).toBe(true);

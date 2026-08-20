@@ -1,5 +1,6 @@
 import type { CAC } from "cac";
 import type { CatalogMenuEntry } from "#ghost-core";
+import { groupMenuByKind } from "../embed/gather.js";
 import type { GhostGatherResult } from "../embed/index.js";
 import { gatherGhostPackage, loadGhostSnapshot } from "../embed/index.js";
 import { appendGhostEvent, resolveRunId } from "../observability-events.js";
@@ -91,15 +92,12 @@ function formatGatherJson(menu: GhostGatherResult): Record<string, unknown> {
 
 function menuCoverageLine(menu: GhostGatherResult): string {
   const coverage = menu.coverage;
-  const payloadParts = [
-    `${coverage.payloads.materials} with materials`,
-    `${coverage.payloads.fencedExamples} with substantial fenced examples`,
-    `${coverage.payloads.skeletons} with Skeletons`,
-  ];
-  const parts = [
-    `${coverage.nodes} nodes`,
-    `${coverage.concrete} carry payloads (${payloadParts.join(", ")})`,
-  ];
+  const parts = [`${coverage.nodes} nodes`];
+  if (coverage.concrete > 0) {
+    parts.push(`${coverage.concrete} with concrete support`);
+  } else {
+    parts.push("all prose, no concrete support; readiness caps at Yellow");
+  }
   if (coverage.withoutFor > 0) {
     parts.push(`${coverage.withoutFor} lack \`for\` payloads`);
   }
@@ -109,59 +107,75 @@ function menuCoverageLine(menu: GhostGatherResult): string {
 function formatMenuMarkdown(menu: GhostGatherResult): string {
   const lines: string[] = ["# ghost package", ""];
   if (menu.ask) lines.push(`Ask: ${menu.ask}`, "");
+
+  // Selection contract first: ghost's own instructions occupy the most
+  // privileged position, ahead of any package-authored prose.
+  lines.push(
+    "## Selection contract",
+    "",
+    "Complete and unfiltered: every node in the package appears below; nothing was pre-selected.",
+    menu.contract.selection.instruction,
+    "",
+  );
+  if (!menu.ask && menu.contract.noAsk) {
+    lines.push(menu.contract.noAsk, "");
+  }
+  lines.push(menu.silence.ifNoneApply, "", "---", "");
+
   if (menu.cover.state === "resolved") {
     lines.push(
-      `## Cover in context: \`${menu.cover.id}\``,
+      `## ${menu.cover.id}`,
       "",
       menu.cover.node.body,
       "",
-      "Cover status: already in context; outside selection; do not pull again.",
+      "Not part of the menu below; nothing to pull here.",
       "",
       "---",
       "",
     );
   }
+
   lines.push("## Available guidance", "", menuCoverageLine(menu), "");
-  if (menu.ask) {
-    lines.push(
-      "Complete, unfiltered, unranked list from the ghost package. ghost has not selected nodes for this ask.",
-      "Pull every node whose `for` payload indicates its stated situation applies and whose guidance, material, structure, or refusal governs the work. Skip inapplicable nodes. Topic overlap alone is not applicability. Do not add nodes for completeness or omit applicable nodes to meet a count.",
-      "Next: `ghost pull <id> [<id>…]`.",
-      "If nothing applies, name the package's silence, follow the cover silence posture, and do not invent ghost-backed guidance.",
-      "",
-    );
-  } else {
-    lines.push(
-      "Complete, unfiltered, unranked list from the ghost package. Bare gather is catalog inspection; ghost has not grounded a task or selected nodes.",
-      "When grounding an ask, pull every applicable node with `ghost pull <id> [<id>…]`. Skip inapplicable nodes and do not invent ghost-backed guidance when the ghost package is silent.",
-      "",
-    );
-  }
-  if (menu.kinds !== undefined && menu.kinds.length > 0) {
-    lines.push("Kinds:", "");
-    for (const kind of menu.kinds) {
-      lines.push(`- **${kind.name}** — ${kind.purpose}`);
+  lines.push(
+    `Evaluate all ${menu.nodes.length} nodes. Order does not indicate priority; pull by id, not number.`,
+    "Each bullet states when that node applies.",
+    "",
+  );
+
+  const groups = groupMenuByKind(menu.nodes, menu.kinds ?? []);
+  const kindPurpose = new Map(
+    (menu.kinds ?? []).map((kind) => [kind.name, kind.purpose]),
+  );
+  let index = 0;
+  for (const group of groups) {
+    if (group.kind) {
+      const purpose = kindPurpose.get(group.kind);
+      lines.push(
+        purpose ? `### ${group.kind} — ${purpose}` : `### ${group.kind}`,
+        "",
+      );
+    }
+    for (const entry of group.entries) {
+      index += 1;
+      lines.push(`${index}. \`${entry.id}\``);
+      if (entry.for) lines.push(`   - ${entry.for}`);
+      if (entry.materials !== undefined) {
+        lines.push(`   - materials: ${entry.materials}`);
+      }
+      const payloadTypes = formatPayloadTypes(entry);
+      if (payloadTypes.length > 0) {
+        lines.push(`   - payloads: ${payloadTypes.join(", ")}`);
+      }
     }
     lines.push("");
   }
-  for (const entry of menu.nodes) {
-    const kind = entry.kind ? ` _(${entry.kind})_` : "";
-    lines.push(`- \`${entry.id}\`${kind}`);
-    if (entry.for) lines.push(`  - ${entry.for}`);
-    if (entry.materials !== undefined) {
-      lines.push(`  - materials: ${entry.materials}`);
-    }
-    const payloadTypes = formatPayloadTypes(entry);
-    if (payloadTypes.length > 0) {
-      lines.push(`  - payloads: ${payloadTypes.join(", ")}`);
-    }
-  }
+
+  lines.push("Next: `ghost pull <id> [<id>…]`.");
   return `${lines.join("\n")}\n`;
 }
 
 function formatPayloadTypes(entry: CatalogMenuEntry): string[] {
   const types: string[] = [];
-  if (entry.materials !== undefined) types.push("materials");
   if (entry.hasFencedExample) types.push("substantial fenced example");
   if (entry.hasSkeleton) types.push("Skeleton");
   return types;

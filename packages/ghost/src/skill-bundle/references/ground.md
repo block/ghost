@@ -13,15 +13,14 @@ should be shaped by a ghost package.
 Run `ghost gather <ask>` with the real task, not a generic label. The cover is
 inlined by gather, so do not pull it separately.
 
-`gather` presents every available node; it does not filter or rank. Judge each
-node's `for` payload against the actual task and pull what applies. When you are
-uncertain whether a node applies, pull it. Under-pull is silent and unrecoverable;
-over-pull is mild dilution. Skip only clear non-matches. Topic overlap alone is
-not applicability.
+`gather` presents every available node; it does not filter or rank, and its
+selection contract states the pull rule, including the uncertainty bias
+(pull when unsure, except for a `context.*` node, where a wrong-situation
+pull is contamination). Under-pull is silent and unrecoverable; over-pull is
+mild dilution.
 
 Read the coverage line before you choose: an all-prose package is weak
-steering. `gather` labels materials, substantial fenced examples, and Skeletons
-separately, so payload shape is visible before generation.
+steering and caps readiness at Yellow.
 
 ## Pull and inspect
 

@@ -39,6 +39,12 @@ Obligation or a replaceable Default), `foundation` (the brand's load-bearing
 decisions), and `context` (what bends in a named situation). A package may
 declare any vocabulary; the glossary is the only kind authority.
 
+`ghost gather` renders each kind's **first paragraph only** as its menu
+legend; later paragraphs are dropped. Write that first paragraph as
+selection semantics — when to pull this kind, and any routing rule — never
+as anatomy, history, or rationale for what the kind does not yet cover. Put
+anatomy and history in the paragraphs after it.
+
 ## Nodes
 
 ```markdown

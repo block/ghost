@@ -18,10 +18,13 @@ overridden, adapt or remove the check flag in the same change.
 
 # foundation
 
-The brand's load-bearing decisions — color, type, controls, layout, motion,
-voice, and composition, the rules for assembling them into a view. Each
-foundation node is a chapter: usage law that holds no matter what the brand
-values turn out to be, the brand's open questions (unanswered in this
+The brand's load-bearing decisions for color, type, controls, layout, motion,
+voice, and composition. Pull every foundation chapter whose subject the task
+touches; its rules hold in every context unless matching context guidance
+explicitly inverts them.
+
+Each foundation node is a chapter: usage law that holds no matter what the
+brand values turn out to be, the brand's open questions (unanswered in this
 starter, marked as decisions only a human can make), and the chapter's
 rejected moves. Follow the rules as written. Never fill in an open value and
 present it as the brand's. A brand carries only the foundations its evidence
@@ -29,11 +32,13 @@ supports; these chapters are subjects, not mandatory slots.
 
 # context
 
+Situation-specific guidance; pull only when the named situation matches the
+task. Rules from the wrong context are contamination, not guidance.
+
 Where the defaults bend: a context names a situation — an AI conversation
 thread, a data-dense console, a transactional email — and states only what
 inverts there. A situation may combine surface, channel, modality, audience,
-or moment. Read a context only when its situation matches the task. Rules
-from the wrong context are contamination, not guidance.
+or moment.
 
 ---
 

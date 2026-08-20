@@ -76,7 +76,8 @@ export interface GhostGatherContract {
     addForCompleteness: false;
     omitApplicableForCount: false;
   };
-  noAsk: string;
+  /** Present only when no ask was supplied to `gather`. */
+  noAsk?: string;
 }
 
 export interface GhostGatherResult {
