@@ -23,6 +23,7 @@ jobs:
       # `secrets` context can't be used in step-level `if:`, so surface a
       # presence flag here. Skips the tap bump on forks / unconfigured repos.
       HAS_TAP_APP: ${{ secrets.BLOCK_HOMEBREW_TAP_APP_ID != '' && secrets.BLOCK_HOMEBREW_TAP_PRIVATE_KEY != '' }}
+      HAS_GHOST_SYNC_APP: ${{ vars.GHOST_SYNC_VERSION_APP_ID != '' && secrets.GHOST_SYNC_VERSION_PRIVATE_KEY != '' }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -120,3 +121,28 @@ jobs:
             -f "tag=$TAG" \
             -f "artifact_url=$ARTIFACT_URL" \
             -f "sha256=$SHA256"
+
+      # Notify the internal sync workflow after the release tarball exists. The
+      # app is installed only on squareup/agents; this public repo holds its
+      # credentials solely to mint a repository-scoped installation token.
+      # repository_dispatch avoids granting the app Actions permission.
+      - name: Generate token for internal version sync
+        id: generate_sync_token
+        if: ${{ steps.changesets.outputs.published == 'true' && env.HAS_GHOST_SYNC_APP == 'true' }}
+        uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b # v2.1.1
+        with:
+          app-id: ${{ vars.GHOST_SYNC_VERSION_APP_ID }}
+          private-key: ${{ secrets.GHOST_SYNC_VERSION_PRIVATE_KEY }}
+          owner: squareup
+          repositories: agents
+
+      - name: Trigger internal version sync
+        if: ${{ steps.changesets.outputs.published == 'true' && env.HAS_GHOST_SYNC_APP == 'true' }}
+        env:
+          GH_TOKEN: ${{ steps.generate_sync_token.outputs.token }}
+          TAG: ${{ steps.tarball.outputs.tag }}
+        run: |
+          VERSION="${TAG#design-intelligence-ghost@}"
+          gh api repos/squareup/agents/dispatches \
+            -f event_type=bump_ghost \
+            -F "client_payload[version]=$VERSION"
