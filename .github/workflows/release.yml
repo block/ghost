@@ -23,6 +23,7 @@ jobs:
       # `secrets` context can't be used in step-level `if:`, so surface a
       # presence flag here. Skips the tap bump on forks / unconfigured repos.
       HAS_TAP_APP: ${{ secrets.BLOCK_HOMEBREW_TAP_APP_ID != '' && secrets.BLOCK_HOMEBREW_TAP_PRIVATE_KEY != '' }}
+      HAS_GHOST_INTERNAL_APP: ${{ secrets.GHOST_INTERNAL_SYNC_APP_ID != '' && secrets.GHOST_INTERNAL_SYNC_APP_PRIVATE_KEY != '' }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -84,6 +85,7 @@ jobs:
           sha256="$(shasum -a 256 "$archive" | awk '{print $1}')"
           artifact_url="https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/$filename"
           {
+            echo "version=$VERSION"
             echo "tag=$TAG"
             echo "sha256=$sha256"
             echo "artifact_url=$artifact_url"
@@ -120,3 +122,69 @@ jobs:
             -f "tag=$TAG" \
             -f "artifact_url=$ARTIFACT_URL" \
             -f "sha256=$SHA256"
+
+      - name: Generate token for ghost-internal synchronization
+        id: ghost_internal_token
+        if: ${{ steps.changesets.outputs.published == 'true' && env.HAS_GHOST_INTERNAL_APP == 'true' }}
+        uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b # v2.1.1
+        with:
+          app-id: ${{ secrets.GHOST_INTERNAL_SYNC_APP_ID }}
+          private-key: ${{ secrets.GHOST_INTERNAL_SYNC_APP_PRIVATE_KEY }}
+          owner: squareup
+          repositories: ghost-internal
+
+      - name: Check out ghost-internal
+        if: ${{ steps.changesets.outputs.published == 'true' && env.HAS_GHOST_INTERNAL_APP == 'true' }}
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: squareup/ghost-internal
+          token: ${{ steps.ghost_internal_token.outputs.token }}
+          path: ghost-internal
+
+      - name: Update ghost-internal package pin and lockfile
+        if: ${{ steps.changesets.outputs.published == 'true' && env.HAS_GHOST_INTERNAL_APP == 'true' }}
+        working-directory: ghost-internal
+        env:
+          ARTIFACT_URL: ${{ steps.tarball.outputs.artifact_url }}
+        run: |
+          set -euo pipefail
+          node -e '
+            const fs = require("node:fs");
+            const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
+            packageJson.devDependencies["@design-intelligence/ghost"] = process.env.ARTIFACT_URL;
+            fs.writeFileSync("package.json", `${JSON.stringify(packageJson, null, 2)}\n`);
+          '
+          pnpm install --no-frozen-lockfile
+
+      - name: Validate ghost-internal
+        id: ghost_internal_validation
+        if: ${{ steps.changesets.outputs.published == 'true' && env.HAS_GHOST_INTERNAL_APP == 'true' }}
+        continue-on-error: true
+        working-directory: ghost-internal
+        run: pnpm ci
+
+      - name: Create or update ghost-internal pull request
+        id: ghost_internal_pr
+        if: ${{ steps.changesets.outputs.published == 'true' && env.HAS_GHOST_INTERNAL_APP == 'true' }}
+        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7
+        with:
+          token: ${{ steps.ghost_internal_token.outputs.token }}
+          path: ghost-internal
+          branch: sync-ghost-${{ steps.tarball.outputs.version }}
+          delete-branch: true
+          commit-message: Upgrade Ghost to ${{ steps.tarball.outputs.version }}
+          title: Upgrade Ghost to ${{ steps.tarball.outputs.version }}
+          body: |
+            Syncs `@design-intelligence/ghost` to [`${{ steps.tarball.outputs.tag }}`](${{ steps.tarball.outputs.artifact_url }}).
+
+            Validation in the synchronization run: `${{ steps.ghost_internal_validation.outcome }}`.
+
+            A failing validation usually means this Ghost release requires a coordinated fingerprint migration. The PR remains open for that work; it is never auto-merged.
+
+      - name: Report ghost-internal validation failure
+        if: ${{ steps.changesets.outputs.published == 'true' && env.HAS_GHOST_INTERNAL_APP == 'true' && steps.ghost_internal_validation.outcome == 'failure' }}
+        env:
+          PR_URL: ${{ steps.ghost_internal_pr.outputs.pull-request-url }}
+        run: |
+          echo "The ghost-internal version PR was created, but validation failed: ${PR_URL}" >&2
+          exit 1

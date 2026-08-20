@@ -21,6 +21,9 @@ const releaseTarballPackCommand =
 const tapAppSecretGate =
   "HAS_TAP_APP: $" +
   "{{ secrets.BLOCK_HOMEBREW_TAP_APP_ID != '' && secrets.BLOCK_HOMEBREW_TAP_PRIVATE_KEY != '' }}";
+const ghostInternalAppSecretGate =
+  "HAS_GHOST_INTERNAL_APP: $" +
+  "{{ secrets.GHOST_INTERNAL_SYNC_APP_ID != '' && secrets.GHOST_INTERNAL_SYNC_APP_PRIVATE_KEY != '' }}";
 
 if (!releaseWorkflow.includes("publish: pnpm changeset publish")) {
   fail(
@@ -76,6 +79,36 @@ if (!releaseWorkflow.includes(tapAppSecretGate)) {
   fail(
     "release.yml must gate the Homebrew tap bump on both GitHub App secrets",
   );
+}
+
+if (!releaseWorkflow.includes(ghostInternalAppSecretGate)) {
+  fail(
+    "release.yml must gate the ghost-internal synchronization on both GitHub App secrets",
+  );
+}
+
+if (!releaseWorkflow.includes("repository: squareup/ghost-internal")) {
+  fail("release.yml must check out ghost-internal after publishing Ghost");
+}
+
+if (!releaseWorkflow.includes("pnpm install --no-frozen-lockfile")) {
+  fail("release.yml must update the ghost-internal lockfile");
+}
+
+if (!releaseWorkflow.includes("run: pnpm ci")) {
+  fail("release.yml must validate the synchronized ghost-internal pin");
+}
+
+if (
+  !releaseWorkflow.includes(
+    "uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676",
+  )
+) {
+  fail("release.yml must create a ghost-internal version pull request");
+}
+
+if (/gh pr merge/.test(releaseWorkflow)) {
+  fail("release.yml must not merge ghost-internal version pull requests");
 }
 
 if (/^\s*push:/m.test(tarballWorkflow)) {
