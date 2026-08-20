@@ -122,10 +122,6 @@ jobs:
             -f "artifact_url=$ARTIFACT_URL" \
             -f "sha256=$SHA256"
 
-      # Notify the internal sync workflow after the release tarball exists. The
-      # app is installed only on squareup/agents; this public repo holds its
-      # credentials solely to mint a repository-scoped installation token.
-      # repository_dispatch avoids granting the app Actions permission.
       - name: Generate token for internal version sync
         id: generate_sync_token
         if: ${{ steps.changesets.outputs.published == 'true' && env.HAS_GHOST_SYNC_APP == 'true' }}
