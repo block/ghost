@@ -2,11 +2,13 @@
 for: Any build using the vendored component set.
 ---
 
-These are not aesthetic opinions. They are the measured convergence of 300
-unsteered generations across three frontier models (the antimedian
+Shared defaults, not aesthetic opinions. They are the measured convergence
+of 300 unsteered generations across three frontier models (the antimedian
 experiment): the defaults a model reaches for when nobody hands it a stance.
-An output showing several of these tells reads as generated, whatever else
-it does right.
+Every rule here is a **Default** — explicit brand guidance may deliberately
+replace it; adapt or remove the paired check flag in the same change. An
+output showing several of these tells reads as generated, whatever else it
+does right.
 
 Reject hover-lift as the default interaction: cards, buttons, or anything
 else rising on `translateY` with a growing shadow. The single most
