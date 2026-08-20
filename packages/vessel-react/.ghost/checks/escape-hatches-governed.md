@@ -3,12 +3,12 @@ name: escape-hatches-governed
 description: New escape hatches in component source are justified, minimal, and visible.
 severity: medium
 references:
-  - condition.escape-hatches
+  - context.escape-hatches
   - principle.named-decisions
 ---
 
 Grade whether the change follows the escape-hatch policy in
-`condition.escape-hatches`. Flag:
+`context.escape-hatches`. Flag:
 
 - arbitrary Tailwind values, inline `style`, or raw palette utilities in
   normal component source without a documented technical reason;

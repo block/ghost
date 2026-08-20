@@ -19,6 +19,27 @@ the guidance is for, never an audience. Read it alone: if it fits every brand
 or almost every task, it will not help selection. Put what to do and why in
 the body.
 
+## The default body shape
+
+Unless the package's glossary declares another vocabulary, structure a node
+body with three semantic sections, each a home for one type of claim, plus an
+optional `## Skeleton` (always last):
+
+- `## Usage` — the worldview and decision logic that help the model handle
+  decisions the author did not anticipate.
+- `## Rules` — observable requirements a reviewer can assess in the finished
+  artifact, one per bullet. Exact values where useful. Put a known gap inside
+  the rule it affects: name the gap and state that the model must not invent
+  a value.
+- `## Never` — selective, high-value failure modes, each paired with its
+  replacement: "never X — instead Y."
+
+Route each claim to one home. Can a reviewer observe it in the artifact?
+Rules. Does it reject a plausible move and name the replacement? Never. Does
+it shape decisions not covered by either? Usage. None of these? Cut it.
+A claim gets one home; do not repeat it as worldview, rationale, and rule.
+Include only the sections the node needs; a short node may be plain prose.
+
 Altitude lives in prose:
 
 - State universal guidance plainly.

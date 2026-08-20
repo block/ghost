@@ -11,6 +11,8 @@ materials:
   - materials/fonts/HKGrotesk-SemiBold.woff2
 ---
 
+## Usage
+
 This is Vessel's answer to type — it stands until you replace it.
 
 The relationship is fixed: one typeface is the voice of the interface,
@@ -19,19 +21,9 @@ output. The heading scale is editorial — its tokens exist for pages composed
 outside the text variants — and product UI never mixes the two vocabularies
 in one view.
 
-Vessel's current answer: HK Grotesk. vessel-light ships it as its embedded
-voice — here, `tokens.css` is canonical.
-
-The heading scale is editorial: display, section, and sub each carry their
-own rhythm (`--heading-display-*`, `--heading-section-*`, `--heading-sub-*`).
 Display sizes use tight tracking and sub-1 line heights because the words
-behave like composition, not paragraph text. Card-level headings inside
-editorial features use the product `title` variant — the scale does not reach
-below sub.
-
-Labels are small, semibold, and tracked wide. They should feel precise, never
-loud. Body text keeps the established reading sizes with relaxed line height;
-do not shrink important prose until it becomes legal copy.
+behave like composition, not paragraph text. Labels should feel precise,
+never loud.
 
 Condition: display and section scale are for editorial or hero moments.
 Product UI lives in headline, title, body, label, and mono. A modal title is
@@ -41,3 +33,26 @@ To adapt: swap the font files, edit `--font-sans`, `--font-mono`, and the
 heading tokens in `materials/tokens.css`, and restate this node's current
 answer. The one-voice rule and the editorial/product vocabulary split are the
 parts worth keeping.
+
+## Rules
+
+- The typeface is HK Grotesk. vessel-light ships it as its embedded voice —
+  here, `tokens.css` is canonical.
+- The heading scale is editorial: display, section, and sub each carry their
+  own rhythm (`--heading-display-*`, `--heading-section-*`,
+  `--heading-sub-*`).
+- Card-level headings inside editorial features use the product `title`
+  variant — the scale does not reach below sub.
+- Labels are small, semibold, and tracked wide.
+- Body text keeps the established reading sizes with relaxed line height.
+- Product UI lives in headline, title, body, label, and mono.
+
+## Never
+
+- Never mix the editorial heading scale and the product text variants in one
+  view — instead keep each vocabulary in its own context; a modal title is
+  not a poster.
+- Never shrink important prose until it becomes legal copy — instead keep
+  body text at the established reading sizes with relaxed line height.
+- Never make labels loud — instead keep them small, semibold, and tracked
+  wide so they feel precise.

@@ -3,10 +3,10 @@ name: Relationship discipline
 description: Flags structural violations of the grammar — emphasis-ladder breaks, sibling margins, decorative borders, nested cards. These rules survive any adaptation.
 severity: high
 references:
-  - grammar.hierarchy
-  - grammar.rhythm
-  - grammar.surfaces
-  - anti-goal.median > Nested cards
+  - foundation.hierarchy
+  - foundation.rhythm
+  - foundation.surfaces
+  - standard.model-defaults > Nested cards
 ---
 
 These assertions test relationships between token roles, not the values behind

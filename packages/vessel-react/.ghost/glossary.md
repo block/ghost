@@ -1,18 +1,18 @@
 ---
 kinds:
   - name: principle
-  - name: condition
+  - name: context
   - name: asset
   - name: pattern
 ---
 
 # principle
 
-Durable stance: true across media unless a narrower condition explicitly limits it.
+Durable stance: true across media unless a narrower context explicitly limits it.
 
-# condition
+# context
 
-Situational truth: fires only when the stated situation holds.
+A named situation where the defaults bend — read only when it matches the task.
 
 # asset
 
@@ -20,4 +20,14 @@ Material truth about concrete brand assets such as logos, illustrations, motion,
 
 # pattern
 
-Reusable composition or product pattern whose purpose is distinguishable from neighboring patterns.
+Reusable composition or product pattern whose purpose is distinguishable from
+neighboring patterns. Declared to reserve the scope; this package currently
+carries no pattern nodes.
+
+---
+
+Node bodies in this package follow one shape: `## Usage` carries the
+worldview and decision logic; `## Rules` carries observable requirements;
+`## Never` pairs each rejected move with its replacement; an optional
+`## Skeleton` (always last) carries literal opening structure. A node
+includes only the sections it needs.

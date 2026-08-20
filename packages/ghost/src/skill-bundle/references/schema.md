@@ -34,6 +34,11 @@ cover as a warning, and a cover body over 1500 bytes as a warning.
 node's id is its filename minus `.md`; its kind is the first dotted filename
 segment. A bare filename has no kind. Undeclared kind prefixes warn.
 
+The starter vocabulary is `standard` (shared guidance, each rule an
+Obligation or a replaceable Default), `foundation` (the brand's load-bearing
+decisions), and `context` (what bends in a named situation). A package may
+declare any vocabulary; the glossary is the only kind authority.
+
 ## Nodes
 
 ```markdown

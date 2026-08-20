@@ -11,7 +11,7 @@ const MATERIALS_DIR = "packages/vessel-light/.ghost/materials";
 const EXAMPLE_DIR = join(MATERIALS_DIR, "examples");
 
 // Declared inventory: the closed five-hue expression set is the brand answer;
-// no register renders all five at once (see signature.palette).
+// no register renders all five at once (see foundation.palette).
 const TOKEN_ALLOWLIST = new Set([
   "--expression-3",
   "--expression-4",

@@ -3,7 +3,7 @@ kinds:
   - name: contract
   - name: primitive
   - name: pattern
-  - name: anti-goal
+  - name: standard
 ---
 
 # contract
@@ -22,7 +22,9 @@ vocabulary, its defaults, and the composition decisions the source encodes.
 Assembly grammar that spans components — the arrangements that make a screen
 feel intentional instead of a pile of imported parts.
 
-# anti-goal
+# standard
 
-What this component set never looks like: the measured defaults of unsteered
-generation, rejected with replacements.
+Shared guidance that is not specific to this component set's identity. Every
+rule is an **Obligation** brand preference cannot waive or a **Default** that
+explicit brand guidance may deliberately replace. The measured defaults of
+unsteered generation live here as Defaults, each rejected with a replacement.

@@ -1,44 +1,41 @@
 ---
 kinds:
-  - name: grammar
-  - name: signature
-  - name: register
-  - name: anti-goal
+  - name: standard
+  - name: foundation
+  - name: context
 ---
 
-# grammar
+# standard
 
-The brand's decision logic: closed sets, role vocabularies, and assembly
-rules, stated in token roles and never in literal values. Grammar survives an
-adaptation unchanged — adapt the package, swap every value, and these nodes still
-hold. Gather grammar before inventing structure.
+Shared guidance that is not specific to this brand. Every rule carries one of
+two authority labels. An **Obligation** is a requirement brand preference
+cannot waive. A **Default** is a starting position that protects unsteered
+work from generic model behavior; explicit brand guidance may deliberately
+replace it. When a default with a paired check is overridden, adapt or remove
+the check flag in the same change.
 
-# signature
+# foundation
 
-The dials: the choices that make this brand this brand, each stated as a
-current answer that stands until you replace it. Signature nodes name real
-values because they are the values — on adaptation, edit the token roles in
-`materials/tokens.css` and restate the node. Gather signature before setting
-any value a dial governs.
+Vessel's load-bearing decisions: the closed sets, role vocabularies, and
+assembly rules, plus the answered identity dials — shape, palette, type,
+temperature — each stating Vessel's current answer, which stands until you
+replace it. The role logic survives an adaptation unchanged; the answered
+values do not — on adaptation, edit the token roles in `materials/tokens.css`
+and restate each answer. Gather foundations before inventing structure or
+setting any value a dial governs.
 
-# register
+# context
 
-A condition-scoped contract: a situation — data-dense consoles, editorial
-pages, transactional email — where parts of the default rules invert. Each
-register names its condition first. Truths from the wrong register are
-poison, not context; gather a register only when its condition matches the
+A named situation — data-dense consoles, editorial pages, transactional
+email, conversation UI — where parts of the default rules bend or invert.
+Each context names its condition first. Truths from the wrong context are
+poison, not guidance; read a context only when its condition matches the
 task.
-
-# anti-goal
-
-What this package refuses, each reject paired with its replacement.
-`anti-goal.median` is the model's floor, not the brand's taste;
-`anti-goal.tells` is the near-miss map of this brand's own signature. Gather
-anti-goals before styling anything greenfield.
 
 ---
 
 To adapt this package to another brand, follow the starter section of the
-`authoring` recipe in the ghost skill bundle. In short: new manifest id, prune the
-median rules your brand legitimately violates, answer each signature node,
-edit `materials/tokens.css`, regenerate the examples, rewrite the tells.
+`authoring` recipe in the ghost skill bundle. In short: new manifest id, prune
+the shared model-defaults rules your brand legitimately violates, restate each
+answered foundation dial, edit `materials/tokens.css`, regenerate the
+examples, rewrite the tells.

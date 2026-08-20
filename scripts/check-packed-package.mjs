@@ -174,7 +174,7 @@ try {
   const bodyOutput = JSON.parse(bodyInit);
   for (const required of [
     "manifest.yml",
-    "anti-goal.median.md",
+    "standard.model-defaults.md",
     "materials/fonts/HKGrotesk-Regular.woff2",
     "checks/values.md",
   ]) {

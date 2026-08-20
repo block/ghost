@@ -3,12 +3,12 @@ name: Value discipline
 description: Flags off-signature values — non-pill controls, off-palette hues, raw color literals, expression over budget. Adapting the dials rewrites this check alongside the signature nodes.
 severity: high
 references:
-  - signature.shape
-  - signature.palette
-  - grammar.color-roles
-  - register.data-density
-  - register.editorial
-  - register.email
+  - foundation.shape
+  - foundation.palette
+  - foundation.color-roles
+  - context.data-density
+  - context.editorial
+  - context.email
 ---
 
 These assertions test Vessel's current answers to the signature dials. A

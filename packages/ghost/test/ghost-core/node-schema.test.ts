@@ -210,7 +210,7 @@ describe("ghost.node/v1 schema", () => {
 
   it("retains materials when serializing a parsed real fixture", () => {
     const raw = readFileSync(
-      resolve(REPO_ROOT, "packages/vessel-light/.ghost/signature.shape.md"),
+      resolve(REPO_ROOT, "packages/vessel-light/.ghost/foundation.shape.md"),
       "utf8",
     );
     const { node: doc, report } = parseNode(raw);

@@ -3,7 +3,7 @@ name: Median tells
 description: Flags the measured defaults of unsteered generation — hover-lift, default accents, unprompted dark theme, gradients, chat bubbles, emoji icons, stock copy.
 severity: high
 references:
-  - anti-goal.median
+  - standard.model-defaults
   - pattern.conversation
 ---
 

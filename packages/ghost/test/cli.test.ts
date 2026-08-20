@@ -174,10 +174,10 @@ describe("ghost CLI", () => {
   ];
 
   async function expectSkeletonPackage(written: string[]) {
-    // Exact file inventory: no anti-goal.tells, no register.*, no materials/.
+    // Exact file inventory: no vessel-light body files, no materials/.
     expect([...written].sort()).toEqual([...SKELETON_FILES].sort());
-    expect(written).not.toContain("anti-goal.tells.md");
-    expect(written.some((f: string) => f.startsWith("register."))).toBe(false);
+    expect(written).not.toContain("foundation.tells.md");
+    expect(written).not.toContain("context.email.md");
     expect(written.some((f: string) => f.startsWith("materials/"))).toBe(false);
     // Core init is fingerprint-only: checks are opt-in via --with / checks init.
     expect(written).not.toContain("checks/example.md.example");
@@ -300,10 +300,10 @@ describe("ghost CLI", () => {
     // The body is the inhabited package: corpus + tells + registers +
     // materials tree + its own checks. No .events tape.
     expect(written).toContain("manifest.yml");
-    expect(written).toContain("anti-goal.median.md");
-    expect(written).toContain("anti-goal.tells.md");
-    expect(written).toContain("register.email.md");
-    expect(written).toContain("signature.shape.md");
+    expect(written).toContain("standard.model-defaults.md");
+    expect(written).toContain("foundation.tells.md");
+    expect(written).toContain("context.email.md");
+    expect(written).toContain("foundation.shape.md");
     expect(written).toContain("materials/tokens.css");
     expect(written).toContain("materials/fonts/HKGrotesk-Regular.woff2");
     expect(written).toContain("materials/examples/composition.form.html");
