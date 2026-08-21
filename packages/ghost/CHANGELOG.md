@@ -1,5 +1,11 @@
 # @design-intelligence/ghost
 
+## 0.31.2
+
+### Patch Changes
+
+- [#272](https://github.com/block/ghost/pull/272) [`511c9ee`](https://github.com/block/ghost/commit/511c9ee2cff67410cf5e661d029ab757167dd6d2) Thanks [@chailandau](https://github.com/chailandau)! - Prevent review packets from treating deleted files as a `dev/null` material.
+
 ## 0.31.1
 
 ### Patch Changes
