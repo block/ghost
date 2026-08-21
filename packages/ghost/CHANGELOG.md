@@ -1,5 +1,11 @@
 # @design-intelligence/ghost
 
+## 0.31.1
+
+### Patch Changes
+
+- [#269](https://github.com/block/ghost/pull/269) [`a9895fc`](https://github.com/block/ghost/commit/a9895fc1edf3aae8353bca9338179b19e9a05013) Thanks [@chailandau](https://github.com/chailandau)! - Document the manifest command in the CLI overview.
+
 ## 0.31.0
 
 ### Minor Changes
