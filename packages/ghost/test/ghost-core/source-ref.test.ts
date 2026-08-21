@@ -73,6 +73,16 @@ Other prose.
     );
   });
 
+  it("matches headings with optional closing hashes", () => {
+    const body = "## Confirmation ##\n\nConfirmation prose.\n";
+    expect(sliceNodeSection(body, "Confirmation")).toBe("Confirmation prose.");
+  });
+
+  it("preserves hashes that are part of the heading text", () => {
+    const body = "## Confirm #1\n\nFirst confirmation.\n";
+    expect(sliceNodeSection(body, "Confirm #1")).toBe("First confirmation.");
+  });
+
   it("stops at the next heading of the same level", () => {
     const slice = sliceNodeSection(BODY, "Confirmation");
     expect(slice).not.toContain("Next Section");
