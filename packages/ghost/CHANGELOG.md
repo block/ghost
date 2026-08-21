@@ -1,5 +1,11 @@
 # @design-intelligence/ghost
 
+## 0.31.3
+
+### Patch Changes
+
+- [#274](https://github.com/block/ghost/pull/274) [`96bf063`](https://github.com/block/ghost/commit/96bf06367c0d7687208f4646ee48d021b8b7ec8d) Thanks [@chailandau](https://github.com/chailandau)! - Resolve check heading anchors against Markdown headings with optional closing hashes.
+
 ## 0.31.2
 
 ### Patch Changes
