@@ -1,5 +1,11 @@
 # @design-intelligence/ghost
 
+## 0.31.4
+
+### Patch Changes
+
+- [#276](https://github.com/block/ghost/pull/276) [`0702646`](https://github.com/block/ghost/commit/0702646b3d471aa2fc7de5842222520e1cdd1141) Thanks [@chailandau](https://github.com/chailandau)! - Document the skill install command in the CLI overview.
+
 ## 0.31.3
 
 ### Patch Changes
