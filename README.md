@@ -62,6 +62,7 @@ ghost pull <ids>    # read the picked nodes' full bodies
 ghost review        # during review: match a diff to guidance and checks
 ghost export        # bundle the guidance as a portable artifact
 ghost stats         # while tuning: see what agents reached for
+ghost skill install # install the unified ghost skill bundle
 ghost manifest      # emit a machine-readable index of commands and flags
 ```
 
