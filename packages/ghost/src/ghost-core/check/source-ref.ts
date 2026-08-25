@@ -46,7 +46,11 @@ export function sliceNodeSection(body: string, heading: string): string | null {
   let level = 0;
   for (let i = 0; i < lines.length; i += 1) {
     const match = headingPattern.exec(lines[i]);
-    if (match && match[2].trim().toLowerCase() === wanted) {
+    const headingText = match?.[2]
+      .replace(/[ \t]+#+[ \t]*$/, "")
+      .trim()
+      .toLowerCase();
+    if (match && headingText === wanted) {
       startLine = i;
       level = match[1].length;
       break;

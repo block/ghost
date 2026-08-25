@@ -1,5 +1,23 @@
 # @design-intelligence/ghost
 
+## 0.31.3
+
+### Patch Changes
+
+- [#274](https://github.com/block/ghost/pull/274) [`96bf063`](https://github.com/block/ghost/commit/96bf06367c0d7687208f4646ee48d021b8b7ec8d) Thanks [@chailandau](https://github.com/chailandau)! - Resolve check heading anchors against Markdown headings with optional closing hashes.
+
+## 0.31.2
+
+### Patch Changes
+
+- [#272](https://github.com/block/ghost/pull/272) [`511c9ee`](https://github.com/block/ghost/commit/511c9ee2cff67410cf5e661d029ab757167dd6d2) Thanks [@chailandau](https://github.com/chailandau)! - Prevent review packets from treating deleted files as a `dev/null` material.
+
+## 0.31.1
+
+### Patch Changes
+
+- [#269](https://github.com/block/ghost/pull/269) [`a9895fc`](https://github.com/block/ghost/commit/a9895fc1edf3aae8353bca9338179b19e9a05013) Thanks [@chailandau](https://github.com/chailandau)! - Document the manifest command in the CLI overview.
+
 ## 0.31.0
 
 ### Minor Changes

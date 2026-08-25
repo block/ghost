@@ -27,10 +27,13 @@ export function parseTouchedFiles(diffText: string): TouchedFile[] {
       current = { path: gitHeader[2], start: i };
       continue;
     }
-    const plusPlus = line.match(/^\+\+\+ b?\/?(.+)$/);
+    const plusPlus = line.match(/^\+\+\+ (.+)$/);
     if (plusPlus && current === null) {
-      const p = plusPlus[1].trim();
-      if (p !== "/dev/null") current = { path: p, start: i };
+      const destination = plusPlus[1].trim();
+      if (destination !== "/dev/null") {
+        const path = destination.replace(/^b\//, "");
+        current = { path, start: i };
+      }
     }
   }
   flush(lines.length);
