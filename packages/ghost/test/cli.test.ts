@@ -163,6 +163,7 @@ describe("ghost CLI", () => {
     "glossary.md",
     "brand.md",
     "standard.model-defaults.md",
+    "standard.component-set.md",
     "foundation.composition.md",
     "foundation.color.md",
     "foundation.type.md",
@@ -573,7 +574,7 @@ describe("ghost CLI", () => {
     expect(markdown.stdout).toContain("## Cover in context: `brand`");
     expect(markdown.stdout).toContain("This cover is unwritten.");
     expect(markdown.stdout).toContain(
-      "9 nodes · 0 carry payloads (0 with materials, 0 with substantial fenced examples, 0 with Skeletons)",
+      "10 nodes · 0 carry payloads (0 with materials, 0 with substantial fenced examples, 0 with Skeletons)",
     );
     expect(markdown.stdout).not.toContain("- `brand`");
 
@@ -590,7 +591,7 @@ describe("ghost CLI", () => {
       "brand",
     );
     expect(payload.coverage).toEqual({
-      nodes: 9,
+      nodes: 10,
       concrete: 0,
       payloads: { materials: 0, fencedExamples: 0, skeletons: 0 },
       withoutFor: 0,
@@ -609,7 +610,7 @@ describe("ghost CLI", () => {
     expect(markdown.stdout).not.toContain("## Cover");
     // With no resolvable cover, brand stays a selectable menu node.
     expect(markdown.stdout).toContain(
-      "10 nodes · 0 carry payloads (0 with materials, 0 with substantial fenced examples, 0 with Skeletons)",
+      "11 nodes · 0 carry payloads (0 with materials, 0 with substantial fenced examples, 0 with Skeletons)",
     );
     expect(markdown.stdout).toContain("- `brand`");
 

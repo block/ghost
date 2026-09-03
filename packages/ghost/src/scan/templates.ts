@@ -47,6 +47,7 @@ const SKELETON_FILE_ORDER = new Map(
     "glossary.md",
     "brand.md",
     "standard.model-defaults.md",
+    "standard.component-set.md",
     "foundation.composition.md",
     "foundation.color.md",
     "foundation.type.md",
