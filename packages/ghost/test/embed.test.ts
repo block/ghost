@@ -41,7 +41,7 @@ async function writePackage(dir: string): Promise<void> {
   );
   await writeFile(
     join(dir, ".ghost", "glossary.md"),
-    "---\nkinds:\n  - name: asset\n  - name: principle\n---\n\n# asset\n\nConcrete materials.\n\n# principle\n\nRules.\n",
+    "---\nkinds:\n  - name: asset\n  - name: uncaptioned\n  - name: principle\n---\n\n# asset\n\nConcrete materials.\n\n# principle\n\nRules.\n",
   );
   await writeFile(
     join(dir, ".ghost", "cover.md"),
@@ -152,10 +152,13 @@ describe("embed contract", () => {
       payloads: { materials: 1, fencedExamples: 0, skeletons: 1 },
       withoutFor: 0,
     });
-    expect(result.kinds).toContainEqual({
-      name: "asset",
-      purpose: "Concrete materials.",
-    });
+    expect(result.kinds).toEqual([
+      { name: "asset", purpose: "Concrete materials." },
+      { name: "uncaptioned", purpose: "" },
+      { name: "principle", purpose: "Rules." },
+    ]);
+    expect(result.contract.noAsk).toEqual(expect.any(String));
+    expect(result.contract.selection.instruction).not.toContain("context.*");
     expect(JSON.stringify(result)).not.toContain("Check tokens");
     expect(snapshot.checks.size).toBe(1);
   });

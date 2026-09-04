@@ -41,9 +41,11 @@ declare any vocabulary; the glossary is the only kind authority.
 
 `ghost gather` renders each kind's **first paragraph only** as its menu
 legend; later paragraphs are dropped. Write that first paragraph as
-selection semantics — when to pull this kind, and any routing rule — never
-as anatomy, history, or rationale for what the kind does not yet cover. Put
-anatomy and history in the paragraphs after it.
+selection semantics: when to pull this kind, and any routing rule. Do not make
+it anatomy, history, or rationale for what the kind does not yet cover. Put
+anatomy and history in the paragraphs after it. Declared kinds render in
+frontmatter order even when their purpose paragraph is empty; undeclared kinds
+render alphabetically after declared kinds, and uncategorized nodes render last.
 
 ## Nodes
 
@@ -114,8 +116,10 @@ it does not grade them.
 
 ## Command behavior
 
-- `ghost gather` emits the cover, coverage counts, then a complete, unfiltered,
-  unranked node menu. Checks are absent.
+- `ghost gather` emits the selection contract, the resolved cover when present,
+  coverage counts, then a complete, unfiltered, unranked menu of every
+  selectable node. It groups declared kinds in glossary order, undeclared kinds
+  alphabetically, and uncategorized nodes last. Checks are absent.
 - `ghost pull` emits selected nodes in steering order, inlines eligible local
   text materials once, leaves later duplicate pointers, turns binary materials
   into inspect-pointers, and leaves external materials as locators.

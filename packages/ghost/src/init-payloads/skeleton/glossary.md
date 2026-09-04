@@ -7,14 +7,18 @@ kinds:
 
 # standard
 
-Shared guidance that is not specific to this brand. Every rule carries one of
-two authority labels. An **Obligation** is a requirement brand preference
-cannot waive — accessibility, safety, honesty, functional integrity; the
-brand controls how it is expressed, not whether it holds. A **Default** is a
-recommended starting position that protects unsteered work from generic model
-behavior; explicit brand guidance in the cover, a foundation, or a matching
-context may deliberately replace it. When a default with a paired check is
-overridden, adapt or remove the check flag in the same change.
+Shared guidance that is not specific to this brand. Pull every standard node
+whose `for` payload matches the task. Within matching nodes, Obligations cannot
+be waived; Defaults yield to explicit brand guidance.
+
+Every rule carries one of two authority labels. An **Obligation** is a
+requirement brand preference cannot waive: accessibility, safety, honesty,
+functional integrity. The brand controls how it is expressed, not whether it
+holds. A **Default** is a recommended starting position that protects unsteered
+work from generic model behavior; explicit brand guidance in the cover, a
+foundation, or a matching context may deliberately replace it. When a default
+with a paired check is overridden, adapt or remove the check flag in the same
+change.
 
 # foundation
 
@@ -35,10 +39,10 @@ supports; these chapters are subjects, not mandatory slots.
 Situation-specific guidance; pull only when the named situation matches the
 task. Rules from the wrong context are contamination, not guidance.
 
-Where the defaults bend: a context names a situation — an AI conversation
-thread, a data-dense console, a transactional email — and states only what
-inverts there. A situation may combine surface, channel, modality, audience,
-or moment.
+Where the defaults bend: a context names a situation, such as an AI
+conversation thread, a data-dense console, or a transactional email, and states
+only what inverts there. A situation may combine surface, channel, modality,
+audience, or moment.
 
 ---
 

@@ -1,6 +1,5 @@
 import type { CAC } from "cac";
 import type { CatalogMenuEntry } from "#ghost-core";
-import { groupMenuByKind } from "../embed/gather.js";
 import type { GhostGatherResult } from "../embed/index.js";
 import { gatherGhostPackage, loadGhostSnapshot } from "../embed/index.js";
 import { appendGhostEvent, resolveRunId } from "../observability-events.js";
@@ -96,7 +95,7 @@ function menuCoverageLine(menu: GhostGatherResult): string {
   if (coverage.concrete > 0) {
     parts.push(`${coverage.concrete} with concrete support`);
   } else {
-    parts.push("all prose, no concrete support; readiness caps at Yellow");
+    parts.push("all prose, no concrete support");
   }
   if (coverage.withoutFor > 0) {
     parts.push(`${coverage.withoutFor} lack \`for\` payloads`);
@@ -113,22 +112,22 @@ function formatMenuMarkdown(menu: GhostGatherResult): string {
   lines.push(
     "## Selection contract",
     "",
-    "Complete and unfiltered: every node in the package appears below; nothing was pre-selected.",
+    "Complete and unfiltered: every selectable node appears below; nothing was pre-selected.",
     menu.contract.selection.instruction,
     "",
   );
-  if (!menu.ask && menu.contract.noAsk) {
+  if (!menu.ask) {
     lines.push(menu.contract.noAsk, "");
   }
   lines.push(menu.silence.ifNoneApply, "", "---", "");
 
   if (menu.cover.state === "resolved") {
     lines.push(
-      `## ${menu.cover.id}`,
+      `## Cover: \`${menu.cover.id}\``,
       "",
       menu.cover.node.body,
       "",
-      "Not part of the menu below; nothing to pull here.",
+      "This cover is already in context and is not selectable.",
       "",
       "---",
       "",
@@ -137,8 +136,7 @@ function formatMenuMarkdown(menu: GhostGatherResult): string {
 
   lines.push("## Available guidance", "", menuCoverageLine(menu), "");
   lines.push(
-    `Evaluate all ${menu.nodes.length} nodes. Order does not indicate priority; pull by id, not number.`,
-    "Each bullet states when that node applies.",
+    `Evaluate all ${menu.nodes.length} selectable nodes. Numbering is for counting only. Pull by id.`,
     "",
   );
 
@@ -149,22 +147,28 @@ function formatMenuMarkdown(menu: GhostGatherResult): string {
   let index = 0;
   for (const group of groups) {
     if (group.kind) {
+      lines.push(`### ${group.kind}`, "");
       const purpose = kindPurpose.get(group.kind);
+      if (purpose) lines.push(purpose, "");
+    } else {
       lines.push(
-        purpose ? `### ${group.kind} — ${purpose}` : `### ${group.kind}`,
+        "### Uncategorized",
+        "",
+        "These nodes have no kind. Use the selection contract as written.",
         "",
       );
     }
     for (const entry of group.entries) {
       index += 1;
       lines.push(`${index}. \`${entry.id}\``);
-      if (entry.for) lines.push(`   - ${entry.for}`);
-      if (entry.materials !== undefined) {
-        lines.push(`   - materials: ${entry.materials}`);
-      }
-      const payloadTypes = formatPayloadTypes(entry);
-      if (payloadTypes.length > 0) {
-        lines.push(`   - payloads: ${payloadTypes.join(", ")}`);
+      lines.push(
+        entry.for?.trim()
+          ? `   - Applies when: ${entry.for.trim()}`
+          : "   - Applicability unstated: no `for` payload.",
+      );
+      const metadata = formatMetadata(entry);
+      if (metadata.length > 0) {
+        lines.push(`   - ${metadata.join("; ")}`);
       }
     }
     lines.push("");
@@ -172,6 +176,58 @@ function formatMenuMarkdown(menu: GhostGatherResult): string {
 
   lines.push("Next: `ghost pull <id> [<id>…]`.");
   return `${lines.join("\n")}\n`;
+}
+
+interface MenuGroup {
+  kind: string | undefined;
+  entries: CatalogMenuEntry[];
+}
+
+function groupMenuByKind(
+  menu: readonly CatalogMenuEntry[],
+  kinds: NonNullable<GhostGatherResult["kinds"]>,
+): MenuGroup[] {
+  const declaredOrder = kinds.map((kind) => kind.name);
+  const declaredSet = new Set(declaredOrder);
+  const groups = new Map<string | undefined, CatalogMenuEntry[]>();
+
+  for (const entry of menu) {
+    const key = entry.kind;
+    const group = groups.get(key);
+    if (group) {
+      group.push(entry);
+    } else {
+      groups.set(key, [entry]);
+    }
+  }
+
+  for (const group of groups.values()) {
+    group.sort((a, b) => a.id.localeCompare(b.id));
+  }
+
+  const undeclaredKinds = [...groups.keys()]
+    .filter((key): key is string => key !== undefined && !declaredSet.has(key))
+    .sort((a, b) => a.localeCompare(b));
+
+  const orderedKeys: (string | undefined)[] = [
+    ...declaredOrder.filter((kind) => groups.has(kind)),
+    ...undeclaredKinds,
+    ...(groups.has(undefined) ? [undefined] : []),
+  ];
+
+  return orderedKeys.map((kind) => ({ kind, entries: groups.get(kind) ?? [] }));
+}
+
+function formatMetadata(entry: CatalogMenuEntry): string[] {
+  const metadata: string[] = [];
+  if (entry.materials !== undefined) {
+    metadata.push(`materials: ${entry.materials}`);
+  }
+  const payloadTypes = formatPayloadTypes(entry);
+  if (payloadTypes.length > 0) {
+    metadata.push(`payloads: ${payloadTypes.join(", ")}`);
+  }
+  return metadata;
 }
 
 function formatPayloadTypes(entry: CatalogMenuEntry): string[] {

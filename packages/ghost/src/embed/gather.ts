@@ -34,12 +34,9 @@ export function gatherGhostPackage(
       artifact: "ghost package",
       list: "Available guidance",
     },
-    contract: gatherContract(ask),
+    contract: gatherContract(),
     cover: snapshot.cover,
-    silence: {
-      ifNoneApply:
-        "If no node applies, say the package is silent on the task. Check whether the cover above states its own rule for missing guidance and follow that; otherwise reason provisionally and label it as such. Never invent ghost-backed guidance.",
-    },
+    silence: silenceContract(snapshot.cover),
     coverage: menuCoverage(menu),
     ...(kinds.length > 0 ? { kinds } : {}),
     nodes: menu,
@@ -53,20 +50,16 @@ export function normalizeAsk(ask: string | undefined): string | undefined {
 
 /**
  * The gather selection contract, worded once and shared by both the markdown
- * and JSON emitters so the two surfaces cannot drift apart. `context.*`
- * nodes get a stricter uncertainty rule than other kinds: a wrong-situation
- * context node is contamination (see the context kind's own glossary
- * convention), so "when uncertain, pull" is qualified rather than blanket.
- * Leads with an instruction, not a description, since this is a contract,
- * not a label.
+ * and JSON emitters so the two surfaces cannot drift apart. Leads with an
+ * instruction, not a description, since this is a contract, not a label.
  */
 export const GATHER_SELECTION_INSTRUCTION =
-  "Pull every node whose `for` payload matches the task; do not filter or rank beyond that. Skip clear non-matches. Topic overlap alone is not a match. When uncertain, pull — except for `context.*` nodes: a wrong-situation rule is contamination, so when unsure there, skip or ask instead.";
+  "Pull every node whose `for` payload matches the task. Skip clear non-matches; topic overlap alone is not a match. Do not rank matches or cap their count. When uncertain, pull unless the node's kind legend states a stricter rule.";
 
 export const GATHER_NO_ASK_INSTRUCTION =
-  "No ask supplied. Re-run `ghost gather <ask>` with the real task before pulling.";
+  "When no ask is supplied, this menu is not grounded to a task. Re-run `ghost gather <ask>` before pulling for a task.";
 
-export function gatherContract(ask: string | undefined): GhostGatherContract {
+export function gatherContract(): GhostGatherContract {
   return {
     completeness: {
       complete: true,
@@ -81,7 +74,7 @@ export function gatherContract(ask: string | undefined): GhostGatherContract {
       addForCompleteness: false,
       omitApplicableForCount: false,
     },
-    ...(ask ? {} : { noAsk: GATHER_NO_ASK_INSTRUCTION }),
+    noAsk: GATHER_NO_ASK_INSTRUCTION,
   };
 }
 
@@ -103,45 +96,29 @@ export function menuCoverage(
   };
 }
 
-/**
- * Group menu entries by kind, in the glossary's declared order, falling back
- * to id order within a kind and for any kind the glossary does not declare.
- * Grouping puts each kind's legend adjacent to the nodes it governs instead
- * of relying on a per-entry kind tag the model must cross-reference.
- */
-export function groupMenuByKind(
-  menu: readonly CatalogMenuEntry[],
-  kinds: readonly GhostMenuKind[],
-): { kind: string | undefined; entries: CatalogMenuEntry[] }[] {
-  const order = kinds.map((kind) => kind.name);
-  const groups = new Map<string | undefined, CatalogMenuEntry[]>();
-  for (const entry of menu) {
-    const key = entry.kind;
-    const group = groups.get(key);
-    if (group) {
-      group.push(entry);
-    } else {
-      groups.set(key, [entry]);
-    }
-  }
-  const orderedKeys = [
-    ...order.filter((name) => groups.has(name)),
-    ...[...groups.keys()]
-      .filter((key) => key === undefined || !order.includes(key))
-      .sort((a, b) => (a ?? "").localeCompare(b ?? "")),
-  ];
-  return orderedKeys.map((kind) => ({ kind, entries: groups.get(kind) ?? [] }));
+function menuKinds(snapshot: GhostEmbedSnapshot): GhostMenuKind[] {
+  return (snapshot.glossary?.kinds ?? []).map((kind) => ({
+    name: kind.name,
+    // Legend entries are one line each: keep the section's first paragraph
+    // and collapse internal wrapping. Empty purpose stays explicit so
+    // declared kind order survives even when the glossary has no prose yet.
+    purpose: (kind.purpose.split(/\n\s*\n/, 1)[0] ?? "")
+      .replace(/\s+/g, " ")
+      .trim(),
+  }));
 }
 
-function menuKinds(snapshot: GhostEmbedSnapshot): GhostMenuKind[] {
-  return (snapshot.glossary?.kinds ?? [])
-    .filter((kind) => kind.purpose.length > 0)
-    .map((kind) => ({
-      name: kind.name,
-      // Legend entries are one line each: keep the section's first paragraph
-      // and collapse internal wrapping.
-      purpose: (kind.purpose.split(/\n\s*\n/, 1)[0] ?? "")
-        .replace(/\s+/g, " ")
-        .trim(),
-    }));
+function silenceContract(
+  cover: GhostEmbedSnapshot["cover"],
+): GhostGatherResult["silence"] {
+  if (cover.state === "resolved") {
+    return {
+      ifNoneApply: `If no node applies, say the package is silent on the task. Check the resolved cover \`${cover.id}\` for any silence rule; otherwise reason provisionally and label it as such. Never invent ghost-backed guidance.`,
+    };
+  }
+
+  return {
+    ifNoneApply:
+      "If no node applies, say the package is silent on the task. Reason provisionally and label it as such. Never invent ghost-backed guidance.",
+  };
 }
