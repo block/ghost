@@ -158,13 +158,6 @@ const COMMAND_DISCOVERY = [
       "Emit an advisory review packet for a diff (needs .ghost/checks/).",
   },
   {
-    name: "export",
-    group: "core",
-    defaultHelp: true,
-    compactName: "export",
-    summary: "Package the ghost package as a portable brand artifact.",
-  },
-  {
     name: "checks",
     group: "core",
     defaultHelp: true,

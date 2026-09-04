@@ -1,7 +1,6 @@
-import { mkdir, readFile, realpath, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, readFile, realpath, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { gunzipSync } from "node:zlib";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { parse as parseYaml } from "yaml";
 import {
@@ -69,7 +68,6 @@ describe("ghost CLI", () => {
       "pull",
       "stats",
       "review",
-      "export",
       "checks init",
       "skill install",
     ]) {
@@ -96,7 +94,6 @@ describe("ghost CLI", () => {
       "pull <...ids>",
       "stats",
       "review",
-      "export",
       "checks <action>",
       "pulse",
       "manifest",
@@ -124,7 +121,6 @@ describe("ghost CLI", () => {
     expect(names).toContain("stats");
     expect(names).toContain("pulse");
     expect(names).toContain("review");
-    expect(names).toContain("export");
     expect(names).toContain("checks");
     expect(names).toContain("manifest");
 
@@ -1912,150 +1908,7 @@ describe("ghost CLI", () => {
     );
   });
 
-  it("export writes a portable tarball with export metadata and private events excluded", async () => {
-    await runCli(["init", "--with", "checks"], dir);
-    await mkdir(join(dir, ".ghost", "materials"), { recursive: true });
-    await writeFile(join(dir, ".ghost", ".events"), '{"event":"gather"}\n');
-    await writeFile(
-      join(dir, ".ghost", "materials", "tokens.css"),
-      ":root{}\n",
-    );
-    await writeFile(
-      join(dir, ".ghost", "asset.tokens.md"),
-      "---\nfor: Tokens.\nmaterials:\n  - materials/tokens.css\n  - https://example.com/tokens\n  - mcp://brand-assets/tokens\n---\n\nToken prose.\n",
-    );
-
-    const out = join(dir, "brand.tgz");
-    const result = await runCli(["export", "--out", out], dir);
-
-    expect(result.code).toBe(0);
-    expect(result.stdout).toContain("Locator audit");
-    expect(result.stdout).toContain("materials/tokens.css");
-    expect(result.stdout).toContain("HTTPS external locator only");
-    expect(result.stdout).toContain(
-      "access depends on the URL and any permissions it requires",
-    );
-    expect(result.stdout).toContain("mcp external locator only");
-    expect(result.stdout).toContain(
-      "recipient may need a mcp connection or permission",
-    );
-    const archive = parseTarEntries(gunzipSync(await readFile(out)));
-    expect(archive.has("asset.tokens.md")).toBe(true);
-    expect(archive.has("export.yml")).toBe(true);
-    expect(archive.has("glossary.md")).toBe(true);
-    expect(archive.has("checks/example.md.example")).toBe(true);
-    expect(archive.has("manifest.yml")).toBe(true);
-    expect(archive.has("materials/tokens.css")).toBe(true);
-    expect(archive.has(".events")).toBe(false);
-    expect(
-      parseYaml(archive.get("export.yml")?.toString("utf-8") ?? ""),
-    ).toMatchObject({
-      schema: "ghost.export/v1",
-      id: "local",
-      cli: expect.any(String),
-      exported: expect.any(String),
-    });
-  });
-
-  it("export --no-checks excludes checks from the archive", async () => {
-    await runCli(["init", "--with", "checks"], dir);
-
-    const out = join(dir, "brand-no-checks.tgz");
-    const result = await runCli(["export", "--out", out, "--no-checks"], dir);
-
-    expect(result.code).toBe(0);
-    const archive = parseTarEntries(gunzipSync(await readFile(out)));
-    expect([...archive.keys()].some((path) => path.startsWith("checks/"))).toBe(
-      false,
-    );
-  });
-
-  it("export audits bundled, URL, and referenced local material locators", async () => {
-    await writeBareTestPackage(dir);
-    await mkdir(join(dir, ".ghost", "materials"), { recursive: true });
-    await mkdir(join(dir, "brand"), { recursive: true });
-    await writeFile(
-      join(dir, ".ghost", "materials", "tokens.css"),
-      ":root{}\n",
-    );
-    await writeFile(join(dir, "brand", "voice.txt"), "Plain.\n");
-    await writeFile(
-      join(dir, ".ghost", "asset.tokens.md"),
-      "---\nfor: Tokens.\nmaterials:\n  - materials/tokens.css\n  - brand/voice.txt\n  - https://example.com/tokens\n  - figma://file/abc\n---\n\nToken prose.\n",
-    );
-
-    const result = await runCli(["export", "--format", "json"], dir);
-
-    expect(result.code).toBe(0);
-    const payload = JSON.parse(result.stdout);
-    expect(payload).toMatchObject({
-      kind: "export",
-      id: "local",
-      archive: expect.stringContaining("local-ghost-package.tgz"),
-    });
-    expect(payload.audit.travels).toEqual([
-      {
-        nodeId: "asset.tokens",
-        locator: "materials/tokens.css",
-        tier: "bundled",
-      },
-      {
-        nodeId: "asset.tokens",
-        locator: "https://example.com/tokens",
-        tier: "url",
-        access: "https",
-      },
-      {
-        nodeId: "asset.tokens",
-        locator: "figma://file/abc",
-        tier: "url",
-        access: "connector",
-      },
-    ]);
-    expect(payload.audit.stranded).toEqual([
-      { nodeId: "asset.tokens", locator: "brand/voice.txt" },
-    ]);
-  });
-
-  it("export --strict allows connection-dependent external locators", async () => {
-    await writeBareTestPackage(dir);
-    await writeFile(
-      join(dir, ".ghost", "asset.remote.md"),
-      "---\nfor: Remote material.\nmaterials:\n  - mcp://brand-assets/tokens\n  - figma://file/abc\n  - github:acme/brand-assets\n---\n\nRemote prose.\n",
-    );
-
-    const result = await runCli(["export", "--strict"], dir);
-
-    expect(result.code).toBe(0);
-    expect(result.stdout).toContain("mcp external locator only");
-    expect(result.stdout).toContain(
-      "recipient may need a mcp connection or permission",
-    );
-    expect(result.stdout).toContain("figma external locator only");
-    expect(result.stdout).toContain(
-      "recipient may need a figma connection or permission",
-    );
-    expect(result.stdout).toContain("github external locator only");
-    expect(result.stdout).toContain(
-      "recipient may need a github connection or permission",
-    );
-  });
-
-  it("export --strict exits 2 when referenced local material locators are stranded", async () => {
-    await writeBareTestPackage(dir);
-    await writeFile(
-      join(dir, ".ghost", "asset.voice.md"),
-      "---\nfor: Voice.\nmaterials:\n  - brand/voice.txt\n---\n\nVoice prose.\n",
-    );
-
-    const result = await runCli(["export", "--strict"], dir);
-
-    expect(result.code).toBe(2);
-    expect(result.stdout).toContain("brand/voice.txt");
-    expect(result.stdout).toContain("Bundle it into `.ghost/materials/`");
-  });
-
-  it("commands work against an unpacked export directory outside a git repo", async () => {
+  it("commands work against a copied package directory outside a git repo", async () => {
     await writeBareTestPackage(dir);
     await mkdir(join(dir, ".ghost", "materials"), { recursive: true });
     await writeFile(
@@ -2066,22 +1919,19 @@ describe("ghost CLI", () => {
       join(dir, ".ghost", "asset.tokens.md"),
       "---\nfor: Tokens.\nmaterials:\n  - materials/tokens.css\n---\n\nToken prose.\n",
     );
-    const out = join(dir, "portable.tgz");
-    await runCli(["export", "--out", out], dir);
 
     const receiver = join(dir, "receiver");
-    const unpacked = join(receiver, "fingerprint");
-    await mkdir(unpacked, { recursive: true });
-    const archive = parseTarEntries(gunzipSync(await readFile(out)));
-    await writeEntries(unpacked, archive);
+    const packageDir = join(receiver, "ghost-package");
+    await mkdir(receiver, { recursive: true });
+    await cp(join(dir, ".ghost"), packageDir, { recursive: true });
 
     const validate = await runCli(
-      ["validate", "--package", unpacked],
+      ["validate", "--package", packageDir],
       receiver,
     );
     expect(validate.code).toBe(0);
     const gather = await runCli(
-      ["gather", "--package", unpacked, "--format", "json"],
+      ["gather", "--package", packageDir, "--format", "json"],
       receiver,
     );
     expect(gather.code).toBe(0);
@@ -2089,7 +1939,7 @@ describe("ghost CLI", () => {
       expect.objectContaining({ id: "asset.tokens" }),
     );
     const pull = await runCli(
-      ["pull", "asset.tokens", "--package", unpacked],
+      ["pull", "asset.tokens", "--package", packageDir],
       receiver,
     );
     expect(pull.code).toBe(0);
@@ -2227,40 +2077,6 @@ describe("ghost CLI", () => {
     expect(result.stderr).toContain("ghost checks init");
   });
 });
-
-function parseTarEntries(buffer: Buffer): Map<string, Buffer> {
-  const entries = new Map<string, Buffer>();
-  let offset = 0;
-  while (offset + 512 <= buffer.byteLength) {
-    const header = buffer.subarray(offset, offset + 512);
-    if (header.every((byte) => byte === 0)) break;
-    const name = readTarString(header, 0, 100);
-    const prefix = readTarString(header, 345, 155);
-    const sizeText = readTarString(header, 124, 12).replace(/\0/g, "").trim();
-    const size = Number.parseInt(sizeText || "0", 8);
-    const path = prefix ? `${prefix}/${name}` : name;
-    const dataStart = offset + 512;
-    entries.set(path, buffer.subarray(dataStart, dataStart + size));
-    offset = dataStart + Math.ceil(size / 512) * 512;
-  }
-  return entries;
-}
-
-function readTarString(buffer: Buffer, offset: number, length: number): string {
-  const slice = buffer.subarray(offset, offset + length);
-  const end = slice.indexOf(0);
-  return slice.subarray(0, end === -1 ? slice.length : end).toString("utf-8");
-}
-
-async function writeEntries(
-  root: string,
-  entries: Map<string, Buffer>,
-): Promise<void> {
-  for (const [path, data] of entries) {
-    await mkdir(join(root, path, ".."), { recursive: true });
-    await writeFile(join(root, path), data);
-  }
-}
 
 async function writeGatherPackage(dir: string): Promise<void> {
   const ghost = join(dir, ".ghost");
