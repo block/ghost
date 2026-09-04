@@ -115,5 +115,4 @@ it does not grade them.
   into inspect-pointers, and leaves external materials as locators.
 - `ghost review` matches touched files to exact local material paths, offers
   relevant checks, and emits a review packet for the host agent.
-- `ghost export` bundles the package and audits which locators travel.
 - `ghost stats` summarizes local gather and pull events.

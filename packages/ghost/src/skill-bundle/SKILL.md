@@ -68,7 +68,6 @@ ghost validate      # artifact shape + node/material/check validation
 ghost gather <ask>  # emit Available guidance for this task
 ghost pull <ids>    # pull selected node bodies and materials
 ghost review        # assemble diff + matched material-backed nodes + checks
-ghost export        # package .ghost/ as a portable brand artifact
 ghost stats         # summarize local gather/pull events while tuning
 ```
 
@@ -105,9 +104,9 @@ a brief.
 
 ## Receiving a ghost package
 
-Unpack the exported archive, run `ghost validate --package <dir>`, then run
+Copy the `.ghost/` directory, run `ghost validate --package <dir>`, then run
 `ghost skill install` in the receiving workspace. From there, gather and pull
-against the unpacked package with `--package <dir>`.
+against that package with `--package <dir>`.
 
 ghost package authoring is **elicitation, not scanning**. The raw material is what
 the human brings and points at: words, images, links, products, brand docs, copy

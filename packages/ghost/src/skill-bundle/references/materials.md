@@ -92,10 +92,10 @@ and when.
 
 ## Bundle or reference
 
-Put brand-owned artifacts that must travel through export or survive refactors
-under `.ghost/materials/`: token output, logos, type files, motion data, and
-portable examples. Reference living components, stories, tests, and styles at
-their repository paths. Guidance stays in prose in both cases.
+Put brand-owned artifacts that should travel with a copied package or survive
+refactors under `.ghost/materials/`: token output, logos, type files, motion
+data, and portable examples. Reference living components, stories, tests, and
+styles at their repository paths. Guidance stays in prose in both cases.
 
 Use external locators when the authoritative material remains external. Add a
 short `note` only when the locator itself does not tell the agent what it will

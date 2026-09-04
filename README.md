@@ -60,7 +60,6 @@ ghost validate      # make sure the package is well-formed
 ghost gather [ask]  # before building: show the complete guidance menu
 ghost pull <ids>    # read the picked nodes' full bodies
 ghost review        # during review: match a diff to guidance and checks
-ghost export        # bundle the guidance as a portable artifact
 ghost stats         # while tuning: see what agents reached for
 ghost skill install # install the unified ghost skill bundle
 ghost manifest      # emit a machine-readable index of commands and flags
@@ -164,13 +163,8 @@ agent to weigh. Review output never enters generation context.
 
 Different agents can read the same guidance and apply it to a screen, page,
 email, or sentence. The package moves with the repo when someone clones or
-forks it. To move the package on its own:
-
-```bash
-ghost export
-```
-
-The export audits `materials` entries and reports paths that moved.
+forks it. To move the package on its own, copy the `.ghost/` directory and run
+`ghost validate --package <dir>` in the receiving workspace.
 
 ## Repo Layout
 

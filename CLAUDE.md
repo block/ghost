@@ -110,7 +110,6 @@ Core workflow:
 | `ghost pull <id> [<id>…]` | Emit selected nodes' bodies and materials; append the selection to the local `.ghost/.events` tape. |
 | `ghost review` | Emit an advisory review packet for a diff using material-backed nodes and checks (requires `.ghost/checks/`). |
 | `ghost stats` | Summarize local gather/pull events from `.ghost/.events`. |
-| `ghost export` | Bundle the guidance as a portable tarball with a materials audit (`--strict` fails on stranded locators). |
 | `ghost skill install` | Install the unified `ghost` skill bundle. |
 
 Advanced/maintenance:
