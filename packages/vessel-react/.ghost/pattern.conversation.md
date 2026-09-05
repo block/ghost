@@ -1,5 +1,5 @@
 ---
-for: Any AI conversation, prompt input, reasoning display, or tool output.
+for: Building or changing AI conversation, prompt input, reasoning display, or tool output.
 materials:
   - packages/vessel-react/src/components/ai-elements/conversation.tsx
   - packages/vessel-react/src/components/ai-elements/message.tsx
@@ -20,7 +20,7 @@ grammar.
 
 ## Rules
 
-- Assistant turns render as plain prose on the page surface — no bubble, no
+- Assistant turns render as plain prose on the page surface: no bubble, no
   border, no initials-circle avatar.
 - User turns get quiet containment: a muted secondary container,
   right-aligned, so the reader can scan whose words are whose.
@@ -36,17 +36,16 @@ grammar.
 
 ## Never
 
-- Never contain the assistant in a balloon — that demotes the document's
+- Never contain the assistant in a balloon: that demotes the document's
   author to a participant; render assistant turns as plain prose on the
   page surface.
-- Never "balance" the asymmetry by boxing both sides — keep user turns
+- Never "balance" the asymmetry by boxing both sides: keep user turns
   contained and assistant turns plain.
-- Never render machinery as loud cards competing with the answer — collapse
+- Never render machinery as loud cards competing with the answer: collapse
   it into muted affordances the reader can open.
 - Never let anything else in the conversation column compete with the
-  composer for weight — the composer holds the view's primary action.
-- Never ship a stream that reflows the page — a stream that reflows the
-  page is a broken stream; text appears in place and layout stays put as
-  parts resolve.
-- Never ship "Start a conversation to see messages here" restyled — say
+  composer for weight: the composer holds the view's primary action.
+- Never ship a stream that reflows the page: text appears in place and
+  layout stays put as parts resolve.
+- Never ship "Start a conversation to see messages here" restyled: say
   what this product does, in this product's words.

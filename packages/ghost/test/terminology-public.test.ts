@@ -27,7 +27,7 @@ const FORBIDDEN_TERMS = [
   /\blayers\b/i,
   /Package Chain/,
   /Intent Cascade/,
-  /Selected Fingerprint Cascade/,
+  /Selected [A-Za-z]+ Cascade/,
   /cascade_brief/,
   /layer_dirs/,
   /layerDirs/,

@@ -8,12 +8,13 @@ import {
 } from "#ghost-core";
 import { isMissingPathError } from "../internal/fs.js";
 import { loadCheckFiles } from "./check-files.js";
-import type {
-  GhostPackagePaths,
-  LoadedGhostPackage,
-} from "./fingerprint-package.js";
+import type { GhostPackagePaths, LoadedGhostPackage } from "./ghost-package.js";
 import type { LintIssue } from "./lint.js";
 import { loadNodeFiles } from "./node-files.js";
+
+const RETIRED_PACKAGE_SCHEMA = "ghost.fingerprint-package/v1";
+const RETIRED_SCHEMA_MESSAGE =
+  "manifest.yml uses the retired schema ghost.fingerprint-package/v1. Replace it with `schema: ghost.package/v1`, then run `ghost validate`.";
 
 export async function loadGhostPackage(
   paths: GhostPackagePaths,
@@ -57,6 +58,15 @@ export function lintGhostPackageManifest(
   if (manifest === undefined) return;
   const manifestResult = GhostPackageManifestSchema.safeParse(manifest);
   if (!manifestResult.success) {
+    if (hasRetiredSchema(manifest)) {
+      issues.push({
+        severity: "error",
+        rule: "schema/retired",
+        message: RETIRED_SCHEMA_MESSAGE,
+        path: "manifest.yml.schema",
+      });
+      return;
+    }
     issues.push(
       ...manifestResult.error.issues.map((issue) => ({
         severity: "error" as const,
@@ -73,7 +83,17 @@ export function lintGhostPackageManifest(
 
 function parseManifest(raw: string, label: string): GhostPackageManifest {
   const parsed = parseYamlStrict(raw, label);
+  if (hasRetiredSchema(parsed)) throw new UsageError(RETIRED_SCHEMA_MESSAGE);
   return GhostPackageManifestSchema.parse(parsed) as GhostPackageManifest;
+}
+
+function hasRetiredSchema(value: unknown): boolean {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "schema" in value &&
+    value.schema === RETIRED_PACKAGE_SCHEMA
+  );
 }
 
 function parseYamlStrict(raw: string, label: string): unknown {
@@ -87,12 +107,6 @@ function parseYamlStrict(raw: string, label: string): unknown {
     );
   }
 }
-
-/** @deprecated Use `loadGhostPackage`. */
-export const loadFingerprintPackage = loadGhostPackage;
-
-/** @deprecated Use `lintGhostPackageManifest`. */
-export const lintFingerprintPackageManifest = lintGhostPackageManifest;
 
 function parseYamlSafe(
   raw: string,

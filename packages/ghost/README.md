@@ -94,8 +94,7 @@ Available subpath exports: `@design-intelligence/ghost`,
 `@design-intelligence/ghost/package`,
 `@design-intelligence/ghost/core`,
 `@design-intelligence/ghost/embed`, and
-`@design-intelligence/ghost/cli`. The former package API remains available as
-an explicitly deprecated compatibility alias.
+`@design-intelligence/ghost/cli`.
 
 ## Project Status: Development Preview
 
@@ -105,8 +104,6 @@ project is not seeking external testers yet. The CLI, package schema, on-disk
 migration support. Breaking changes may ship in minor versions; patch versions
 are reserved for fixes that should not require migration.
 
-Every `ghost` command is also available as `ghost-fingerprint` for when
-another tool owns the `ghost` bin.
 
 ## License
 

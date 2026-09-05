@@ -1,31 +1,28 @@
 ---
-name: 🐛 Bug Report
-about: Thank you for taking the time, please report a reproducible bug
-title: "[Bug] <Bug Title Here>"
+name: Bug report
+about: Report reproducible Ghost CLI or package behavior
+title: ""
 labels: bug
-assignees: add codeowner's @name here 
-
+assignees: ""
 ---
 
-**Describe the bug**
-*A clear and concise description of what the bug is.*
+## What happened?
 
-**To Reproduce:**
-*Steps to reproduce the behavior:*
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+Include the command you ran and its complete output.
 
-**Expected behavior:**
-*A clear and concise description of what you expected to happen.*
+## What did you expect?
 
-**Supporting Material**
-*If applicable, add screenshots, output log and/or other documentation to help explain your problem.*
+## Reproduction
 
-**Environment (please complete the following information):**
- - OS: [ex: iOS]
- - Version 
+Provide the smallest `.ghost/` package or repository that reproduces the issue.
+Remove private brand material before attaching it.
 
-**Additional context**
-Add any other context that you feel is relevant about the problem here.
+## Environment
+
+- Ghost version (`ghost --version`):
+- Node version (`node --version`):
+- Package manager and version:
+- Operating system:
+- Installation method: npm, pnpm, Homebrew, or other
+
+## Additional context

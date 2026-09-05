@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const PACKAGE_ROOT = resolve(ROOT, "packages/ghost");
 const BIN_DIR = resolve(PACKAGE_ROOT, "node_modules/.bin");
-const BIN_NAMES = ["ghost", "ghost-fingerprint"];
+const BIN_NAMES = ["ghost"];
 
 mkdirSync(BIN_DIR, { recursive: true });
 

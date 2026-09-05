@@ -2,13 +2,15 @@
 
 vessel-light packages Vessel's design language for agents writing raw HTML and CSS. It has no install, build, or dependencies. Copy the `.ghost/` package into a repo so your agent can select and apply Vessel's guidance, tokens, primitives, and worked compositions.
 
-## Copy
+## Install
+
+Install the inhabited package with ghost:
 
 ```bash
-npx degit <repo>/packages/vessel-light/.ghost .ghost
+ghost init --body vessel-light
 ```
 
-Or copy it without degit:
+When working from this repository, you can copy the source package directly:
 
 ```bash
 cp -R packages/vessel-light/.ghost .ghost

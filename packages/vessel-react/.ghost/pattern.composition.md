@@ -16,38 +16,37 @@ Surface owns ground, Text owns hierarchy. Reach for them before writing
 layout classnames by hand. The elevation tier is the interaction statement.
 Empty states, loading states, and skeletons are part of the composition,
 not afterthoughts. The default temperature is quiet, and when a composition
-feels flat, the fix is structure — grouping, gap contrast, tone contrast.
+feels flat, the fix is structure: grouping, gap contrast, tone contrast.
 
 ## Rules
 
-- Rhythm comes from Stack's gap scale, never from margins on siblings.
-- When spacing feels wrong, change the stack's gap or split into nested
-  stacks with different gaps.
+- Rhythm comes from Stack's gap scale, never from margins on siblings. When
+  spacing feels wrong, change the stack's gap or split into nested stacks
+  with different gaps.
 - Surface makes ground explicit: a semantic role, a padding step, a radius
   role, and an elevation tier, chosen together.
 - Elevation tiers: `card` sits in flow, `popover` floats above it, `modal`
-  interrupts.
-- One shadow per compositional idea. A view that needs three shadows needs
-  fewer surfaces.
+  interrupts. One shadow per compositional idea: a view that needs three
+  shadows needs fewer surfaces.
 - Text's variant vocabulary is the type scale: `display`, `headline`,
   `title`, `body`, `label`, `mono`, with tone carried by the `tone` prop.
-- Hierarchy comes from variant and tone.
+  Hierarchy comes from variant and tone.
 - Muted tone is the workhorse for secondary information; if everything is
   muted, nothing is.
-- A skeleton mirrors the layout it replaces — same stacks, same gaps — so
+- A skeleton mirrors the layout it replaces: same stacks, same gaps: so
   the load resolves without reflow.
 - The quiet default: white ground, hairline borders, generous gaps, one
   idea per surface.
 
 ## Never
 
-- Never patch a margin onto a child to fix spacing — that is a rhythm leak;
+- Never patch a margin onto a child to fix spacing: that is a rhythm leak;
   change the stack's gap or split into nested stacks.
-- Never use a one-off `gap-[13px]` — that is a scale violation; use Stack's
+- Never use a one-off `gap-[13px]`: that is a scale violation; use Stack's
   gap scale.
-- Never stack elevation on nested surfaces — one shadow per compositional
+- Never stack elevation on nested surfaces: one shadow per compositional
   idea.
-- Never build hierarchy from ad-hoc `text-[17px]` or bolding body copy —
-  use variant and tone.
-- Never fix a flat composition with a decorative border, tint, or shadow —
-  the fix is structure: grouping, gap contrast, tone contrast.
+- Never build hierarchy from ad-hoc `text-[17px]` or bolding body copy. Use
+  variant and tone.
+- Never fix a flat composition with a decorative border, tint, or shadow. Fix
+  the structure through grouping, gap contrast, and tone contrast.

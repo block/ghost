@@ -1,8 +1,15 @@
-import { cp, mkdir, readFile, realpath, rm, writeFile } from "node:fs/promises";
+import {
+  cp,
+  mkdir,
+  readdir,
+  readFile,
+  realpath,
+  rm,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { parse as parseYaml } from "yaml";
 import {
   gatherGhostPackage,
   loadGhostSnapshot,
@@ -95,7 +102,6 @@ describe("ghost CLI", () => {
       "stats",
       "review",
       "checks <action>",
-      "pulse",
       "manifest",
       "skill <action>",
     ]) {
@@ -119,7 +125,6 @@ describe("ghost CLI", () => {
     );
     expect(names).toContain("gather");
     expect(names).toContain("stats");
-    expect(names).toContain("pulse");
     expect(names).toContain("review");
     expect(names).toContain("checks");
     expect(names).toContain("manifest");
@@ -150,7 +155,29 @@ describe("ghost CLI", () => {
     });
 
     expect(result.code).toBe(2);
-    expect(result.stderr).toContain("--format json");
+    expect(result.stderr).toContain("--format must be one of: json");
+  });
+
+  it("rejects invalid formats across package and retrieval commands", async () => {
+    await writeBareTestPackage(dir);
+    for (const args of [
+      ["validate", "--format", "nope"],
+      ["gather", "--format", "nope"],
+      ["pull", "index", "--format", "nope"],
+      ["stats", "--format", "nope"],
+      ["review", "--format", "nope"],
+      ["checks", "init", "--format", "nope"],
+    ]) {
+      const result = await runCli(args, dir);
+      expect(result.code).toBe(2);
+      expect(result.stderr).toContain("--format must be one of:");
+    }
+
+    const empty = join(dir, "empty");
+    await mkdir(empty);
+    const init = await runCli(["init", "--format", "nope"], empty);
+    expect(init.code).toBe(2);
+    expect(init.stderr).toContain("--format must be one of:");
   });
 
   const SKELETON_FILES = [
@@ -175,7 +202,7 @@ describe("ghost CLI", () => {
     expect(written).not.toContain("foundation.tells.md");
     expect(written).not.toContain("context.email.md");
     expect(written.some((f: string) => f.startsWith("materials/"))).toBe(false);
-    // Core init is fingerprint-only: checks are opt-in via --with / checks init.
+    // Core init is package-only: checks are opt-in via --with / checks init.
     expect(written).not.toContain("checks/example.md.example");
 
     await expect(
@@ -253,36 +280,13 @@ describe("ghost CLI", () => {
     }
   }
 
-  it("initializes the default skeleton fingerprint package", async () => {
+  it("initializes the default skeleton ghost package", async () => {
     const init = await runCli(["init", "--format", "json"], dir);
 
     expect(init.code).toBe(0);
     const initOutput = JSON.parse(init.stdout);
     expect(Object.keys(initOutput).sort()).toEqual(["dir", "written"]);
     await expectSkeletonPackage(initOutput.written);
-  });
-
-  it("initializes the starter package template by name", async () => {
-    const init = await runCli(
-      ["init", "--template", "skeleton", "--format", "json"],
-      dir,
-    );
-
-    expect(init.code).toBe(0);
-    const initOutput = JSON.parse(init.stdout);
-    await expectSkeletonPackage(initOutput.written);
-  });
-
-  it("rejects an unknown init template with a usage error", async () => {
-    const result = await runCli(
-      ["init", "--template", "nope", "--format", "json"],
-      dir,
-      { allowNoExit: true },
-    );
-
-    expect(result.code).toBe(2);
-    expect(result.stderr).toContain("Unknown init template 'nope'");
-    expect(result.stderr).toContain("Available: skeleton");
   });
 
   it("installs the vessel-light body: full corpus, materials, checks", async () => {
@@ -346,14 +350,6 @@ describe("ghost CLI", () => {
     expect(unknown.stderr).toContain("Unknown init body 'nope'");
     expect(unknown.stderr).toContain("vessel-light");
 
-    const both = await runCli(
-      ["init", "--body", "vessel-light", "--template", "skeleton"],
-      dir,
-      { allowNoExit: true },
-    );
-    expect(both.code).toBe(2);
-    expect(both.stderr).toContain("mutually exclusive");
-
     const withChecks = await runCli(
       ["init", "--body", "vessel-light", "--with", "checks"],
       dir,
@@ -363,7 +359,7 @@ describe("ghost CLI", () => {
     expect(withChecks.stderr).toContain("already includes its own checks/");
   });
 
-  it("uses GHOST_PACKAGE_DIR as the default fingerprint package directory for init", async () => {
+  it("uses GHOST_PACKAGE_DIR as the default ghost package directory for init", async () => {
     const init = await runCli(["init", "--format", "json"], dir, {
       env: { GHOST_PACKAGE_DIR: ".agents/ghost" },
     });
@@ -440,7 +436,7 @@ describe("ghost CLI", () => {
     expect(bad.stderr).toContain("goose");
   });
 
-  it("exits 2 with guidance when no fingerprint package is present", async () => {
+  it("exits 2 with guidance when no ghost package is present", async () => {
     // A missing package is a usage error (run `ghost init`), not a raw crash.
     const result = await runCli(["gather"], dir, {
       allowNoExit: true,
@@ -460,7 +456,7 @@ describe("ghost CLI", () => {
     expect(JSON.parse(validate.stdout).errors).toBe(0);
   });
 
-  it("refuses to overwrite existing fingerprint files unless forced", async () => {
+  it("refuses to overwrite existing ghost package files unless forced", async () => {
     await runCli(["init"], dir);
     await writeFile(
       join(dir, ".ghost", "brand.md"),
@@ -500,10 +496,37 @@ describe("ghost CLI", () => {
     });
   });
 
+  it("detects standalone checks from their required frontmatter", async () => {
+    const checkPath = join(dir, "review-rule.md");
+    await writeFile(
+      checkPath,
+      "---\nname: review-rule\ndescription: Review the rule.\nseverity: high\nsource: principle.trust\n---\n\nGrade the rule.\n",
+    );
+
+    const result = await runCli(
+      ["validate", checkPath, "--format", "json"],
+      dir,
+    );
+    expect(result.code).toBe(0);
+    const report = JSON.parse(result.stdout);
+    expect(report.errors).toBe(0);
+    expect(report.issues).toContainEqual(
+      expect.objectContaining({ rule: "check-source-deprecated" }),
+    );
+  });
+
+  it("reports a missing validation file with a fix", async () => {
+    const result = await runCli(["validate", "missing.md"], dir);
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain("Cannot validate missing.md");
+    expect(result.stderr).toContain("ghost validate --package <dir>");
+    expect(result.stderr).not.toContain("ENOENT");
+  });
+
   it("detects ghost YAML artifacts by schema when the filename is arbitrary", async () => {
     await writeFile(
       join(dir, "package-anchor.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: local\n",
+      "schema: ghost.package/v1\nid: local\n",
     );
 
     const lint = await runCli(
@@ -600,7 +623,7 @@ describe("ghost CLI", () => {
     await runCli(["init"], dir);
     await writeFile(
       join(dir, ".ghost", "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: local\ncover: missing\n",
+      "schema: ghost.package/v1\nid: local\ncover: missing\n",
     );
 
     const markdown = await runCli(["gather"], dir);
@@ -627,7 +650,7 @@ describe("ghost CLI", () => {
 
     await writeFile(
       join(dir, ".ghost", "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: local\ncover: missing\n",
+      "schema: ghost.package/v1\nid: local\ncover: missing\n",
     );
     const missing = await runCli(["validate", "--format", "json"], dir);
     expect(missing.code).toBe(1);
@@ -638,7 +661,7 @@ describe("ghost CLI", () => {
 
     await writeFile(
       join(dir, ".ghost", "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: local\n",
+      "schema: ghost.package/v1\nid: local\n",
     );
     const undeclared = await runCli(["validate", "--format", "json"], dir);
     expect(undeclared.code).toBe(0);
@@ -652,7 +675,7 @@ describe("ghost CLI", () => {
 
     await writeFile(
       join(dir, ".ghost", "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: local\ncover: brand\n",
+      "schema: ghost.package/v1\nid: local\ncover: brand\n",
     );
     const brand = await readFile(join(dir, ".ghost", "brand.md"), "utf-8");
     await writeFile(
@@ -1650,16 +1673,6 @@ describe("ghost CLI", () => {
     expect(clean.stdout).toContain("None.");
   });
 
-  it("pulse remains a deprecated alias for stats", async () => {
-    await writeBareTestPackage(dir);
-
-    const alias = await runCli(["pulse", "--format", "json"], dir);
-
-    expect(alias.code).toBe(0);
-    expect(alias.stderr).toContain("deprecated");
-    expect(JSON.parse(alias.stdout)).toMatchObject({ kind: "stats" });
-  });
-
   it("installs the unified ghost skill bundle", async () => {
     const result = await runCli(
       ["skill", "install", "--dest", "skills/ghost"],
@@ -1667,15 +1680,25 @@ describe("ghost CLI", () => {
     );
 
     expect(result.code).toBe(0);
-    for (const path of [
+    const installedFiles = [
       "SKILL.md",
-      "references/authoring.md",
-      "references/nodes.md",
-      "references/materials.md",
-      "references/ground.md",
-      "references/making.md",
-      "references/schema.md",
-    ]) {
+      ...(await readdir(join(dir, "skills", "ghost", "references"))).map(
+        (name) => `references/${name}`,
+      ),
+    ].sort();
+    expect(installedFiles).toEqual(
+      [
+        "SKILL.md",
+        "references/authoring.md",
+        "references/ground.md",
+        "references/making.md",
+        "references/materials.md",
+        "references/nodes.md",
+        "references/schema.md",
+        "references/steering-audit.md",
+      ].sort(),
+    );
+    for (const path of installedFiles) {
       await expect(
         readFile(join(dir, "skills", "ghost", path), "utf-8"),
       ).resolves.toBeTruthy();
@@ -1683,6 +1706,13 @@ describe("ghost CLI", () => {
     await expect(
       readFile(join(dir, "skills", "ghost", "SKILL.md"), "utf-8"),
     ).resolves.toContain("When the package is silent");
+
+    const collision = await runCli(
+      ["skill", "install", "--dest", "skills/ghost"],
+      dir,
+    );
+    expect(collision.code).toBe(3);
+    expect(collision.stderr).toContain("already contains SKILL.md");
 
     await writeFile(
       join(dir, "skills", "ghost", "references", "retired.md"),
@@ -1706,7 +1736,7 @@ describe("ghost CLI", () => {
       "Never claim provisional or local-convention reasoning",
     );
     // The review/verify/remediate/critique recipes are not part of the
-    // fingerprint skill bundle.
+    // ghost skill bundle.
     for (const gone of [
       "review.md",
       "verify.md",
@@ -1773,7 +1803,7 @@ describe("ghost CLI", () => {
   it("fails validate when a node uses the removed `relates` key", async () => {
     await writeFile(
       join(dir, "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: solo\n",
+      "schema: ghost.package/v1\nid: solo\n",
     );
     await writeFile(
       join(dir, "n.md"),
@@ -2153,7 +2183,7 @@ async function writeGatherPackage(dir: string): Promise<void> {
   await mkdir(join(ghost, "checkout"), { recursive: true });
   await writeFile(
     join(ghost, "manifest.yml"),
-    "schema: ghost.fingerprint-package/v1\nid: gather-demo\n",
+    "schema: ghost.package/v1\nid: gather-demo\n",
   );
   // Directories are a browsing convenience only; ids are paths minus .md.
   await writeFile(
@@ -2174,114 +2204,18 @@ async function writeGatherPackage(dir: string): Promise<void> {
   );
 }
 
-async function writeCheckPackage(
-  dir: string,
-  options: { checks?: boolean; detectorPattern?: string } = {},
-): Promise<void> {
+async function writeCheckPackage(dir: string): Promise<void> {
   const pkg = join(dir, ".ghost");
-  const detectorPattern =
-    options.detectorPattern ?? "#[0-9a-fA-F]{3,8}|UIColor\\(";
   await mkdir(pkg, { recursive: true });
-  await writeSplitFingerprintPackage(
-    pkg,
-    `schema: ghost.fingerprint/v1
-intent:
-  summary:
-    product: Harbor iOS
-  situations: []
-  principles:
-    - id: tokenized-ui-color
-      principle: UI colors should come from the product token system.
-      check_refs: [validate.check:no-hardcoded-ui-color]
-  experience_contracts: []
-composition:
-  patterns:
-    - id: tokenized-ui-color
-      kind: visual
-      pattern: Product UI color uses semantic tokens instead of literals.
-      check_refs: [validate.check:no-hardcoded-ui-color]
-`,
-    options.checks === false
-      ? undefined
-      : `schema: ghost.validate/v1
-id: harbor-ios
-checks:
-  - id: no-hardcoded-ui-color
-    title: Use design tokens for UI color
-    status: active
-    severity: serious
-    derivation:
-      intent: [intent.principle:tokenized-ui-color]
-      composition: [composition.pattern:tokenized-ui-color]
-    applies_to:
-      paths: [Sources/Features/Transfers]
-    detector:
-      type: forbidden-regex
-      pattern: '${detectorPattern}'
-      contexts: [swift]
-    evidence:
-      support: 0.94
-      observed_count: 47
-      examples:
-        - Sources/Features/Transfers/TransfersUI
-    repair: Replace literals with Harbor semantic tokens.
-  - id: candidate-density-check
-    title: Candidate density check
-    status: proposed
-    severity: nit
-    derivation:
-      intent: [intent.principle:tokenized-ui-color]
-    applies_to:
-      paths: [Sources/Features/Transfers]
-    detector:
-      type: required-regex
-      pattern: 'HarborTheme'
-    evidence:
-      support: 0.5
-      observed_count: 1
-      examples:
-        - Sources/Features/Transfers/TransfersUI
-`,
-  );
-}
-
-async function writeSplitFingerprintPackage(
-  pkg: string,
-  fingerprintRaw: string,
-  checksRaw?: string,
-): Promise<void> {
-  // Node package: derive prose nodes from the legacy facet doc's
-  // principles/patterns so check-routing/grounding fixtures keep working.
-  const packageDir = pkg;
-  const doc = parseYaml(fingerprintRaw) as {
-    intent?: { principles?: Array<{ id: string; principle?: string }> };
-    composition?: { patterns?: Array<{ id: string; pattern?: string }> };
-  };
-  await mkdir(join(packageDir, "nodes"), { recursive: true });
-  const writes: Array<Promise<void>> = [
+  await Promise.all([
     writeFile(
-      join(packageDir, "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: local\n",
+      join(pkg, "manifest.yml"),
+      "schema: ghost.package/v1\nid: local\ncover: index\n",
     ),
-  ];
-  for (const p of doc.intent?.principles ?? []) {
-    writes.push(
-      writeFile(
-        join(packageDir, "nodes", `${p.id}.md`),
-        `---\nid: ${p.id}\nunder: core\n---\n\n${p.principle ?? p.id}\n`,
-      ),
-    );
-  }
-  for (const p of doc.composition?.patterns ?? []) {
-    writes.push(
-      writeFile(
-        join(packageDir, "nodes", `${p.id}.md`),
-        `---\nid: ${p.id}\nunder: core\n---\n\n${p.pattern ?? p.id}\n`,
-      ),
-    );
-  }
-  if (checksRaw) {
-    writes.push(writeFile(join(packageDir, "validate.yml"), checksRaw));
-  }
-  await Promise.all(writes);
+    writeFile(join(pkg, "glossary.md"), "---\nkinds: []\n---\n"),
+    writeFile(
+      join(pkg, "index.md"),
+      "---\nfor: Package-wide guidance.\n---\n\nUse the package guidance.\n",
+    ),
+  ]);
 }

@@ -1,5 +1,5 @@
 ---
-for: Any view with buttons, inputs, forms, labels, or field errors.
+for: Building or changing views with buttons, inputs, forms, labels, or field errors.
 materials:
   - packages/vessel-react/src/components/ui/button.tsx
   - packages/vessel-react/src/components/ui/button-group.tsx
@@ -21,7 +21,7 @@ decoration.
 ## Rules
 
 - The `default` button variant is for the action the screen exists to
-  complete; everything else steps down the vocabulary — `secondary`,
+  complete; everything else steps down the vocabulary: `secondary`,
   `outline`, `ghost`, `link`.
 - `destructive` is red and rare. It names the destructive act directly.
 - Hover confirms with color and background shifts at the component's
@@ -35,18 +35,18 @@ decoration.
 
 ## Never
 
-- Never invent variants outside this vocabulary — if a new one is genuinely
-  needed, it comes from repeated observed need and gets added to the shared
-  component, not inlined as one-off classnames.
-- Never use red as urgency, emphasis, or heat — `destructive` names the
+- Never invent variants outside this vocabulary: a genuinely new variant
+  comes from repeated observed need and gets added to the shared component,
+  not inlined as one-off classnames.
+- Never use red as urgency, emphasis, or heat: `destructive` names the
   destructive act directly.
-- Never confirm hover with `translateY` lift or a growing shadow — use the
+- Never confirm hover with `translateY` lift or a growing shadow: use the
   component's built-in color and background shifts; do not add motion on
   top.
-- Never restyle the focus ring away or amplify it — the ring is guidance,
+- Never restyle the focus ring away or amplify it: the ring is guidance,
   not decoration.
 - Never move field errors into modals, toasts, or generic banners when the
-  user needs to fix one input — state them next to the field through the
+  user needs to fix one input: state them next to the field through the
   form component's invalid states.
-- Never compose control rows with ad-hoc flex wrappers — use the group
+- Never compose control rows with ad-hoc flex wrappers: use the group
   components so spacing and radius joining stay owned by the system.

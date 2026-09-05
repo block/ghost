@@ -1,6 +1,6 @@
 /**
  * Public surface for `ghost.node/v1` — the node artifact: markdown +
- * frontmatter, the single unit a fingerprint corpus is made of: schema +
+ * frontmatter, the single unit a ghost corpus is made of: schema +
  * types + parse + serialize.
  */
 

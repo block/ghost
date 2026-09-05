@@ -8,8 +8,8 @@ import {
   listBundledMaterialFiles,
   materialLocator,
   materialLocatorClaimsPath,
+  parseCheckReference,
   parseGlossary,
-  parseSourceRef,
   resolveLocalMaterialFile,
   sliceNodeSection,
 } from "#ghost-core";
@@ -19,12 +19,12 @@ import { GHOST_GLOSSARY_FILENAME, GHOST_MATERIALS_DIR } from "./constants.js";
 import {
   type GhostPackagePaths,
   resolveGhostPackage,
-} from "./fingerprint-package.js";
+} from "./ghost-package.js";
+import type { LintIssue, LintReport } from "./lint.js";
 import {
   lintGhostPackageManifest,
   loadGhostPackage,
-} from "./fingerprint-package-loader.js";
-import type { LintIssue, LintReport } from "./lint.js";
+} from "./package-loader.js";
 import { resolveGitRoot } from "./package-paths.js";
 
 /**
@@ -291,8 +291,17 @@ function lintCheckReferences(
   issues: LintIssue[],
 ): void {
   for (const check of checks.values()) {
+    if (check.usesDeprecatedSource) {
+      issues.push({
+        severity: "warning",
+        rule: "check-source-deprecated",
+        message:
+          "`source` is deprecated; replace it with `references:\n  - <node-id>`",
+        path: `checks/${check.id}.md.source`,
+      });
+    }
     for (const raw of check.references) {
-      const parsed = parseSourceRef(raw);
+      const parsed = parseCheckReference(raw);
       if (parsed === null) {
         issues.push({
           severity: "error",
@@ -360,9 +369,6 @@ async function readRequired(
     return undefined;
   }
 }
-
-/** @deprecated Use `lintGhostPackage`. */
-export const lintFingerprintPackage = lintGhostPackage;
 
 function finalize(issues: LintIssue[]): LintReport {
   return {

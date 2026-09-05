@@ -22,12 +22,13 @@ fmt:
 fmt-check:
     pnpm exec biome format .
 
-# Build all packages
+# Build the ghost package
 build:
     pnpm build
 
-# Full CI gate
-ci: check test build
+# Full quality gate
+ci:
+    pnpm run quality:all
 
 # ── Test ─────────────────────────────────────────────────────
 
@@ -39,30 +40,32 @@ test:
 test-watch:
     pnpm test:watch
 
-# ── Run ──────────────────────────────────────────────────────
+# ── Docs ─────────────────────────────────────────────────────
 
 # Run the thesis site and development log
-dev:
-    pnpm -F ghost-docs dev
+docs-dev:
+    pnpm --filter ghost-docs --fail-if-no-match dev
 
-# Build docs site (static export)
-build-ui:
-    pnpm -F ghost-docs build
+# Build the docs site
+docs-build:
+    pnpm --filter ghost-docs --fail-if-no-match build
 
-# Build vessel library (dist-lib + types)
-build-lib:
-    pnpm -F vessel build:lib
-
-# Build vessel shadcn registry
-build-registry:
-    pnpm -F vessel build:registry
-
-# Build docs site for GitHub Pages (base=/ghost/)
-build-pages:
-    DEPLOY_BASE="/ghost/" pnpm -F ghost-docs build
+# Build the docs site for GitHub Pages (base=/ghost/)
+docs-pages:
+    DEPLOY_BASE="/ghost/" pnpm --filter ghost-docs --fail-if-no-match build
     rm -rf dist
     mkdir -p dist
     cp -r apps/docs/dist/. dist/
+
+# ── Vessel ───────────────────────────────────────────────────
+
+# Build the Vessel library and types
+vessel-build:
+    pnpm --filter @design-intelligence/vessel-react --fail-if-no-match build
+
+# Build the Vessel shadcn registry
+vessel-registry:
+    pnpm --filter @design-intelligence/vessel-react --fail-if-no-match build:registry
 
 # ── Utilities ────────────────────────────────────────────────
 

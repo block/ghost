@@ -1,5 +1,5 @@
 import { parseCheckMarkdown } from "./parse.js";
-import { parseSourceRef } from "./source-ref.js";
+import { parseCheckReference } from "./reference.js";
 import {
   GHOST_CHECK_SEVERITIES,
   type GhostCheckLintIssue,
@@ -8,8 +8,8 @@ import {
 
 /**
  * Lint a ghost check markdown file (`ghost.check/v1`): required frontmatter
- * (`name`, `description`, `severity`), an optional `source:` provenance pointer,
- * and a non-empty body. ghost never executes the check — this only validates
+ * (`name`, `description`, `severity`), optional `references`, and a non-empty
+ * body. ghost never executes the check — this only validates
  * that it is well-formed.
  */
 export function lintGhostCheck(raw: string): GhostCheckLintReport {
@@ -63,7 +63,7 @@ export function lintGhostCheck(raw: string): GhostCheckLintReport {
       references.forEach((reference, index) => {
         if (
           typeof reference !== "string" ||
-          parseSourceRef(reference) === null
+          parseCheckReference(reference) === null
         ) {
           issues.push({
             severity: "warning",
@@ -79,15 +79,20 @@ export function lintGhostCheck(raw: string): GhostCheckLintReport {
 
   const source = frontmatter.source;
   if (source !== undefined) {
-    // `source:` is a deprecated soft provenance pointer: `<node-id>` with an
-    // optional `> <heading>` anchor. Keep linting it so older standalone check
-    // files still get useful feedback.
-    if (typeof source !== "string" || parseSourceRef(source) === null) {
+    if (typeof source !== "string" || parseCheckReference(source) === null) {
       issues.push({
         severity: "warning",
         rule: "check-source-malformed",
         message:
-          "source should be a node path id with an optional `> Heading` anchor (e.g. 'checkout/payment > Confirmation')",
+          "source should be a node id with an optional `> Heading` anchor; use `references` instead",
+        path: "source",
+      });
+    } else {
+      issues.push({
+        severity: "warning",
+        rule: "check-source-deprecated",
+        message:
+          "`source` is deprecated; replace it with `references:\n  - <node-id>`",
         path: "source",
       });
     }

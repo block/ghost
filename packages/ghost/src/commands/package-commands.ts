@@ -1,6 +1,8 @@
 import { readFile, stat } from "node:fs/promises";
 import { resolve } from "node:path";
 import type { CAC } from "cac";
+import { UsageError } from "#ghost-core";
+import { isMissingPathError } from "../internal/fs.js";
 import {
   type LintReport,
   lintGhostPackage,
@@ -9,6 +11,7 @@ import {
 import { detectFileKind, lintDetectedFileKind } from "../scan/file-kind.js";
 import { exitCli, failFromError } from "./errors.js";
 import { registerInitCommand } from "./init-command.js";
+import { parseEnumOption } from "./options.js";
 
 /**
  * Register ghost package commands on the unified ghost CLI.
@@ -17,7 +20,7 @@ import { registerInitCommand } from "./init-command.js";
  * (scaffold) and `validate` (manifest shape, node validity, material locators,
  * check references, and glossary kind prefixes).
  */
-export function registerFingerprintCommands(cli: CAC): void {
+export function registerPackageCommands(cli: CAC): void {
   // --- validate (shape pass + catalog pass) ---
   cli
     .command(
@@ -31,6 +34,10 @@ export function registerFingerprintCommands(cli: CAC): void {
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (path: string | undefined, opts) => {
       try {
+        const format = parseEnumOption(opts.format, "--format", [
+          "cli",
+          "json",
+        ] as const);
         const exactPackage =
           typeof opts.package === "string" ? opts.package : undefined;
         const packagePath = exactPackage ?? path;
@@ -38,17 +45,27 @@ export function registerFingerprintCommands(cli: CAC): void {
         let report: LintReport;
         if (path === undefined || (await isDirectory(target))) {
           report = await lintGhostPackage(packagePath, process.cwd());
-          writeLintReport(report, opts.format);
+          writeLintReport(report, format);
           await exitCli(report.errors > 0 ? 1 : 0);
           return;
         }
 
         const fileTarget = resolve(process.cwd(), path ?? target);
-        const raw = await readFile(fileTarget, "utf-8");
+        let raw: string;
+        try {
+          raw = await readFile(fileTarget, "utf-8");
+        } catch (err) {
+          if (isMissingPathError(err)) {
+            throw new UsageError(
+              `Cannot validate ${path} because the file does not exist. Check the path, or run \`ghost validate --package <dir>\` for a package.`,
+            );
+          }
+          throw err;
+        }
         const kind = detectFileKind(fileTarget, raw);
         report = lintDetectedFileKind(kind, raw);
 
-        writeLintReport(report, opts.format);
+        writeLintReport(report, format);
 
         await exitCli(report.errors > 0 ? 1 : 0);
       } catch (err) {
@@ -59,7 +76,7 @@ export function registerFingerprintCommands(cli: CAC): void {
   registerInitCommand(cli);
 }
 
-function writeLintReport(report: LintReport, format: unknown): void {
+function writeLintReport(report: LintReport, format: "cli" | "json"): void {
   if (format === "json") {
     process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
     return;

@@ -143,13 +143,6 @@ const COMMAND_DISCOVERY = [
     summary: "Summarize local gather/pull events from .ghost/.events.",
   },
   {
-    name: "pulse",
-    group: "advanced",
-    defaultHelp: false,
-    compactName: "pulse",
-    summary: "Deprecated alias for ghost stats.",
-  },
-  {
     name: "review",
     group: "core",
     defaultHelp: true,

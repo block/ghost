@@ -3,13 +3,13 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { promisify } from "node:util";
 import type { CAC } from "cac";
-import { resolveGhostPackage } from "../package.js";
+import { loadGhostPackage, resolveGhostPackage } from "../package.js";
 import {
   buildReviewPacket,
   formatReviewPacket,
 } from "../review/review-packet.js";
-import { loadGhostPackage } from "../scan/fingerprint-package.js";
 import { exitCli, failFromError } from "./errors.js";
+import { parseEnumOption } from "./options.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -30,12 +30,10 @@ export function registerReviewCommand(cli: CAC): void {
     })
     .action(async (opts) => {
       try {
-        const format = opts.format;
-        if (format !== "markdown" && format !== "json") {
-          console.error("Error: --format must be 'markdown' or 'json'");
-          await exitCli(2);
-          return;
-        }
+        const format = parseEnumOption(opts.format, "--format", [
+          "markdown",
+          "json",
+        ] as const);
 
         const paths = resolveGhostPackage(opts.package, process.cwd());
         const ghostPackage = await loadGhostPackage(paths);

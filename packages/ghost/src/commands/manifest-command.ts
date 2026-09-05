@@ -1,6 +1,7 @@
 import type { CAC } from "cac";
 import { buildCliManifest } from "./command-discovery.js";
 import { exitCli, failFromError } from "./errors.js";
+import { parseEnumOption } from "./options.js";
 
 /**
  * Emit a self-describing manifest of the CLI: every command, its curated
@@ -17,11 +18,7 @@ export function registerManifestCommand(cli: CAC): void {
     .option("--format <fmt>", "Output format: json", { default: "json" })
     .action(async (opts) => {
       try {
-        if (opts.format !== "json") {
-          console.error("Error: ghost manifest supports only --format json");
-          await exitCli(2);
-          return;
-        }
+        parseEnumOption(opts.format, "--format", ["json"] as const);
         const manifest = {
           apiVersion: 1,
           type: "manifest" as const,

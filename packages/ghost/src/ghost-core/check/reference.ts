@@ -1,24 +1,24 @@
 import { NodeIdSchema } from "../node/schema.js";
 
 /**
- * A parsed `source:` reference: the node path id it points at, plus the
+ * A parsed check reference: the node path id it points at, plus the
  * optional heading anchor (`checkout/payment > Confirmation` → nodeId
  * `checkout/payment`, heading `Confirmation`).
  */
-export interface ParsedSourceRef {
+export interface ParsedCheckReference {
   nodeId: string;
   heading?: string;
 }
 
 /**
- * Parse the check `source:` reference grammar — `<node-id> > <Heading>`.
+ * Parse the check `references:` entry grammar — `<node-id> > <Heading>`.
  * Splits on the *first* `>` and trims both parts. Returns `null` when the
  * node-id part is not a valid node path id (or the input is empty); the
  * heading is present only when a non-empty anchor follows the `>`. This is
  * shape validation only — whether the node (or heading) exists is the
  * caller's concern: an unresolved ref may name not-yet-written prose.
  */
-export function parseSourceRef(raw: string): ParsedSourceRef | null {
+export function parseCheckReference(raw: string): ParsedCheckReference | null {
   const splitAt = raw.indexOf(">");
   const nodePart = (splitAt === -1 ? raw : raw.slice(0, splitAt)).trim();
   if (!NodeIdSchema.safeParse(nodePart).success) {

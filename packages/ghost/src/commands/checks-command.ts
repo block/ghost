@@ -2,6 +2,7 @@ import type { CAC } from "cac";
 import { resolveGhostPackage } from "../package.js";
 import { addChecksDir } from "../scan/check-scaffold.js";
 import { exitCli, failFromError } from "./errors.js";
+import { parseEnumOption } from "./options.js";
 
 /**
  * `ghost checks <action>` — manage the flat `.ghost/checks/` directory of
@@ -19,11 +20,10 @@ export function registerChecksCommand(cli: CAC): void {
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (action: string, opts) => {
       try {
-        if (opts.format !== "cli" && opts.format !== "json") {
-          console.error("Error: --format must be 'cli' or 'json'");
-          await exitCli(2);
-          return;
-        }
+        const format = parseEnumOption(opts.format, "--format", [
+          "cli",
+          "json",
+        ] as const);
         if (action !== "init") {
           console.error("Error: ghost checks supports `init`");
           await exitCli(2);
@@ -32,7 +32,7 @@ export function registerChecksCommand(cli: CAC): void {
 
         const paths = resolveGhostPackage(opts.package, process.cwd());
         const result = await addChecksDir(paths.packageDir);
-        if (opts.format === "json") {
+        if (format === "json") {
           process.stdout.write(
             `${JSON.stringify(
               {

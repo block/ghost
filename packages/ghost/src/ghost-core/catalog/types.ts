@@ -1,7 +1,7 @@
 import type { GhostMaterial } from "../materials.js";
 
 /**
- * A node in the fingerprint catalog — pure prose plus its filename-derived
+ * A node in the ghost catalog — pure prose plus its filename-derived
  * identity. The body is the design expression; there are no structured content
  * fields. Kind comes from the filename prefix; there is no traversal or
  * containment model — the catalog is a flat map the agent selects from.
@@ -26,7 +26,7 @@ export interface GhostCatalogNode {
 }
 
 /**
- * The in-memory fingerprint catalog: prose nodes indexed by id. A flat map —
+ * The in-memory ghost catalog: prose nodes indexed by id. A flat map —
  * no edges, no cascade, no traversal. Identity comes from each file's path.
  */
 export interface GhostCatalog {

@@ -1,5 +1,5 @@
 /**
- * Public surface for the in-memory fingerprint catalog — a flat map of prose
+ * Public surface for the in-memory ghost catalog — a flat map of prose
  * nodes assembled from the package's markdown files. No edges, no cascade, no
  * traversal: the agent selects from the menu (`gather`).
  */

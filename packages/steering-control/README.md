@@ -30,8 +30,10 @@ You need: Node 20+, the `ghost` CLI on PATH (or set `ghostBin` in config),
 a `.ghost/` package, and an agent that drives the loop (Claude
 Code, goose, Cursor — anything that can read a prompt file and write HTML).
 
+From the Ghost repository:
+
 ```bash
-npx steering-control init        # writes eval.config.json + asks.md templates
+node packages/steering-control/cli.mjs init # writes eval.config.json + asks.md templates
 ```
 
 Fill in `eval.config.json`:

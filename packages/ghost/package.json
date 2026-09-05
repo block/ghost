@@ -3,6 +3,9 @@
   "version": "0.32.0",
   "description": "ghost CLI for portable .ghost/ packages of brand guidance your agent reads before it builds, with advisory review after",
   "license": "Apache-2.0",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
   "author": "Block, Inc.",
   "repository": {
     "type": "git",
@@ -26,17 +29,12 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "ghost": "./dist/bin.js",
-    "ghost-fingerprint": "./dist/bin.js"
+    "ghost": "./dist/bin.js"
   },
   "imports": {
     "#ghost-core": {
       "types": "./src/ghost-core/index.ts",
       "import": "./dist/ghost-core/index.js"
-    },
-    "#scan": {
-      "types": "./src/scan/index.ts",
-      "import": "./dist/scan/index.js"
     }
   },
   "exports": {
@@ -51,14 +49,6 @@
     "./package": {
       "types": "./dist/package.d.ts",
       "import": "./dist/package.js"
-    },
-    "./fingerprint": {
-      "types": "./dist/fingerprint.d.ts",
-      "import": "./dist/fingerprint.js"
-    },
-    "./scan": {
-      "types": "./dist/scan/index.d.ts",
-      "import": "./dist/scan/index.js"
     },
     "./cli": {
       "types": "./dist/cli.d.ts",

@@ -33,19 +33,36 @@ export function detectFileKind(path: string, raw: string): DetectedFileKind {
   if (new RegExp(`(^|[\\\\/])${GHOST_MATERIALS_DIR}[\\\\/]`).test(lowerPath)) {
     return "material";
   }
-  // A markdown check lives under a `checks/` directory. Detected by location
-  // so the established agent-check format (no `schema:` field) is recognized.
-  if (filename.endsWith(".md") && /(^|[\\/])checks[\\/]/.test(lowerPath)) {
-    return "check";
-  }
-  // Any other markdown file is a node (ghost.node/v1). Its id is its path.
   if (filename.endsWith(".md")) {
+    // Package checks are identified by location. Standalone check files are
+    // identified by their required frontmatter keys so `ghost validate x.md`
+    // behaves like package validation without guessing from the filename.
+    if (/(^|[\\/])checks[\\/]/.test(lowerPath) || hasCheckFrontmatter(raw)) {
+      return "check";
+    }
     return "node";
   }
-  if (/^\s*schema:\s*ghost\.(?:package|fingerprint-package)\/v1\b/m.test(raw)) {
+  if (/^\s*schema:\s*ghost\.package\/v1\b/m.test(raw)) {
     return "package-manifest";
   }
   return "unsupported";
+}
+
+function hasCheckFrontmatter(raw: string): boolean {
+  try {
+    const match = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(raw);
+    if (!match) return false;
+    const frontmatter = parseYaml(match[1]);
+    return (
+      typeof frontmatter === "object" &&
+      frontmatter !== null &&
+      typeof frontmatter.name === "string" &&
+      typeof frontmatter.description === "string" &&
+      typeof frontmatter.severity === "string"
+    );
+  } catch {
+    return false;
+  }
 }
 
 export function lintDetectedFileKind(

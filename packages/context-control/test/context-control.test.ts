@@ -2,7 +2,7 @@ import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { initFingerprintPackage } from "../../ghost/src/scan/fingerprint-package.js";
+import { initGhostPackage } from "../../ghost/src/package.js";
 import { parseAsks } from "../lib/bench.mjs";
 import { openAICompatibleModel, parseIdReply } from "../lib/model.mjs";
 import {
@@ -121,10 +121,7 @@ describe("demo asks", () => {
     const root = resolve(import.meta.dirname, "../../..");
     const dir = await mkdtemp(join(tmpdir(), "context-control-test-"));
     try {
-      const initialized = await initFingerprintPackage(
-        join(dir, ".ghost"),
-        root,
-      );
+      const initialized = await initGhostPackage(join(dir, ".ghost"), root);
       const nodeIds = new Set(
         initialized.written
           .filter((file) => file.endsWith(".md") && file !== "glossary.md")

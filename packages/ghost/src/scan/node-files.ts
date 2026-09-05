@@ -2,8 +2,8 @@ import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { type PlacedNode, parseNode } from "#ghost-core";
 import {
-  FINGERPRINT_MANIFEST_FILENAME,
   GHOST_GLOSSARY_FILENAME,
+  GHOST_MANIFEST_FILENAME,
   GHOST_MATERIALS_DIR,
 } from "./constants.js";
 
@@ -14,7 +14,7 @@ import {
  * list is closed.
  */
 const RESERVED_ROOT_ENTRIES = new Set<string>([
-  FINGERPRINT_MANIFEST_FILENAME,
+  GHOST_MANIFEST_FILENAME,
   "manifest.yaml",
   GHOST_GLOSSARY_FILENAME,
   GHOST_MATERIALS_DIR,

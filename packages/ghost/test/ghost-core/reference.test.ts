@@ -1,45 +1,47 @@
 import { describe, expect, it } from "vitest";
 import {
-  parseSourceRef,
+  parseCheckReference,
   sliceNodeSection,
 } from "../../src/ghost-core/index.js";
 
-describe("parseSourceRef", () => {
+describe("parseCheckReference", () => {
   it("parses a plain node id", () => {
-    expect(parseSourceRef("checkout/payment")).toEqual({
+    expect(parseCheckReference("checkout/payment")).toEqual({
       nodeId: "checkout/payment",
     });
   });
 
   it("parses an id with a heading anchor", () => {
-    expect(parseSourceRef("checkout/payment > Confirmation")).toEqual({
+    expect(parseCheckReference("checkout/payment > Confirmation")).toEqual({
       nodeId: "checkout/payment",
       heading: "Confirmation",
     });
   });
 
   it("trims extra whitespace around both parts", () => {
-    expect(parseSourceRef("  checkout/payment  >   Confirmation  ")).toEqual({
+    expect(
+      parseCheckReference("  checkout/payment  >   Confirmation  "),
+    ).toEqual({
       nodeId: "checkout/payment",
       heading: "Confirmation",
     });
   });
 
   it("splits on the first `>` only", () => {
-    expect(parseSourceRef("core > A > B")).toEqual({
+    expect(parseCheckReference("core > A > B")).toEqual({
       nodeId: "core",
       heading: "A > B",
     });
   });
 
   it("omits the heading when the anchor is empty", () => {
-    expect(parseSourceRef("core > ")).toEqual({ nodeId: "core" });
+    expect(parseCheckReference("core > ")).toEqual({ nodeId: "core" });
   });
 
   it("returns null on a malformed node id", () => {
-    expect(parseSourceRef("/bad")).toBeNull();
-    expect(parseSourceRef("Bad Id > Heading")).toBeNull();
-    expect(parseSourceRef("")).toBeNull();
+    expect(parseCheckReference("/bad")).toBeNull();
+    expect(parseCheckReference("Bad Id > Heading")).toBeNull();
+    expect(parseCheckReference("")).toBeNull();
   });
 });
 

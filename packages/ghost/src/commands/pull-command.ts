@@ -3,15 +3,18 @@ import type { TransportedMaterial } from "#ghost-core";
 import type { GhostPulledNode, GhostPullResult } from "../embed/index.js";
 import { loadGhostSnapshot, pullGhostNodes } from "../embed/index.js";
 import { appendGhostEvent, resolveRunId } from "../observability-events.js";
-import { resolveGhostPackage } from "../package.js";
-import { GHOST_EVENTS_FILENAME } from "../scan/constants.js";
-import { resolveGitRoot } from "../scan/package-paths.js";
+import {
+  GHOST_EVENTS_FILENAME,
+  resolveGhostPackage,
+  resolveGitRoot,
+} from "../package.js";
 import {
   neutralizeSentinels,
   untrustedBegin,
   untrustedEnd,
 } from "../untrusted-framing.js";
 import { exitCli, failFromError } from "./errors.js";
+import { parseEnumOption } from "./options.js";
 
 export function registerPullCommand(cli: CAC): void {
   cli
@@ -40,16 +43,14 @@ export function registerPullCommand(cli: CAC): void {
     )
     .action(async (ids: string[], opts) => {
       try {
-        if (opts.format !== "markdown" && opts.format !== "json") {
-          console.error("Error: --format must be 'markdown' or 'json'");
-          await exitCli(2);
-          return;
-        }
-        if (opts.order !== "steering" && opts.order !== "given") {
-          console.error("Error: --order must be 'steering' or 'given'");
-          await exitCli(2);
-          return;
-        }
+        const format = parseEnumOption(opts.format, "--format", [
+          "markdown",
+          "json",
+        ] as const);
+        const order = parseEnumOption(opts.order, "--order", [
+          "steering",
+          "given",
+        ] as const);
 
         const paths = resolveGhostPackage(opts.package, process.cwd());
         const snapshot = await loadGhostSnapshot(paths);
@@ -58,7 +59,7 @@ export function registerPullCommand(cli: CAC): void {
           ids,
           repoRoot,
           inlineMaterials: opts.materials !== false,
-          order: opts.order,
+          order,
         });
 
         for (const miss of result.missed) {
@@ -89,7 +90,7 @@ export function registerPullCommand(cli: CAC): void {
           return;
         }
 
-        if (opts.format === "json") {
+        if (format === "json") {
           process.stdout.write(
             `${JSON.stringify(formatPullJson(result, opts.materials !== false), null, 2)}\n`,
           );

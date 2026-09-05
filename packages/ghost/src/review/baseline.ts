@@ -1,6 +1,6 @@
 import {
   type GhostCatalog,
-  parseSourceRef,
+  parseCheckReference,
   sliceNodeSection,
 } from "#ghost-core";
 
@@ -17,7 +17,7 @@ export function resolveBaseline(
   raw: string,
   catalog: GhostCatalog,
 ): BaselineProse | null {
-  const ref = parseSourceRef(raw);
+  const ref = parseCheckReference(raw);
   if (ref === null) return null;
   const node = catalog.nodes.get(ref.nodeId);
   if (node === undefined) return null;

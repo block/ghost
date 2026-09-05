@@ -8,9 +8,6 @@ importers:
 
   .:
     devDependencies:
-      '@anthropic-ai/sdk':
-        specifier: ^0.90.0
-        version: 0.90.0(zod@4.3.6)
       '@biomejs/biome':
         specifier: ^2.4.12
         version: 2.4.12
@@ -23,9 +20,6 @@ importers:
       '@types/node':
         specifier: ^22.0.0
         version: 22.19.17
-      gray-matter:
-        specifier: ^4.0.3
-        version: 4.0.3
       lefthook:
         specifier: ^2.1.0
         version: 2.1.6
@@ -366,15 +360,6 @@ packages:
   '@antfu/ni@24.4.0':
     resolution: {integrity: sha512-ZjriRbGyWGSrBE1RY2qBIXyilejMWLDWh2Go2dqFottyiuOze36+BpPch2z2WnGEgEbzTBVPetMmQvt0xt+iww==}
     hasBin: true
-
-  '@anthropic-ai/sdk@0.90.0':
-    resolution: {integrity: sha512-MzZtPabJF1b0FTDl6Z6H5ljphPwACLGP13lu8MTiB8jXaW/YXlpOp+Po2cVou3MPM5+f5toyLnul9whKCy7fBg==}
-    hasBin: true
-    peerDependencies:
-      zod: ^3.25.0 || ^4.0.0
-    peerDependenciesMeta:
-      zod:
-        optional: true
 
   '@astrojs/check@0.9.10':
     resolution: {integrity: sha512-zgx/UQMozdjOa3bOxjgeCFdtpE3c9rRX6xHwa+2QXvy8z8Akifu2AtubHyv/zzC2znO8dl8fFWL4K+Ba9kS8HQ==}
@@ -3707,10 +3692,6 @@ packages:
     resolution: {integrity: sha512-hIS4idWWai69NezIdRt2xFVofaF4j+6INOpJlVOLDO8zXGpUVEVzIYk12UUi2JzjEzWL3IOAxcTubgz9Po0yXw==}
     engines: {node: '>= 18'}
 
-  extend-shallow@2.0.1:
-    resolution: {integrity: sha512-zCnTtlxNoAiDc3gqY2aYAWFx7XWWiasuF2K8Me5WbN8otHKTUKBwjPtNpRs/rbUZm7KxWAaNj7P1a/p52GbVug==}
-    engines: {node: '>=0.10.0'}
-
   extend@3.0.2:
     resolution: {integrity: sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==}
 
@@ -3899,10 +3880,6 @@ packages:
     resolution: {integrity: sha512-5bJ+nf/UCpAjHM8i06fl7eLyVC9iuNAjm9qzkiu2ZGhM0VscSvS6WDPfAwkdkBuoXGM9FJSbKl6wylMwP9Ktig==}
     engines: {node: ^12.22.0 || ^14.16.0 || ^16.0.0 || >=17.0.0}
 
-  gray-matter@4.0.3:
-    resolution: {integrity: sha512-5v6yZd4JK3eMI3FqqCouswVqwugaA9r4dNZB1wwcmrD02QkV5H0y7XBQW8QwQqEaZY1pM9aqORSORhJRdNK44Q==}
-    engines: {node: '>=6.0'}
-
   gsap@3.15.0:
     resolution: {integrity: sha512-dMW4CWBTUK1AEEDeZc1g4xpPGIrSf9fJF960qbTZmN/QwZIWY5wgliS6JWl9/25fpTGJrMRtSjGtOmPnfjZB+A==}
 
@@ -4076,10 +4053,6 @@ packages:
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
     hasBin: true
 
-  is-extendable@0.1.1:
-    resolution: {integrity: sha512-5BMULNob1vgFX6EjQw5izWDxrecWK9AM72rugNr0TFldMOi0fj6Jk+zeKIt0xGj4cEfQIJth4w3OKWOJ4f+AFw==}
-    engines: {node: '>=0.10.0'}
-
   is-extglob@2.1.1:
     resolution: {integrity: sha512-SbKbANkN603Vi4jEZv49LeVJMn4yGwsbzZworEoyEiutsN3nJYdbO36zfhGJ6QEDpOZIFkDtnq5JRxmvl3jsoQ==}
     engines: {node: '>=0.10.0'}
@@ -4197,10 +4170,6 @@ packages:
   json-parse-even-better-errors@2.3.1:
     resolution: {integrity: sha512-xyFwyhro/JEof6Ghe2iz2NcXoj2sloNsWr/XsERDK/oiPCfaNhl5ONfp+jQdAZRQQ0IJWNzH9zIZF7li91kh2w==}
 
-  json-schema-to-ts@3.1.1:
-    resolution: {integrity: sha512-+DWg8jCJG2TEnpy7kOm/7/AxaYoaRbjVB4LFZLySZlWn8exGs3A4OLJR966cVvU26N7X9TWxl+Jsw7dzAqKT6g==}
-    engines: {node: '>=16'}
-
   json-schema-traverse@1.0.0:
     resolution: {integrity: sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug==}
 
@@ -4233,10 +4202,6 @@ packages:
 
   khroma@2.1.0:
     resolution: {integrity: sha512-Ls993zuzfayK269Svk9hzpeGUKob/sIgZzyHYdjQoAdQetRKpOLj+k/QQQ/6Qi0Yz65mlROrfd+Ev+1+7dz9Kw==}
-
-  kind-of@6.0.3:
-    resolution: {integrity: sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==}
-    engines: {node: '>=0.10.0'}
 
   kleur@3.0.3:
     resolution: {integrity: sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==}
@@ -5363,10 +5328,6 @@ packages:
   scheduler@0.26.0:
     resolution: {integrity: sha512-NlHwttCI/l5gCPR3D1nNXtWABUmBwvZpEQiD4IXSbIDq8BzLIK/7Ir5gTFSGZDUu37K5cMNp0hFtzO38sC7gWA==}
 
-  section-matter@1.0.0:
-    resolution: {integrity: sha512-vfD3pmTzGpufjScBh50YHKzEu2lxBWhVEHsNGoEXmCmn2hKGfeNLYMzCJpe8cD7gqX7TJluOVpBkAequ6dgMmA==}
-    engines: {node: '>=4'}
-
   semver@6.3.1:
     resolution: {integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==}
     hasBin: true
@@ -5537,10 +5498,6 @@ packages:
     resolution: {integrity: sha512-yDPMNjp4WyfYBkHnjIRLfca1i6KMyGCtsVgoKe/z1+6vukgaENdgGBZt+ZmKPc4gavvEZ5OgHfHdrazhgNyG7w==}
     engines: {node: '>=12'}
 
-  strip-bom-string@1.0.0:
-    resolution: {integrity: sha512-uCC2VHvQRYu+lMh4My/sFNmF2klFymLX1wHJeXnbEJERpV/ZsVuonzerjfrGpIGF7LBVa1O7i9kjiWvJiFck8g==}
-    engines: {node: '>=0.10.0'}
-
   strip-bom@3.0.0:
     resolution: {integrity: sha512-vavAMRXOgBVNF6nyEEmL3DBK19iRpDcoIwW+swQ+CbGiu7lju6t+JklA1MHweoWtadgt4ISVUsXLyDq34ddcwA==}
     engines: {node: '>=4'}
@@ -5657,9 +5614,6 @@ packages:
 
   trough@2.2.0:
     resolution: {integrity: sha512-tmMpK00BjZiUyVyvrBK7knerNgmgvcV/KLVyuma/SC+TQN167GrMRciANTz09+k3zW8L8t60jWO1GpfkZdjTaw==}
-
-  ts-algebra@2.0.0:
-    resolution: {integrity: sha512-FPAhNPFMrkwz76P7cdjdmiShwMynZYN6SgOujD1urY4oNm80Ou9oMdmbR45LotcKOXoy7wSmHkRFE6Mxbrhefw==}
 
   ts-dedent@2.2.0:
     resolution: {integrity: sha512-q5W7tVM71e2xjHZTlgfTDoPF/SmqKG5hddq9SzR49CH2hayqRKJtQ4mtRlSxKaJlR/+9rEM+mnBHf7I2/BQcpQ==}
@@ -6324,12 +6278,6 @@ snapshots:
       fzf: 0.5.2
       package-manager-detector: 1.6.0
       tinyexec: 1.1.1
-
-  '@anthropic-ai/sdk@0.90.0(zod@4.3.6)':
-    dependencies:
-      json-schema-to-ts: 3.1.1
-    optionalDependencies:
-      zod: 4.3.6
 
   '@astrojs/check@0.9.10(prettier@3.9.6)(typescript@5.9.3)':
     dependencies:
@@ -9875,10 +9823,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  extend-shallow@2.0.1:
-    dependencies:
-      is-extendable: 0.1.1
-
   extend@3.0.2: {}
 
   extendable-error@0.1.7: {}
@@ -10069,13 +10013,6 @@ snapshots:
   graceful-fs@4.2.11: {}
 
   graphql@16.13.2: {}
-
-  gray-matter@4.0.3:
-    dependencies:
-      js-yaml: 3.14.2
-      kind-of: 6.0.3
-      section-matter: 1.0.0
-      strip-bom-string: 1.0.0
 
   gsap@3.15.0: {}
 
@@ -10335,8 +10272,6 @@ snapshots:
 
   is-docker@3.0.0: {}
 
-  is-extendable@0.1.1: {}
-
   is-extglob@2.1.1: {}
 
   is-fullwidth-code-point@3.0.0: {}
@@ -10412,11 +10347,6 @@ snapshots:
 
   json-parse-even-better-errors@2.3.1: {}
 
-  json-schema-to-ts@3.1.1:
-    dependencies:
-      '@babel/runtime': 7.29.2
-      ts-algebra: 2.0.0
-
   json-schema-traverse@1.0.0: {}
 
   json-schema-typed@8.0.2: {}
@@ -10444,8 +10374,6 @@ snapshots:
       commander: 8.3.0
 
   khroma@2.1.0: {}
-
-  kind-of@6.0.3: {}
 
   kleur@3.0.3: {}
 
@@ -11927,11 +11855,6 @@ snapshots:
 
   scheduler@0.26.0: {}
 
-  section-matter@1.0.0:
-    dependencies:
-      extend-shallow: 2.0.1
-      kind-of: 6.0.3
-
   semver@6.3.1: {}
 
   semver@7.7.4: {}
@@ -12209,8 +12132,6 @@ snapshots:
     dependencies:
       ansi-regex: 6.2.2
 
-  strip-bom-string@1.0.0: {}
-
   strip-bom@3.0.0: {}
 
   strip-final-newline@2.0.0: {}
@@ -12306,8 +12227,6 @@ snapshots:
   trim-lines@3.0.1: {}
 
   trough@2.2.0: {}
-
-  ts-algebra@2.0.0: {}
 
   ts-dedent@2.2.0: {}
 

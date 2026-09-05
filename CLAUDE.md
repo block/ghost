@@ -17,9 +17,10 @@ selection and interpretive BYOA work through the installed `ghost` skill.
 
 ```bash
 pnpm install          # install dependencies (pnpm 10+, Node 20.19+ or 22.12+)
-pnpm build            # build all packages
+pnpm build            # build the public ghost package
 pnpm test             # vitest across packages
 pnpm check            # biome, typecheck, file-size, package checks
+pnpm run quality:all  # complete local and release gate
 ```
 
 Run the public CLI after building:
@@ -94,6 +95,7 @@ edits and checks.
 | `packages/ghost` | yes: `@design-intelligence/ghost` | The public package. Ships the `ghost` CLI, node authoring, corpus validation, gather/pull/stats, review packet assembly, and the unified skill bundle. Shared runtime lives in `packages/ghost/src/ghost-core`. |
 | `packages/vessel-react` | no | A standalone shadcn component registry and reference component system: the opinionated default reference body. Design-system-agnostic; nothing in ghost requires it. |
 | `packages/vessel-light` | no | Vessel's design language as a portable `.ghost/` package for agents writing raw HTML/CSS. No build, no dependencies. |
+| `packages/context-control` | no | Selection evaluation bench: measures whether agents choose applicable guidance from the complete menu. |
 | `packages/steering-control` | no | Before/after evaluation harness: measures what handing an agent a `.ghost` package buys, as a deterministic `report.html`. |
 | `apps/docs` | no | Public thesis site and development log. |
 
@@ -120,11 +122,11 @@ Advanced/maintenance:
 
 ## Public Exports
 
-- `@design-intelligence/ghost` for the combined surface.
-- `@design-intelligence/ghost/scan` for package-path resolution helpers.
-- `@design-intelligence/ghost/package` for node package authoring, validation, parsing, and serialization.
-- `@design-intelligence/ghost/core` for shared schemas, types, and loaders.
-- `@design-intelligence/ghost/cli` for `buildCli()`.
+- `@design-intelligence/ghost` for the common package and embedded-host operations.
+- `@design-intelligence/ghost/package` for package initialization, loading, validation, and resolution.
+- `@design-intelligence/ghost/embed` for model-free host integration with gather, pull, snapshots, and material inspection.
+- `@design-intelligence/ghost/core` for lower-level schemas, parsers, and types.
+- `@design-intelligence/ghost/cli` for `buildCli()` and command discovery.
 
 ## Environment Variables
 
@@ -150,8 +152,9 @@ changeset file instead of asking the user to run `pnpm changeset`:
 One sentence, user-facing, present tense.
 ```
 
-Use `patch` for fixes and docs, `minor` for new commands/flags/exports, and
-`major` for removed or renamed public behavior.
+Use `patch` for fixes and docs. During the 0.x preview, use `minor` for
+additions and clearly labeled breaking changes. Reserve `major` for the 1.0
+release.
 
 ## Conventions
 

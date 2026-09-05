@@ -18,7 +18,7 @@ jobs:
   release:
     name: Version or publish
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     env:
       # `secrets` context can't be used in step-level `if:`, so surface a
       # presence flag here. Skips the tap bump on forks / unconfigured repos.
@@ -39,7 +39,8 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm --filter @design-intelligence/ghost build
+      - name: Quality gate
+        run: pnpm run quality:all
 
       - name: Create Release PR or publish
         id: changesets

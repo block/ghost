@@ -2,14 +2,14 @@ import { execFile } from "node:child_process";
 import { isAbsolute, resolve } from "node:path";
 import { promisify } from "node:util";
 import { UsageError } from "#ghost-core";
-import { FINGERPRINT_PACKAGE_DIR } from "./constants.js";
+import { GHOST_PACKAGE_DIR } from "./constants.js";
 
 const execFileAsync = promisify(execFile);
 
 /**
  * Neutral home for the load-bearing package-path helpers: direct package
- * addressing (no nesting machinery), consumed by fingerprint-commands,
- * init-command, monorepo-init-command, and the scan/index re-exports.
+ * addressing (no nesting machinery), consumed by package commands and public
+ * package API re-exports.
  */
 
 export async function resolveGitRoot(cwd = process.cwd()): Promise<string> {
@@ -27,7 +27,7 @@ export async function resolveGitRoot(cwd = process.cwd()): Promise<string> {
   }
 }
 
-export function normalizeGhostDir(ghostDir = FINGERPRINT_PACKAGE_DIR): string {
+export function normalizeGhostDir(ghostDir = GHOST_PACKAGE_DIR): string {
   const normalized = ghostDir
     .trim()
     .replaceAll("\\", "/")

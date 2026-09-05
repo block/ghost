@@ -45,7 +45,6 @@ const FORBIDDEN_PHRASES = [
   "memory edits",
   "memory changes",
   "memory updates",
-  "fingerprint memory",
   "canonical memory",
   "checked-in memory",
   "repo memory",
@@ -128,8 +127,6 @@ const ALLOWED_MEMORY_TERMS = [
   "missing-memory",
   "muscle memory",
   "in-memory",
-  "fingerprint/memory/intent.md",
-  "fingerprint/memory/decisions",
   "memory/intent.md",
   "memory/decisions",
 ];

@@ -1,6 +1,23 @@
-/** @deprecated Use `ghostPackage` or `@design-intelligence/ghost/package`. */
-export * as fingerprint from "./fingerprint.js";
+export {
+  gatherGhostPackage,
+  inspectGhostMaterial,
+  loadGhostSnapshot,
+  pullGhostNodes,
+  stampGhostEvent,
+} from "./embed/index.js";
 export * as core from "./ghost-core/index.js";
-export * as ghostPackage from "./package.js";
-/** @deprecated Use `ghostPackage` or `@design-intelligence/ghost/package`. */
-export * as scan from "./scan/index.js";
+export type { GhostPackageManifest } from "./ghost-core/package-manifest.js";
+export {
+  GHOST_MANIFEST_FILENAME,
+  GHOST_PACKAGE_DIR,
+  GHOST_PACKAGE_DIR_ENV,
+  GHOST_PACKAGE_SCHEMA,
+  GhostPackageManifestSchema,
+  initGhostPackage,
+  lintGhostPackage,
+  loadGhostPackage,
+  normalizeGhostDir,
+  resolveGhostDirDefault,
+  resolveGhostPackage,
+  resolveGitRoot,
+} from "./package.js";

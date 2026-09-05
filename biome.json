@@ -10,6 +10,9 @@
       "**",
       "!**/test/fixtures",
       "!packages/vessel-light/demo/out",
+      "!packages/vessel-react/dist-lib",
+      "!apps/docs/.astro",
+      "!apps/docs/dist",
       "!apps/docs/**/*.astro"
     ]
   },
@@ -40,7 +43,26 @@
   },
   "overrides": [
     {
-      "includes": ["packages/vessel-react/**", "apps/docs/**"],
+      "includes": ["packages/vessel-react/public/r/**"],
+      "linter": {
+        "enabled": false
+      }
+    },
+    {
+      "includes": ["apps/docs/**/*.ts", "apps/docs/**/*.tsx"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useSemanticElements": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "packages/vessel-react/src/components/**",
+        "packages/vessel-react/src/lib/theme-provider.tsx"
+      ],
       "linter": {
         "enabled": false
       }
