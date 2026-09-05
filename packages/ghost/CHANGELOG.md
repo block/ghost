@@ -1,5 +1,11 @@
 # @design-intelligence/ghost
 
+## 0.33.0
+
+### Minor Changes
+
+- [#281](https://github.com/block/ghost/pull/281) [`fa03a70`](https://github.com/block/ghost/commit/fa03a70e2fff17bbf1b7dc3b0948e1058a08a79d) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - BREAKING: focus ghost on one package identity. Use `ghost` instead of the removed executable alias, `/package` instead of the removed `/fingerprint` and `/scan` exports, `ghost stats` instead of `ghost pulse`, `ghost.package/v1` in manifests, `parseCheckReference` instead of `parseSourceRef`, `packageId` instead of `fingerprintId`, and omit the removed `--template skeleton` flag. Install the skill with `ghost skill install`; the standalone curl installer is removed.
+
 ## 0.32.0
 
 ### Minor Changes
