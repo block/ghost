@@ -76,37 +76,19 @@ export function fakeModel() {
   };
 }
 
-// The selection prompt is a replica of what a real skill-equipped agent
-// follows: the skill bundle's recall and brief recipes
-// (packages/ghost/src/skill-bundle/references/). The bench measures actual
-// agent behavior, so the protocol those recipes install is always on —
-// there is no skill-less arm. If the recipes change, change this with them.
-const SELECT_SYSTEM = `You are an agent selecting brand guidance nodes for a task,
-following the ghost skill's recall recipe.
+const SELECT_SYSTEM = `Select the guidance IDs that apply to the task.
+Follow the instructions in the supplied guidance. Respond with ONLY a JSON
+array of ID strings, nothing else.`;
 
-You will get an ask, the cover already in context, and the ghost gather menu.
-Select only menu node ids against their contexts. Do not select the cover.
+function selectUser(ask, menu, cover, markdown) {
+  if (markdown) return markdown;
 
-- Pull every node whose context indicates its stated situation applies and
-  whose guidance, material, structure, or refusal governs the work.
-- Skip inapplicable nodes. Topic overlap alone is not applicability.
-- Do not add nodes for completeness or omit applicable nodes to meet a count.
-- Anti-goal nodes are review-critical negative space; pull each one whose
-  context names territory the ask enters.
-
-Respond with ONLY a JSON array of node id strings, nothing else.`;
-
-function selectUser(ask, menu, cover) {
-  const lines = menu.map((entry) => {
-    const flags = [entry.materials ? `${entry.materials} materials` : null]
-      .filter(Boolean)
-      .join(", ");
-    return `- ${entry.id}${entry.kind ? ` [${entry.kind}]` : ""}${flags ? ` (${flags})` : ""}: ${entry.for ?? "(no for payload)"}`;
-  });
-  const coverLine = cover
-    ? `Cover already in context: ${cover.id}\n\n${cover.body}\n\n`
-    : "";
-  return `${coverLine}Ask: ${ask}\n\nMenu:\n${lines.join("\n")}`;
+  // Compatibility path for callers that still supply the JSON gather result.
+  const lines = menu.map(
+    (entry) => `- ${entry.id}: ${entry.for ?? "(applicability not stated)"}`,
+  );
+  const guidance = cover?.body ? `${cover.body}\n\n` : "";
+  return `${guidance}Task: ${ask}\n\nAvailable guidance:\n${lines.join("\n")}`;
 }
 
 /** Parse a JSON id array out of a model reply, tolerating code fences. */
@@ -139,7 +121,7 @@ export function openAICompatibleModel({
   }
   return {
     name: "openai-compatible",
-    async select({ ask, menu, cover }) {
+    async select({ ask, menu, cover, markdown }) {
       const res = await fetch(
         `${baseUrl.replace(/\/$/, "")}/chat/completions`,
         {
@@ -152,7 +134,10 @@ export function openAICompatibleModel({
             model,
             messages: [
               { role: "system", content: SELECT_SYSTEM },
-              { role: "user", content: selectUser(ask, menu, cover) },
+              {
+                role: "user",
+                content: selectUser(ask, menu, cover, markdown),
+              },
             ],
             // Trial-to-trial variance is the signal being measured, so sample at
             // the endpoint's default temperature rather than pinning it to zero.

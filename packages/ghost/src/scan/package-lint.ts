@@ -148,6 +148,16 @@ function lintCover(
     return;
   }
 
+  if (!/^##[ \t]+If no guidance applies[ \t]*$/im.test(cover.body)) {
+    issues.push({
+      severity: "warning",
+      rule: "cover-no-guidance-policy-missing",
+      message:
+        'cover has no "## If no guidance applies" section; add the continuation or escalation rule for uncovered decisions',
+      path: `${coverId}.md`,
+    });
+  }
+
   const bytes = Buffer.byteLength(cover.body, "utf-8");
   if (bytes > 1500) {
     issues.push({

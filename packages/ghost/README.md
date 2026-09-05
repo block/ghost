@@ -43,7 +43,7 @@ Your agent works with the package through a small set of commands:
 ghost init          # scaffold .ghost/ with the starter package
 ghost checks init   # opt in to review assertions
 ghost validate      # make sure the package is well-formed
-ghost gather [ask]  # before building: show the complete guidance menu
+ghost gather <ask>  # before building: show the complete guidance menu
 ghost pull <ids>    # read the picked nodes' full bodies
 ghost review        # during review: match a diff to guidance and checks
 ghost stats         # while tuning: see what agents reached for

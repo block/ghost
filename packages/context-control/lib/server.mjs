@@ -4,7 +4,8 @@ import { readFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import { fileURLToPath } from "node:url";
 import { parseAsks, runAsk } from "./bench.mjs";
-import { gatherMenu, pullNode } from "./ghost.mjs";
+import { gatherMarkdown, gatherMenu, pullNode } from "./ghost.mjs";
+import { parseGatherMarkdown } from "./markdown.mjs";
 import { availableModels, resolveModel } from "./model.mjs";
 import { suiteCoverage } from "./score.mjs";
 import { readTape, toSessions } from "./tape.mjs";
@@ -44,16 +45,28 @@ export function startServer({ ghostBin, packageDir, asksPath, port = 4114 }) {
         }
         const gathered = await gatherMenu({ ghostBin, packageDir });
         const menu = gathered.nodes;
+        const knownIds = new Set(menu.map((entry) => entry.id));
         const model = resolveModel(body.model);
         const asks = Array.isArray(body.asks) ? body.asks : [body];
         const results = [];
         for (const item of asks) {
+          const markdown = await gatherMarkdown({
+            ghostBin,
+            packageDir,
+            ask: item.ask,
+          });
+          const parsed = parseGatherMarkdown(markdown);
+          for (const id of [...(item.expected ?? []), ...(item.poison ?? [])]) {
+            if (!knownIds.has(id)) {
+              throw new Error(`ask references unknown node id: ${id}`);
+            }
+          }
           results.push(
             await runAsk({
               model,
               ask: item.ask,
-              menu,
-              cover: gathered.cover,
+              menu: parsed.nodes,
+              markdown,
               trials,
               expected: item.expected ?? null,
               poison: item.poison ?? [],

@@ -25,8 +25,8 @@ Report first:
 
 - **Concreteness coverage:** total nodes, concrete-material nodes, prose-only
   nodes. Concrete means non-empty `materials`, a fenced code block of at least 3
-  lines, or a `## Skeleton` section. `ghost gather` reports material counts and
-  labels substantial fenced examples and Skeletons as payload metadata.
+  lines, or a `## Skeleton` section. Read these counts and payload labels from
+  `ghost gather --format json`; agent-facing Markdown omits them.
 - **Pull rate by concreteness:** concrete-material exposure/pull rate vs prose-only
   exposure/pull rate. In markdown this is the `Concrete material` row. This is
   the tuning instrument: if concrete nodes are not pulled when applicable,
