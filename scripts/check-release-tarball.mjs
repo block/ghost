@@ -100,10 +100,10 @@ try {
   );
   if (
     packedPkg.bin?.ghost !== "./dist/bin.js" ||
-    packedPkg.bin?.["ghost-fingerprint"] !== "./dist/bin.js"
+    Object.keys(packedPkg.bin ?? {}).length !== 1
   ) {
     fail(
-      "release tarball package.json must expose both ghost and ghost-fingerprint bins pointing at ./dist/bin.js",
+      "release tarball package.json must expose only the ghost bin pointing at ./dist/bin.js",
     );
   }
 

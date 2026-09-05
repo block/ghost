@@ -16,6 +16,7 @@ export interface LoadedCheck {
   id: string;
   doc: GhostCheckDocument;
   references: string[];
+  usesDeprecatedSource: boolean;
 }
 
 export interface LoadedCheckFiles {
@@ -85,7 +86,14 @@ export async function loadCheckFiles(
       continue;
     }
 
-    checks.set(id, { id, doc: loadGhostCheck(raw), references });
+    checks.set(id, {
+      id,
+      doc: loadGhostCheck(raw),
+      references,
+      usesDeprecatedSource:
+        !Array.isArray(frontmatter?.references) &&
+        typeof frontmatter?.source === "string",
+    });
   }
 
   return { hasChecksDir: true, checks, invalid };
@@ -100,7 +108,5 @@ function referencesFromFrontmatter(
       (reference): reference is string => typeof reference === "string",
     );
   }
-  // Deprecated compatibility for single-file linting; package checks should use
-  // `references`, but this keeps older check files loadable during local edits.
   return typeof frontmatter.source === "string" ? [frontmatter.source] : [];
 }

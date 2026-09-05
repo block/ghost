@@ -1,9 +1,9 @@
 import { cac } from "cac";
 import { registerChecksCommand } from "./commands/checks-command.js";
 import { formatGhostHelp } from "./commands/command-discovery.js";
-import { registerFingerprintCommands } from "./commands/fingerprint-commands.js";
 import { registerGatherCommand } from "./commands/gather-command.js";
 import { registerManifestCommand } from "./commands/manifest-command.js";
+import { registerPackageCommands } from "./commands/package-commands.js";
 import { registerPullCommand } from "./commands/pull-command.js";
 import { registerReviewCommand } from "./commands/review-command.js";
 import { registerSkillCommand } from "./commands/skill-command.js";
@@ -18,7 +18,7 @@ export {
 export function buildCli(): ReturnType<typeof cac> {
   const cli = cac("ghost");
 
-  registerFingerprintCommands(cli);
+  registerPackageCommands(cli);
   registerGatherCommand(cli);
   registerPullCommand(cli);
   registerStatsCommand(cli);
@@ -27,6 +27,7 @@ export function buildCli(): ReturnType<typeof cac> {
   registerManifestCommand(cli);
   registerSkillCommand(cli);
 
+  cli.option("--all", "Show all commands when used with --help");
   cli.help((sections) => formatGhostHelp(cli, sections));
   cli.version(readPackageVersion());
 

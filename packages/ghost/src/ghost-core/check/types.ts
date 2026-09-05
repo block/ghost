@@ -7,8 +7,7 @@ export type GhostCheckMarkdownSeverity =
 
 /**
  * A ghost check: markdown + frontmatter, evaluated by an agent — never run by
- * ghost. Shape-compatible with the established `.agents/checks` format, plus the
- * ghost addition `source:` (the fingerprint prose the check enforces). Every
+ * ghost. Shape-compatible with the established `.agents/checks` format. Every
  * check is offered to the reviewer; the agent judges relevance.
  */
 export interface GhostCheckFrontmatter {
@@ -20,12 +19,12 @@ export interface GhostCheckFrontmatter {
   /** Max tool-use turns the check should spend (passthrough). */
   turn_limit?: number;
   /**
-   * The fingerprint prose this check enforces, as node path ids with optional
+   * The package prose this check enforces, as node path ids with optional
    * `> Heading` anchors (`checkout/payment > Confirmation`). Unresolved refs are
    * tolerated by validation as warnings: they may name not-yet-written prose.
    */
   references?: string[];
-  /** Deprecated single-reference alias retained for artifact-level linting. */
+  /** @deprecated Use `references`. Retained as a single-reference alias. */
   source?: string;
 }
 

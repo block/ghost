@@ -1,6 +1,6 @@
 // --- Embedding primitives ---
 
-// --- Catalog (flat in-memory fingerprint node map) ---
+// --- Catalog (flat in-memory package node map) ---
 export {
   type AssembleCatalogInput,
   assembleCatalog,
@@ -24,14 +24,14 @@ export {
   lintGhostCheck,
   loadGhostCheck,
   type ParsedCheckMarkdown,
-  type ParsedSourceRef,
+  type ParsedCheckReference,
   parseCheckMarkdown,
-  parseSourceRef,
+  parseCheckReference,
   sliceNodeSection,
 } from "./check/index.js";
 // --- CLI exit-code contract ---
 export { EXIT, UsageError } from "./errors.js";
-// --- Glossary (reserved fingerprint vocabulary slot) ---
+// --- Glossary (reserved ghost vocabulary slot) ---
 export {
   type GhostGlossaryDocument,
   GhostGlossaryFrontmatterSchema,
@@ -92,17 +92,9 @@ export {
   stripSkeletonSections,
 } from "./node/index.js";
 // --- ghost package manifest ---
-export type {
-  /** @deprecated Use `GhostPackageManifest`. */
-  GhostFingerprintPackageManifest,
-  GhostPackageManifest,
-} from "./package-manifest.js";
+export type { GhostPackageManifest } from "./package-manifest.js";
 export {
-  /** @deprecated Use `GHOST_PACKAGE_SCHEMA`. */
-  GHOST_FINGERPRINT_PACKAGE_SCHEMA,
   GHOST_PACKAGE_SCHEMA,
-  /** @deprecated Use `GhostPackageManifestSchema`. */
-  GhostFingerprintPackageManifestSchema,
   GhostPackageManifestSchema,
 } from "./package-manifest.js";
 // --- Skill bundle loader ---

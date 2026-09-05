@@ -51,10 +51,13 @@ lock you into one agent.
 
 ## Use Guidance While Making
 
-Your agent works with the package through a small set of commands:
+Your agent works with the package through a small set of commands. The default
+scaffold is intentionally usable before the brand is fully documented. Its
+provisional decisions should be replaced or confirmed as the brand becomes
+known.
 
 ```bash
-ghost init          # scaffold .ghost/ with the starter package
+ghost init          # scaffold .ghost/ with a robust provisional baseline
 ghost checks init   # opt in to review assertions
 ghost validate      # make sure the package is well-formed
 ghost gather [ask]  # before building: show the complete guidance menu
@@ -173,6 +176,7 @@ forks it. To move the package on its own, copy the `.ghost/` directory and run
 | [`packages/ghost`](./packages/ghost) | The public `ghost` CLI, node authoring, package validation, gather/pull, review packet assembly, and the skill bundle. | yes: `@design-intelligence/ghost` |
 | [`packages/vessel-react`](./packages/vessel-react) | A standalone shadcn component registry and reference component system. | no |
 | [`packages/vessel-light`](./packages/vessel-light) | Vessel's design language as a portable `.ghost/` package for agents writing raw HTML/CSS. | no |
+| [`packages/context-control`](./packages/context-control) | Selection evaluation bench: measures whether agents choose applicable guidance from the complete menu. | no |
 | [`packages/steering-control`](./packages/steering-control) | Before/after evaluation harness: measures what a `.ghost` package buys as a self-contained `report.html`. | no |
 | [`apps/docs`](./apps/docs) | Public thesis site and development log. | no |
 
@@ -180,13 +184,12 @@ forks it. To move the package on its own, copy the `.ghost/` directory and run
 
 ```bash
 pnpm install
-pnpm build
-pnpm test
-pnpm check
+pnpm run quality:all
 ```
 
-Every `ghost` command is also available as `ghost-fingerprint` when another
-tool on your machine owns the `ghost` bin.
+`pnpm build`, `pnpm test`, and `pnpm check` remain available for focused work.
+The complete gate also builds retained workspace packages and validates every
+checked-in ghost package.
 
 ## License
 

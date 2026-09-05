@@ -8,22 +8,16 @@ import {
 import { isExistingPathError, isMissingPathError } from "../internal/fs.js";
 import type { LoadedCheck } from "./check-files.js";
 import {
-  FINGERPRINT_COMPOSITION_FILENAME,
-  FINGERPRINT_INTENT_FILENAME,
-  FINGERPRINT_INVENTORY_FILENAME,
-  FINGERPRINT_MANIFEST_FILENAME,
   GHOST_GLOSSARY_FILENAME,
+  GHOST_MANIFEST_FILENAME,
 } from "./constants.js";
-import { lintGhostPackage } from "./fingerprint-package-lint.js";
-import { loadGhostPackage } from "./fingerprint-package-loader.js";
+import { lintGhostPackage } from "./package-lint.js";
+import { loadGhostPackage } from "./package-loader.js";
 import { resolveGhostDirDefault } from "./package-paths.js";
 import {
-  DEFAULT_TEMPLATE_NAME,
-  type GhostInitTemplate,
+  getDefaultInitTemplate,
   getInitBody,
-  getInitTemplate,
   listInitBodies,
-  listInitTemplates,
 } from "./templates.js";
 
 // The lint pass lives beside this module; re-export it so `validate` callers
@@ -35,16 +29,12 @@ export interface GhostPackagePaths {
   packageDir: string;
   manifest: string;
   glossary: string;
-  /** Legacy facet paths — used only to detect pre-flat-corpus packages. */
-  intent: string;
-  inventory: string;
-  composition: string;
 }
 
 export interface LoadedGhostPackage {
   manifest: GhostPackageManifest;
   manifestRaw: string;
-  /** The in-memory flat node catalog — the ghost package model. */
+  /** The in-memory flat node catalog: the ghost package model. */
   catalog: GhostCatalog;
   /** Whether `.ghost/checks/` exists; `ghost review` requires it. */
   hasChecksDir: boolean;
@@ -61,12 +51,9 @@ export interface LoadedGhostPackage {
 }
 
 export interface InitGhostPackageOptions {
-  /** Init template name (default: "skeleton"). Mutually exclusive with `body`. */
-  template?: string;
   /**
    * Init body name (e.g. "vessel-light"): a full inhabited package with
-   * answered dials, materials, and its own checks. Mutually exclusive with
-   * `template`.
+   * answered dials, materials, and its own checks.
    */
   body?: string;
   force?: boolean;
@@ -74,17 +61,17 @@ export interface InitGhostPackageOptions {
 
 export interface InitGhostPackageResult {
   paths: GhostPackagePaths;
-  /** Package-relative paths of the files the template wrote. */
+  /** Package-relative paths of the files the scaffold wrote. */
   written: string[];
 }
 
 /**
  * Resolve the ghost package directory. `dirArg` (an explicit
- * `--package <dir>`) always wins and is used exactly as given — it may be
+ * `--package <dir>`) always wins and is used exactly as given: it may be
  * absolute or relative, unlike `GHOST_PACKAGE_DIR`. When `dirArg` is
- * omitted, `GHOST_PACKAGE_DIR` is honored so every command — not just `init`
- * and `validate` — respects a host-configured package location. Falls back
- * to the default `.ghost` when neither is set.
+ * omitted, `GHOST_PACKAGE_DIR` is honored so every command respects a
+ * host-configured package location. Falls back to the default `.ghost` when
+ * neither is set.
  */
 export function resolveGhostPackage(
   dirArg: string | undefined,
@@ -95,11 +82,8 @@ export function resolveGhostPackage(
   return {
     dir,
     packageDir,
-    manifest: join(packageDir, FINGERPRINT_MANIFEST_FILENAME),
+    manifest: join(packageDir, GHOST_MANIFEST_FILENAME),
     glossary: join(packageDir, GHOST_GLOSSARY_FILENAME),
-    intent: join(packageDir, FINGERPRINT_INTENT_FILENAME),
-    inventory: join(packageDir, FINGERPRINT_INVENTORY_FILENAME),
-    composition: join(packageDir, FINGERPRINT_COMPOSITION_FILENAME),
   };
 }
 
@@ -108,13 +92,11 @@ export async function initGhostPackage(
   cwd = process.cwd(),
   options: InitGhostPackageOptions = {},
 ): Promise<InitGhostPackageResult> {
-  if (options.body !== undefined && options.template !== undefined) {
-    throw new UsageError(
-      "--body and --template are mutually exclusive. A template is a shape of emptiness; a body is a full inhabited package — pick one.",
-    );
-  }
-
-  let source: Pick<GhostInitTemplate, "files">;
+  let source: {
+    files():
+      | Promise<Array<{ relativePath: string; content: string | Uint8Array }>>
+      | Array<{ relativePath: string; content: string | Uint8Array }>;
+  };
   if (options.body !== undefined) {
     const body = getInitBody(options.body);
     if (!body) {
@@ -124,14 +106,7 @@ export async function initGhostPackage(
     }
     source = body;
   } else {
-    const templateName = options.template ?? DEFAULT_TEMPLATE_NAME;
-    const template = getInitTemplate(templateName);
-    if (!template) {
-      throw new UsageError(
-        `Unknown init template '${templateName}'. Available: ${listInitTemplates().join(", ")}.`,
-      );
-    }
-    source = template;
+    source = getDefaultInitTemplate();
   }
 
   const paths = resolveGhostPackage(dirArg, cwd);
@@ -147,7 +122,6 @@ export async function initGhostPackage(
     await assertInitDoesNotOverwrite(files.map((file) => file.path));
   }
 
-  // Create any nested directories the template needs (e.g. nodes/).
   const dirs = new Set(files.map((file) => dirname(file.path)));
   await Promise.all([...dirs].map((dir) => mkdir(dir, { recursive: true })));
 
@@ -199,20 +173,3 @@ async function assertInitDoesNotOverwrite(paths: string[]): Promise<void> {
     );
   }
 }
-
-/** @deprecated Use `GhostPackagePaths`. */
-export type FingerprintPackagePaths = GhostPackagePaths;
-/** @deprecated Use `LoadedGhostPackage`. */
-export type LoadedFingerprintPackage = LoadedGhostPackage;
-/** @deprecated Use `InitGhostPackageOptions`. */
-export type InitFingerprintPackageOptions = InitGhostPackageOptions;
-/** @deprecated Use `InitGhostPackageResult`. */
-export type InitFingerprintPackageResult = InitGhostPackageResult;
-/** @deprecated Use `resolveGhostPackage`. */
-export const resolveFingerprintPackage = resolveGhostPackage;
-/** @deprecated Use `initGhostPackage`. */
-export const initFingerprintPackage = initGhostPackage;
-/** @deprecated Use `loadGhostPackage`. */
-export const loadFingerprintPackage = loadGhostPackage;
-/** @deprecated Use `lintGhostPackage`. */
-export const lintFingerprintPackage = lintGhostPackage;

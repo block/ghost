@@ -39,7 +39,6 @@ export function loadGhostCheck(raw: string): GhostCheckDocument {
     : undefined;
   const source =
     typeof frontmatter.source === "string" ? frontmatter.source : undefined;
-
   return {
     frontmatter: {
       name,

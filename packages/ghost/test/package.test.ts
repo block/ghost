@@ -39,18 +39,15 @@ describe("ghost package", () => {
     expect([...loaded.catalog.nodes.keys()]).toEqual([]);
   });
 
-  it("accepts the deprecated fingerprint package schema", async () => {
+  it("rejects the retired package schema", async () => {
     await writeFile(
       join(dir, "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: legacy\n",
+      "schema: ghost.fingerprint-package/v1\nid: retired\n",
     );
 
-    const loaded = await loadGhostPackage(resolveGhostPackage(dir));
-
-    expect(loaded.manifest).toEqual({
-      schema: "ghost.fingerprint-package/v1",
-      id: "legacy",
-    });
+    await expect(loadGhostPackage(resolveGhostPackage(dir))).rejects.toThrow(
+      "ghost.package/v1",
+    );
   });
 
   it("loads *.md node files into the flat catalog", async () => {
@@ -456,7 +453,7 @@ Replacement rule.
     await mkdir(dir, { recursive: true });
     await writeFile(
       join(dir, "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: local\nplugins:\n  - retired\n",
+      "schema: ghost.package/v1\nid: local\nplugins:\n  - retired\n",
     );
 
     const report = await lintGhostPackage(dir);

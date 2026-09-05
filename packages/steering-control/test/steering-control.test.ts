@@ -36,7 +36,7 @@ function writeProject() {
   mkdirSync(pkg, { recursive: true });
   writeFileSync(
     join(pkg, "manifest.yml"),
-    "schema: ghost.fingerprint-package/v1\nid: test\n",
+    "schema: ghost.package/v1\nid: test\n",
   );
   writeFileSync(join(pkg, "glossary.md"), "Glossary prose\n");
   writeFileSync(

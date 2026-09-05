@@ -1,60 +1,74 @@
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
+const GHOST_PACKAGE_JSON = resolve(REPO_ROOT, "packages/ghost/package.json");
 const hasBuiltExports = existsSync(
   resolve(REPO_ROOT, "packages/ghost/dist/package.js"),
 );
 
-describe.runIf(hasBuiltExports)("built public exports", () => {
-  it("exposes the package API and deprecated fingerprint compatibility", async () => {
-    const [packageApiModule, fingerprint, scan] = await Promise.all([
-      import("@design-intelligence/ghost/package"),
-      import("@design-intelligence/ghost/fingerprint"),
-      import("@design-intelligence/ghost/scan"),
-    ]);
+describe("public package surface", () => {
+  it("exposes exactly the supported package entrypoints", () => {
+    const packageJson = JSON.parse(readFileSync(GHOST_PACKAGE_JSON, "utf8"));
+    const exportKeys = Object.keys(packageJson.exports).sort();
 
-    const packageApi = packageApiModule as Record<string, unknown>;
-    const fingerprintApi = fingerprint as Record<string, unknown>;
-    const scanApi = scan as Record<string, unknown>;
+    expect(exportKeys).toEqual([
+      ".",
+      "./cli",
+      "./core",
+      "./embed",
+      "./package",
+    ]);
+    expect(exportKeys).not.toContain("./scan");
+    expect(exportKeys).not.toContain("./fingerprint");
+  });
+});
+
+describe.runIf(hasBuiltExports)("built public exports", () => {
+  it("exposes the common package and embedded-host operations at the root", async () => {
+    const root = (await import("@design-intelligence/ghost")) as Record<
+      string,
+      unknown
+    >;
+
+    for (const name of [
+      "initGhostPackage",
+      "lintGhostPackage",
+      "loadGhostPackage",
+      "resolveGhostPackage",
+      "loadGhostSnapshot",
+      "gatherGhostPackage",
+      "pullGhostNodes",
+      "inspectGhostMaterial",
+    ]) {
+      expect(root[name]).toBeTypeOf("function");
+    }
+    expect(root).not.toHaveProperty("embed");
+    expect(root).not.toHaveProperty("ghostPackage");
+  });
+
+  it("exposes the package API", async () => {
+    const packageApi = (await import(
+      "@design-intelligence/ghost/package"
+    )) as Record<string, unknown>;
 
     expect(packageApi.initGhostPackage).toBeTypeOf("function");
     expect(packageApi.lintGhostPackage).toBeTypeOf("function");
     expect(packageApi.loadGhostPackage).toBeTypeOf("function");
     expect(packageApi.resolveGhostPackage).toBeTypeOf("function");
     expect(packageApi.GHOST_PACKAGE_SCHEMA).toBe("ghost.package/v1");
-
-    expect(fingerprintApi.initFingerprintPackage).toBe(
-      packageApi.initGhostPackage,
-    );
-    expect(fingerprintApi.lintFingerprintPackage).toBe(
-      packageApi.lintGhostPackage,
-    );
-    expect(fingerprintApi.loadFingerprintPackage).toBe(
-      packageApi.loadGhostPackage,
-    );
-    // Direct fingerprint.md loading was removed with compare/drift/fleet.
-    expect(fingerprintApi.loadFingerprint).toBeUndefined();
-    expect(fingerprintApi.writePackageContextBundle).toBeUndefined();
-    expect(fingerprintApi.writeContextBundle).toBeUndefined();
-
-    expect(scanApi.scanStatus).toBeUndefined();
-    expect(scanApi.signals).toBeUndefined();
-    expect(scanApi.loadFingerprintStackForPath).toBeUndefined();
-    expect(scanApi.initFingerprintPackage).toBeUndefined();
-    expect(scanApi.lintFingerprintPackage).toBeUndefined();
-    expect(scanApi.writePackageContextBundle).toBeUndefined();
+    expect(packageApi.GHOST_PACKAGE_DIR_ENV).toBe("GHOST_PACKAGE_DIR");
   });
 
-  it("exposes the source-ref parser from the core subpath", async () => {
+  it("exposes the check-reference parser from the core subpath", async () => {
     const core = (await import("@design-intelligence/ghost/core")) as Record<
       string,
       unknown
     >;
 
-    expect(core.parseSourceRef).toBeTypeOf("function");
+    expect(core.parseCheckReference).toBeTypeOf("function");
     expect(core.sliceNodeSection).toBeTypeOf("function");
     expect(core.materialLocator).toBeTypeOf("function");
     expect(core.normalizeMaterial).toBeTypeOf("function");

@@ -4,7 +4,7 @@ import {
   type MaterialTransportOptions,
   materialLocator,
   materialLocatorClaimsPath,
-  parseSourceRef,
+  parseCheckReference,
 } from "#ghost-core";
 import type { LoadedCheck } from "../scan/check-files.js";
 import { parseTouchedFiles, type TouchedFile } from "./diff.js";
@@ -85,7 +85,7 @@ export function resolveReview(
     const matchedRefs: string[] = [];
     let referencesMaterial = false;
     for (const raw of check.references) {
-      const ref = parseSourceRef(raw);
+      const ref = parseCheckReference(raw);
       if (ref === null) continue;
       if (materialNodeIds.has(ref.nodeId)) {
         referencesMaterial = true;

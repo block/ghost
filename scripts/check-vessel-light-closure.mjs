@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-// Closure contract for the vessel-light fingerprint materials:
+// Closure contract for the vessel-light ghost materials:
 // 1. Every token declared in tokens.css is consumed somewhere (or allowlisted).
 // 2. Every class defined in primitives.css renders in at least one example.
 // 3. Example <style> blocks bind tokens, never raw colors, shadows, or timing.

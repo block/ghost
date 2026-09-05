@@ -12,12 +12,7 @@ export interface TemplateFile {
   relativePath: string;
   content: string | Uint8Array;
 }
-/**
- * An `init` template: a pure description of the seed files a fresh node package
- * starts with. Templates are the extension seam — adding a `marketing` / `voice`
- * / `dashboard` starter later is just registering another entry here; `init`
- * needs no change.
- */
+/** The seed files written by the default `ghost init` scaffold. */
 export interface GhostInitTemplate {
   name: string;
   description: string;
@@ -85,14 +80,10 @@ async function medianTemplateFile(): Promise<TemplateFile> {
   };
 }
 
-const TEMPLATES = new Map<string, GhostInitTemplate>([
-  [SKELETON_TEMPLATE.name, SKELETON_TEMPLATE],
-]);
-
 /**
- * An init body: a full inhabited ghost package — answered signature
- * dials, materials, examples, and its own checks. Templates are shapes of
- * emptiness awaiting the owner's truths; a body is the same anatomy with a
+ * An init body: a full inhabited ghost package with answered signature
+ * dials, materials, examples, and its own checks. The default scaffold holds
+ * open questions; a body is the same anatomy with a
  * real brand's values plugged in. Bodies keep their own manifest id (e.g.
  * `vessel-light`) so an unadapted install stays honestly labeled — changing
  * the id is step one of adapting the starter, an explicit human act.
@@ -112,15 +103,6 @@ const VESSEL_LIGHT_BODY: GhostInitBody = {
   includesChecks: true,
   async files() {
     const payload = await loadPackedPayload("vessel-light");
-    const manifest = payload.find(
-      (file) => file.relativePath === "manifest.yml",
-    );
-    if (manifest && typeof manifest.content === "string") {
-      manifest.content = manifest.content.replace(
-        /^schema:\s*ghost\.fingerprint-package\/v1\s*$/m,
-        `schema: ${GHOST_PACKAGE_SCHEMA}`,
-      );
-    }
     payload.sort((a, b) => {
       const ao = BODY_FILE_ORDER.get(a.relativePath);
       const bo = BODY_FILE_ORDER.get(b.relativePath);
@@ -153,13 +135,6 @@ export function listInitBodies(): string[] {
   return [...BODIES.keys()];
 }
 
-export const DEFAULT_TEMPLATE_NAME = SKELETON_TEMPLATE.name;
-
-/** Look up a registered init template by name. */
-export function getInitTemplate(name: string): GhostInitTemplate | undefined {
-  return TEMPLATES.get(name);
-}
-
-export function listInitTemplates(): string[] {
-  return [...TEMPLATES.keys()];
+export function getDefaultInitTemplate(): GhostInitTemplate {
+  return SKELETON_TEMPLATE;
 }

@@ -70,25 +70,31 @@ describe("lintGhostCheck", () => {
     ).toBe(false);
   });
 
-  it("accepts a source pointer with a heading anchor", () => {
-    const report = lintGhostCheck(
-      VALID.replace(
-        "references:\n  - principle.trust\n",
-        "source: checkout/payment > Confirmation\n",
-      ),
+  it("accepts source as a deprecated single-reference alias", () => {
+    const raw = VALID.replace(
+      "references:\n  - principle.trust\n",
+      "source: checkout/payment > Confirmation\n",
     );
-    expect(report.issues.some((i) => i.rule === "check-source-malformed")).toBe(
-      false,
+    const report = lintGhostCheck(raw);
+    expect(report.errors).toBe(0);
+    expect(report.issues).toContainEqual(
+      expect.objectContaining({
+        severity: "warning",
+        rule: "check-source-deprecated",
+      }),
+    );
+    expect(loadGhostCheck(raw).frontmatter.source).toBe(
+      "checkout/payment > Confirmation",
     );
   });
 
-  it("warns (does not error) on a malformed source", () => {
+  it("warns on a malformed source alias", () => {
     const report = lintGhostCheck(
       VALID.replace("references:\n  - principle.trust\n", "source: /bad\n"),
     );
     expect(report.errors).toBe(0);
-    expect(report.issues.some((i) => i.rule === "check-source-malformed")).toBe(
-      true,
+    expect(report.issues).toContainEqual(
+      expect.objectContaining({ rule: "check-source-malformed" }),
     );
   });
 
@@ -119,15 +125,5 @@ describe("loadGhostCheck", () => {
   it("carries references through", () => {
     const doc = loadGhostCheck(VALID);
     expect(doc.frontmatter.references).toEqual(["principle.trust"]);
-  });
-
-  it("carries an optional source pointer through", () => {
-    const doc = loadGhostCheck(
-      VALID.replace(
-        "references:\n  - principle.trust\n",
-        "source: checkout/payment > Confirmation\n",
-      ),
-    );
-    expect(doc.frontmatter.source).toBe("checkout/payment > Confirmation");
   });
 });

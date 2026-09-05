@@ -5,6 +5,7 @@ import { gatherGhostPackage, loadGhostSnapshot } from "../embed/index.js";
 import { appendGhostEvent, resolveRunId } from "../observability-events.js";
 import { resolveGhostPackage } from "../package.js";
 import { exitCli, failFromError } from "./errors.js";
+import { parseEnumOption } from "./options.js";
 
 export function registerGatherCommand(cli: CAC): void {
   cli
@@ -25,11 +26,10 @@ export function registerGatherCommand(cli: CAC): void {
     )
     .action(async (askParts: string[] | undefined, opts) => {
       try {
-        if (opts.format !== "markdown" && opts.format !== "json") {
-          console.error("Error: --format must be 'markdown' or 'json'");
-          await exitCli(2);
-          return;
-        }
+        const format = parseEnumOption(opts.format, "--format", [
+          "markdown",
+          "json",
+        ] as const);
 
         const ask = normalizeAskParts(askParts);
         const paths = resolveGhostPackage(opts.package, process.cwd());
@@ -46,7 +46,7 @@ export function registerGatherCommand(cli: CAC): void {
         // ghost does no selection. It emits the complete catalog; the agent
         // reads the ask against it and pulls the nodes whose described
         // conditions apply.
-        if (opts.format === "json") {
+        if (format === "json") {
           process.stdout.write(
             `${JSON.stringify(formatGatherJson(menu), null, 2)}\n`,
           );

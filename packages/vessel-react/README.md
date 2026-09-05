@@ -3,8 +3,8 @@
 **Reference design system for the ghost project. 100 components, shadcn registry, not published to npm.**
 
 `vessel` is the reference component system ghost uses to exercise registry
-and agent-integration workflows. It's distributed as a generated shadcn registry
-(`public/r/registry.json`) for drop-in consumption, not as an npm package. If you're
+and agent-integration workflows. The repository generates a shadcn registry at
+`public/r/registry.json`; it is not hosted or published to npm. If you're
 looking for the ghost CLI and skill bundle, that's
 [`@design-intelligence/ghost`](../ghost).
 
@@ -79,19 +79,21 @@ That distinction helps generators pick relevant references instead of treating e
 
 ## Use
 
-Consume via the shadcn registry (the intended path — not npm):
+Build the registry from this repository:
 
 ```bash
-npx shadcn add <registry-url>/<component>
+pnpm --filter @design-intelligence/vessel-react build:registry
 ```
 
-Or build the library locally for workspace linking:
+The generated entries live in `public/r/`. Serve that directory over HTTP to
+use it with `shadcn add`. No public registry URL is maintained during the
+project preview.
+
+Build the library for workspace linking:
 
 ```bash
 pnpm --filter @design-intelligence/vessel-react build:lib
 ```
-
-See [`apps/docs`](../../apps/docs) for the live component catalogue.
 
 ## License
 

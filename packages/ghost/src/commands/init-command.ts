@@ -4,6 +4,7 @@ import { initGhostPackage } from "../package.js";
 import { addChecksDir } from "../scan/check-scaffold.js";
 import { getInitBody } from "../scan/templates.js";
 import { exitCli, failFromError } from "./errors.js";
+import { parseEnumOption } from "./options.js";
 
 export function registerInitCommand(cli: CAC): void {
   cli
@@ -12,10 +13,6 @@ export function registerInitCommand(cli: CAC): void {
       "Scaffold .ghost/ with the starter package: manifest, glossary, a brand cover, foundation chapters, and context nodes.",
     )
     .option("--package <dir>", "Exact ghost package directory to initialize")
-    .option(
-      "--template <name>",
-      "Init template to scaffold (default: skeleton)",
-    )
     .option(
       "--body <name>",
       "Init body to install: a full inhabited package (e.g. vessel-light)",
@@ -35,6 +32,10 @@ export function registerInitCommand(cli: CAC): void {
           await exitCli(2);
           return;
         }
+        const format = parseEnumOption(opts.format, "--format", [
+          "cli",
+          "json",
+        ] as const);
         const exactPackage =
           typeof opts.package === "string" ? opts.package : undefined;
         const withIds = parseWithCapabilities(opts.with);
@@ -54,9 +55,6 @@ export function registerInitCommand(cli: CAC): void {
         }
 
         const result = await initGhostPackage(exactPackage, process.cwd(), {
-          ...(typeof opts.template === "string"
-            ? { template: opts.template }
-            : {}),
           ...(typeof opts.body === "string" ? { body: opts.body } : {}),
           force: Boolean(opts.force),
         });
@@ -64,7 +62,7 @@ export function registerInitCommand(cli: CAC): void {
           ? await addChecksDir(result.paths.packageDir)
           : undefined;
 
-        if (opts.format === "json") {
+        if (format === "json") {
           process.stdout.write(
             `${JSON.stringify(
               {

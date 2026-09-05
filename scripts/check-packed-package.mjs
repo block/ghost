@@ -6,6 +6,7 @@ import {
   mkdtempSync,
   readdirSync,
   rmSync,
+  statSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -17,11 +18,11 @@ const PUBLIC_IMPORTS = [
   "@design-intelligence/ghost",
   "@design-intelligence/ghost/cli",
   "@design-intelligence/ghost/package",
-  "@design-intelligence/ghost/fingerprint",
-  "@design-intelligence/ghost/scan",
   "@design-intelligence/ghost/core",
   "@design-intelligence/ghost/embed",
 ];
+const EXPECTED_EXPORT_KEYS = [".", "./cli", "./core", "./embed", "./package"];
+const RETIRED_EXPORT_KEYS = ["./scan", "./fingerprint"];
 
 function fail(message) {
   console.error(`check-packed-package failed: ${message}`);
@@ -94,11 +95,37 @@ try {
     fail(`expected exactly one packed tarball, found ${tarballs.length}`);
   }
   const tarballPath = resolve(packDir, tarballs[0]);
+  const packedBytes = statSync(tarballPath).size;
+  if (packedBytes > 1024 * 1024) {
+    fail(`npm package tarball is ${packedBytes} bytes; expected at most 1 MiB`);
+  }
   const packedEntries = run("tar", ["-tzf", tarballPath]).split("\n");
+  if (packedEntries.length > 600) {
+    fail(
+      `npm package tarball contains ${packedEntries.length} files; expected at most 600`,
+    );
+  }
   if (
     packedEntries.some((entry) => entry.startsWith("package/node_modules/"))
   ) {
     fail("npm package tarball must not include node_modules");
+  }
+
+  const packedPackageJson = JSON.parse(
+    run("tar", ["-xOf", tarballPath, "package/package.json"]),
+  );
+  const packedExportKeys = Object.keys(packedPackageJson.exports ?? {}).sort();
+  if (
+    JSON.stringify(packedExportKeys) !== JSON.stringify(EXPECTED_EXPORT_KEYS)
+  ) {
+    fail(
+      `packed package exports ${JSON.stringify(packedExportKeys)}; expected ${JSON.stringify(EXPECTED_EXPORT_KEYS)}`,
+    );
+  }
+  for (const retiredExport of RETIRED_EXPORT_KEYS) {
+    if (retiredExport in (packedPackageJson.exports ?? {})) {
+      fail(`packed package must not export retired subpath ${retiredExport}`);
+    }
   }
 
   writeFileSync(
@@ -128,16 +155,6 @@ try {
     fail("packed ghost --help output did not include Core workflow");
   }
 
-  // The alias bin is the same CLI under a collision-safe name.
-  const aliasHelp = run("pnpm", ["exec", "ghost-fingerprint", "--help"], {
-    cwd: consumerDir,
-  });
-  if (!aliasHelp.includes("Core workflow")) {
-    fail(
-      "packed ghost-fingerprint --help output did not include Core workflow",
-    );
-  }
-
   const init = run("pnpm", ["exec", "ghost", "init", "--format", "json"], {
     cwd: consumerDir,
   });
@@ -149,7 +166,7 @@ try {
   ) {
     fail("packed ghost init did not scaffold the expected node package");
   }
-  run("pnpm", ["exec", "ghost", "lint", ".ghost"], { cwd: consumerDir });
+  run("pnpm", ["exec", "ghost", "validate", ".ghost"], { cwd: consumerDir });
 
   // The vessel-light body must survive packing: corpus, binary fonts, checks.
   // Run from the consumer root (where the tarball is installed) and target a
@@ -182,7 +199,9 @@ try {
       fail(`packed ghost init --body vessel-light did not write ${required}`);
     }
   }
-  run("pnpm", ["exec", "ghost", "lint", bodyPackageDir], { cwd: consumerDir });
+  run("pnpm", ["exec", "ghost", "validate", bodyPackageDir], {
+    cwd: consumerDir,
+  });
 
   for (const specifier of PUBLIC_IMPORTS) {
     runNode(`await import(${JSON.stringify(specifier)});`, consumerDir);

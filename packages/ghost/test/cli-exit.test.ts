@@ -6,6 +6,7 @@ import { join, resolve, sep } from "node:path";
 import { promisify } from "node:util";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { exitCli } from "../src/commands/errors.js";
+import { isSupportedNodeVersion } from "../src/commands/parse.js";
 
 const execFileAsync = promisify(execFile);
 const TERMINAL_SENTINEL = "ghost-terminal-sentinel-9c25894d1b2e4d58";
@@ -19,6 +20,16 @@ describe("CLI process exit lifecycle", () => {
     }
     dirs = [];
     vi.restoreAllMocks();
+  });
+
+  it("accepts exactly the documented Node runtime range", () => {
+    expect(isSupportedNodeVersion("20.18.3")).toBe(false);
+    expect(isSupportedNodeVersion("20.19.0")).toBe(true);
+    expect(isSupportedNodeVersion("21.7.3")).toBe(false);
+    expect(isSupportedNodeVersion("22.11.0")).toBe(false);
+    expect(isSupportedNodeVersion("22.12.0")).toBe(true);
+    expect(isSupportedNodeVersion("24.0.0")).toBe(true);
+    expect(isSupportedNodeVersion("nope")).toBe(false);
   });
 
   it("keeps raw process.exit calls centralized in commands/errors.ts", async () => {
@@ -73,6 +84,69 @@ describe("CLI process exit lifecycle", () => {
 
     expect(exitSpy).toHaveBeenCalledTimes(1);
     expect(exitSpy).toHaveBeenCalledWith(7);
+  });
+
+  it("prints help for a bare invocation and rejects unknown commands", async () => {
+    const bin = resolve("packages/ghost/dist/bin.js");
+    expect(existsSync(bin)).toBe(true);
+    const dir = await makeTempDir();
+
+    const bare = await execGhost(bin, [], dir);
+    expect(bare.code).toBe(0);
+    expect(bare.stdout).toContain("Core workflow");
+
+    const unknown = await execGhost(bin, ["frobnicate"], dir);
+    expect(unknown.code).toBe(2);
+    expect(unknown.stdout).toBe("");
+    expect(unknown.stderr).toContain("Unknown command 'frobnicate'");
+    expect(unknown.stderr).toContain("ghost --help");
+  });
+
+  it("turns parser failures into actionable usage errors without stack traces", async () => {
+    const bin = resolve("packages/ghost/dist/bin.js");
+    expect(existsSync(bin)).toBe(true);
+    const dir = await makeTempDir();
+
+    for (const scenario of [
+      {
+        args: ["--bogus"],
+        failure: "Unknown option `--bogus`",
+        fix: "ghost --help",
+      },
+      {
+        args: ["gather", "--bogus"],
+        failure: "Unknown option `--bogus`",
+        fix: "ghost gather --help",
+      },
+      {
+        args: ["init", "--template", "skeleton"],
+        failure: "--template was removed",
+        fix: "omit the flag",
+      },
+      {
+        args: ["pull"],
+        failure: "missing required args",
+        fix: "ghost pull --help",
+      },
+      {
+        args: ["checks"],
+        failure: "missing required args",
+        fix: "ghost checks --help",
+      },
+      {
+        args: ["gather", "--format"],
+        failure: "option `--format <fmt>` value is missing",
+        fix: "ghost gather --help",
+      },
+    ]) {
+      const result = await execGhost(bin, scenario.args, dir);
+      expect(result.code).toBe(2);
+      expect(result.stdout).toBe("");
+      expect(result.stderr).toContain(`Error: ${scenario.failure}`);
+      expect(result.stderr).toContain(scenario.fix);
+      expect(result.stderr).not.toContain("CACError");
+      expect(result.stderr).not.toContain(" at ");
+    }
   });
 
   it("preserves large piped pull output through process exit", async () => {

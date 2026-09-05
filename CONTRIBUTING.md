@@ -44,13 +44,14 @@ the list.
 ## The deterministic path
 
 - pnpm 10+, Node 20.19+ or 22.12+.
-- `pnpm install` → `pnpm check` → `pnpm test` → `pnpm build`. CI gates:
-  biome lint/format, typecheck, file-size, terminology, and packed-tarball
-  checks.
+- Run `pnpm install`, then `pnpm run quality:all`. This is the same complete
+  gate used before releases: package checks, tests, builds, retained workspace
+  checks, and validation of checked-in ghost packages.
 - **Changesets:** `@design-intelligence/ghost` is the only public
-  package. Write the changeset file yourself: `patch` for fixes and docs,
-  `minor` for new commands/flags/exports, `major` for removed or renamed
-  public behavior. One sentence, user-facing, present tense.
+  package. Write the changeset file yourself: `patch` for fixes and docs;
+  `minor` for additions and clearly labeled breaking changes during the 0.x
+  preview. Reserve `major` for the 1.0 release. One sentence, user-facing,
+  present tense.
 
 ## Dogfooding
 

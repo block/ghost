@@ -6,7 +6,7 @@ import {
   normalizeMaterial,
 } from "#ghost-core";
 import { GHOST_MATERIALS_DIR } from "../scan/constants.js";
-import type { LoadedGhostPackage } from "../scan/fingerprint-package.js";
+import type { LoadedGhostPackage } from "../scan/ghost-package.js";
 import { resolveGitRoot } from "../scan/package-paths.js";
 import {
   neutralizeSentinels,
@@ -40,8 +40,6 @@ export interface PacketCheck {
 
 export interface ReviewPacket {
   packageId: string;
-  /** @deprecated Use `packageId`. */
-  fingerprintId: string;
   touchedFiles: string[];
   materialNodes: PacketMaterialNode[];
   checks: PacketCheck[];
@@ -94,7 +92,6 @@ export async function buildReviewPacket(
 
   return {
     packageId: ghostPackage.manifest.id,
-    fingerprintId: ghostPackage.manifest.id,
     touchedFiles: resolution.touchedFiles.map((file) => file.path),
     materialNodes,
     checks,

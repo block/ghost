@@ -5,9 +5,9 @@ import {
   type PullMiss,
   readGhostEvents,
 } from "../observability-events.js";
-import { resolveGhostPackage } from "../package.js";
-import { loadGhostPackage } from "../scan/fingerprint-package.js";
+import { loadGhostPackage, resolveGhostPackage } from "../package.js";
 import { exitCli, failFromError } from "./errors.js";
+import { parseEnumOption } from "./options.js";
 import {
   buildStatsObservations,
   formatStatsObservation,
@@ -33,13 +33,6 @@ export function registerStatsCommand(cli: CAC): void {
   ).action(async (opts) => {
     await runStats(opts);
   });
-
-  options(cli.command("pulse", "Deprecated alias for `ghost stats`.")).action(
-    async (opts) => {
-      process.stderr.write("ghost pulse is deprecated; use `ghost stats`.\n");
-      await runStats(opts);
-    },
-  );
 }
 
 async function runStats(opts: {
@@ -47,11 +40,10 @@ async function runStats(opts: {
   format?: string;
 }): Promise<void> {
   try {
-    if (opts.format !== "markdown" && opts.format !== "json") {
-      console.error("Error: --format must be 'markdown' or 'json'");
-      await exitCli(2);
-      return;
-    }
+    const format = parseEnumOption(opts.format, "--format", [
+      "markdown",
+      "json",
+    ] as const);
 
     const paths = resolveGhostPackage(opts.package, process.cwd());
     const loaded = await loadGhostPackage(paths);
@@ -59,7 +51,7 @@ async function runStats(opts: {
     const events = await readGhostEvents(paths.packageDir);
     const report = buildStatsReport(events, menu);
 
-    if (opts.format === "json") {
+    if (format === "json") {
       process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
     } else {
       process.stdout.write(formatStatsMarkdown(report));

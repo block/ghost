@@ -12,7 +12,7 @@ Durable stance: true across media unless a narrower context explicitly limits it
 
 # context
 
-A named situation where the defaults bend — read only when it matches the task.
+A named situation where the defaults bend: read only when it matches the task.
 
 # asset
 
@@ -21,8 +21,8 @@ Material truth about concrete brand assets such as logos, illustrations, motion,
 # pattern
 
 Reusable composition or product pattern whose purpose is distinguishable from
-neighboring patterns. Declared to reserve the scope; this package currently
-carries no pattern nodes.
+neighboring patterns: the assembly grammar that makes a screen built from
+Vessel components feel intentional instead of a pile of imported parts.
 
 ---
 

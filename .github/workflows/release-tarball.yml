@@ -27,23 +27,44 @@ jobs:
   tarball:
     name: Pack and release
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       # No setup-node and no pnpm/action-setup — both would trip zizmor's
       # cache-poisoning rule because any GitHub-official setup action is
       # treated as cache-capable regardless of whether caching is enabled.
-      # ubuntu-latest ships Node 20 + corepack, which satisfies our
-      # engines.node (>=18). Corepack reads `packageManager` from root
-      # package.json to install the exact pinned pnpm version with no
-      # cross-branch cache store.
-      - run: node --version && corepack enable
+      # ubuntu-latest currently ships a compatible Node fallback. Guard the
+      # supported range (^20.19 || >=22.12) before enabling the root-pinned
+      # pnpm version with corepack, without creating a cross-branch cache.
+      - name: Verify fallback Node and enable pnpm
+        run: |
+          node -e 'const [major, minor] = process.versions.node.split(".").map(Number); if (!((major === 20 && minor >= 19) || (major >= 22 && (major !== 22 || minor >= 12)))) process.exit(1)'
+          node --version
+          corepack enable
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Build
-        run: pnpm --filter @design-intelligence/ghost build
+      - name: Quality gate
+        run: pnpm run quality:all
+
+      - name: Validate release version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          node -e '
+            const input = process.env.INPUT_VERSION;
+            const semver = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/;
+            const expected = require("./packages/ghost/package.json").version;
+            if (!semver.test(input ?? "")) {
+              console.error(`release version is not strict semver: ${input}`);
+              process.exit(1);
+            }
+            if (input !== expected) {
+              console.error(`release version ${input} does not match package version ${expected}`);
+              process.exit(1);
+            }
+          '
 
       # Keep this distribution archive separate from npm publishing: npm gets
       # the normal package, while GitHub Releases get a self-contained archive

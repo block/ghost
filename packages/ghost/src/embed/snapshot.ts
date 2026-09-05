@@ -3,8 +3,8 @@ import type { GhostCheckFrontmatter } from "#ghost-core";
 import { type GhostCatalogNode, parseGlossary } from "#ghost-core";
 import { isMissingPathError } from "../internal/fs.js";
 import type { LoadedCheck } from "../scan/check-files.js";
-import type { GhostPackagePaths } from "../scan/fingerprint-package.js";
-import { loadGhostPackage } from "../scan/fingerprint-package.js";
+import type { GhostPackagePaths } from "../scan/ghost-package.js";
+import { loadGhostPackage } from "../scan/ghost-package.js";
 import { snapshotMap } from "./readonly-map.js";
 import type { GhostCoverState, GhostEmbedSnapshot } from "./types.js";
 
@@ -71,6 +71,7 @@ function cloneCheckMap(
           body: check.doc.body,
         },
         references: [...check.references],
+        usesDeprecatedSource: check.usesDeprecatedSource,
       }),
     ]),
   );

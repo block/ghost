@@ -1,4 +1,4 @@
-/** Material locator support for fingerprint nodes. */
+/** Material locator support for ghost nodes. */
 export type GhostMaterialLocatorKind = "local" | "url";
 
 /** A material locator with an optional retrieval note. */

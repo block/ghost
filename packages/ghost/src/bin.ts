@@ -10,12 +10,12 @@ for (const envFile of [".env", ".env.local"]) {
     try {
       process.loadEnvFile(envPath);
     } catch {
-      // Node < 20.12 or malformed file — silently skip
+      // Node < 20.12 or malformed file: silently skip.
     }
   }
 }
 
 import { buildCli } from "./cli.js";
+import { parseCli } from "./commands/parse.js";
 
-const cli = buildCli();
-cli.parse();
+await parseCli(buildCli());

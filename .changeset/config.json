@@ -7,5 +7,8 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["@design-intelligence/vessel-react", "ghost-docs"]
+  "privatePackages": {
+    "version": false,
+    "tag": false
+  }
 }

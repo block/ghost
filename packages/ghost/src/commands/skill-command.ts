@@ -4,8 +4,9 @@ import { homedir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { CAC } from "cac";
-import { loadSkillBundle, UsageError } from "#ghost-core";
+import { loadSkillBundle } from "#ghost-core";
 import { exitCli, failFromError } from "./errors.js";
+import { parseEnumOption } from "./options.js";
 
 // The bundle assets are copied to `dist/skill-bundle` (sibling of `commands/`).
 const SKILL_BUNDLE_ROOT = fileURLToPath(
@@ -87,15 +88,7 @@ export function registerSkillCommand(cli: CAC): void {
 
 function parseAgent(raw: unknown): SupportedAgent | undefined {
   if (raw === undefined) return undefined;
-  if (
-    typeof raw === "string" &&
-    (SUPPORTED_AGENTS as readonly string[]).includes(raw)
-  ) {
-    return raw as SupportedAgent;
-  }
-  throw new UsageError(
-    `--agent must be one of: ${SUPPORTED_AGENTS.join(", ")}`,
-  );
+  return parseEnumOption(raw, "--agent", SUPPORTED_AGENTS);
 }
 
 function detectAgent(): SupportedAgent {

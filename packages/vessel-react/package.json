@@ -31,6 +31,7 @@
     "build:presets": "node scripts/build-presets.mjs",
     "generate:skills": "node scripts/generate-skills.mjs",
     "build:registry": "pnpm run build:base && pnpm run build:presets && pnpm run generate:skills && shadcn build && pnpm exec biome format --write registry.json",
+    "check:registry": "node scripts/check-registry-drift.mjs",
     "typecheck": "tsc --noEmit",
     "generate:icons": "npx tsx scripts/generate-icons.ts",
     "audit:agent-safety": "node scripts/audit-agent-safety.mjs",
