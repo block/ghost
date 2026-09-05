@@ -566,12 +566,15 @@ describe("ghost CLI", () => {
 
     const markdown = await runCli(["gather"], dir);
     expect(markdown.code).toBe(0);
-    expect(markdown.stdout).toContain("## Cover in context: `brand`");
+    expect(markdown.stdout).toContain("## Cover: `brand`");
+    expect(markdown.stdout).toContain(
+      "This cover is already in context and is not selectable.",
+    );
     expect(markdown.stdout).toContain("This cover is unwritten.");
     expect(markdown.stdout).toContain(
-      "9 nodes · 0 carry payloads (0 with materials, 0 with substantial fenced examples, 0 with Skeletons)",
+      "9 nodes · all prose, no concrete support",
     );
-    expect(markdown.stdout).not.toContain("- `brand`");
+    expect(markdown.stdout).not.toMatch(/\d+\.\s+`brand`/);
 
     const json = await runCli(["gather", "--format", "json"], dir);
     expect(json.code).toBe(0);
@@ -602,12 +605,13 @@ describe("ghost CLI", () => {
 
     const markdown = await runCli(["gather"], dir);
     expect(markdown.code).toBe(0);
-    expect(markdown.stdout).not.toContain("## Cover");
+    expect(markdown.stdout).not.toContain("## Cover:");
+    expect(markdown.stdout).not.toContain("Check the resolved cover");
     // With no resolvable cover, brand stays a selectable menu node.
     expect(markdown.stdout).toContain(
-      "10 nodes · 0 carry payloads (0 with materials, 0 with substantial fenced examples, 0 with Skeletons)",
+      "10 nodes · all prose, no concrete support",
     );
-    expect(markdown.stdout).toContain("- `brand`");
+    expect(markdown.stdout).toMatch(/\d+\.\s+`brand`/);
 
     const json = await runCli(["gather", "--format", "json"], dir);
     expect(json.code).toBe(0);
@@ -688,19 +692,71 @@ describe("ghost CLI", () => {
       (k: { name: string }) => k.name === "foundation",
     );
     expect(foundation.purpose).toContain("load-bearing decisions");
+    expect(foundation.purpose).toContain("Pull every foundation chapter");
 
-    // Markdown renders the same legend above the node list.
+    // Markdown renders the same legend beside that kind's group.
     const markdown = await runCli(["gather"], dir);
-    expect(markdown.stdout).toContain("Kinds:");
+    expect(markdown.stdout).not.toContain("Kinds:");
+    expect(markdown.stdout).toContain("### foundation");
     expect(markdown.stdout).toContain(
-      "- **foundation** — The brand's load-bearing decisions",
+      "The brand's load-bearing decisions for color",
     );
+    expect(markdown.stdout).toContain(menu.contract.noAsk);
 
     // A missing glossary degrades to no legend, not an error.
     await rm(join(dir, ".ghost", "glossary.md"));
     const bare = await runCli(["gather", "--format", "json"], dir);
     expect(bare.code).toBe(0);
     expect(JSON.parse(bare.stdout).kinds).toBeUndefined();
+  });
+
+  it("groups custom, undeclared, and uncategorized nodes deterministically", async () => {
+    await writeBareTestPackage(dir);
+    await writeFile(
+      join(dir, ".ghost", "glossary.md"),
+      "---\nkinds:\n  - name: zeta\n  - name: alpha\n---\n\n# alpha\n\nAlpha rules.\n",
+    );
+    await Promise.all([
+      writeFile(
+        join(dir, ".ghost", "zeta.rule.md"),
+        "---\nfor: Zeta work.\n---\n\nZeta.\n",
+      ),
+      writeFile(
+        join(dir, ".ghost", "alpha.rule.md"),
+        "---\nfor: Alpha work.\n---\n\nAlpha.\n",
+      ),
+      writeFile(
+        join(dir, ".ghost", "beta.rule.md"),
+        "---\nfor: Beta work.\n---\n\nBeta.\n",
+      ),
+      writeFile(
+        join(dir, ".ghost", "voice.md"),
+        "---\nfor: Writing copy.\n---\n\nPlain words.\n",
+      ),
+    ]);
+
+    const json = await runCli(["gather", "test", "--format", "json"], dir);
+    expect(JSON.parse(json.stdout).kinds).toEqual([
+      { name: "zeta", purpose: "" },
+      { name: "alpha", purpose: "Alpha rules." },
+    ]);
+
+    const markdown = await runCli(["gather", "test"], dir);
+    const headings = [
+      "### zeta",
+      "### alpha",
+      "### beta",
+      "### standard",
+      "### Uncategorized",
+    ];
+    for (let index = 1; index < headings.length; index += 1) {
+      expect(markdown.stdout.indexOf(headings[index - 1] ?? "")).toBeLessThan(
+        markdown.stdout.indexOf(headings[index] ?? ""),
+      );
+    }
+    expect(markdown.stdout.indexOf("### Uncategorized")).toBeLessThan(
+      markdown.stdout.indexOf("`voice`"),
+    );
   });
 
   it("runs validate from the unified cli", async () => {
@@ -762,9 +818,7 @@ describe("ghost CLI", () => {
       withoutFor: 0,
     });
     const markdown = await runCli(["gather"], dir);
-    expect(markdown.stdout).toContain(
-      "4 nodes · 1 carry payloads (1 with materials, 0 with substantial fenced examples, 0 with Skeletons)",
-    );
+    expect(markdown.stdout).toContain("4 nodes · 1 with concrete support");
     // No nodes lacking `for`: the coverage line stays quiet about them.
     expect(markdown.stdout).not.toContain("lack `for` payloads");
 
@@ -776,8 +830,12 @@ describe("ghost CLI", () => {
     );
     const gatherMute = await runCli(["gather"], dir);
     expect(gatherMute.stdout).toContain(
-      "5 nodes · 1 carry payloads (1 with materials, 0 with substantial fenced examples, 0 with Skeletons) · 1 lack `for` payloads",
+      "5 nodes · 1 with concrete support · 1 lack `for` payloads",
     );
+    expect(gatherMute.stdout).toContain(
+      "Applicability unstated: no `for` payload.",
+    );
+    expect(gatherMute.stdout).toContain("Applies when: Tokens.");
     const gatherMuteJson = await runCli(["gather", "--format", "json"], dir);
     expect(JSON.parse(gatherMuteJson.stdout).coverage.withoutFor).toBe(1);
 
@@ -1055,9 +1113,15 @@ describe("ghost CLI", () => {
         addForCompleteness: false,
         omitApplicableForCount: false,
       },
+      noAsk: expect.any(String),
     });
+    expect(menuPayload.contract.selection.instruction).not.toContain(
+      "context.*",
+    );
     expect(menuPayload.next.command).toBe("ghost pull <id> [<id>…]");
-    expect(menuPayload.silence.ifNoneApply).toContain("do not invent");
+    expect(menuPayload.silence.ifNoneApply).toContain(
+      "Never invent ghost-backed guidance",
+    );
     expect(
       menuPayload.nodes.some((n: { id: string }) => n.id === "voice"),
     ).toBe(true);
@@ -1066,6 +1130,11 @@ describe("ghost CLI", () => {
     expect(gatherMarkdown.stdout).toContain("# ghost package");
     expect(gatherMarkdown.stdout).toContain("Ask: checkout hero");
     expect(gatherMarkdown.stdout).toContain("## Available guidance");
+    expect(gatherMarkdown.stdout).not.toContain(menuPayload.contract.noAsk);
+    expect(gatherMarkdown.stdout).toContain("### Uncategorized");
+    expect(gatherMarkdown.stdout.indexOf("### Uncategorized")).toBeLessThan(
+      gatherMarkdown.stdout.indexOf("`voice`"),
+    );
 
     const pull = await runCli(["pull", "principle.trust", "voice"], dir);
     expect(pull.code).toBe(0);

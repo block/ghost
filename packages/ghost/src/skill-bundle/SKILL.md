@@ -71,12 +71,14 @@ ghost review        # assemble diff + matched material-backed nodes + checks
 ghost stats         # summarize local gather/pull events while tuning
 ```
 
-`gather` does no selection. It emits the complete, unfiltered, unranked menu
-from the ghost package. The selection rule lives in
-[references/ground.md](references/ground.md). Its header includes a coverage
-line: total nodes and nodes carrying concrete material. `gather` labels
-materials, substantial fenced examples, and Skeletons separately, so an
-all-prose package is visible before generation.
+`gather` does no selection. It emits the selection contract, the cover when
+resolved, then the complete, unfiltered, unranked menu of every selectable node.
+The emitted contract owns the pull rule; kind legends can narrow it. Declared
+kinds render in glossary order, undeclared kinds alphabetically, and
+uncategorized nodes last. Its coverage line reports total selectable nodes,
+concrete support, and missing `for` payloads. Each node labels applicability,
+then any material count, substantial fenced example, or Skeleton metadata, so
+an all-prose package is visible before generation.
 
 Prefer `ghost pull` over reading files directly: it emits the same prose,
 inlines small local materials by default, turns binary materials into

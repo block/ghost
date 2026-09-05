@@ -34,12 +34,9 @@ export function gatherGhostPackage(
       artifact: "ghost package",
       list: "Available guidance",
     },
-    contract: gatherContract(ask),
+    contract: gatherContract(),
     cover: snapshot.cover,
-    silence: {
-      ifNoneApply:
-        "Name the package's silence, follow the cover silence posture when present, and do not invent ghost-backed guidance.",
-    },
+    silence: silenceContract(snapshot.cover),
     coverage: menuCoverage(menu),
     ...(kinds.length > 0 ? { kinds } : {}),
     nodes: menu,
@@ -51,7 +48,18 @@ export function normalizeAsk(ask: string | undefined): string | undefined {
   return normalized.length > 0 ? normalized : undefined;
 }
 
-export function gatherContract(ask: string | undefined): GhostGatherContract {
+/**
+ * The gather selection contract, worded once and shared by both the markdown
+ * and JSON emitters so the two surfaces cannot drift apart. Leads with an
+ * instruction, not a description, since this is a contract, not a label.
+ */
+export const GATHER_SELECTION_INSTRUCTION =
+  "Pull every node whose `for` payload matches the task. Skip clear non-matches; topic overlap alone is not a match. Do not rank matches or cap their count. When uncertain, pull unless the node's kind legend states a stricter rule.";
+
+export const GATHER_NO_ASK_INSTRUCTION =
+  "When no ask is supplied, this menu is not grounded to a task. Re-run `ghost gather <ask>` before pulling for a task.";
+
+export function gatherContract(): GhostGatherContract {
   return {
     completeness: {
       complete: true,
@@ -61,15 +69,12 @@ export function gatherContract(ask: string | undefined): GhostGatherContract {
     },
     selection: {
       basis: "applicability",
-      instruction: ask
-        ? "Pull every node whose `for` payload indicates its stated situation applies and whose guidance, material, structure, or refusal governs the work; skip inapplicable nodes."
-        : "Bare gather is catalog inspection. Do not treat the menu as task grounding until an ask is supplied; when grounding a task, pull every applicable node and skip inapplicable nodes.",
+      instruction: GATHER_SELECTION_INSTRUCTION,
       topicOverlapAloneIsApplicability: false,
       addForCompleteness: false,
       omitApplicableForCount: false,
     },
-    noAsk:
-      "Bare gather is catalog inspection and does not imply task grounding.",
+    noAsk: GATHER_NO_ASK_INSTRUCTION,
   };
 }
 
@@ -92,14 +97,28 @@ export function menuCoverage(
 }
 
 function menuKinds(snapshot: GhostEmbedSnapshot): GhostMenuKind[] {
-  return (snapshot.glossary?.kinds ?? [])
-    .filter((kind) => kind.purpose.length > 0)
-    .map((kind) => ({
-      name: kind.name,
-      // Legend entries are one line each: keep the section's first paragraph
-      // and collapse internal wrapping.
-      purpose: (kind.purpose.split(/\n\s*\n/, 1)[0] ?? "")
-        .replace(/\s+/g, " ")
-        .trim(),
-    }));
+  return (snapshot.glossary?.kinds ?? []).map((kind) => ({
+    name: kind.name,
+    // Legend entries are one line each: keep the section's first paragraph
+    // and collapse internal wrapping. Empty purpose stays explicit so
+    // declared kind order survives even when the glossary has no prose yet.
+    purpose: (kind.purpose.split(/\n\s*\n/, 1)[0] ?? "")
+      .replace(/\s+/g, " ")
+      .trim(),
+  }));
+}
+
+function silenceContract(
+  cover: GhostEmbedSnapshot["cover"],
+): GhostGatherResult["silence"] {
+  if (cover.state === "resolved") {
+    return {
+      ifNoneApply: `If no node applies, say the package is silent on the task. Check the resolved cover \`${cover.id}\` for any silence rule; otherwise reason provisionally and label it as such. Never invent ghost-backed guidance.`,
+    };
+  }
+
+  return {
+    ifNoneApply:
+      "If no node applies, say the package is silent on the task. Reason provisionally and label it as such. Never invent ghost-backed guidance.",
+  };
 }

@@ -91,15 +91,12 @@ function formatGatherJson(menu: GhostGatherResult): Record<string, unknown> {
 
 function menuCoverageLine(menu: GhostGatherResult): string {
   const coverage = menu.coverage;
-  const payloadParts = [
-    `${coverage.payloads.materials} with materials`,
-    `${coverage.payloads.fencedExamples} with substantial fenced examples`,
-    `${coverage.payloads.skeletons} with Skeletons`,
-  ];
-  const parts = [
-    `${coverage.nodes} nodes`,
-    `${coverage.concrete} carry payloads (${payloadParts.join(", ")})`,
-  ];
+  const parts = [`${coverage.nodes} nodes`];
+  if (coverage.concrete > 0) {
+    parts.push(`${coverage.concrete} with concrete support`);
+  } else {
+    parts.push("all prose, no concrete support");
+  }
   if (coverage.withoutFor > 0) {
     parts.push(`${coverage.withoutFor} lack \`for\` payloads`);
   }
@@ -109,59 +106,132 @@ function menuCoverageLine(menu: GhostGatherResult): string {
 function formatMenuMarkdown(menu: GhostGatherResult): string {
   const lines: string[] = ["# ghost package", ""];
   if (menu.ask) lines.push(`Ask: ${menu.ask}`, "");
+
+  // Selection contract first: ghost's own instructions occupy the most
+  // privileged position, ahead of any package-authored prose.
+  lines.push(
+    "## Selection contract",
+    "",
+    "Complete and unfiltered: every selectable node appears below; nothing was pre-selected.",
+    menu.contract.selection.instruction,
+    "",
+  );
+  if (!menu.ask) {
+    lines.push(menu.contract.noAsk, "");
+  }
+  lines.push(menu.silence.ifNoneApply, "", "---", "");
+
   if (menu.cover.state === "resolved") {
     lines.push(
-      `## Cover in context: \`${menu.cover.id}\``,
+      `## Cover: \`${menu.cover.id}\``,
       "",
       menu.cover.node.body,
       "",
-      "Cover status: already in context; outside selection; do not pull again.",
+      "This cover is already in context and is not selectable.",
       "",
       "---",
       "",
     );
   }
+
   lines.push("## Available guidance", "", menuCoverageLine(menu), "");
-  if (menu.ask) {
-    lines.push(
-      "Complete, unfiltered, unranked list from the ghost package. ghost has not selected nodes for this ask.",
-      "Pull every node whose `for` payload indicates its stated situation applies and whose guidance, material, structure, or refusal governs the work. Skip inapplicable nodes. Topic overlap alone is not applicability. Do not add nodes for completeness or omit applicable nodes to meet a count.",
-      "Next: `ghost pull <id> [<id>…]`.",
-      "If nothing applies, name the package's silence, follow the cover silence posture, and do not invent ghost-backed guidance.",
-      "",
-    );
-  } else {
-    lines.push(
-      "Complete, unfiltered, unranked list from the ghost package. Bare gather is catalog inspection; ghost has not grounded a task or selected nodes.",
-      "When grounding an ask, pull every applicable node with `ghost pull <id> [<id>…]`. Skip inapplicable nodes and do not invent ghost-backed guidance when the ghost package is silent.",
-      "",
-    );
-  }
-  if (menu.kinds !== undefined && menu.kinds.length > 0) {
-    lines.push("Kinds:", "");
-    for (const kind of menu.kinds) {
-      lines.push(`- **${kind.name}** — ${kind.purpose}`);
+  lines.push(
+    `Evaluate all ${menu.nodes.length} selectable nodes. Numbering is for counting only. Pull by id.`,
+    "",
+  );
+
+  const groups = groupMenuByKind(menu.nodes, menu.kinds ?? []);
+  const kindPurpose = new Map(
+    (menu.kinds ?? []).map((kind) => [kind.name, kind.purpose]),
+  );
+  let index = 0;
+  for (const group of groups) {
+    if (group.kind) {
+      lines.push(`### ${group.kind}`, "");
+      const purpose = kindPurpose.get(group.kind);
+      if (purpose) lines.push(purpose, "");
+    } else {
+      lines.push(
+        "### Uncategorized",
+        "",
+        "These nodes have no kind. Use the selection contract as written.",
+        "",
+      );
+    }
+    for (const entry of group.entries) {
+      index += 1;
+      lines.push(`${index}. \`${entry.id}\``);
+      lines.push(
+        entry.for?.trim()
+          ? `   - Applies when: ${entry.for.trim()}`
+          : "   - Applicability unstated: no `for` payload.",
+      );
+      const metadata = formatMetadata(entry);
+      if (metadata.length > 0) {
+        lines.push(`   - ${metadata.join("; ")}`);
+      }
     }
     lines.push("");
   }
-  for (const entry of menu.nodes) {
-    const kind = entry.kind ? ` _(${entry.kind})_` : "";
-    lines.push(`- \`${entry.id}\`${kind}`);
-    if (entry.for) lines.push(`  - ${entry.for}`);
-    if (entry.materials !== undefined) {
-      lines.push(`  - materials: ${entry.materials}`);
-    }
-    const payloadTypes = formatPayloadTypes(entry);
-    if (payloadTypes.length > 0) {
-      lines.push(`  - payloads: ${payloadTypes.join(", ")}`);
+
+  lines.push("Next: `ghost pull <id> [<id>…]`.");
+  return `${lines.join("\n")}\n`;
+}
+
+interface MenuGroup {
+  kind: string | undefined;
+  entries: CatalogMenuEntry[];
+}
+
+function groupMenuByKind(
+  menu: readonly CatalogMenuEntry[],
+  kinds: NonNullable<GhostGatherResult["kinds"]>,
+): MenuGroup[] {
+  const declaredOrder = kinds.map((kind) => kind.name);
+  const declaredSet = new Set(declaredOrder);
+  const groups = new Map<string | undefined, CatalogMenuEntry[]>();
+
+  for (const entry of menu) {
+    const key = entry.kind;
+    const group = groups.get(key);
+    if (group) {
+      group.push(entry);
+    } else {
+      groups.set(key, [entry]);
     }
   }
-  return `${lines.join("\n")}\n`;
+
+  for (const group of groups.values()) {
+    group.sort((a, b) => a.id.localeCompare(b.id));
+  }
+
+  const undeclaredKinds = [...groups.keys()]
+    .filter((key): key is string => key !== undefined && !declaredSet.has(key))
+    .sort((a, b) => a.localeCompare(b));
+
+  const orderedKeys: (string | undefined)[] = [
+    ...declaredOrder.filter((kind) => groups.has(kind)),
+    ...undeclaredKinds,
+    ...(groups.has(undefined) ? [undefined] : []),
+  ];
+
+  return orderedKeys.map((kind) => ({ kind, entries: groups.get(kind) ?? [] }));
+}
+
+function formatMetadata(entry: CatalogMenuEntry): string[] {
+  const metadata: string[] = [];
+  if (entry.materials !== undefined) {
+    metadata.push(`materials: ${entry.materials}`);
+  }
+  const payloadTypes = formatPayloadTypes(entry);
+  if (payloadTypes.length > 0) {
+    metadata.push(`payloads: ${payloadTypes.join(", ")}`);
+  }
+  return metadata;
 }
 
 function formatPayloadTypes(entry: CatalogMenuEntry): string[] {
   const types: string[] = [];
-  if (entry.materials !== undefined) types.push("materials");
   if (entry.hasFencedExample) types.push("substantial fenced example");
   if (entry.hasSkeleton) types.push("Skeleton");
   return types;

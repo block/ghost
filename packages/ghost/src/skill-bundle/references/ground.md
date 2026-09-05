@@ -13,15 +13,12 @@ should be shaped by a ghost package.
 Run `ghost gather <ask>` with the real task, not a generic label. The cover is
 inlined by gather, so do not pull it separately.
 
-`gather` presents every available node; it does not filter or rank. Judge each
-node's `for` payload against the actual task and pull what applies. When you are
-uncertain whether a node applies, pull it. Under-pull is silent and unrecoverable;
-over-pull is mild dilution. Skip only clear non-matches. Topic overlap alone is
-not applicability.
+`gather` presents every selectable node; it does not filter or rank, and its
+selection contract states the pull rule. Kind legends may narrow that global
+rule, including stricter handling when uncertain.
 
-Read the coverage line before you choose: an all-prose package is weak
-steering. `gather` labels materials, substantial fenced examples, and Skeletons
-separately, so payload shape is visible before generation.
+Read the coverage line before you choose. It tells you whether the package has
+concrete material and whether any node lacks a `for` payload.
 
 ## Pull and inspect
 
@@ -39,20 +36,17 @@ ids to restore steering.
 The anchor is an ephemeral pre-generation block, never written into `.ghost/`.
 Do not call it a pull packet or review packet.
 
-Keep it to three parts:
+Keep it to two parts:
 
 1. Up to five non-negotiables, each cited to a pulled node id. Guidance from a
    `Never` section states the positive replacement, never just the rejection.
-   Include conditional
-   guidance only when its stated situation actually holds, including guidance
-   whose kind has scoped meaning in the glossary.
-2. One readiness color: Green when the surface is covered by inspected concrete
-   material; no concrete material for the surface caps readiness at Yellow; Red
-   means a brand-defining, high-risk, or irreversible gap, so ask a human or
-   author a node first.
-3. Named silence, one line: what ghost does not cover and what provisional
-   reasoning carries it. Keep this separate from cited claims. Follow
-   [SKILL.md](../SKILL.md)'s canonical "When the package is silent" section.
+   Include conditional guidance only when its stated situation actually holds,
+   including guidance whose kind has scoped meaning in the glossary.
+2. Named silence, one line: what ghost does not cover and what provisional
+   reasoning carries it. Ask a human or author guidance before proceeding when
+   the gap is consequential, irreversible, or brand-defining. Keep this
+   separate from cited claims. Follow [SKILL.md](../SKILL.md)'s canonical "When
+   the package is silent" section.
 
 Never restate or paraphrase the Skeleton into the anchor. Start the artifact
 from it verbatim, per the [SKILL.md](../SKILL.md) Skeleton convention.

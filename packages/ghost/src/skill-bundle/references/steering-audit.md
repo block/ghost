@@ -25,8 +25,8 @@ Report first:
 
 - **Concreteness coverage:** total nodes, concrete-material nodes, prose-only
   nodes. Concrete means non-empty `materials`, a fenced code block of at least 3
-  lines, or a `## Skeleton` section. `ghost gather` also breaks out materials,
-  substantial fenced examples, and Skeletons as payload labels.
+  lines, or a `## Skeleton` section. `ghost gather` reports material counts and
+  labels substantial fenced examples and Skeletons as payload metadata.
 - **Pull rate by concreteness:** concrete-material exposure/pull rate vs prose-only
   exposure/pull rate. In markdown this is the `Concrete material` row. This is
   the tuning instrument: if concrete nodes are not pulled when applicable,
@@ -46,8 +46,7 @@ Report first:
 | Checks | covered / partial / missing | checks/, review packet | add checks for high-risk invariants |
 | Silence posture | defined / missing | cover | say when to proceed provisionally or ask |
 
-## Task-level readiness
-
-For a task, gather, pull, and report the readiness color from the anchor
-contract in [ground.md](ground.md). Never present steering coverage as
-deterministic pass/fail.
+For task-level use, gather, pull, inspect material when available, name gaps,
+proceed provisionally for reversible gaps, and ask or author guidance for
+consequential, irreversible, or brand-defining gaps. Never present steering
+coverage as deterministic pass/fail.
