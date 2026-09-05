@@ -1,5 +1,15 @@
 # @design-intelligence/ghost
 
+## 0.32.0
+
+### Minor Changes
+
+- [#279](https://github.com/block/ghost/pull/279) [`24dd7d8`](https://github.com/block/ghost/commit/24dd7d8b285734f9e2cce8743cb55676c902d776) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Remove the `ghost export` command and its package archive output.
+
+### Patch Changes
+
+- [#265](https://github.com/block/ghost/pull/265) [`d295370`](https://github.com/block/ghost/commit/d29537045e9d9851f7e7f234bf1024f0070181a6) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - `ghost gather` now leads with one selection contract, groups nodes by declared kind order with uncategorized nodes last, labels applicability, and reports factual coverage without readiness colors.
+
 ## 0.31.4
 
 ### Patch Changes
