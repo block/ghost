@@ -124,7 +124,7 @@ const COMMAND_DISCOVERY = [
     name: "gather",
     group: "core",
     defaultHelp: true,
-    compactName: "gather [ask]",
+    compactName: "gather <ask>",
     summary:
       "Emit the complete guidance menu so the agent can pull applicable nodes.",
   },

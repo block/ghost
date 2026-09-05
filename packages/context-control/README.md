@@ -29,11 +29,10 @@ else `ghost` on PATH).
 
 ## Screens
 
-**package** — the catalog rendered as the selection surface the model
-sees: id, kind, `for` payload, material count, coverage line. Click a node to
-see its real `ghost pull` output in a drawer. Review `for` payloads as
-retrieval payloads, not file contents; a node with no `for` is flagged
-as invisible.
+**package** — the catalog behind the selection surface: id, kind, `for`
+payload, material count, and coverage. Click an item to see its real `ghost
+pull` output in a drawer. Review `for` payloads as retrieval payloads, not file
+contents; an item with no `for` is flagged as invisible.
 
 **bench** — type an ask (or run the whole asks suite), fire N single-shot
 selection trials, and read the heatmap: nodes × asks, each cell the
@@ -43,11 +42,11 @@ the ask's expected set. Scores above the map: consistency (mean pairwise
 Jaccard), mean per-trial precision and recall, poison-selection rate, unknown
 ids, and nodes ever selected.
 
-Selection runs as a real agent would: the system prompt includes the cover
-already in context and asks for a small pull from the menu. There is no
-skill-less mode. One caveat remains: a live agent also
-carries task context (open files, prior turns) that single-shot selection
-lacks.
+Selection runs against the exact agent-facing Markdown from `ghost gather
+<ask>`. The system prompt only requests applicable IDs; it does not reconstruct
+the menu or repeat Ghost's selection mechanics. One caveat remains: a live
+agent also carries task context (open files, prior turns) that the single-shot
+selector lacks.
 
 **replay** — the real `.ghost/.events` tape grouped into sessions: each
 gather with its ask, the pulls that followed, re-gathers, and pull misses.
@@ -96,8 +95,8 @@ Add providers to `MODEL_ADAPTERS` in `lib/model.mjs`.
 
 ```text
 cli.mjs          # context-control → serves the UI
-lib/ghost.mjs    # shells ghost gather/pull --format json (never re-implements semantics)
-lib/model.mjs    # model adapters (fake-lexical stub)
+lib/ghost.mjs    # shells exact Markdown for trials; JSON for inspection and pull
+lib/model.mjs    # model adapters; real models receive literal gather Markdown
 lib/bench.mjs    # trial runner + asks.md parser
 lib/score.mjs    # jaccard, consistency, precision/recall, rates, coverage
 lib/tape.mjs     # .ghost/.events parser + session grouping

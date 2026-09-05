@@ -1,5 +1,5 @@
 import type { CAC } from "cac";
-import type { CatalogMenuEntry } from "#ghost-core";
+import { type CatalogMenuEntry, UsageError } from "#ghost-core";
 import type { GhostGatherResult } from "../embed/index.js";
 import { gatherGhostPackage, loadGhostSnapshot } from "../embed/index.js";
 import { appendGhostEvent, resolveRunId } from "../observability-events.js";
@@ -34,6 +34,11 @@ export function registerGatherCommand(cli: CAC): void {
         const ask = normalizeAskParts(askParts);
         const paths = resolveGhostPackage(opts.package, process.cwd());
         const snapshot = await loadGhostSnapshot(paths);
+        if (format === "markdown" && ask === undefined) {
+          throw new UsageError(
+            "gather needs a task. Run `ghost gather <ask>`. For package inspection, use `ghost gather --format json`.",
+          );
+        }
         const menu = gatherGhostPackage(snapshot, { ask });
         const runId = resolveRunId(opts.run);
         await appendGhostEvent(paths.packageDir, {
@@ -89,93 +94,57 @@ function formatGatherJson(menu: GhostGatherResult): Record<string, unknown> {
   };
 }
 
-function menuCoverageLine(menu: GhostGatherResult): string {
-  const coverage = menu.coverage;
-  const parts = [`${coverage.nodes} nodes`];
-  if (coverage.concrete > 0) {
-    parts.push(`${coverage.concrete} with concrete support`);
-  } else {
-    parts.push("all prose, no concrete support");
-  }
-  if (coverage.withoutFor > 0) {
-    parts.push(`${coverage.withoutFor} lack \`for\` payloads`);
-  }
-  return parts.join(" · ");
-}
+const NO_GUIDANCE_HEADING = /^##[ \t]+If no guidance applies[ \t]*$/im;
 
 function formatMenuMarkdown(menu: GhostGatherResult): string {
-  const lines: string[] = ["# ghost package", ""];
-  if (menu.ask) lines.push(`Ask: ${menu.ask}`, "");
-
-  // Selection contract first: ghost's own instructions occupy the most
-  // privileged position, ahead of any package-authored prose.
-  lines.push(
-    "## Selection contract",
-    "",
-    "Complete and unfiltered: every selectable node appears below; nothing was pre-selected.",
-    menu.contract.selection.instruction,
-    "",
-  );
   if (!menu.ask) {
-    lines.push(menu.contract.noAsk, "");
+    throw new UsageError("Markdown gather output requires a task.");
   }
-  lines.push(menu.silence.ifNoneApply, "", "---", "");
+
+  const lines: string[] = [
+    "# Guidance for this task",
+    "",
+    `Task: ${menu.ask}`,
+    "",
+  ];
 
   if (menu.cover.state === "resolved") {
+    lines.push(menu.cover.node.body, "");
+  }
+  if (
+    menu.cover.state !== "resolved" ||
+    !NO_GUIDANCE_HEADING.test(menu.cover.node.body)
+  ) {
     lines.push(
-      `## Cover: \`${menu.cover.id}\``,
+      "## If no guidance applies",
       "",
-      menu.cover.node.body,
-      "",
-      "This cover is already in context and is not selectable.",
-      "",
-      "---",
+      menu.cover.state === "resolved"
+        ? "Continue with ordinary reasoning for reversible choices unless the guidance above requires input. Ask before consequential, irreversible, or brand-defining choices."
+        : "Continue with ordinary reasoning for reversible choices. Ask before consequential, irreversible, or brand-defining choices.",
       "",
     );
   }
 
-  lines.push("## Available guidance", "", menuCoverageLine(menu), "");
   lines.push(
-    `Evaluate all ${menu.nodes.length} selectable nodes. Numbering is for counting only. Pull by id.`,
+    "## Available guidance",
+    "",
+    "Check every item below. Pull all applicable IDs together with `ghost pull <id> [<id>…]`. Skip clear non-matches; topic overlap alone is not enough. Do not limit the number.",
     "",
   );
 
   const groups = groupMenuByKind(menu.nodes, menu.kinds ?? []);
-  const kindPurpose = new Map(
-    (menu.kinds ?? []).map((kind) => [kind.name, kind.purpose]),
-  );
-  let index = 0;
   for (const group of groups) {
-    if (group.kind) {
-      lines.push(`### ${group.kind}`, "");
-      const purpose = kindPurpose.get(group.kind);
-      if (purpose) lines.push(purpose, "");
-    } else {
-      lines.push(
-        "### Uncategorized",
-        "",
-        "These nodes have no kind. Use the selection contract as written.",
-        "",
-      );
-    }
+    lines.push(group.kind ? `### ${group.kind}` : "### Other guidance", "");
     for (const entry of group.entries) {
-      index += 1;
-      lines.push(`${index}. \`${entry.id}\``);
-      lines.push(
-        entry.for?.trim()
-          ? `   - Applies when: ${entry.for.trim()}`
-          : "   - Applicability unstated: no `for` payload.",
-      );
-      const metadata = formatMetadata(entry);
-      if (metadata.length > 0) {
-        lines.push(`   - ${metadata.join("; ")}`);
+      lines.push(`- \`${entry.id}\``);
+      if (entry.for?.trim()) {
+        lines.push(`  - Applies when: ${entry.for.trim()}`);
       }
     }
     lines.push("");
   }
 
-  lines.push("Next: `ghost pull <id> [<id>…]`.");
-  return `${lines.join("\n")}\n`;
+  return `${lines.join("\n").trimEnd()}\n`;
 }
 
 interface MenuGroup {
@@ -216,23 +185,4 @@ function groupMenuByKind(
   ];
 
   return orderedKeys.map((kind) => ({ kind, entries: groups.get(kind) ?? [] }));
-}
-
-function formatMetadata(entry: CatalogMenuEntry): string[] {
-  const metadata: string[] = [];
-  if (entry.materials !== undefined) {
-    metadata.push(`materials: ${entry.materials}`);
-  }
-  const payloadTypes = formatPayloadTypes(entry);
-  if (payloadTypes.length > 0) {
-    metadata.push(`payloads: ${payloadTypes.join(", ")}`);
-  }
-  return metadata;
-}
-
-function formatPayloadTypes(entry: CatalogMenuEntry): string[] {
-  const types: string[] = [];
-  if (entry.hasFencedExample) types.push("substantial fenced example");
-  if (entry.hasSkeleton) types.push("Skeleton");
-  return types;
 }

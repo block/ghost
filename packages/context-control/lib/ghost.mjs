@@ -52,6 +52,11 @@ export async function gatherMenu({ ghostBin, packageDir }) {
   return JSON.parse(stdout);
 }
 
+export async function gatherMarkdown({ ghostBin, packageDir, ask }) {
+  if (!ask?.trim()) throw new Error("gather Markdown needs an ask");
+  return runGhost(ghostBin, ["gather", ask, "--package", packageDir]);
+}
+
 export async function pullNode({ ghostBin, packageDir, id }) {
   const stdout = await runGhost(ghostBin, [
     "pull",

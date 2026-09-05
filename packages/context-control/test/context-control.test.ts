@@ -4,6 +4,7 @@ import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { initGhostPackage } from "../../ghost/src/package.js";
 import { parseAsks } from "../lib/bench.mjs";
+import { parseGatherMarkdown } from "../lib/markdown.mjs";
 import { openAICompatibleModel, parseIdReply } from "../lib/model.mjs";
 import {
   consistency,
@@ -139,6 +140,44 @@ describe("demo asks", () => {
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
+  });
+});
+
+describe("parseGatherMarkdown", () => {
+  it("reads the exact agent-facing guidance and available IDs", () => {
+    const parsed = parseGatherMarkdown(
+      [
+        "# Guidance for this task",
+        "",
+        "Task: Build a page.",
+        "",
+        "Brand guidance.",
+        "",
+        "## Available guidance",
+        "",
+        "Check every item.",
+        "",
+        "### foundation",
+        "",
+        "- `foundation.color`",
+        "  - Applies when: Choosing color.",
+        "",
+        "### Other guidance",
+        "",
+        "- `voice`",
+        "  - Applies when: not stated.",
+      ].join("\n"),
+    );
+
+    expect(parsed.guidance).toContain("Brand guidance.");
+    expect(parsed.nodes).toEqual([
+      {
+        id: "foundation.color",
+        kind: "foundation",
+        for: "Choosing color.",
+      },
+      { id: "voice" },
+    ]);
   });
 });
 

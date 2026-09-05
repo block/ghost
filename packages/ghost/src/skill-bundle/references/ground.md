@@ -10,15 +10,14 @@ should be shaped by a ghost package.
 
 ## Gather and select
 
-Run `ghost gather <ask>` with the real task, not a generic label. The cover is
-inlined by gather, so do not pull it separately.
+Run `ghost gather <ask>` with the real task, not a generic label. Read the
+supplied guidance, then check every item under `Available guidance`. Pull every
+id whose `Applies when` condition fits the task. Skip clear non-matches; topic
+overlap alone is not enough.
 
-`gather` presents every selectable node; it does not filter or rank, and its
-selection contract states the pull rule. Kind legends may narrow that global
-rule, including stricter handling when uncertain.
-
-Read the coverage line before you choose. It tells you whether the package has
-concrete material and whether any node lacks a `for` payload.
+The guidance before `Available guidance` is already supplied. Do not pull it
+again. If nothing in the list applies, follow its `If no guidance applies`
+section.
 
 ## Pull and inspect
 

@@ -4,11 +4,10 @@ materials:
   - materials/tokens.css
 ---
 
-vessel-light is Vessel without the React package: the design language as a
-steering packet for agents writing raw HTML and CSS.
+vessel-light is Vessel's design language for agents writing raw HTML and CSS.
 
-Style only with the tokens. Compose only with the closed sets the foundations
-enumerate. Use the examples when the task matches; they are not a framework.
+Use only the tokens and the foundations' closed sets. Use examples only when
+the task matches.
 
 Foundations carry Vessel's load-bearing decisions. Their role logic survives
 adaptation; the answered shape, palette, type, and temperature values stand
@@ -29,3 +28,8 @@ the context, never the topic. When no example fits, compose from the
 foundations; do not invent a new styling system. Before anything ships, run the
 deletion pass: every element names what breaks if it goes, and the view arrives
 settled.
+
+## If no guidance applies
+
+Compose from the foundations. Ask before adding a styling system, token role,
+type family, or interaction pattern.

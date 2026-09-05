@@ -26,7 +26,9 @@ node id. When present and resolved, `ghost gather` inlines that node above the
 menu on every invocation.
 
 `ghost validate` reports a missing referenced cover as an error, an undeclared
-cover as a warning, and a cover body over 1500 bytes as a warning.
+cover as a warning, a cover body over 1500 bytes as a warning, and a cover
+without an exact `## If no guidance applies` section as a warning. That section
+tells the agent when to continue and when to ask about uncovered decisions.
 
 ## Glossary and identity
 
@@ -39,13 +41,11 @@ Obligation or a replaceable Default), `foundation` (the brand's load-bearing
 decisions), and `context` (what bends in a named situation). A package may
 declare any vocabulary; the glossary is the only kind authority.
 
-`ghost gather` renders each kind's **first paragraph only** as its menu
-legend; later paragraphs are dropped. Write that first paragraph as
-selection semantics: when to pull this kind, and any routing rule. Do not make
-it anatomy, history, or rationale for what the kind does not yet cover. Put
-anatomy and history in the paragraphs after it. Declared kinds render in
-frontmatter order even when their purpose paragraph is empty; undeclared kinds
-render alphabetically after declared kinds, and uncategorized nodes render last.
+`ghost gather --format json` includes each kind's first paragraph as its
+purpose for operator tooling. Agent-facing Markdown uses kind headings only;
+selection comes from each item's `Applies when` condition. Declared kinds render
+in frontmatter order even when their purpose is empty; undeclared kinds render
+alphabetically after declared kinds, and uncategorized guidance renders last.
 
 ## Nodes
 
@@ -116,10 +116,12 @@ it does not grade them.
 
 ## Command behavior
 
-- `ghost gather` emits the selection contract, the resolved cover when present,
-  coverage counts, then a complete, unfiltered, unranked menu of every
-  selectable node. It groups declared kinds in glossary order, undeclared kinds
-  alphabetically, and uncategorized nodes last. Checks are absent.
+- `ghost gather <ask>` emits agent-facing Markdown: the task, the resolved
+  cover body without a machinery label, then every available id and its
+  applicability. It groups declared kinds in glossary order, undeclared kinds
+  alphabetically, and uncategorized guidance last. Checks and diagnostic
+  metadata are absent. `--format json` retains the cover state, selection
+  contract, coverage, kind metadata, and concrete payload metadata for tooling.
 - `ghost pull` emits selected nodes in steering order, inlines eligible local
   text materials once, leaves later duplicate pointers, turns binary materials
   into inspect-pointers, and leaves external materials as locators.

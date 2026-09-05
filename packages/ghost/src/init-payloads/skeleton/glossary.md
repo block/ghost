@@ -7,9 +7,9 @@ kinds:
 
 # standard
 
-Shared guidance that is not specific to this brand. Pull every standard node
-whose `for` payload matches the task. Within matching nodes, Obligations cannot
-be waived; Defaults yield to explicit brand guidance.
+Shared guidance that is not specific to this brand. Use each item when its
+`Applies when` condition fits the task. Obligations cannot be waived; Defaults
+yield to explicit brand guidance.
 
 Every rule carries one of two authority labels. An **Obligation** is a
 requirement brand preference cannot waive: accessibility, safety, honesty,

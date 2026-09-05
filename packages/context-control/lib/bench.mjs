@@ -8,6 +8,7 @@ export async function runAsk({
   ask,
   menu,
   cover,
+  markdown,
   trials = 5,
   expected,
   poison,
@@ -15,7 +16,7 @@ export async function runAsk({
   const known = new Set(menu.map((entry) => entry.id));
   const selections = await Promise.all(
     Array.from({ length: trials }, async (_, trial) => {
-      const ids = await model.select({ ask, menu, cover, trial });
+      const ids = await model.select({ ask, menu, cover, markdown, trial });
       return {
         ids: ids.filter((id) => known.has(id)),
         unknownIds: ids.filter((id) => !known.has(id)),

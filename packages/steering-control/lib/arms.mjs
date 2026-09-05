@@ -38,7 +38,7 @@ export function assemblePrompt(config, arm, askN, runK) {
       { encoding: "utf8" },
     );
     instructions = gatherInstructions(config, askN, runK);
-    segments.push(section("ghost gather menu", menu.trim()));
+    segments.push(section("Guidance for this task", menu.trim()));
     segments.push(section("Making-loop instructions", instructions));
   }
 
