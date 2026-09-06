@@ -132,7 +132,7 @@ describe("embed contract", () => {
     expect(absent.cover).toEqual({ state: "absent" });
   });
 
-  it("gathers cover, complete menu, coverage, kinds, and separates checks", async () => {
+  it("gathers complete selectable menu, coverage, kinds, and separates checks", async () => {
     await writePackage(dir);
     const snapshot = await loadGhostSnapshot(
       resolveGhostPackage(undefined, dir),
@@ -141,7 +141,6 @@ describe("embed contract", () => {
     const result = gatherGhostPackage(snapshot, { ask: "tokens" });
 
     expect(result.ask).toBe("tokens");
-    expect(result.cover.state).toBe("resolved");
     expect(result.nodes.map((node) => node.id)).toEqual([
       "asset.tokens",
       "principle.rule",
@@ -157,6 +156,7 @@ describe("embed contract", () => {
       { name: "uncaptioned", purpose: "" },
       { name: "principle", purpose: "Rules." },
     ]);
+    expect(result.contract.ifNoneApply).toContain("bare `ghost pull`");
     expect(result.contract.noAsk).toEqual(expect.any(String));
     expect(result.contract.selection.instruction).not.toContain("context.*");
     expect(JSON.stringify(result)).not.toContain("Check tokens");
@@ -183,6 +183,10 @@ describe("embed contract", () => {
     expect(result.missed).toEqual([
       { requested: "principle.rul", suggested: ["principle.rule"] },
     ]);
+    expect(result.cover).toMatchObject({ state: "resolved", id: "cover" });
+    expect(
+      result.cover.state === "resolved" ? result.cover.node.body : "",
+    ).toContain("Silence posture.");
     expect(result.nodes.map((node) => node.id)).toEqual([
       "asset.tokens",
       "principle.rule",
@@ -192,6 +196,7 @@ describe("embed contract", () => {
     expect(result.skeletons).toEqual([
       { nodeId: "asset.tokens", info: "css", content: ":root { }" },
     ]);
+    expect(result.fallback).toMatchObject({ source: "ghost-default" });
     expect(result.materialCounts).toEqual({ inlined: 4, omitted: 3 });
     expect(
       result.nodes[0].materials?.map((material) => material.locator),
@@ -205,6 +210,153 @@ describe("embed contract", () => {
       "https://example.com/brand-kit",
     ]);
     expect(JSON.stringify(result)).not.toContain("Check tokens");
+  });
+
+  it("pulls only cover and fallback for an empty selection", async () => {
+    await writePackage(dir);
+    const snapshot = await loadGhostSnapshot(
+      resolveGhostPackage(undefined, dir),
+    );
+
+    const result = await pullGhostNodes(snapshot, { repoRoot: dir });
+
+    expect(result.requested).toEqual([]);
+    expect(result.ids).toEqual([]);
+    expect(result.missed).toEqual([]);
+    expect(result.cover).toMatchObject({ state: "resolved", id: "cover" });
+    expect(result.nodes).toEqual([]);
+    expect(result.fallback?.body).toContain("ordinary reasoning");
+  });
+
+  it("omits default fallback when the cover authors uncovered-guidance policy", async () => {
+    await writePackage(dir);
+    await writeFile(
+      join(dir, ".ghost", "cover.md"),
+      "---\nfor: Cover.\n---\n\nSilence posture.\n\n## If no guidance applies\n\nUse authored policy.\n",
+    );
+    const snapshot = await loadGhostSnapshot(
+      resolveGhostPackage(undefined, dir),
+    );
+
+    const result = await pullGhostNodes(snapshot, { repoRoot: dir });
+
+    expect(result.cover).toMatchObject({ state: "resolved", id: "cover" });
+    expect(result.fallback).toBeUndefined();
+    expect(
+      result.cover.state === "resolved" ? result.cover.node.body : "",
+    ).toContain("Use authored policy.");
+  });
+
+  it("transports cover materials first and keeps cover skeletons first", async () => {
+    await writePackage(dir);
+    await writeFile(
+      join(dir, ".ghost", "cover.md"),
+      [
+        "---",
+        "for: Cover.",
+        "materials:",
+        "  - materials/tokens.css",
+        "---",
+        "",
+        "Cover prose.",
+        "",
+        "## Skeleton",
+        "",
+        "```css",
+        ".cover {}",
+        "```",
+      ].join("\n"),
+    );
+    await writeFile(
+      join(dir, ".ghost", "principle.rule.md"),
+      [
+        "---",
+        "for: Rule.",
+        "materials:",
+        "  - materials/tokens.css",
+        "---",
+        "",
+        "Rule prose.",
+        "",
+        "## Skeleton",
+        "",
+        "```css",
+        ".rule {}",
+        "```",
+      ].join("\n"),
+    );
+    const snapshot = await loadGhostSnapshot(
+      resolveGhostPackage(undefined, dir),
+    );
+
+    const result = await pullGhostNodes(snapshot, {
+      ids: ["principle.rule"],
+      repoRoot: dir,
+    });
+
+    expect(result.cover.state).toBe("resolved");
+    if (result.cover.state !== "resolved") throw new Error("missing cover");
+    expect(result.cover.node.materials?.[0]).toMatchObject({
+      inlined: ":root{}\n",
+    });
+    expect(result.nodes[0].materials?.[0]).toMatchObject({
+      omitted: true,
+      reason: "content inlined above under node cover",
+    });
+    expect(result.skeletons.map((skeleton) => skeleton.nodeId)).toEqual([
+      "cover",
+      "principle.rule",
+    ]);
+  });
+
+  it("throws before pull when the manifest cover is dangling", async () => {
+    await writePackage(dir);
+    await writeFile(
+      join(dir, ".ghost", "manifest.yml"),
+      "schema: ghost.package/v1\nid: local\ncover: missing\n",
+    );
+    const snapshot = await loadGhostSnapshot(
+      resolveGhostPackage(undefined, dir),
+    );
+
+    await expect(pullGhostNodes(snapshot, { repoRoot: dir })).rejects.toThrow(
+      'manifest cover "missing" does not match any node',
+    );
+  });
+
+  it("treats an explicit cover id as an alias, not a selection", async () => {
+    await writePackage(dir);
+    const snapshot = await loadGhostSnapshot(
+      resolveGhostPackage(undefined, dir),
+    );
+
+    const result = await pullGhostNodes(snapshot, {
+      ids: ["cover", "principle.rule", "cover"],
+      repoRoot: dir,
+    });
+
+    expect(result.requested).toEqual(["principle.rule"]);
+    expect(result.ids).toEqual(["principle.rule"]);
+    expect(result.cover).toMatchObject({ state: "resolved", id: "cover" });
+    expect(result.nodes.map((node) => node.id)).toEqual(["principle.rule"]);
+  });
+
+  it("returns no packet content when every selected id is unknown", async () => {
+    await writePackage(dir);
+    const snapshot = await loadGhostSnapshot(
+      resolveGhostPackage(undefined, dir),
+    );
+
+    const result = await pullGhostNodes(snapshot, {
+      ids: ["principle.missing"],
+      repoRoot: dir,
+    });
+
+    expect(result.ids).toEqual([]);
+    expect(result.missed).toHaveLength(1);
+    expect(result.cover).toEqual({ state: "not-emitted", id: "cover" });
+    expect(result.fallback).toBeUndefined();
+    expect(result.nodes).toEqual([]);
   });
 
   it("keeps unknown-extension text materials inline", async () => {

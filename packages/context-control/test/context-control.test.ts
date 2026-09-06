@@ -151,8 +151,6 @@ describe("parseGatherMarkdown", () => {
         "",
         "Task: Build a page.",
         "",
-        "Brand guidance.",
-        "",
         "## Available guidance",
         "",
         "Check every item.",
@@ -169,7 +167,7 @@ describe("parseGatherMarkdown", () => {
       ].join("\n"),
     );
 
-    expect(parsed.guidance).toContain("Brand guidance.");
+    expect(parsed.guidance).toContain("Task: Build a page.");
     expect(parsed.nodes).toEqual([
       {
         id: "foundation.color",

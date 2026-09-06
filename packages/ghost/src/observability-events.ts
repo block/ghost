@@ -24,7 +24,10 @@ export type PullObservabilityEvent = {
   event: "pull";
   /** Caller-supplied run identifier (--run or GHOST_RUN_ID); attribution only. */
   run?: string;
+  /** Selectable node ids requested by the agent. The package cover is recorded separately. */
   ids: string[];
+  /** Cover id included automatically in the pull packet, when resolved. */
+  cover?: string;
   missed?: PullMiss[];
   inlinedMaterials?: number;
   omittedMaterials?: number;

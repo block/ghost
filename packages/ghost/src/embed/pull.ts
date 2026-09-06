@@ -9,12 +9,15 @@ import {
   resolveLocalMaterialLocator,
   stripSkeletonSections,
   transportMaterials,
+  UsageError,
 } from "#ghost-core";
 import type { PullMiss } from "../observability-events.js";
 import { GHOST_MATERIALS_DIR } from "../scan/constants.js";
 import type {
   GhostEmbedSnapshot,
+  GhostPulledNode,
   GhostPulledSkeleton,
+  GhostPullFallback,
   GhostPullOrder,
   GhostPullResult,
 } from "./types.js";
@@ -24,60 +27,106 @@ interface PulledNode {
   materials: MaterialTransportResult;
 }
 
+export const GHOST_DEFAULT_FALLBACK_BODY =
+  "The package has no authored policy for decisions its selected guidance does not cover. Continue with ordinary reasoning for reversible choices. Ask before consequential, irreversible, or brand-defining choices. Never present provisional reasoning as ghost-backed guidance.";
+
+const NO_GUIDANCE_HEADING = /^##[ \t]+If no guidance applies[ \t]*$/im;
+
 export async function pullGhostNodes(
   snapshot: GhostEmbedSnapshot,
   options: {
-    ids: readonly string[];
+    ids?: readonly string[];
     repoRoot: string;
     inlineMaterials?: boolean;
     order?: GhostPullOrder;
   },
 ): Promise<GhostPullResult> {
-  const requested = [...new Set(options.ids)];
-  const allIds = [...snapshot.catalog.nodes.keys()];
-  const known = requested.filter((id) => snapshot.catalog.nodes.has(id));
-  const missed: PullMiss[] = requested
-    .filter((id) => !snapshot.catalog.nodes.has(id))
-    .map((id) => ({ requested: id, suggested: closestIds(id, allIds) }));
-  const givenNodes = known.map(
-    (id) => snapshot.catalog.nodes.get(id) as GhostCatalogNode,
+  if (snapshot.cover.state === "dangling") {
+    throw new UsageError(
+      `manifest cover "${snapshot.cover.id}" does not match any node. Fix manifest.yml cover or add .ghost/${snapshot.cover.id}.md before pulling.`,
+    );
+  }
+
+  const coverId =
+    snapshot.cover.state === "resolved" ? snapshot.cover.id : undefined;
+  const selectableNodes = new Map(
+    [...snapshot.catalog.nodes].filter(([id]) => id !== coverId),
   );
-  const orderedNodes =
+  const selectableIds = [...selectableNodes.keys()];
+  const requested = [...new Set(options.ids ?? [])];
+  const selectedRequested = requested.filter((id) => id !== coverId);
+  const known = selectedRequested.filter((id) => selectableNodes.has(id));
+  const missed: PullMiss[] = selectedRequested
+    .filter((id) => !selectableNodes.has(id))
+    .map((id) => ({ requested: id, suggested: closestIds(id, selectableIds) }));
+
+  if (known.length === 0 && missed.length > 0) {
+    return emptyMissResult(selectedRequested, missed, coverId);
+  }
+
+  const givenNodes = known.map(
+    (id) => selectableNodes.get(id) as GhostCatalogNode,
+  );
+  const orderedSelectedNodes =
     (options.order ?? "steering") === "given"
       ? givenNodes
-      : orderPulledNodes(
-          givenNodes,
-          snapshot.cover.state === "resolved" ? snapshot.cover.id : undefined,
-        );
+      : orderPulledNodes(givenNodes);
+  const nodesToPull = [
+    ...(snapshot.cover.state === "resolved" ? [snapshot.cover.node] : []),
+    ...orderedSelectedNodes,
+  ];
   const packageDir = snapshot.package.dir;
   const pulledNodes = await resolvePulledNodes(
-    orderedNodes,
+    nodesToPull,
     options.repoRoot,
     packageDir,
     options.inlineMaterials !== false,
   );
   dedupeInlinedMaterials(pulledNodes);
   const materialCounts = sumMaterialCounts(pulledNodes);
+  const coverPulled =
+    snapshot.cover.state === "resolved" ? pulledNodes[0] : undefined;
+  const selectedPulled =
+    snapshot.cover.state === "resolved" ? pulledNodes.slice(1) : pulledNodes;
+  const fallback = fallbackForCover(snapshot.cover);
 
   return {
     kind: "pull",
-    requested,
+    requested: selectedRequested,
     ids: known,
     missed,
-    nodes: pulledNodes.map(({ node, materials }) => ({
-      id: node.id,
-      ...(node.kind !== undefined ? { kind: node.kind } : {}),
-      ...(node.for ? { for: node.for } : {}),
-      ...(node.materials !== undefined
-        ? { declaredMaterials: [...node.materials] }
-        : {}),
-      ...(node.materials !== undefined
-        ? { materials: materials.materials }
-        : {}),
-      body: stripSkeletonSections(node.body),
-    })),
+    cover:
+      coverPulled !== undefined
+        ? {
+            state: "resolved",
+            id: coverPulled.node.id,
+            node: formatPulledNode(coverPulled),
+          }
+        : { state: "absent" },
+    ...(fallback ? { fallback } : {}),
+    nodes: selectedPulled.map(formatPulledNode),
     skeletons: pulledSkeletons(pulledNodes),
     materialCounts,
+  };
+}
+
+function emptyMissResult(
+  requested: readonly string[],
+  missed: readonly PullMiss[],
+  coverId: string | undefined,
+): GhostPullResult {
+  return {
+    kind: "pull",
+    requested,
+    ids: [],
+    missed,
+    cover: {
+      state: "not-emitted",
+      ...(coverId !== undefined ? { id: coverId } : {}),
+    },
+    nodes: [],
+    skeletons: [],
+    materialCounts: { inlined: 0, omitted: 0 },
   };
 }
 
@@ -132,23 +181,18 @@ function dedupeInlinedMaterials(nodes: readonly PulledNode[]): void {
 
 function orderPulledNodes(
   nodes: readonly GhostCatalogNode[],
-  coverId: string | undefined,
 ): GhostCatalogNode[] {
   return nodes
     .map((node, index) => ({
       node,
       index,
-      bucket: steeringBucket(node, coverId),
+      bucket: steeringBucket(node),
     }))
     .sort((a, b) => a.bucket - b.bucket || a.index - b.index)
     .map((entry) => entry.node);
 }
 
-function steeringBucket(
-  node: GhostCatalogNode,
-  coverId: string | undefined,
-): number {
-  if (coverId !== undefined && node.id === coverId) return 0;
+function steeringBucket(node: GhostCatalogNode): number {
   if (node.concrete) return 1;
   return 2;
 }
@@ -200,4 +244,32 @@ function pulledSkeletons(nodes: readonly PulledNode[]): GhostPulledSkeleton[] {
       content: fence.content,
     })),
   );
+}
+
+function formatPulledNode({ node, materials }: PulledNode): GhostPulledNode {
+  return {
+    id: node.id,
+    ...(node.kind !== undefined ? { kind: node.kind } : {}),
+    ...(node.for ? { for: node.for } : {}),
+    ...(node.materials !== undefined
+      ? { declaredMaterials: [...node.materials] }
+      : {}),
+    ...(node.materials !== undefined ? { materials: materials.materials } : {}),
+    body: stripSkeletonSections(node.body),
+  };
+}
+
+function fallbackForCover(
+  cover: GhostEmbedSnapshot["cover"],
+): GhostPullFallback | undefined {
+  if (cover.state === "absent") {
+    return { source: "ghost-default", body: GHOST_DEFAULT_FALLBACK_BODY };
+  }
+  if (
+    cover.state === "resolved" &&
+    !NO_GUIDANCE_HEADING.test(cover.node.body)
+  ) {
+    return { source: "ghost-default", body: GHOST_DEFAULT_FALLBACK_BODY };
+  }
+  return undefined;
 }

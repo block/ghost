@@ -61,7 +61,7 @@ ghost init          # scaffold .ghost/ with a robust provisional baseline
 ghost checks init   # opt in to review assertions
 ghost validate      # make sure the package is well-formed
 ghost gather <ask>  # before building: show the complete guidance menu
-ghost pull <ids>    # read the picked nodes' full bodies
+ghost pull <ids>    # read the cover plus picked nodes' full bodies
 ghost review        # during review: match a diff to guidance and checks
 ghost stats         # while tuning: see what agents reached for
 ghost skill install # install the unified ghost skill bundle
@@ -102,15 +102,16 @@ repeatable commands for scaffolding, validation, retrieval, and review.
 .ghost/
   manifest.yml          # schema + package id + optional cover id
   glossary.md           # your kind vocabulary + what each kind means
-  brand.md              # example cover inlined by gather
+  brand.md              # example cover included by every pull
   principle.trust.md    # guidance of kind `principle`
   asset.logo.md         # guidance that points at concrete materials
   checks/               # optional review assertions; never nodes
 ```
 
 The package is a **flat set of nodes**. The optional `cover:` in
-`manifest.yml` may name any node; `ghost gather` inlines it before the menu.
-The default skeleton calls that node `brand`, but the filename is not reserved.
+`manifest.yml` may name any node. `ghost gather` excludes it from selection;
+every `ghost pull` includes it before selected guidance. The default skeleton
+calls that node `brand`, but the filename is not reserved.
 A node is one markdown file: a `for` payload in frontmatter (the situation or
 activity the guidance is for), optional `materials`, and brand guidance in the
 prose body.

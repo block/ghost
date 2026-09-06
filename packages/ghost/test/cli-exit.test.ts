@@ -124,11 +124,6 @@ describe("CLI process exit lifecycle", () => {
         fix: "omit the flag",
       },
       {
-        args: ["pull"],
-        failure: "missing required args",
-        fix: "ghost pull --help",
-      },
-      {
         args: ["checks"],
         failure: "missing required args",
         fix: "ghost checks --help",

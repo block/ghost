@@ -70,12 +70,12 @@ poison: context.conversation
 
 Asks without `expect:` still score consistency. Expected and poison sets add
 precision, recall, and poison rate. List only selectable menu ids. Do not list
-the manifest cover: gather has already placed it in context and removed it from
-the menu.
+the manifest cover: gather excludes it from selection and every pull includes
+it automatically.
 
 ## Model adapters
 
-The contract is one function: `select({ ask, menu, cover, trial }) -> ids`. Two
+The contract is one function: `select({ ask, menu, trial }) -> ids`. Two
 adapters ship, selectable in the bench UI:
 
 - `fake-lexical` — deterministic lexical-overlap stub with per-trial

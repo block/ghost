@@ -14,8 +14,8 @@ import { parseEnumOption } from "./options.js";
 export function registerPullCommand(cli: CAC): void {
   cli
     .command(
-      "pull <...ids>",
-      "Emit the named nodes' full prose bodies, and append the pull to the events tape.",
+      "pull [...ids]",
+      "Emit the package cover plus named node bodies, and append the pull to the events tape.",
     )
     .option(
       "--package <dir>",
@@ -36,7 +36,7 @@ export function registerPullCommand(cli: CAC): void {
       "--run <id>",
       "Attribute the tape event to this run id (default: GHOST_RUN_ID)",
     )
-    .action(async (ids: string[], opts) => {
+    .action(async (ids: string[] | undefined, opts) => {
       try {
         const format = parseEnumOption(opts.format, "--format", [
           "markdown",
@@ -51,7 +51,7 @@ export function registerPullCommand(cli: CAC): void {
         const snapshot = await loadGhostSnapshot(paths);
         const repoRoot = await resolveGitRoot(process.cwd());
         const result = await pullGhostNodes(snapshot, {
-          ids,
+          ids: ids ?? [],
           repoRoot,
           inlineMaterials: opts.materials !== false,
           order,
@@ -68,21 +68,24 @@ export function registerPullCommand(cli: CAC): void {
           console.error("Run `ghost gather` to list every node.");
         }
 
+        if (result.ids.length === 0 && result.missed.length > 0) {
+          await exitCli(2);
+          return;
+        }
+
         if (opts.events !== false) {
           const runId = resolveRunId(opts.run);
           await appendGhostEvent(paths.packageDir, {
             event: "pull",
             ...(runId ? { run: runId } : {}),
             ids: [...result.ids],
+            ...(result.cover.state === "resolved"
+              ? { cover: result.cover.id }
+              : {}),
             inlinedMaterials: result.materialCounts.inlined,
             omittedMaterials: result.materialCounts.omitted,
             ...(result.missed.length > 0 ? { missed: [...result.missed] } : {}),
           });
-        }
-
-        if (result.ids.length === 0) {
-          await exitCli(2);
-          return;
         }
 
         if (format === "json") {
@@ -105,36 +108,50 @@ function formatPullJson(
 ): Record<string, unknown> {
   return {
     kind: "pull",
+    requested: result.requested,
+    ids: result.ids,
     ...(result.missed.length > 0 ? { missed: result.missed } : {}),
-    nodes: result.nodes.map((node) => ({
-      id: node.id,
-      ...(node.kind !== undefined ? { kind: node.kind } : {}),
-      ...(node.for ? { for: node.for } : {}),
-      ...(node.declaredMaterials !== undefined
+    cover:
+      result.cover.state === "resolved"
         ? {
-            materials: inlineMaterials
-              ? (node.materials ?? []).map(formatJsonMaterial)
-              : node.declaredMaterials,
+            state: "resolved",
+            id: result.cover.id,
+            node: formatPullJsonNode(result.cover.node, inlineMaterials),
           }
-        : {}),
-      body: node.body,
-    })),
+        : result.cover,
+    ...(result.fallback
+      ? {
+          fallback: {
+            source: result.fallback.source,
+            body: result.fallback.body,
+          },
+        }
+      : {}),
+    nodes: result.nodes.map((node) =>
+      formatPullJsonNode(node, inlineMaterials),
+    ),
     skeletons: result.skeletons,
   };
 }
 
 function formatPullMarkdown(result: GhostPullResult): string {
   const sections: string[] = [];
+  if (result.cover.state === "resolved") {
+    sections.push(formatNodeMarkdown(result.cover.node));
+  }
+  if (result.fallback !== undefined) {
+    sections.push(
+      [
+        "# ghost default",
+        "",
+        "## If no guidance applies",
+        "",
+        result.fallback.body.trim(),
+      ].join("\n"),
+    );
+  }
   for (const node of result.nodes) {
-    const lines = [`# \`${node.id}\``];
-    if (node.for) lines.push("", `Applies when: ${node.for}`);
-    lines.push("", node.body.trim());
-    if (node.materials !== undefined && node.materials.length > 0) {
-      for (const material of node.materials) {
-        appendMaterialMarkdown(lines, material);
-      }
-    }
-    sections.push(lines.join("\n"));
+    sections.push(formatNodeMarkdown(node));
   }
 
   if (result.skeletons.length > 0) {
@@ -151,6 +168,37 @@ function formatPullMarkdown(result: GhostPullResult): string {
   }
 
   return `${sections.join("\n\n---\n\n")}\n`;
+}
+
+function formatNodeMarkdown(node: GhostPulledNode): string {
+  const lines = [`# \`${node.id}\``];
+  if (node.for) lines.push("", `Applies when: ${node.for}`);
+  lines.push("", node.body.trim());
+  if (node.materials !== undefined && node.materials.length > 0) {
+    for (const material of node.materials) {
+      appendMaterialMarkdown(lines, material);
+    }
+  }
+  return lines.join("\n");
+}
+
+function formatPullJsonNode(
+  node: GhostPulledNode,
+  inlineMaterials: boolean,
+): Record<string, unknown> {
+  return {
+    id: node.id,
+    ...(node.kind !== undefined ? { kind: node.kind } : {}),
+    ...(node.for ? { for: node.for } : {}),
+    ...(node.declaredMaterials !== undefined
+      ? {
+          materials: inlineMaterials
+            ? (node.materials ?? []).map(formatJsonMaterial)
+            : node.declaredMaterials,
+        }
+      : {}),
+    body: node.body,
+  };
 }
 
 function appendMaterialMarkdown(

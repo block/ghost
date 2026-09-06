@@ -17,7 +17,7 @@ Judgment stays with the human reading the report.
 | --- | --- | --- |
 | `naked` | ballast + ask | baseline: median model output, no brand |
 | `dump` | full package prose up front + ballast + ask | the naive "paste the brand guide in the system prompt" |
-| `gather` | ballast + run-stamped `ghost gather` menu + agent-selected `ghost pull`s, material inspection, direct making, render, bounded repair, and optional review | ghost's default shipped consumer system |
+| `gather` | ballast + run-stamped `ghost gather` menu + agent-selected `ghost pull`s that include the cover, material inspection, direct making, render, bounded repair, and optional review | ghost's default shipped consumer system |
 | `dump-growth` | dump of this package **plus** extra corpora + ballast + ask | how dumping degrades as the corpus grows, while the gather menu grows one line per node |
 
 Fresh context per run. The `naked` arm must never see the ghost package. The

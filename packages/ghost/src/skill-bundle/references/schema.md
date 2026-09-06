@@ -22,8 +22,8 @@ inheritance, or edges.
 ## Manifest
 
 `manifest.yml` declares `schema`, `id`, and optionally `cover`. `cover` is a
-node id. When present and resolved, `ghost gather` inlines that node above the
-menu on every invocation.
+node id. `ghost gather` excludes it from the selectable menu; every `ghost pull`
+includes it before selected guidance when it resolves.
 
 `ghost validate` reports a missing referenced cover as an error, an undeclared
 cover as a warning, a cover body over 1500 bytes as a warning, and a cover
@@ -116,15 +116,16 @@ it does not grade them.
 
 ## Command behavior
 
-- `ghost gather <ask>` emits agent-facing Markdown: the task, the resolved
-  cover body without a machinery label, then every available id and its
-  applicability. It groups declared kinds in glossary order, undeclared kinds
-  alphabetically, and uncategorized guidance last. Checks and diagnostic
-  metadata are absent. `--format json` retains the cover state, selection
-  contract, coverage, kind metadata, and concrete payload metadata for tooling.
-- `ghost pull` emits selected guidance in steering order, inlines eligible
-  local text material once, leaves later duplicate references, gives direct
-  actions for material that needs inspection, and emits starting structures
+- `ghost gather <ask>` emits agent-facing Markdown: the task, then every
+  selectable id and its applicability. It groups declared kinds in glossary
+  order, undeclared kinds alphabetically, and uncategorized guidance last.
+  Checks and diagnostic
+  metadata are absent. `--format json` retains the selection contract,
+  coverage, kind metadata, and concrete payload metadata for tooling.
+- `ghost pull` emits the resolved cover before selected guidance in steering
+  order, inlines eligible local text material once, leaves later duplicate
+  references, gives direct actions for material that needs inspection, and
+  emits starting structures
   last. Its JSON retains node kinds and transport diagnostics omitted from
   agent-facing Markdown.
 - `ghost review` matches touched files to exact local material paths, offers

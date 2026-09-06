@@ -76,25 +76,12 @@ function formatGatherJson(menu: GhostGatherResult): Record<string, unknown> {
     ...(menu.ask ? { ask: menu.ask } : {}),
     source: menu.source,
     contract: menu.contract,
-    ...(menu.cover.state === "resolved"
-      ? {
-          cover: {
-            id: menu.cover.id,
-            body: menu.cover.node.body,
-            inContext: true,
-            selectable: false,
-          },
-        }
-      : {}),
-    next: { command: "ghost pull <id> [<id>…]" },
-    silence: menu.silence,
+    next: { command: "ghost pull [<id>…]" },
     coverage: menu.coverage,
     ...(menu.kinds !== undefined ? { kinds: menu.kinds } : {}),
     nodes: menu.nodes,
   };
 }
-
-const NO_GUIDANCE_HEADING = /^##[ \t]+If no guidance applies[ \t]*$/im;
 
 function formatMenuMarkdown(menu: GhostGatherResult): string {
   if (!menu.ask) {
@@ -108,27 +95,10 @@ function formatMenuMarkdown(menu: GhostGatherResult): string {
     "",
   ];
 
-  if (menu.cover.state === "resolved") {
-    lines.push(menu.cover.node.body, "");
-  }
-  if (
-    menu.cover.state !== "resolved" ||
-    !NO_GUIDANCE_HEADING.test(menu.cover.node.body)
-  ) {
-    lines.push(
-      "## If no guidance applies",
-      "",
-      menu.cover.state === "resolved"
-        ? "Continue with ordinary reasoning for reversible choices unless the guidance above requires input. Ask before consequential, irreversible, or brand-defining choices."
-        : "Continue with ordinary reasoning for reversible choices. Ask before consequential, irreversible, or brand-defining choices.",
-      "",
-    );
-  }
-
   lines.push(
     "## Available guidance",
     "",
-    "Check every item below. Pull all applicable IDs together with `ghost pull <id> [<id>…]`. Skip clear non-matches; topic overlap alone is not enough. Do not limit the number.",
+    "Check every item below. Pull all applicable IDs together with `ghost pull <id> [<id>…]`. If no listed guidance applies, run bare `ghost pull` to receive the cover and uncovered-guidance policy. Skip clear non-matches; topic overlap alone is not enough. Do not limit the number.",
     "",
   );
 

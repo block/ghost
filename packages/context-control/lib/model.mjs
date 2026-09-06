@@ -80,15 +80,14 @@ const SELECT_SYSTEM = `Select the guidance IDs that apply to the task.
 Follow the instructions in the supplied guidance. Respond with ONLY a JSON
 array of ID strings, nothing else.`;
 
-function selectUser(ask, menu, cover, markdown) {
+function selectUser(ask, menu, markdown) {
   if (markdown) return markdown;
 
   // Compatibility path for callers that still supply the JSON gather result.
   const lines = menu.map(
     (entry) => `- ${entry.id}: ${entry.for ?? "(applicability not stated)"}`,
   );
-  const guidance = cover?.body ? `${cover.body}\n\n` : "";
-  return `${guidance}Task: ${ask}\n\nAvailable guidance:\n${lines.join("\n")}`;
+  return `Task: ${ask}\n\nAvailable guidance:\n${lines.join("\n")}`;
 }
 
 /** Parse a JSON id array out of a model reply, tolerating code fences. */
@@ -121,7 +120,7 @@ export function openAICompatibleModel({
   }
   return {
     name: "openai-compatible",
-    async select({ ask, menu, cover, markdown }) {
+    async select({ ask, menu, markdown }) {
       const res = await fetch(
         `${baseUrl.replace(/\/$/, "")}/chat/completions`,
         {
@@ -136,7 +135,7 @@ export function openAICompatibleModel({
               { role: "system", content: SELECT_SYSTEM },
               {
                 role: "user",
-                content: selectUser(ask, menu, cover, markdown),
+                content: selectUser(ask, menu, markdown),
               },
             ],
             // Trial-to-trial variance is the signal being measured, so sample at

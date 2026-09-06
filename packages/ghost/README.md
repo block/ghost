@@ -44,7 +44,7 @@ ghost init          # scaffold .ghost/ with the starter package
 ghost checks init   # opt in to review assertions
 ghost validate      # make sure the package is well-formed
 ghost gather <ask>  # before building: show the complete guidance menu
-ghost pull <ids>    # read the picked nodes' full bodies
+ghost pull <ids>    # read the cover plus picked nodes' full bodies
 ghost review        # during review: match a diff to guidance and checks
 ghost stats         # while tuning: see what agents reached for
 ghost skill install # install the unified ghost skill bundle
@@ -80,10 +80,10 @@ Embedded hosts can use `@design-intelligence/ghost/embed` for the same semantic
 contract as CLI `gather` and `pull` without CLI-only presentation fields or event
 side effects. `loadGhostSnapshot` reads the package, resolved/absent/dangling
 cover state, glossary kinds, and checks. `gatherGhostPackage` returns the
-complete unfiltered menu with the resolved cover separated from selectable
-nodes; checks stay separate. `pullGhostNodes` validates and de-duplicates ids,
-returns misses with suggestions, stable cover/concrete/prose ordering, stripped
-node bodies, extracted Skeletons, and material transport packets. Use
+complete unfiltered selectable menu without cover content; checks stay separate.
+`pullGhostNodes` includes the resolved cover before validated, de-duplicated
+selected ids, returns misses with suggestions, stable concrete/prose ordering,
+stripped node bodies, extracted Skeletons, and material transport packets. Use
 `inspectGhostMaterial` only for materials declared by a pulled node; it is local
 and bundled-only by default, with explicit host policy required for referenced
 files. HTTPS inspection is always rejected. Returned text is source data, not

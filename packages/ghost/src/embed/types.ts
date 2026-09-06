@@ -76,6 +76,8 @@ export interface GhostGatherContract {
     addForCompleteness: false;
     omitApplicableForCount: false;
   };
+  /** Route when the host agent finds no applicable selectable nodes. */
+  ifNoneApply: string;
   noAsk: string;
 }
 
@@ -87,13 +89,9 @@ export interface GhostGatherResult {
     list: "Available guidance";
   };
   contract: GhostGatherContract;
-  cover: GhostCoverState;
-  silence: {
-    ifNoneApply: string;
-  };
   coverage: GhostGatherCoverage;
   kinds?: readonly GhostMenuKind[];
-  /** Selectable menu entries. A resolved cover is intentionally separated. */
+  /** Selectable menu entries. A resolved cover is intentionally excluded. */
   nodes: readonly CatalogMenuEntry[];
 }
 
@@ -114,11 +112,34 @@ export interface GhostPulledNode {
   body: string;
 }
 
+export type GhostPullCover =
+  | {
+      state: "resolved";
+      id: string;
+      node: GhostPulledNode;
+    }
+  | {
+      state: "absent";
+    }
+  | {
+      /** No packet was assembled because every selected id missed. */
+      state: "not-emitted";
+      id?: string;
+    };
+
+export interface GhostPullFallback {
+  source: "ghost-default";
+  body: string;
+}
+
 export interface GhostPullResult {
   kind: "pull";
+  /** Caller-selected ids after de-duplicating and removing a cover alias. */
   requested: readonly string[];
   ids: readonly string[];
   missed: readonly PullMiss[];
+  cover: GhostPullCover;
+  fallback?: GhostPullFallback;
   nodes: readonly GhostPulledNode[];
   skeletons: readonly GhostPulledSkeleton[];
   materialCounts: {

@@ -47,9 +47,9 @@ One resolution mechanism, read-only:
   material count. The agent reads the ask against contexts and pulls every
   node whose stated situation applies. ghost does no NLP and no selection.
 
-The optional `cover` in `manifest.yml` names the human-curated front door.
-`ghost gather` inlines that node before the menu and excludes it from the
-selection list.
+The optional `cover` in `manifest.yml` names the package's unconditional
+front door. `ghost gather` excludes that node from selection; every `ghost pull`
+includes it before selected guidance.
 
 Checks are **not** nodes and are **never gathered**. They live in `checks/`,
 bind to the prose they enforce via `references`, and are consumed only by
@@ -68,7 +68,7 @@ Two rules keep the reservation honest:
 | Consumer | CLI surface | Projection it needs | Reads | Changes the model? |
 | --- | --- | --- | --- | --- |
 | **Authoring** | `ghost init`, `ghost validate`, `ghost checks init` | The raw nodes, checks, and glossary for a human or agent writing the guidance. | the package | **No**, this is the model. |
-| **Generation** | `ghost gather [ask…]`, `ghost pull <ids>` | The flat menu, then selected node bodies and materials. | nodes only | **No** if selection stays with the agent and checks stay invisible. |
+| **Generation** | `ghost gather [ask…]`, `ghost pull [ids…]` | The flat selectable menu, then the cover plus selected node bodies and materials. | nodes only | **No** if selection stays with the agent and checks stay invisible. |
 | **Local signal** | `ghost stats` | The gitignored event tape (`.ghost/.events`) written by `gather` and `pull`, used to tune contexts and menu ergonomics. | event ids and miss suggestions | **No**, observability must not become ranking, memory, or canonical state. |
 | **Diff review** | `ghost review` | Touched files matched to node `materials`, relevant checks, referenced prose, gaps, and the diff. | nodes, checks, diff | **No** if checks bind by `references` and are not gathered. |
 

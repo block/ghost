@@ -98,7 +98,7 @@ describe("ghost CLI", () => {
       "validate [file]",
       "init",
       "gather [...ask]",
-      "pull <...ids>",
+      "pull [...ids]",
       "stats",
       "review",
       "checks <action>",
@@ -574,14 +574,16 @@ describe("ghost CLI", () => {
     const lint = await runCli(["validate"], dir);
     expect(lint.code).toBe(0);
 
-    // The seed cover is package-root brand.md, inlined and excluded from the menu.
+    // The seed cover is excluded from selection and supplied by pull.
     const gather = await runCli(["gather", "--format", "json"], dir);
     expect(gather.code).toBe(0);
-    const slice = JSON.parse(gather.stdout);
-    expect(slice.cover.id).toBe("brand");
-    expect(slice.nodes.some((n: { id: string }) => n.id === "brand")).toBe(
+    const menu = JSON.parse(gather.stdout);
+    expect(menu).not.toHaveProperty("cover");
+    expect(menu.nodes.some((n: { id: string }) => n.id === "brand")).toBe(
       false,
     );
+    const pull = await runCli(["pull", "--format", "json"], dir);
+    expect(JSON.parse(pull.stdout).cover.id).toBe("brand");
   });
 
   it("requires a task for Markdown but keeps bare JSON for inspection", async () => {
@@ -597,17 +599,18 @@ describe("ghost CLI", () => {
     expect(JSON.parse(json.stdout).ask).toBeUndefined();
   });
 
-  it("gather presents the declared cover as guidance and excludes it from the menu", async () => {
+  it("gather excludes the declared cover from both context and the menu", async () => {
     await runCli(["init"], dir);
 
     const markdown = await runCli(["gather", "build", "a", "page"], dir);
     expect(markdown.code).toBe(0);
     expect(markdown.stdout).toContain("# Guidance for this task");
     expect(markdown.stdout).toContain("Task: build a page");
-    expect(markdown.stdout).toContain(
+    expect(markdown.stdout).not.toContain(
       "Use a quiet, precise, content-first stance",
     );
-    expect(markdown.stdout).toContain("## If no guidance applies");
+    expect(markdown.stdout).not.toContain("## If no guidance applies");
+    expect(markdown.stdout).toContain("run bare `ghost pull`");
     expect(markdown.stdout).not.toContain("## Cover:");
     expect(markdown.stdout).not.toContain("already in context");
     expect(markdown.stdout).not.toContain("concrete support");
@@ -625,14 +628,8 @@ describe("ghost CLI", () => {
     const json = await runCli(["gather", "--format", "json"], dir);
     expect(json.code).toBe(0);
     const payload = JSON.parse(json.stdout);
-    expect(payload.cover).toMatchObject({
-      id: "brand",
-      body: expect.stringContaining(
-        "Use a quiet, precise, content-first stance",
-      ),
-      inContext: true,
-      selectable: false,
-    });
+    expect(payload).not.toHaveProperty("cover");
+    expect(payload).not.toHaveProperty("silence");
     expect(payload.nodes.map((node: { id: string }) => node.id)).not.toContain(
       "brand",
     );
@@ -654,7 +651,8 @@ describe("ghost CLI", () => {
     const markdown = await runCli(["gather", "build", "a", "page"], dir);
     expect(markdown.code).toBe(0);
     expect(markdown.stdout).not.toContain("## Cover:");
-    expect(markdown.stdout).toContain("## If no guidance applies");
+    expect(markdown.stdout).not.toContain("## If no guidance applies");
+    expect(markdown.stdout).toContain("run bare `ghost pull`");
     // With no resolvable cover, brand stays an available guidance item.
     expect(markdown.stdout).toMatch(/^- `brand`$/m);
 
@@ -733,15 +731,67 @@ describe("ghost CLI", () => {
     );
   });
 
-  it("pull sorts the cover before other requested nodes", async () => {
+  it("pull always emits the cover before selected nodes", async () => {
     await runCli(["init"], dir);
 
-    const pull = await runCli(["pull", "foundation.layout", "brand"], dir);
+    const pull = await runCli(["pull", "foundation.layout"], dir);
 
     expect(pull.code).toBe(0);
     expect(pull.stdout.indexOf("# `brand`")).toBeLessThan(
       pull.stdout.indexOf("# `foundation.layout`"),
     );
+  });
+
+  it("bare pull emits the cover and explicit cover ids remain an alias", async () => {
+    await runCli(["init"], dir);
+
+    const bare = await runCli(["pull", "--format", "json"], dir);
+    expect(bare.code).toBe(0);
+    const barePacket = JSON.parse(bare.stdout);
+    expect(barePacket.cover).toMatchObject({ state: "resolved", id: "brand" });
+    expect(barePacket.ids).toEqual([]);
+    expect(barePacket.nodes).toEqual([]);
+
+    const explicit = await runCli(
+      ["pull", "brand", "foundation.layout", "--format", "json"],
+      dir,
+    );
+    expect(explicit.code).toBe(0);
+    const explicitPacket = JSON.parse(explicit.stdout);
+    expect(explicitPacket.cover.id).toBe("brand");
+    expect(explicitPacket.requested).toEqual(["foundation.layout"]);
+    expect(explicitPacket.ids).toEqual(["foundation.layout"]);
+  });
+
+  it("bare pull without a declared cover emits only the ghost fallback", async () => {
+    await writeBareTestPackage(dir);
+    await writeFile(
+      join(dir, ".ghost", "manifest.yml"),
+      "schema: ghost.package/v1\nid: local\n",
+    );
+
+    const pull = await runCli(["pull", "--format", "json"], dir);
+    expect(pull.code).toBe(0);
+    const packet = JSON.parse(pull.stdout);
+    expect(packet.cover).toEqual({ state: "absent" });
+    expect(packet.fallback).toMatchObject({ source: "ghost-default" });
+    expect(packet.nodes).toEqual([]);
+  });
+
+  it("pull rejects a dangling declared cover without recording an event", async () => {
+    await writeBareTestPackage(dir);
+    await writeFile(
+      join(dir, ".ghost", "manifest.yml"),
+      "schema: ghost.package/v1\nid: local\ncover: missing\n",
+    );
+
+    const pull = await runCli(["pull", "standard.model-defaults"], dir);
+    expect(pull.code).toBe(2);
+    expect(pull.stdout).toBe("");
+    expect(pull.stderr).toContain('manifest cover "missing" does not match');
+    await expect(
+      readFile(join(dir, ".ghost", ".events"), "utf-8"),
+    ).rejects.toThrow();
   });
 
   it("keeps glossary kind purposes in JSON and only headings in Markdown", async () => {
@@ -871,7 +921,7 @@ describe("ghost CLI", () => {
       "---\nfor: Generic replacement.\n---\n\nNot vague; instead exact.\n",
     );
 
-    // The seeded cover (`index`) is inlined above the menu, not counted in it.
+    // The seeded cover (`index`) is excluded from the selectable menu.
     const gather = await runCli(["gather", "--format", "json"], dir);
     expect(gather.code).toBe(0);
     expect(JSON.parse(gather.stdout).coverage).toEqual({
@@ -905,6 +955,9 @@ describe("ghost CLI", () => {
       dir,
     );
     expect(steering.code).toBe(0);
+    expect(steering.stdout.indexOf("# `index`")).toBeLessThan(
+      steering.stdout.indexOf("`asset.tokens`"),
+    );
     expect(steering.stdout.indexOf("`asset.tokens`")).toBeLessThan(
       steering.stdout.indexOf("`principle.rule`"),
     );
@@ -912,6 +965,9 @@ describe("ghost CLI", () => {
     const given = await runCli(
       ["pull", "principle.rule", "asset.tokens", "--order", "given"],
       dir,
+    );
+    expect(given.stdout.indexOf("# `index`")).toBeLessThan(
+      given.stdout.indexOf("`principle.rule`"),
     );
     expect(given.stdout.indexOf("`principle.rule`")).toBeLessThan(
       given.stdout.indexOf("`asset.tokens`"),
@@ -1178,10 +1234,9 @@ describe("ghost CLI", () => {
     expect(menuPayload.contract.selection.instruction).not.toContain(
       "context.*",
     );
-    expect(menuPayload.next.command).toBe("ghost pull <id> [<id>…]");
-    expect(menuPayload.silence.ifNoneApply).toContain(
-      "Never invent ghost-backed guidance",
-    );
+    expect(menuPayload.next.command).toBe("ghost pull [<id>…]");
+    expect(menuPayload.contract.ifNoneApply).toContain("bare `ghost pull`");
+    expect(menuPayload).not.toHaveProperty("silence");
     expect(
       menuPayload.nodes.some((n: { id: string }) => n.id === "voice"),
     ).toBe(true);
@@ -1236,6 +1291,7 @@ describe("ghost CLI", () => {
     expect(events[2]).toMatchObject({
       event: "pull",
       ids: ["principle.trust", "voice"],
+      cover: "brand",
     });
 
     // The tape is a dotfile: never a node, and gitignored by the scaffold.
@@ -1518,10 +1574,9 @@ describe("ghost CLI", () => {
       (await runCli(["gather", "tokens", "--format", "json"], dir)).stdout,
     );
     expect(cliGather.contract).toEqual(embedGather.contract);
-    expect(cliGather.silence).toEqual(embedGather.silence);
     expect(cliGather.coverage).toEqual(embedGather.coverage);
     expect(cliGather.nodes).toEqual(embedGather.nodes);
-    expect(cliGather.next).toEqual({ command: "ghost pull <id> [<id>…]" });
+    expect(cliGather.next).toEqual({ command: "ghost pull [<id>…]" });
 
     const embedPull = await pullGhostNodes(snapshot, {
       ids: ["asset.tokens"],
@@ -1530,6 +1585,12 @@ describe("ghost CLI", () => {
     const cliPull = JSON.parse(
       (await runCli(["pull", "asset.tokens", "--format", "json"], dir)).stdout,
     );
+    expect(cliPull.requested).toEqual(embedPull.requested);
+    expect(cliPull.ids).toEqual(embedPull.ids);
+    expect(cliPull.cover).toMatchObject({
+      state: "resolved",
+      id: "index",
+    });
     expect(cliPull.nodes[0]).toMatchObject({
       id: embedPull.nodes[0].id,
       for: embedPull.nodes[0].for,
@@ -1579,11 +1640,7 @@ describe("ghost CLI", () => {
       ids: ["principle.trust"],
       missed: [{ requested: "principle.trst", suggested: ["principle.trust"] }],
     });
-    expect(events[1]).toMatchObject({
-      event: "pull",
-      ids: [],
-      missed: [{ requested: "principle.trst", suggested: ["principle.trust"] }],
-    });
+    expect(events).toHaveLength(1);
   });
 
   it("stats ignores unrecognized event kinds on the tape", async () => {
@@ -1670,8 +1727,8 @@ describe("ghost CLI", () => {
       hitRate: 0.5,
       coldNodes: [],
     });
-    // The cover (`index`) is inlined by gather, never exposed on the menu,
-    // so it accrues no exposures and never counts as cold.
+    // The cover (`index`) is supplied by pull, never exposed on the menu, so it
+    // accrues no exposures and never counts as cold.
     const noKind = report.kinds.find(
       (kind: { kind: string }) => kind.kind === "(no kind)",
     );

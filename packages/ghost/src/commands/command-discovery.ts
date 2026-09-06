@@ -133,7 +133,8 @@ const COMMAND_DISCOVERY = [
     group: "core",
     defaultHelp: true,
     compactName: "pull",
-    summary: "Emit the named nodes' bodies; log the pull to .ghost/.events.",
+    summary:
+      "Emit the package cover plus named node bodies; log the pull to .ghost/.events.",
   },
   {
     name: "stats",
