@@ -17,7 +17,7 @@ Judgment stays with the human reading the report.
 | --- | --- | --- |
 | `naked` | ballast + ask | baseline: median model output, no brand |
 | `dump` | full package prose up front + ballast + ask | the naive "paste the brand guide in the system prompt" |
-| `gather` | ballast + run-stamped `ghost gather` menu + agent-selected `ghost pull`s, material inspection, brief, render, bounded repair, and optional review | ghost's default shipped consumer system |
+| `gather` | ballast + run-stamped `ghost gather` menu + agent-selected `ghost pull`s, material inspection, direct making, render, bounded repair, and optional review | ghost's default shipped consumer system |
 | `dump-growth` | dump of this package **plus** extra corpora + ballast + ask | how dumping degrades as the corpus grows, while the gather menu grows one line per node |
 
 Fresh context per run. The `naked` arm must never see the ghost package. The
@@ -92,7 +92,7 @@ Per cell (arm × ask), for k = 1..runsPerCell:
 ```bash
 steering-control prompt <arm> <ask-n> --run <k>   # writes out/<arm>/ask-<n>/run-<k>.prompt.md
 # → hand the prompt file to a FRESH agent context; it writes run-<k>.html
-#   gather arm: the agent runs stamped `ghost pull`, inspects, briefs, renders,
+#   gather arm: the agent runs stamped `ghost pull`, inspects, makes, renders,
 #   repairs, optionally reviews, and writes run-<k>.loop.json
 steering-control finish <arm> <ask-n> <k>         # slices the selection tape, records context sizes and receipt
 ```

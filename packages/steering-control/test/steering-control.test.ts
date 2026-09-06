@@ -111,8 +111,9 @@ describe("steering-control", () => {
     expect(prompt).toContain("gather Make a page. --package");
     expect(prompt).toContain("--run gather-ask1-run1");
     expect(prompt).toContain("pull <ids> --package");
-    expect(prompt).toContain("inspect");
-    expect(prompt).toContain("Brief the work");
+    expect(prompt).toContain("material actions");
+    expect(prompt).toContain("Use the pulled guidance directly");
+    expect(prompt).not.toContain("Brief the work");
     expect(prompt).toContain("Render task-relevant viewports");
     expect(prompt).toContain("Repair within a bounded budget");
     expect(prompt).toContain("review --package");

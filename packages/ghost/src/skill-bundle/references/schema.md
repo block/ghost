@@ -92,7 +92,7 @@ exactly one fenced block; zero or multiple fences warn.
 ````
 
 `ghost pull` removes Skeleton sections from node bodies and emits their fences
-last under the begin-from-this-structure banner.
+last as starting structures.
 
 ## Checks
 
@@ -122,9 +122,11 @@ it does not grade them.
   alphabetically, and uncategorized guidance last. Checks and diagnostic
   metadata are absent. `--format json` retains the cover state, selection
   contract, coverage, kind metadata, and concrete payload metadata for tooling.
-- `ghost pull` emits selected nodes in steering order, inlines eligible local
-  text materials once, leaves later duplicate pointers, turns binary materials
-  into inspect-pointers, and leaves external materials as locators.
+- `ghost pull` emits selected guidance in steering order, inlines eligible
+  local text material once, leaves later duplicate references, gives direct
+  actions for material that needs inspection, and emits starting structures
+  last. Its JSON retains node kinds and transport diagnostics omitted from
+  agent-facing Markdown.
 - `ghost review` matches touched files to exact local material paths, offers
   relevant checks, and emits a review packet for the host agent.
 - `ghost stats` summarizes local gather and pull events.

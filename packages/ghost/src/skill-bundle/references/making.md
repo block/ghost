@@ -16,9 +16,9 @@ judges, repairs, and reviews in the same session.
 
 ## Ground
 
-Follow [ground.md](ground.md), which ends with the anchor: gather with the real
-ask, pull every applicable id from the available guidance, and inspect decisive
-materials before generating.
+Follow [ground.md](ground.md): gather with the real ask, pull every applicable
+id from the available guidance, and inspect the materials needed to make the
+artifact.
 
 Use this triage for material inspection:
 
@@ -37,9 +37,9 @@ Use this triage for material inspection:
 
 ## Make
 
-Start from the Skeleton verbatim when one matches the surface; the canonical
-rule lives in [SKILL.md](../SKILL.md). Otherwise make from the pull packet and
-the anchor.
+Start from the returned starting structure verbatim when one matches the
+surface; the canonical rule lives in [SKILL.md](../SKILL.md). Otherwise make
+directly from the returned guidance.
 
 Do not substitute plausible tokens, assets, components, or copy when a pulled
 material governs the choice and was inspectable. Follow example instructions:
@@ -69,13 +69,13 @@ Verify in two tracks:
 
 Repair within a bounded budget. Default to two repair passes after the first
 render. Use a third pass only for a clear, bounded remaining fix. If a third
-pass fails, stop patching and re-inspect the pulled guidance, materials, and
-anchor, or ask for human review.
+pass fails, stop patching and re-inspect the pulled guidance and materials, or
+ask for human review.
 
 When the artifact holds, run `ghost review` when `.ghost/checks/` exists and a
 diff is available. Judge the packet yourself. Report what was made, which node
 ids governed it, what was verified and how, what stayed provisional, and what
-was not inspected. Do not paste the anchor unless the user asks.
+was not inspected.
 
 ## Render honesty
 
