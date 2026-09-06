@@ -744,6 +744,51 @@ describe("ghost CLI", () => {
     );
   });
 
+  it("pull --with-cover restores the cover without exposing the menu", async () => {
+    await runCli(["init"], dir);
+
+    const pull = await runCli(
+      ["pull", "foundation.layout", "--with-cover"],
+      dir,
+    );
+
+    expect(pull.code).toBe(0);
+    expect(pull.stdout).toContain("# `brand`");
+    expect(pull.stdout).toContain("# `foundation.layout`");
+    expect(pull.stdout.indexOf("# `brand`")).toBeLessThan(
+      pull.stdout.indexOf("# `foundation.layout`"),
+    );
+    expect(pull.stdout).not.toContain("## Available guidance");
+
+    const events = (await readFile(join(dir, ".ghost", ".events"), "utf-8"))
+      .trim()
+      .split("\n")
+      .map((line) => JSON.parse(line));
+    expect(events.at(-1)).toMatchObject({
+      event: "pull",
+      ids: ["brand", "foundation.layout"],
+    });
+  });
+
+  it("pull --with-cover reports when no cover resolves", async () => {
+    await writeBareTestPackage(dir);
+    await writeFile(
+      join(dir, ".ghost", "manifest.yml"),
+      "schema: ghost.package/v1\nid: local\n",
+    );
+
+    const pull = await runCli(
+      ["pull", "standard.model-defaults", "--with-cover"],
+      dir,
+    );
+
+    expect(pull.code).toBe(0);
+    expect(pull.stdout).toContain("# `standard.model-defaults`");
+    expect(pull.stderr).toContain(
+      "--with-cover added nothing because the package cover is absent",
+    );
+  });
+
   it("keeps glossary kind purposes in JSON and only headings in Markdown", async () => {
     await runCli(["init"], dir);
 
@@ -1745,6 +1790,16 @@ describe("ghost CLI", () => {
     await expect(
       readFile(join(dir, "skills", "ghost", "SKILL.md"), "utf-8"),
     ).resolves.toContain("When the package is silent");
+    const installedGround = await readFile(
+      join(dir, "skills", "ghost", "references", "ground.md"),
+      "utf-8",
+    );
+    expect(installedGround).toContain("ghost pull --with-cover <same ids>");
+    expect(installedGround).toContain(
+      "without exposing the menu or reopening selection",
+    );
+    expect(installedGround).toContain("preserve that instruction too");
+    expect(installedGround).not.toContain("ghost gather <same ask>");
 
     const collision = await runCli(
       ["skill", "install", "--dest", "skills/ghost"],

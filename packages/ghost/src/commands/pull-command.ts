@@ -28,6 +28,10 @@ export function registerPullCommand(cli: CAC): void {
       "--no-materials",
       "Emit material locators only; do not inline files",
     )
+    .option(
+      "--with-cover",
+      "Also pull the package's resolved cover without reopening selection",
+    )
     .option("--order <mode>", "Output order: steering or given", {
       default: "steering",
     })
@@ -49,9 +53,18 @@ export function registerPullCommand(cli: CAC): void {
 
         const paths = resolveGhostPackage(opts.package, process.cwd());
         const snapshot = await loadGhostSnapshot(paths);
+        const pullIds =
+          opts.withCover && snapshot.cover.state === "resolved"
+            ? [snapshot.cover.id, ...ids]
+            : ids;
+        if (opts.withCover && snapshot.cover.state !== "resolved") {
+          console.error(
+            `Warning: --with-cover added nothing because the package cover is ${snapshot.cover.state}.`,
+          );
+        }
         const repoRoot = await resolveGitRoot(process.cwd());
         const result = await pullGhostNodes(snapshot, {
-          ids,
+          ids: pullIds,
           repoRoot,
           inlineMaterials: opts.materials !== false,
           order,

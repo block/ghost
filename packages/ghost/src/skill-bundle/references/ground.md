@@ -26,8 +26,12 @@ rewriting it into a brief or checklist. Inspect any material the output tells
 you to inspect before generating; [making.md](making.md) covers unavailable or
 external material.
 
-`ghost pull` records the pulled ids. After compaction or a session handoff,
-re-run it with the same ids to restore the guidance.
+`ghost pull` records the pulled ids. Before compaction or a session handoff,
+preserve those ids. Restore the same grounding with
+`ghost pull --with-cover <same ids>`; this reloads the resolved cover and
+selected guidance without exposing the menu or reopening selection. If
+`gather` supplied a no-guidance instruction that is not in the cover body,
+preserve that instruction too.
 
 Then make the requested artifact. When the output includes a matching starting
 structure, begin from it verbatim and fill it with task content.
