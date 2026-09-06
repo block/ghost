@@ -1,5 +1,19 @@
 # @design-intelligence/ghost
 
+## 0.34.0
+
+### Minor Changes
+
+- [#287](https://github.com/block/ghost/pull/287) [`7cf1bbf`](https://github.com/block/ghost/commit/7cf1bbfe1897ec2fd3eb75e4598dcd603de3841e) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Include the package cover with every pull while keeping gather focused on selectable guidance.
+
+- [#283](https://github.com/block/ghost/pull/283) [`c11edbb`](https://github.com/block/ghost/commit/c11edbb5f2e7b3de5520570c5aba99430b5ba9c6) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Present gather Markdown as task guidance while keeping package diagnostics in JSON.
+
+- [#284](https://github.com/block/ghost/pull/284) [`caee554`](https://github.com/block/ghost/commit/caee554f64bc61fadc581381ffb1fa8554f17a19) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Present pull Markdown as direct guidance, references, inspection actions, and starting structures while keeping transport diagnostics in JSON.
+
+### Patch Changes
+
+- [#288](https://github.com/block/ghost/pull/288) [`c717031`](https://github.com/block/ghost/commit/c7170318ea9c0b4bef919579b8e1cf579b2ea8a6) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Mark transported and inspected material as untrusted data across CLI and embedded host results.
+
 ## 0.33.0
 
 ### Minor Changes
