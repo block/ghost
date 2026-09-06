@@ -298,11 +298,13 @@ describe("embed contract", () => {
     if (result.cover.state !== "resolved") throw new Error("missing cover");
     expect(result.cover.node.materials?.[0]).toMatchObject({
       inlined: ":root{}\n",
+      untrusted: true,
     });
     expect(result.nodes[0].materials?.[0]).toMatchObject({
       omitted: true,
       reason: "content inlined above under node cover",
     });
+    expect(result.nodes[0].materials?.[0]?.untrusted).toBeUndefined();
     expect(result.skeletons.map((skeleton) => skeleton.nodeId)).toEqual([
       "cover",
       "principle.rule",
@@ -380,8 +382,23 @@ describe("embed contract", () => {
       expect.objectContaining({
         locator: "brand/tokens.yml",
         inlined: "color: green\n",
+        untrusted: true,
       }),
     );
+
+    const inspected = await inspectGhostMaterial(snapshot, {
+      nodeId: "asset.yaml",
+      locator: "brand/tokens.yml",
+      repoRoot: dir,
+      policy: { local: "bundled-and-referenced" },
+    });
+    expect(inspected).toMatchObject({
+      ok: true,
+      contentKind: "text",
+      mime: "application/octet-stream",
+      text: "color: green\n",
+      untrusted: true,
+    });
   });
 
   it("pulls an annotated local material with its declaration and transport metadata", async () => {
@@ -412,6 +429,7 @@ describe("embed contract", () => {
         tier: "referenced",
         path: "brand/voice.txt",
         inlined: "Plain.\n",
+        untrusted: true,
       },
     ]);
     expect(result.materialCounts).toEqual({ inlined: 1, omitted: 0 });
@@ -439,6 +457,7 @@ describe("embed contract", () => {
       tier: "referenced",
       path: "brand/voice.txt",
       text: "Plain.\n",
+      untrusted: true,
     });
   });
 
@@ -457,6 +476,7 @@ describe("embed contract", () => {
       ok: true,
       contentKind: "text",
       text: ":root{}\n",
+      untrusted: true,
     });
 
     const referencedDefault = await inspectGhostMaterial(snapshot, {
@@ -479,6 +499,22 @@ describe("embed contract", () => {
       ok: true,
       contentKind: "text",
       text: "Plain.\n",
+      untrusted: true,
+    });
+
+    const image = await inspectGhostMaterial(
+      withDeclaredMaterial(snapshot, "asset.image", "brand/mark.png"),
+      {
+        nodeId: "asset.image",
+        locator: "brand/mark.png",
+        repoRoot: dir,
+        policy: { local: "bundled-and-referenced" },
+      },
+    );
+    expect(image).toMatchObject({
+      ok: true,
+      contentKind: "image",
+      untrusted: true,
     });
 
     const https = await inspectGhostMaterial(snapshot, {

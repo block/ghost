@@ -9,16 +9,30 @@ import {
 
 export type TransportedMaterialTier = "bundled" | "referenced" | "url";
 
-export interface TransportedMaterial {
+interface TransportedMaterialBase {
   locator: string;
   note?: string;
   tier: TransportedMaterialTier;
   /** Repo-relative concrete file path, when the locator resolved to a file. */
   path?: string;
-  inlined?: string;
-  omitted?: true;
-  reason?: string;
 }
+
+/** Material content is always transported as untrusted source data. */
+export type TransportedMaterial = TransportedMaterialBase &
+  (
+    | {
+        inlined: string;
+        untrusted: true;
+        omitted?: never;
+        reason?: never;
+      }
+    | {
+        inlined?: never;
+        untrusted?: never;
+        omitted?: true;
+        reason?: string;
+      }
+  );
 
 export interface MaterialTransportOptions {
   repoRoot: string;
@@ -240,7 +254,11 @@ async function transportFile(
   }
 
   try {
-    return { ...base, inlined: textDecoder.decode(buffer) };
+    return {
+      ...base,
+      inlined: textDecoder.decode(buffer),
+      untrusted: true as const,
+    };
   } catch {
     return { ...base, omitted: true as const, reason: "not valid UTF-8 text" };
   }

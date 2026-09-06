@@ -170,9 +170,14 @@ function dedupeInlinedMaterials(nodes: readonly PulledNode[]): void {
         firstCarrier.set(material.path, node.id);
         continue;
       }
-      delete material.inlined;
-      material.omitted = true;
-      material.reason = `content inlined above under node ${carrier}`;
+      materials.materials[materials.materials.indexOf(material)] = {
+        locator: material.locator,
+        ...(material.note !== undefined ? { note: material.note } : {}),
+        tier: material.tier,
+        path: material.path,
+        omitted: true,
+        reason: `content inlined above under node ${carrier}`,
+      };
       materials.inlined -= 1;
       materials.omitted += 1;
     }

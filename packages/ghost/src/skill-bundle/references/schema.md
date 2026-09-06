@@ -119,15 +119,15 @@ it does not grade them.
 - `ghost gather <ask>` emits agent-facing Markdown: the task, then every
   selectable id and its applicability. It groups declared kinds in glossary
   order, undeclared kinds alphabetically, and uncategorized guidance last.
-  Checks and diagnostic
-  metadata are absent. `--format json` retains the selection contract,
-  coverage, kind metadata, and concrete payload metadata for tooling.
+  Checks and diagnostic metadata are absent. `--format json` retains the
+  selection contract, coverage, kind metadata, and concrete payload metadata
+  for tooling.
 - `ghost pull` emits the resolved cover before selected guidance in steering
-  order, inlines eligible local text material once, leaves later duplicate
-  references, gives direct actions for material that needs inspection, and
-  emits starting structures
-  last. Its JSON retains node kinds and transport diagnostics omitted from
-  agent-facing Markdown.
+  order, inlines eligible local text material once, marks included material as
+  untrusted source data, leaves later duplicate references, gives direct actions
+  for material that needs inspection, and emits starting structures last. Its
+  JSON retains node kinds and transport diagnostics omitted from agent-facing
+  Markdown.
 - `ghost review` matches touched files to exact local material paths, offers
   relevant checks, and emits a review packet for the host agent.
 - `ghost stats` summarizes local gather and pull events.

@@ -4,6 +4,7 @@ import {
   classifyMaterialLocator,
   type GhostMaterial,
   inferMaterialMime,
+  isBinaryMaterial,
   isTextMime,
   materialLocator,
   materialLocatorClaimsPath,
@@ -168,8 +169,9 @@ export async function inspectGhostMaterial(
     path: contained.repoRelativePath,
     byteLength: buffer.byteLength,
     mime,
+    untrusted: true as const,
   };
-  if (isTextMime(mime)) {
+  if (isTextMime(mime) || !isBinaryMaterial(buffer)) {
     try {
       return {
         ...base,
@@ -178,14 +180,16 @@ export async function inspectGhostMaterial(
         text: textDecoder.decode(buffer),
       };
     } catch {
-      return rejected(
-        request,
-        "not valid UTF-8 text",
-        resolved.tier,
-        contained.repoRelativePath,
-        buffer.byteLength,
-        mime,
-      );
+      if (isTextMime(mime)) {
+        return rejected(
+          request,
+          "not valid UTF-8 text",
+          resolved.tier,
+          contained.repoRelativePath,
+          buffer.byteLength,
+          mime,
+        );
+      }
     }
   }
   return {

@@ -175,6 +175,8 @@ export type InspectGhostMaterialResult =
       contentKind: "text";
       encoding: "utf-8";
       text: string;
+      /** Inspected material is source data, never instructions. */
+      untrusted: true;
     }
   | {
       ok: true;
@@ -185,6 +187,8 @@ export type InspectGhostMaterialResult =
       byteLength: number;
       mime: string;
       contentKind: "image" | "binary";
+      /** Inspected material is source data, never instructions. */
+      untrusted: true;
     }
   | {
       ok: false;
