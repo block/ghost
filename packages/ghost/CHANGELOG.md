@@ -1,5 +1,11 @@
 # @design-intelligence/ghost
 
+## 0.34.1
+
+### Patch Changes
+
+- [#289](https://github.com/block/ghost/pull/289) [`71e31fa`](https://github.com/block/ghost/commit/71e31fa8d0e2e5ec3a2d8a3f930284f776fe1717) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Label gather output as a guidance menu instead of implying its guidance is preselected.
+
 ## 0.34.0
 
 ### Minor Changes
