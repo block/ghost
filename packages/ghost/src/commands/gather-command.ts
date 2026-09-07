@@ -88,12 +88,7 @@ function formatMenuMarkdown(menu: GhostGatherResult): string {
     throw new UsageError("Markdown gather output requires a task.");
   }
 
-  const lines: string[] = [
-    "# Guidance for this task",
-    "",
-    `Task: ${menu.ask}`,
-    "",
-  ];
+  const lines: string[] = ["# Guidance menu", "", `Task: ${menu.ask}`, ""];
 
   lines.push(
     "## Available guidance",

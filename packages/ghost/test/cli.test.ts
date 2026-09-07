@@ -604,7 +604,7 @@ describe("ghost CLI", () => {
 
     const markdown = await runCli(["gather", "build", "a", "page"], dir);
     expect(markdown.code).toBe(0);
-    expect(markdown.stdout).toContain("# Guidance for this task");
+    expect(markdown.stdout).toContain("# Guidance menu");
     expect(markdown.stdout).toContain("Task: build a page");
     expect(markdown.stdout).not.toContain(
       "Use a quiet, precise, content-first stance",
@@ -1271,7 +1271,7 @@ describe("ghost CLI", () => {
     ).toBe(true);
 
     const gatherMarkdown = await runCli(["gather", "checkout", "hero"], dir);
-    expect(gatherMarkdown.stdout).toContain("# Guidance for this task");
+    expect(gatherMarkdown.stdout).toContain("# Guidance menu");
     expect(gatherMarkdown.stdout).toContain("Task: checkout hero");
     expect(gatherMarkdown.stdout).toContain("## Available guidance");
     expect(gatherMarkdown.stdout).not.toContain(menuPayload.contract.noAsk);
