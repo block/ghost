@@ -208,7 +208,25 @@ async function transportFile(
     };
   }
 
-  const base = { locator, tier, path: contained.repoRelativePath };
+  let effectiveTier: Exclude<TransportedMaterialTier, "url">;
+  try {
+    effectiveTier = await effectiveLocalMaterialTier(
+      tier,
+      contained.realPath,
+      options,
+    );
+  } catch {
+    return {
+      ...lexicalBase,
+      omitted: true,
+      reason: "matched file could not be read",
+    };
+  }
+  const base = {
+    locator,
+    tier: effectiveTier,
+    path: contained.repoRelativePath,
+  };
   let s: Awaited<ReturnType<typeof stat>>;
   try {
     s = await stat(contained.realPath);
@@ -226,7 +244,7 @@ async function transportFile(
 
   const inlineLimit =
     options.referencedInlineBytes ?? DEFAULT_REFERENCED_INLINE_BYTES;
-  if (tier === "referenced" && s.size > inlineLimit) {
+  if (effectiveTier === "referenced" && s.size > inlineLimit) {
     return {
       ...base,
       omitted: true as const,
@@ -317,6 +335,23 @@ export async function resolveContainedRealFile(
     realPath,
     repoRelativePath: toRepoRelative(realPath, realRepoRoot),
   };
+}
+
+/** Tighten lexical bundled access against the real materials root; never promote a reference. */
+export async function effectiveLocalMaterialTier(
+  lexicalTier: Exclude<TransportedMaterialTier, "url">,
+  realPath: string,
+  options: MaterialTransportOptions,
+): Promise<Exclude<TransportedMaterialTier, "url">> {
+  if (lexicalTier === "referenced") return "referenced";
+
+  const materialsDir = options.materialsDir ?? DEFAULT_MATERIALS_DIR;
+  const realPackageMaterialsDir = await realpath(
+    resolve(options.packageDir, materialsDir),
+  );
+  return isInsideOrEqual(realPath, realPackageMaterialsDir)
+    ? "bundled"
+    : "referenced";
 }
 
 export function inferMaterialMime(path: string): MaterialMimeInfo {

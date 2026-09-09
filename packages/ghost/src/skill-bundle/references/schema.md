@@ -131,3 +131,15 @@ it does not grade them.
 - `ghost review` matches touched files to exact local material paths, offers
   relevant checks, and emits a review packet for the host agent.
 - `ghost stats` summarizes local gather and pull events.
+
+### Local material access
+
+Bundled-only inspection requires the resolved file to stay inside the resolved
+materials directory and the repository. A bundled symlink to another in-repo
+file is referenced material: inspection requires explicit permission, and pull
+applies the referenced-file inline limit. Links within the materials directory
+remain usable. Outside-repo targets stay unavailable.
+
+Pull still inlines eligible referenced text by default. Hosts that need
+explicit permission for each read should pull with `inlineMaterials: false`,
+then inspect under their chosen policy.
