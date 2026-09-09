@@ -80,7 +80,10 @@ Embedded hosts can use `@design-intelligence/ghost/embed` for the same semantic
 contract as CLI `gather` and `pull` without CLI-only presentation fields or event
 side effects. `loadGhostSnapshot` reads the package, resolved/absent/dangling
 cover state, glossary kinds, and checks. `gatherGhostPackage` returns the
-complete unfiltered selectable menu without cover content; checks stay separate.
+unfiltered selectable menu without cover content; checks stay separate.
+Gather and pull return skipped guidance files in `diagnostics`. Check gather's
+`contract.completeness.complete` before treating its menu as complete; these
+loading diagnostics do not replace `ghost validate`.
 `pullGhostNodes` includes the resolved cover before validated, de-duplicated
 selected ids, returns misses with suggestions, stable concrete/prose ordering,
 stripped node bodies, extracted Skeletons, and material transport packets. Use

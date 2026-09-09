@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import type { GhostCheckFrontmatter } from "#ghost-core";
-import { type GhostCatalogNode, parseGlossary } from "#ghost-core";
+import { type GhostCatalogNode, parseGlossary, UsageError } from "#ghost-core";
 import { isMissingPathError } from "../internal/fs.js";
 import type { LoadedCheck } from "../scan/check-files.js";
 import type { GhostPackagePaths } from "../scan/ghost-package.js";
@@ -97,10 +97,22 @@ async function loadSnapshotGlossary(
     raw = await readFile(glossaryPath, "utf-8");
   } catch (err) {
     if (isMissingPathError(err)) return undefined;
-    throw err;
+    throw new Error(
+      `Cannot read glossary "${glossaryPath}": ${err instanceof Error ? err.message : String(err)}. Check the path and read permissions, then retry.`,
+      { cause: err },
+    );
   }
-  const result = parseGlossary(raw);
-  if (result.glossary === null) return undefined;
+  let result: ReturnType<typeof parseGlossary>;
+  try {
+    result = parseGlossary(raw);
+    if (result.glossary === null) {
+      throw new Error(result.errors[0] ?? "invalid glossary");
+    }
+  } catch (err) {
+    throw new UsageError(
+      `Cannot load glossary "${glossaryPath}": ${err instanceof Error ? err.message : String(err)}. Fix glossary.md frontmatter (for example, kinds: []), then run \`ghost validate\`.`,
+    );
+  }
   return {
     path: glossaryPath,
     kinds: result.glossary.kinds.map((kind) => ({ ...kind })),

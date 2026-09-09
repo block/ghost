@@ -119,9 +119,10 @@ it does not grade them.
 - `ghost gather <ask>` emits agent-facing Markdown: the task, then every
   selectable id and its applicability. It groups declared kinds in glossary
   order, undeclared kinds alphabetically, and uncategorized guidance last.
-  Checks and diagnostic metadata are absent. `--format json` retains the
-  selection contract, coverage, kind metadata, and concrete payload metadata
-  for tooling.
+  Checks stay absent. Loading failures appear in Markdown and JSON; an
+  incomplete menu never means the package has no applicable guidance.
+  `--format json` also retains coverage, kind metadata, and concrete payload
+  metadata for tooling.
 - `ghost pull` emits the resolved cover before selected guidance in steering
   order, inlines eligible local text material once, marks included material as
   untrusted source data, leaves later duplicate references, gives direct actions
@@ -129,5 +130,19 @@ it does not grade them.
   JSON retains node kinds and transport diagnostics omitted from agent-facing
   Markdown.
 - `ghost review` matches touched files to exact local material paths, offers
-  relevant checks, and emits a review packet for the host agent.
+  relevant checks, includes loading diagnostics, and emits a review packet for
+  the host agent.
 - `ghost stats` summarizes local gather and pull events.
+
+### Loading diagnostics
+
+Gather and pull expose excluded guidance as `diagnostics` records with `file`
+and `message`. Review includes excluded checks in that list as well.
+These describe loading failures, not a full validation pass. Gather's
+`contract.completeness.complete` is false when guidance was excluded; invalid
+checks do not change generation completeness or enter generation packets.
+
+Partial results retain their normal success status and show the exclusions.
+Run `ghost validate` to diagnose the package before claiming complete grounding.
+Unreadable directories and malformed present glossaries fail rather than
+appearing empty. Missing optional glossaries and checks remain normal.
