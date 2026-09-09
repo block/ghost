@@ -131,3 +131,8 @@ it does not grade them.
 - `ghost review` matches touched files to exact local material paths, offers
   relevant checks, and emits a review packet for the host agent.
 - `ghost stats` summarizes local gather and pull events.
+- `ghost skill check` compares an installed `SKILL.md` and `references/` with
+  this CLI's bundle. It uses install's `--agent` and `--dest` resolution,
+  prints the target, and never writes. Exit 0 means a match, 1 means missing or
+  differing files, and 2 means invalid arguments. A match does not establish
+  which instructions an active host session has loaded.

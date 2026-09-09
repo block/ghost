@@ -18,6 +18,11 @@ npm install -D @design-intelligence/ghost
 npx ghost skill install
 ```
 
+After upgrading, run `npx ghost skill check` to compare the installed skill
+with this CLI's bundle. Use `--agent` or `--dest` to select an installation;
+the command prints the directory it checks and never modifies it. Review any
+local edits before reinstalling with `ghost skill install --force`.
+
 ## Use It
 
 ghost is **bring-your-own-agent**. Install the skill bundle so Claude Code,
@@ -48,6 +53,7 @@ ghost pull <ids>    # read the cover plus picked nodes' full bodies
 ghost review        # during review: match a diff to guidance and checks
 ghost stats         # while tuning: see what agents reached for
 ghost skill install # install the unified ghost skill bundle
+ghost skill check   # compare an installation with the shipped skill
 ghost manifest      # emit a machine-readable index of commands and flags
 ```
 

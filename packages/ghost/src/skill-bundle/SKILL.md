@@ -113,6 +113,11 @@ Copy the `.ghost/` directory, run `ghost validate --package <dir>`, then run
 `ghost skill install` in the receiving workspace. From there, gather and pull
 against that package with `--package <dir>`.
 
+After upgrading the CLI, use `ghost skill check --agent <name>` or
+`ghost skill check --dest <path>` to compare the intended installation with the
+shipped bundle. Review local edits before reinstalling with `--force`. This
+check does not establish which skill an active session has loaded.
+
 ghost package authoring is **elicitation, not scanning**. The raw material is what
 the human brings and points at: words, images, links, products, brand docs, copy
 they love or hate. Repo code can supply material locators and local
