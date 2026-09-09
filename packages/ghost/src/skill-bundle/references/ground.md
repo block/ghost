@@ -13,7 +13,7 @@ should be shaped by a ghost package.
 Run `ghost gather <ask>` with the real task, not a generic label. Read the
 supplied guidance, then check every item under `Available guidance`. Pull every
 id whose `Applies when` condition fits the task. Skip clear non-matches; topic
-overlap alone is not enough.
+overlap alone is not enough. Honor the kind's selection rules too.
 
 The cover is not in this menu because every pull includes it automatically. If
 nothing in the list applies, run bare `ghost pull` for the cover and uncovered-

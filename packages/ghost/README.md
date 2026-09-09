@@ -52,7 +52,7 @@ ghost manifest      # emit a machine-readable index of commands and flags
 ```
 
 For a task-specific gather, your agent reads the complete, unfiltered menu and
-pulls every node whose stated situation applies. Bare `ghost gather` inspects
+pulls every node whose stated situation applies. `ghost gather --format json` inspects
 the catalog without grounding a task.
 
 Run `ghost --help` for the core workflow and `ghost <command> --help` for

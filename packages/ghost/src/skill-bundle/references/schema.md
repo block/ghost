@@ -41,10 +41,10 @@ Obligation or a replaceable Default), `foundation` (the brand's load-bearing
 decisions), and `context` (what bends in a named situation). A package may
 declare any vocabulary; the glossary is the only kind authority.
 
-`ghost gather --format json` includes each kind's first paragraph as its
-purpose for operator tooling. Agent-facing Markdown uses kind headings only;
-selection comes from each item's `Applies when` condition. Declared kinds render
-in frontmatter order even when their purpose is empty; undeclared kinds render
+`ghost gather` preserves each kind's full parsed purpose in JSON and shows it
+once above that kind's entries in Markdown. Read the kind's selection rules
+alongside each item's `Applies when` condition. Declared kinds render in
+frontmatter order even when their purpose is empty; undeclared kinds render
 alphabetically after declared kinds, and uncategorized guidance renders last.
 
 ## Nodes
@@ -129,5 +129,6 @@ it does not grade them.
   JSON retains node kinds and transport diagnostics omitted from agent-facing
   Markdown.
 - `ghost review` matches touched files to exact local material paths, offers
-  relevant checks, and emits a review packet for the host agent.
+  relevant checks, and emits their referenced baseline prose for the host
+  agent. Repeated baselines point to prose already included in the packet.
 - `ghost stats` summarizes local gather and pull events.

@@ -101,11 +101,8 @@ export function menuCoverage(
 function menuKinds(snapshot: GhostEmbedSnapshot): GhostMenuKind[] {
   return (snapshot.glossary?.kinds ?? []).map((kind) => ({
     name: kind.name,
-    // Legend entries are one line each: keep the section's first paragraph
-    // and collapse internal wrapping. Empty purpose stays explicit so
-    // declared kind order survives even when the glossary has no prose yet.
-    purpose: (kind.purpose.split(/\n\s*\n/, 1)[0] ?? "")
-      .replace(/\s+/g, " ")
-      .trim(),
+    // Later paragraphs may carry selection rules. Preserve the parsed purpose,
+    // including Markdown structure, rather than silently shortening its meaning.
+    purpose: kind.purpose.trim(),
   }));
 }

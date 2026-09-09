@@ -99,13 +99,18 @@ function formatMenuMarkdown(menu: GhostGatherResult): string {
     "",
     "## Available guidance",
     "",
-    "Pull the applicable IDs together with `ghost pull <id> [<id>…]`. If no listed guidance applies, run bare `ghost pull` to receive the cover and uncovered-guidance policy. Skip clear non-matches; topic overlap alone is not enough. Do not limit the number.",
+    "Pull the applicable IDs together with `ghost pull <id> [<id>…]`.",
+    menu.contract.selection.instruction,
+    menu.contract.ifNoneApply,
     "",
   ];
 
-  const groups = groupMenuByKind(menu.nodes, menu.kinds ?? []);
+  const kinds = menu.kinds ?? [];
+  const groups = groupMenuByKind(menu.nodes, kinds);
   for (const group of groups) {
     lines.push(group.kind ? `### ${group.kind}` : "### Other guidance", "");
+    const purpose = kinds.find((kind) => kind.name === group.kind)?.purpose;
+    if (purpose) lines.push(purpose, "");
     for (const entry of group.entries) {
       lines.push(`- \`${entry.id}\``);
       if (entry.for?.trim()) {

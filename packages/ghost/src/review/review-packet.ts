@@ -157,6 +157,8 @@ export function formatReviewPacket(packet: ReviewPacket): string {
     }
   }
 
+  const shownNodes = new Set(packet.materialNodes.map((node) => node.id));
+  const shownSections = new Set<string>();
   out.push("## Offered checks — weigh which apply");
   if (packet.checks.length === 0) {
     out.push("_No checks were offered for this diff._", "");
@@ -177,6 +179,26 @@ export function formatReviewPacket(packet: ReviewPacket): string {
         for (const baseline of check.baseline) {
           out.push(`- ${baseline.ref}`);
           if (baseline.warning) out.push(`  - ⚠ ${baseline.warning}`);
+          // A missing heading falls back to the whole node, so later sections
+          // can point back to it just as they can to a matched material node.
+          const wholeNode =
+            baseline.heading === undefined || baseline.warning !== undefined;
+          const sectionKey = `${baseline.nodeId}\0${baseline.heading?.toLowerCase() ?? ""}`;
+          if (
+            shownNodes.has(baseline.nodeId) ||
+            (!wholeNode && shownSections.has(sectionKey))
+          ) {
+            out.push("  - Baseline prose shown above.", "");
+            continue;
+          }
+          if (baseline.for) out.push(`  - Applies when: ${baseline.for}`);
+          out.push(
+            "",
+            ...baseline.body.split(/\r?\n/).map((line) => `> ${line}`),
+            "",
+          );
+          if (wholeNode) shownNodes.add(baseline.nodeId);
+          else shownSections.add(sectionKey);
         }
         out.push("");
       }
