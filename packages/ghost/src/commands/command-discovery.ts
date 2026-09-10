@@ -149,7 +149,7 @@ const COMMAND_DISCOVERY = [
     defaultHelp: true,
     compactName: "review",
     summary:
-      "Emit an advisory review packet for a diff (needs .ghost/checks/).",
+      "Review a diff with matched and optional explicit guidance (needs .ghost/checks/).",
   },
   {
     name: "checks",

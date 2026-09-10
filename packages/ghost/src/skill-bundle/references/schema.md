@@ -131,4 +131,16 @@ it does not grade them.
 - `ghost review` matches touched files to exact local material paths, offers
   relevant checks, and emits their referenced baseline prose for the host
   agent. Repeated baselines point to prose already included in the packet.
+  Repeat `--node <id>` to add exact guidance IDs, including nested IDs or the
+  cover. The cover is not added automatically. Unknown IDs stop review with
+  exit 2; duplicates are ignored in first-request order. The flag accepts node
+  IDs rather than paths to node files, globs, or heading references.
+  Explicit selection adds referencing checks without suppressing material
+  matches or always-offered checks. JSON adds `explicitNodeIds` and
+  `explicitNodes` only when IDs are supplied; matched nodes keep their prose in
+  `materialNodes`. Check provenance retains `matched` or `always` where it
+  already applies, uses `explicit` for newly offered checks, and records
+  explicit reasons in `explicitVia`. Selected guidance without a check remains
+  visible. File coverage gaps are still material-match gaps, not evidence that
+  explicitly selected guidance does not apply.
 - `ghost stats` summarizes local gather and pull events.

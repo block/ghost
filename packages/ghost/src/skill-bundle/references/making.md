@@ -73,9 +73,12 @@ pass fails, stop patching and re-inspect the pulled guidance and materials, or
 ask for human review.
 
 When the artifact holds, run `ghost review` when `.ghost/checks/` exists and a
-diff is available. Judge the packet yourself. Report what was made, which node
-ids governed it, what was verified and how, what stayed provisional, and what
-was not inspected.
+diff is available. Pass `--node <id>` for guidance that governed this change,
+repeating the flag as needed, especially when its material files are unchanged.
+Do not forward every previously pulled node without checking whether it applies
+to this change. Judge the packet yourself. Report what was made, which node ids
+governed it, what was verified and how, what stayed provisional, and what was
+not inspected.
 
 ## Render honesty
 

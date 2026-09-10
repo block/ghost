@@ -3,7 +3,9 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { promisify } from "node:util";
 import type { CAC } from "cac";
+import { UsageError } from "#ghost-core";
 import { loadGhostPackage, resolveGhostPackage } from "../package.js";
+import { validateExplicitReviewNodes } from "../review/resolve.js";
 import {
   buildReviewPacket,
   formatReviewPacket,
@@ -17,11 +19,15 @@ export function registerReviewCommand(cli: CAC): void {
   cli
     .command(
       "review",
-      "Emit an advisory review packet for a diff using material-backed nodes and checks.",
+      "Emit an advisory review packet for a diff using matched and explicit guidance plus checks.",
     )
     .option(
       "--package <dir>",
       "Use this ghost package directory (default: ./.ghost)",
+    )
+    .option(
+      "--node <id>",
+      "Add explicit guidance and its checks; repeat for multiple IDs (does not filter matches or always-offered checks)",
     )
     .option("--base <ref>", "Git ref to diff against (default: HEAD)")
     .option("--diff <path>", "Read diff from a file, or '-' for stdin")
@@ -44,6 +50,10 @@ export function registerReviewCommand(cli: CAC): void {
           await exitCli(2);
           return;
         }
+        const nodeIds = validateExplicitReviewNodes(
+          ghostPackage.catalog,
+          normalizeNodeOption(opts.node),
+        );
         const diffText = await resolveDiff({
           base: opts.base,
           diff: opts.diff,
@@ -51,6 +61,7 @@ export function registerReviewCommand(cli: CAC): void {
         const packet = await buildReviewPacket(ghostPackage, diffText, {
           packageDir: paths.packageDir,
           cwd: process.cwd(),
+          nodeIds,
         });
         process.stdout.write(
           format === "json"
@@ -62,6 +73,19 @@ export function registerReviewCommand(cli: CAC): void {
         await failFromError(err);
       }
     });
+}
+
+function normalizeNodeOption(value: unknown): string[] {
+  if (value === undefined) return [];
+  const values = Array.isArray(value) ? value : [value];
+  return values.map((id: unknown) => {
+    if (typeof id !== "string" || id.trim().length === 0) {
+      throw new UsageError(
+        "--node requires a nonempty node ID for each occurrence.",
+      );
+    }
+    return id;
+  });
 }
 
 async function resolveDiff(options: {

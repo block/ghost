@@ -29,11 +29,18 @@ export interface PacketMaterialNode {
   files: string[];
 }
 
+/** Explicit guidance without invented touched-file or material-match claims. */
+export type PacketExplicitNode = Omit<
+  PacketMaterialNode,
+  "matchedMaterials" | "files"
+>;
+
 export interface PacketCheck {
   id: string;
   severity: string | undefined;
-  offered: "matched" | "always";
+  offered: "matched" | "always" | "explicit";
   via: string[];
+  explicitVia?: string[];
   prose: string;
   baseline: BaselineProse[];
 }
@@ -42,6 +49,10 @@ export interface ReviewPacket {
   packageId: string;
   touchedFiles: string[];
   materialNodes: PacketMaterialNode[];
+  /** Present only when the host explicitly names guidance for this review. */
+  explicitNodeIds?: string[];
+  /** Selected nodes not already included in materialNodes. */
+  explicitNodes?: PacketExplicitNode[];
   checks: PacketCheck[];
   gaps: CoverageGap[];
   diff: string;
@@ -52,6 +63,7 @@ export interface BuildReviewPacketOptions {
   /** Absolute path of the ghost package directory (default: cwd/.ghost). */
   packageDir?: string;
   cwd?: string;
+  nodeIds?: readonly string[];
 }
 
 export async function buildReviewPacket(
@@ -69,11 +81,26 @@ export async function buildReviewPacket(
       packageDir: options.packageDir ?? join(cwd, ".ghost"),
       materialsDir: GHOST_MATERIALS_DIR,
     },
+    options.nodeIds,
   );
 
   const materialNodes: PacketMaterialNode[] = resolution.materialNodes.map(
     (matched) => materialNodeFromMatch(ghostPackage, matched),
   );
+
+  const matchedIds = new Set(materialNodes.map((node) => node.id));
+  const explicitNodes = resolution.explicitNodeIds
+    .filter((id) => !matchedIds.has(id))
+    .map((id): PacketExplicitNode => {
+      const node = ghostPackage.catalog.nodes.get(id) as GhostCatalogNode;
+      return {
+        id: node.id,
+        ...(node.kind !== undefined ? { kind: node.kind } : {}),
+        ...(node.for !== undefined ? { for: node.for } : {}),
+        prose: node.body,
+        materials: node.materials ?? [],
+      };
+    });
 
   const checks: PacketCheck[] = resolution.offeredChecks.map((offered) => {
     const check = ghostPackage.checks.get(offered.id);
@@ -82,6 +109,7 @@ export async function buildReviewPacket(
       severity: offered.severity,
       offered: offered.offered,
       via: offered.via,
+      ...(offered.explicitVia ? { explicitVia: offered.explicitVia } : {}),
       prose: check?.doc.body.trim() ?? "",
       baseline:
         check?.references
@@ -94,6 +122,9 @@ export async function buildReviewPacket(
     packageId: ghostPackage.manifest.id,
     touchedFiles: resolution.touchedFiles.map((file) => file.path),
     materialNodes,
+    ...(resolution.explicitNodeIds.length > 0
+      ? { explicitNodeIds: resolution.explicitNodeIds, explicitNodes }
+      : {}),
     checks,
     gaps: resolution.gaps,
     diff: diffText,
@@ -151,13 +182,56 @@ export function formatReviewPacket(packet: ReviewPacket): string {
           : undefined;
         out.push(`- \`${locator}\`${note ? ` — Note: ${note}` : ""}`);
       }
+      if (packet.explicitNodeIds?.includes(node.id)) {
+        const additional = node.materials.filter(
+          (material) =>
+            !node.matchedMaterials.includes(materialLocator(material)),
+        );
+        if (additional.length > 0) {
+          out.push("Other declared materials (not diff matches):");
+          for (const material of additional) {
+            const { locator, note } = normalizeMaterial(material);
+            out.push(`- \`${locator}\`${note ? `: ${note}` : ""}`);
+          }
+        }
+      }
       out.push("Files:");
       for (const file of node.files) out.push(`- \`${file}\``);
       out.push("");
     }
   }
 
-  const shownNodes = new Set(packet.materialNodes.map((node) => node.id));
+  if (packet.explicitNodeIds?.length) {
+    out.push(
+      "## Explicit guidance",
+      "",
+      "The host supplied these nodes for this review. Weigh their applicability; selection does not establish a file match.",
+      "",
+    );
+    const matchedIds = new Set(packet.materialNodes.map((node) => node.id));
+    for (const id of packet.explicitNodeIds) {
+      if (matchedIds.has(id)) out.push(`- \`${id}\` (prose shown above)`);
+    }
+    for (const node of packet.explicitNodes ?? []) {
+      out.push(`### \`${node.id}\``, "");
+      if (node.for) out.push(`Applies when: ${node.for}`, "");
+      out.push(node.prose, "");
+      if (node.materials.length > 0) {
+        out.push("Declared materials (not diff matches):");
+        for (const material of node.materials) {
+          const { locator, note } = normalizeMaterial(material);
+          out.push(`- \`${locator}\`${note ? `: ${note}` : ""}`);
+        }
+        out.push("");
+      }
+    }
+    out.push("");
+  }
+
+  const shownNodes = new Set([
+    ...packet.materialNodes.map((node) => node.id),
+    ...(packet.explicitNodes ?? []).map((node) => node.id),
+  ]);
   const shownSections = new Set<string>();
   out.push("## Offered checks — weigh which apply");
   if (packet.checks.length === 0) {
@@ -171,9 +245,17 @@ export function formatReviewPacket(packet: ReviewPacket): string {
       out.push(
         check.offered === "matched"
           ? `Offered via material match: ${refs}`
-          : `Always offered — no referenced material-backed node gates it: ${refs}`,
+          : check.offered === "explicit"
+            ? `Offered via explicit guidance: ${refs}`
+            : `Always offered — no referenced material-backed node gates it: ${refs}`,
         "",
       );
+      if (check.explicitVia?.length && check.offered !== "explicit") {
+        out.push(
+          `Also selected explicitly: ${check.explicitVia.map((ref) => `\`${ref}\``).join(", ")}`,
+          "",
+        );
+      }
       if (check.baseline.length > 0) {
         out.push("Baseline prose:");
         for (const baseline of check.baseline) {

@@ -58,6 +58,18 @@ the catalog without grounding a task.
 Run `ghost --help` for the core workflow and `ghost <command> --help` for
 current flags and command behavior.
 
+When new work uses unchanged components or prose guidance, name the nodes that
+govern the change:
+
+```bash
+ghost review --node component.button --node voice
+```
+
+Repeat `--node` for each applicable ID. This adds guidance and referencing
+checks alongside existing diff matches; it never filters other checks.
+Unknown IDs stop review rather than produce a partial packet. Review still
+requires `.ghost/checks/`, and the agent decides which offered checks apply.
+
 ## Library
 
 ```ts

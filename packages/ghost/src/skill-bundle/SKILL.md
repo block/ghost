@@ -95,6 +95,10 @@ tuning.
 `review` does no grading. It assembles the review packet: touched files,
 matched material-backed nodes, offered checks with baseline prose, coverage
 gaps, and the diff. The host agent renders findings.
+Use `ghost review --node <id>` for guidance that governs the change but may not
+match touched material files. Repeat the flag for multiple IDs. Explicit
+selection adds context and checks; it does not filter other checks or grade
+applicability.
 
 For visual work, do not stop at generation: ground, make, then verify in two
 tracks, repair within budget, and review. See

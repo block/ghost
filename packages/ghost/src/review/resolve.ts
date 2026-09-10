@@ -4,7 +4,9 @@ import {
   type MaterialTransportOptions,
   materialLocator,
   materialLocatorClaimsPath,
+  NodeIdSchema,
   parseCheckReference,
+  UsageError,
 } from "#ghost-core";
 import type { LoadedCheck } from "../scan/check-files.js";
 import { parseTouchedFiles, type TouchedFile } from "./diff.js";
@@ -18,8 +20,9 @@ export interface MatchedMaterialNode {
 export interface OfferedCheck {
   id: string;
   severity: string | undefined;
-  offered: "matched" | "always";
+  offered: "matched" | "always" | "explicit";
   via: string[];
+  explicitVia?: string[];
 }
 
 export interface CoverageGap {
@@ -30,10 +33,28 @@ export interface CoverageGap {
 }
 
 export interface ReviewResolution {
+  explicitNodeIds: string[];
   touchedFiles: TouchedFile[];
   materialNodes: MatchedMaterialNode[];
   offeredChecks: OfferedCheck[];
   gaps: CoverageGap[];
+}
+
+/** Validate the complete selection before any review work; identities are exact. */
+export function validateExplicitReviewNodes(
+  catalog: GhostCatalog,
+  ids: readonly string[] = [],
+): string[] {
+  const uniqueIds = [...new Set(ids)];
+  const invalid = uniqueIds.filter(
+    (id) => !NodeIdSchema.safeParse(id).success || !catalog.nodes.has(id),
+  );
+  if (invalid.length > 0) {
+    throw new UsageError(
+      `Invalid or unknown review node IDs: ${invalid.map((id) => JSON.stringify(id)).join(", ")}. Run ghost gather --format json with the same --package to find exact node IDs.`,
+    );
+  }
+  return uniqueIds;
 }
 
 export function resolveReview(
@@ -41,7 +62,10 @@ export function resolveReview(
   checks: Map<string, LoadedCheck>,
   diffText: string,
   transport: MaterialTransportOptions,
+  nodeIds: readonly string[] = [],
 ): ReviewResolution {
+  const explicitNodeIds = validateExplicitReviewNodes(catalog, nodeIds);
+  const explicitNodes = new Set(explicitNodeIds);
   const touchedFiles = parseTouchedFiles(diffText);
   const materialNodeIds = new Set<string>();
   const matched = new Map<
@@ -83,22 +107,39 @@ export function resolveReview(
 
   for (const check of checks.values()) {
     const matchedRefs: string[] = [];
+    const explicitRefs: string[] = [];
     let referencesMaterial = false;
     for (const raw of check.references) {
       const ref = parseCheckReference(raw);
       if (ref === null) continue;
+      if (explicitNodes.has(ref.nodeId)) explicitRefs.push(raw);
       if (materialNodeIds.has(ref.nodeId)) {
         referencesMaterial = true;
         referencedMaterialNodes.add(ref.nodeId);
         if (touchedMaterialNodes.has(ref.nodeId)) matchedRefs.push(raw);
       }
     }
-    if (matchedRefs.length > 0 || !referencesMaterial) {
+    if (
+      matchedRefs.length > 0 ||
+      !referencesMaterial ||
+      explicitRefs.length > 0
+    ) {
       offeredChecks.push({
         id: check.id,
         severity: check.doc.frontmatter.severity,
-        offered: matchedRefs.length > 0 ? "matched" : "always",
-        via: matchedRefs.length > 0 ? matchedRefs : check.references.slice(),
+        offered:
+          matchedRefs.length > 0
+            ? "matched"
+            : !referencesMaterial
+              ? "always"
+              : "explicit",
+        via:
+          matchedRefs.length > 0
+            ? matchedRefs
+            : !referencesMaterial
+              ? check.references.slice()
+              : explicitRefs,
+        ...(explicitRefs.length > 0 ? { explicitVia: explicitRefs } : {}),
       });
     }
   }
@@ -111,7 +152,9 @@ export function resolveReview(
     gaps.push({
       kind: "unmatched-file",
       detail:
-        "changed files match no node `materials` locators — no ghost package guidance claims them",
+        explicitNodeIds.length > 0
+          ? "changed files have no local material locator matches"
+          : "changed files match no node `materials` locators — no ghost package guidance claims them",
       files: unmatched,
     });
   }
@@ -135,6 +178,7 @@ export function resolveReview(
   }));
 
   return {
+    explicitNodeIds,
     touchedFiles,
     materialNodes: matchedNodes,
     offeredChecks,
