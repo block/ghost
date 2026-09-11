@@ -13,6 +13,7 @@ import {
   resolveLocalMaterialLocator,
   validateMaterialLocator,
 } from "#ghost-core";
+import { effectiveLocalMaterialTier } from "../ghost-core/material-transport.js";
 import { GHOST_MATERIALS_DIR } from "../scan/constants.js";
 import type {
   GhostEmbedSnapshot,
@@ -98,9 +99,17 @@ export async function inspectGhostMaterial(
     );
   }
 
-  let info: Awaited<ReturnType<typeof stat>>;
+  let effectiveTier: Awaited<ReturnType<typeof effectiveLocalMaterialTier>>;
   try {
-    info = await stat(contained.realPath);
+    effectiveTier = await effectiveLocalMaterialTier(
+      resolved.tier,
+      contained.realPath,
+      {
+        repoRoot: request.repoRoot,
+        packageDir: snapshot.package.dir,
+        materialsDir: GHOST_MATERIALS_DIR,
+      },
+    );
   } catch {
     return rejected(
       request,
@@ -109,11 +118,31 @@ export async function inspectGhostMaterial(
       contained.repoRelativePath,
     );
   }
+  if (effectiveTier === "referenced" && policy.local === "bundled") {
+    return rejected(
+      request,
+      "referenced material inspection is disabled by policy",
+      effectiveTier,
+      contained.repoRelativePath,
+    );
+  }
+
+  let info: Awaited<ReturnType<typeof stat>>;
+  try {
+    info = await stat(contained.realPath);
+  } catch {
+    return rejected(
+      request,
+      "matched file could not be read",
+      effectiveTier,
+      contained.repoRelativePath,
+    );
+  }
   if (!info.isFile()) {
     return rejected(
       request,
       "not a file",
-      resolved.tier,
+      effectiveTier,
       contained.repoRelativePath,
     );
   }
@@ -121,7 +150,7 @@ export async function inspectGhostMaterial(
     return rejected(
       request,
       `exceeds ${policy.maxBytes} byte inspect limit`,
-      resolved.tier,
+      effectiveTier,
       contained.repoRelativePath,
       info.size,
     );
@@ -132,7 +161,7 @@ export async function inspectGhostMaterial(
     return rejected(
       request,
       `MIME type ${mime} is not allowed by policy`,
-      resolved.tier,
+      effectiveTier,
       contained.repoRelativePath,
       info.size,
       mime,
@@ -146,7 +175,7 @@ export async function inspectGhostMaterial(
     return rejected(
       request,
       "matched file could not be read",
-      resolved.tier,
+      effectiveTier,
       contained.repoRelativePath,
     );
   }
@@ -154,7 +183,7 @@ export async function inspectGhostMaterial(
     return rejected(
       request,
       `exceeds ${policy.maxBytes} byte inspect limit`,
-      resolved.tier,
+      effectiveTier,
       contained.repoRelativePath,
       buffer.byteLength,
       mime,
@@ -165,7 +194,7 @@ export async function inspectGhostMaterial(
     ok: true as const,
     nodeId: request.nodeId,
     locator: request.locator,
-    tier: resolved.tier,
+    tier: effectiveTier,
     path: contained.repoRelativePath,
     byteLength: buffer.byteLength,
     mime,
@@ -184,7 +213,7 @@ export async function inspectGhostMaterial(
         return rejected(
           request,
           "not valid UTF-8 text",
-          resolved.tier,
+          effectiveTier,
           contained.repoRelativePath,
           buffer.byteLength,
           mime,

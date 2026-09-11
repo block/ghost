@@ -4,9 +4,10 @@ import { homedir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { CAC } from "cac";
-import { loadSkillBundle } from "#ghost-core";
+import { loadSkillBundle, UsageError } from "#ghost-core";
 import { exitCli, failFromError } from "./errors.js";
 import { parseEnumOption } from "./options.js";
+import { checkSkillInstall, formatSkillCheckResult } from "./skill-check.js";
 
 // The bundle assets are copied to `dist/skill-bundle` (sibling of `commands/`).
 const SKILL_BUNDLE_ROOT = fileURLToPath(
@@ -24,24 +25,43 @@ type SupportedAgent = (typeof SUPPORTED_AGENTS)[number];
 
 export function registerSkillCommand(cli: CAC): void {
   cli
-    .command("skill <action>", "Install the unified ghost skill bundle.")
+    .command(
+      "skill <action>",
+      "Install or check the unified ghost skill bundle.",
+    )
     .option(
       "--dest <path>",
-      "Install destination (default: detected agent skills directory + /ghost)",
+      "Install/check destination (default: detected agent skills directory + /ghost)",
     )
     .option(
       "--agent <name>",
       "Agent destination to use when --dest is omitted: claude, cursor, codex, opencode, goose",
     )
-    .option("--force", "Overwrite an existing installed ghost skill")
+    .option(
+      "--force",
+      "Overwrite an existing installed ghost skill (install only)",
+    )
     .action(async (action: string, opts) => {
       try {
-        if (action !== "install") {
-          console.error("Error: ghost skill currently supports only `install`");
-          await exitCli(2);
-          return;
+        if (action !== "install" && action !== "check") {
+          throw new UsageError(
+            "ghost skill supports only `install` and `check`",
+          );
+        }
+        if (action === "check" && opts.force !== undefined) {
+          throw new UsageError(
+            "ghost skill check does not accept --force; omit it to check without writing, or use ghost skill install --force to reinstall.",
+          );
         }
 
+        if (
+          opts.dest !== undefined &&
+          (typeof opts.dest !== "string" || !opts.dest.trim())
+        ) {
+          throw new UsageError(
+            "--dest must be a nonempty path; pass --dest <path> or omit it to use the agent destination.",
+          );
+        }
         const agent = parseAgent(opts.agent);
         const outDir = resolve(
           process.cwd(),
@@ -49,6 +69,14 @@ export function registerSkillCommand(cli: CAC): void {
             ? opts.dest
             : `${agentSkillDir(agent ?? detectAgent())}/ghost`,
         );
+        const bundle = loadSkillBundle(SKILL_BUNDLE_ROOT);
+
+        if (action === "check") {
+          const result = await checkSkillInstall(outDir, bundle);
+          process.stdout.write(formatSkillCheckResult(result));
+          await exitCli(result.matches ? 0 : 1);
+          return;
+        }
 
         if (existsSync(resolve(outDir, "SKILL.md")) && !opts.force) {
           console.error(
@@ -66,7 +94,6 @@ export function registerSkillCommand(cli: CAC): void {
           });
         }
 
-        const bundle = loadSkillBundle(SKILL_BUNDLE_ROOT);
         const written: string[] = [];
         for (const file of bundle) {
           const outPath = resolve(outDir, file.path);

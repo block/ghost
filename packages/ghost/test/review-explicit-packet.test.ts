@@ -105,6 +105,48 @@ describe("explicit review packet", () => {
     expect(markdown).toContain(result.diff.trimEnd());
   });
 
+  it("preserves load diagnostics alongside explicit guidance, checks, and coverage gaps", async () => {
+    await writeFile(
+      join(packageDir, "broken.md"),
+      "---\nfor: [not, text]\n---\n\nInvalid guidance.\n",
+    );
+    await writeFile(
+      join(packageDir, "checks", "broken.md"),
+      "No frontmatter.\n",
+    );
+    const result = await packet(["component.button"]);
+    expect(result.diagnostics.map((entry) => entry.file)).toEqual([
+      "broken.md",
+      "checks/broken.md",
+    ]);
+    expect(result.explicitNodeIds).toEqual(["component.button"]);
+    expect(result.materialNodes).toEqual([]);
+    expect(result.checks.find((check) => check.id === "button")).toMatchObject({
+      offered: "explicit",
+      explicitVia: ["component.button > Rules"],
+    });
+    expect(result.checks.map((check) => check.id)).toEqual(["button", "voice"]);
+    expect(result.gaps).toContainEqual(
+      expect.objectContaining({
+        kind: "unmatched-file",
+        files: ["checkout.tsx"],
+      }),
+    );
+    const markdown = formatReviewPacket(result);
+    for (const diagnostic of result.diagnostics) {
+      expect(markdown).toContain(diagnostic.file);
+      expect(markdown).toContain(diagnostic.message);
+    }
+    expect(markdown).toContain("ghost validate");
+    expect(markdown).toContain("## Explicit guidance");
+    expect(markdown).toContain(BUTTON);
+    expect(markdown.split("Use the approved button.")).toHaveLength(2);
+    expect(markdown).toContain("Baseline prose shown above.");
+    expect(markdown).toContain(VOICE);
+    expect(markdown).toContain("## Coverage gaps");
+    expect(markdown).toContain(result.diff.trimEnd());
+  });
+
   it("keeps matched and always-offered provenance when explicit selection overlaps", async () => {
     const result = await packet(
       ["voice", "component.button", "voice"],

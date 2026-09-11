@@ -77,8 +77,9 @@ surface: the task, then every selectable id and its applicability. Check the
 full list and pull every id that applies. If none apply, run bare `ghost pull`.
 Declared kinds render in glossary order with their full parsed purposes,
 undeclared kinds alphabetically, and uncategorized guidance last. Read the kind
-selection rules as well as each item's condition.
-Markdown omits package diagnostics that do not change the next action. JSON
+selection rules as well as each item's condition. Loading failures appear in
+both formats; do not treat excluded guidance as an authored absence.
+Markdown omits other package diagnostics that do not change the next action. JSON
 retains the selection contract, coverage, materials, substantial fenced
 examples, Skeletons, and missing `for` payloads for integrations and audits.
 
@@ -93,8 +94,8 @@ and diagnostic metadata for integrations. Pulls append structured events to
 tuning.
 
 `review` does no grading. It assembles the review packet: touched files,
-matched material-backed nodes, offered checks with baseline prose, coverage
-gaps, and the diff. The host agent renders findings.
+matched material-backed nodes, offered checks with baseline prose, loading
+failures, coverage gaps, and the diff. The host agent renders findings.
 Use `ghost review --node <id>` for guidance that governs the change but may not
 match touched material files. Repeat the flag for multiple IDs. Explicit
 selection adds context and checks; it does not filter other checks or grade
@@ -117,6 +118,11 @@ the task, start the artifact from it verbatim, then fill it with task facts.
 Copy the `.ghost/` directory, run `ghost validate --package <dir>`, then run
 `ghost skill install` in the receiving workspace. From there, gather and pull
 against that package with `--package <dir>`.
+
+After upgrading the CLI, use `ghost skill check --agent <name>` or
+`ghost skill check --dest <path>` to compare the intended installation with the
+shipped bundle. Review local edits before reinstalling with `--force`. This
+check does not establish which skill an active session has loaded.
 
 ghost package authoring is **elicitation, not scanning**. The raw material is what
 the human brings and points at: words, images, links, products, brand docs, copy

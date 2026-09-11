@@ -64,7 +64,7 @@ export interface GhostGatherCoverage {
 
 export interface GhostGatherContract {
   completeness: {
-    complete: true;
+    complete: boolean;
     filtered: false;
     ranked: false;
     selectedByGhost: false;
@@ -83,6 +83,8 @@ export interface GhostGatherContract {
 
 export interface GhostGatherResult {
   kind: "menu";
+  /** Invalid guidance files skipped during loading; never includes checks. */
+  diagnostics: GhostEmbedSnapshot["invalid"];
   ask?: string;
   source: {
     artifact: "ghost package";
@@ -134,6 +136,8 @@ export interface GhostPullFallback {
 
 export interface GhostPullResult {
   kind: "pull";
+  /** Invalid guidance files skipped during loading, including all-miss pulls. */
+  diagnostics: GhostEmbedSnapshot["invalid"];
   /** Caller-selected ids after de-duplicating and removing a cover alias. */
   requested: readonly string[];
   ids: readonly string[];

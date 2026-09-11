@@ -162,8 +162,8 @@ const COMMAND_DISCOVERY = [
     name: "skill",
     group: "core",
     defaultHelp: true,
-    compactName: "skill install",
-    summary: "Install the ghost skill bundle.",
+    compactName: "skill install|check",
+    summary: "Install or check the ghost skill bundle.",
   },
   {
     name: "manifest",

@@ -29,12 +29,13 @@ export function gatherGhostPackage(
 
   return {
     kind: "menu",
+    diagnostics: snapshot.invalid,
     ...(ask ? { ask } : {}),
     source: {
       artifact: "ghost package",
       list: "Available guidance",
     },
-    contract: gatherContract(),
+    contract: gatherContract(snapshot.invalid.length === 0),
     coverage: menuCoverage(menu),
     ...(kinds.length > 0 ? { kinds } : {}),
     nodes: menu,
@@ -60,10 +61,10 @@ export const GATHER_IF_NONE_APPLY_INSTRUCTION =
 export const GATHER_NO_ASK_INSTRUCTION =
   "When no ask is supplied, this menu is not grounded to a task. Re-run `ghost gather <ask>` before pulling for a task.";
 
-export function gatherContract(): GhostGatherContract {
+export function gatherContract(complete = true): GhostGatherContract {
   return {
     completeness: {
-      complete: true,
+      complete,
       filtered: false,
       ranked: false,
       selectedByGhost: false,

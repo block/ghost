@@ -119,9 +119,10 @@ it does not grade them.
 - `ghost gather <ask>` emits agent-facing Markdown: the task, then every
   selectable id and its applicability. It groups declared kinds in glossary
   order, undeclared kinds alphabetically, and uncategorized guidance last.
-  Checks and diagnostic metadata are absent. `--format json` retains the
-  selection contract, coverage, kind metadata, and concrete payload metadata
-  for tooling.
+  Checks stay absent. Loading failures appear in Markdown and JSON; an
+  incomplete menu never means the package has no applicable guidance.
+  `--format json` also retains coverage, kind metadata, and concrete payload
+  metadata for tooling.
 - `ghost pull` emits the resolved cover before selected guidance in steering
   order, inlines eligible local text material once, marks included material as
   untrusted source data, leaves later duplicate references, gives direct actions
@@ -129,8 +130,9 @@ it does not grade them.
   JSON retains node kinds and transport diagnostics omitted from agent-facing
   Markdown.
 - `ghost review` matches touched files to exact local material paths, offers
-  relevant checks, and emits their referenced baseline prose for the host
-  agent. Repeated baselines point to prose already included in the packet.
+  relevant checks, includes loading diagnostics, and emits referenced baseline
+  prose for the host agent. Repeated baselines point to prose already included
+  in the packet.
   Repeat `--node <id>` to add exact guidance IDs, including nested IDs or the
   cover. The cover is not added automatically. Unknown IDs stop review with
   exit 2; duplicates are ignored in first-request order. The flag accepts node
@@ -144,3 +146,33 @@ it does not grade them.
   visible. File coverage gaps are still material-match gaps, not evidence that
   explicitly selected guidance does not apply.
 - `ghost stats` summarizes local gather and pull events.
+- `ghost skill check` compares an installed `SKILL.md` and `references/` with
+  this CLI's bundle. It uses install's `--agent` and `--dest` resolution,
+  prints the target, and never writes. Exit 0 means a match, 1 means missing or
+  differing files, and 2 means invalid arguments. A match does not establish
+  which instructions an active host session has loaded.
+
+### Loading diagnostics
+
+Gather and pull expose excluded guidance as `diagnostics` records with `file`
+and `message`. Review includes excluded checks in that list as well.
+These describe loading failures, not a full validation pass. Gather's
+`contract.completeness.complete` is false when guidance was excluded; invalid
+checks do not change generation completeness or enter generation packets.
+
+Partial results retain their normal success status and show the exclusions.
+Run `ghost validate` to diagnose the package before claiming complete grounding.
+Unreadable directories and malformed present glossaries fail rather than
+appearing empty. Missing optional glossaries and checks remain normal.
+
+### Local material access
+
+Bundled-only inspection requires the resolved file to stay inside the resolved
+materials directory and the repository. A bundled symlink to another in-repo
+file is referenced material: inspection requires explicit permission, and pull
+applies the referenced-file inline limit. Links within the materials directory
+remain usable. Outside-repo targets stay unavailable.
+
+Pull still inlines eligible referenced text by default. Hosts that need
+explicit permission for each read should pull with `inlineMaterials: false`,
+then inspect under their chosen policy.

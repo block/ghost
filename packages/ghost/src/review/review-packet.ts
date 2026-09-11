@@ -5,6 +5,7 @@ import {
   materialLocator,
   normalizeMaterial,
 } from "#ghost-core";
+import { formatLoadDiagnostics } from "../internal/load-diagnostics.js";
 import { GHOST_MATERIALS_DIR } from "../scan/constants.js";
 import type { LoadedGhostPackage } from "../scan/ghost-package.js";
 import { resolveGitRoot } from "../scan/package-paths.js";
@@ -47,6 +48,8 @@ export interface PacketCheck {
 
 export interface ReviewPacket {
   packageId: string;
+  /** Invalid guidance and check files skipped during loading. */
+  diagnostics: ReadonlyArray<Readonly<{ file: string; message: string }>>;
   touchedFiles: string[];
   materialNodes: PacketMaterialNode[];
   /** Present only when the host explicitly names guidance for this review. */
@@ -120,6 +123,7 @@ export async function buildReviewPacket(
 
   return {
     packageId: ghostPackage.manifest.id,
+    diagnostics: [...ghostPackage.invalid, ...ghostPackage.invalidChecks],
     touchedFiles: resolution.touchedFiles.map((file) => file.path),
     materialNodes,
     ...(resolution.explicitNodeIds.length > 0
@@ -151,6 +155,9 @@ function materialNodeFromMatch(
 export function formatReviewPacket(packet: ReviewPacket): string {
   const out: string[] = [];
   out.push(`# ghost review — package \`${packet.packageId}\``, "");
+  if (packet.diagnostics.length > 0) {
+    out.push(formatLoadDiagnostics(packet.diagnostics), "");
+  }
   out.push(
     "You are reviewing a diff against ghost package guidance. The command has",
     "assembled the touched files, matched material-backed nodes, and offered",

@@ -15,6 +15,10 @@ supplied guidance, then check every item under `Available guidance`. Pull every
 id whose `Applies when` condition fits the task. Skip clear non-matches; topic
 overlap alone is not enough. Honor the kind's selection rules too.
 
+If the output reports excluded guidance, do not interpret it as silence. Run
+`ghost validate` against the same package, resolve the reported failures, or
+state the grounding gap before continuing provisionally.
+
 The cover is not in this menu because every pull includes it automatically. If
 nothing in the list applies, run bare `ghost pull` for the cover and uncovered-
 guidance policy.

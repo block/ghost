@@ -61,7 +61,12 @@ export async function pullGhostNodes(
     .map((id) => ({ requested: id, suggested: closestIds(id, selectableIds) }));
 
   if (known.length === 0 && missed.length > 0) {
-    return emptyMissResult(selectedRequested, missed, coverId);
+    return emptyMissResult(
+      selectedRequested,
+      missed,
+      coverId,
+      snapshot.invalid,
+    );
   }
 
   const givenNodes = known.map(
@@ -92,6 +97,7 @@ export async function pullGhostNodes(
 
   return {
     kind: "pull",
+    diagnostics: snapshot.invalid,
     requested: selectedRequested,
     ids: known,
     missed,
@@ -114,9 +120,11 @@ function emptyMissResult(
   requested: readonly string[],
   missed: readonly PullMiss[],
   coverId: string | undefined,
+  diagnostics: GhostPullResult["diagnostics"],
 ): GhostPullResult {
   return {
     kind: "pull",
+    diagnostics,
     requested,
     ids: [],
     missed,
