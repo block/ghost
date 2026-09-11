@@ -1,6 +1,8 @@
 ---
 name: schema
-description: The deterministic ghost package contract: layout, manifest, nodes, materials, Skeletons, checks, and command behavior.
+description: >-
+  The deterministic ghost package contract: layout, manifest, nodes, materials,
+  Skeletons, checks, and command behavior.
 ---
 
 # ghost Package Reference

@@ -1,6 +1,10 @@
 ---
 name: ghost
-description: Author, validate, consume, and review against a repo-local ghost package: the medium-agnostic articulation of a product's brand. Use when the user wants to set up a .ghost package, write or update guidance nodes, gather brand context before generation, or assemble a review packet from ghost checks.
+description: >-
+  Author, validate, consume, and review against a repo-local ghost package: the
+  medium-agnostic articulation of a product's brand. Use when the user wants to
+  set up a .ghost package, write or update guidance nodes, gather brand context
+  before generation, or assemble a review packet from ghost checks.
 license: Apache-2.0
 metadata:
   homepage: https://github.com/block/ghost
