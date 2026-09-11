@@ -5,6 +5,7 @@ import {
   materialLocator,
   normalizeMaterial,
 } from "#ghost-core";
+import { formatLoadDiagnostics } from "../internal/load-diagnostics.js";
 import { GHOST_MATERIALS_DIR } from "../scan/constants.js";
 import type { LoadedGhostPackage } from "../scan/ghost-package.js";
 import { resolveGitRoot } from "../scan/package-paths.js";
@@ -40,6 +41,8 @@ export interface PacketCheck {
 
 export interface ReviewPacket {
   packageId: string;
+  /** Invalid guidance and check files skipped during loading. */
+  diagnostics: ReadonlyArray<Readonly<{ file: string; message: string }>>;
   touchedFiles: string[];
   materialNodes: PacketMaterialNode[];
   checks: PacketCheck[];
@@ -92,6 +95,7 @@ export async function buildReviewPacket(
 
   return {
     packageId: ghostPackage.manifest.id,
+    diagnostics: [...ghostPackage.invalid, ...ghostPackage.invalidChecks],
     touchedFiles: resolution.touchedFiles.map((file) => file.path),
     materialNodes,
     checks,
@@ -120,6 +124,9 @@ function materialNodeFromMatch(
 export function formatReviewPacket(packet: ReviewPacket): string {
   const out: string[] = [];
   out.push(`# ghost review — package \`${packet.packageId}\``, "");
+  if (packet.diagnostics.length > 0) {
+    out.push(formatLoadDiagnostics(packet.diagnostics), "");
+  }
   out.push(
     "You are reviewing a diff against ghost package guidance. The command has",
     "assembled the touched files, matched material-backed nodes, and offered",
@@ -157,6 +164,8 @@ export function formatReviewPacket(packet: ReviewPacket): string {
     }
   }
 
+  const shownNodes = new Set(packet.materialNodes.map((node) => node.id));
+  const shownSections = new Set<string>();
   out.push("## Offered checks — weigh which apply");
   if (packet.checks.length === 0) {
     out.push("_No checks were offered for this diff._", "");
@@ -177,6 +186,26 @@ export function formatReviewPacket(packet: ReviewPacket): string {
         for (const baseline of check.baseline) {
           out.push(`- ${baseline.ref}`);
           if (baseline.warning) out.push(`  - ⚠ ${baseline.warning}`);
+          // A missing heading falls back to the whole node, so later sections
+          // can point back to it just as they can to a matched material node.
+          const wholeNode =
+            baseline.heading === undefined || baseline.warning !== undefined;
+          const sectionKey = `${baseline.nodeId}\0${baseline.heading?.toLowerCase() ?? ""}`;
+          if (
+            shownNodes.has(baseline.nodeId) ||
+            (!wholeNode && shownSections.has(sectionKey))
+          ) {
+            out.push("  - Baseline prose shown above.", "");
+            continue;
+          }
+          if (baseline.for) out.push(`  - Applies when: ${baseline.for}`);
+          out.push(
+            "",
+            ...baseline.body.split(/\r?\n/).map((line) => `> ${line}`),
+            "",
+          );
+          if (wholeNode) shownNodes.add(baseline.nodeId);
+          else shownSections.add(sectionKey);
         }
         out.push("");
       }

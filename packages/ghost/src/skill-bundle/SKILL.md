@@ -75,9 +75,11 @@ ghost stats         # summarize local gather/pull events while tuning
 `gather` does no selection. Its Markdown is an agent-facing instruction
 surface: the task, then every selectable id and its applicability. Check the
 full list and pull every id that applies. If none apply, run bare `ghost pull`.
-Declared kind headings render in glossary order, undeclared kinds
-alphabetically, and uncategorized guidance last.
-Markdown omits package diagnostics that do not change the next action. JSON
+Declared kinds render in glossary order with their full parsed purposes,
+undeclared kinds alphabetically, and uncategorized guidance last. Read the kind
+selection rules as well as each item's condition. Loading failures appear in
+both formats; do not treat excluded guidance as an authored absence.
+Markdown omits other package diagnostics that do not change the next action. JSON
 retains the selection contract, coverage, materials, substantial fenced
 examples, Skeletons, and missing `for` payloads for integrations and audits.
 
@@ -92,8 +94,8 @@ and diagnostic metadata for integrations. Pulls append structured events to
 tuning.
 
 `review` does no grading. It assembles the review packet: touched files,
-matched material-backed nodes, offered checks, coverage gaps, and the diff. The
-host agent renders findings.
+matched material-backed nodes, offered checks with baseline prose, loading
+failures, coverage gaps, and the diff. The host agent renders findings.
 
 For visual work, do not stop at generation: ground, make, then verify in two
 tracks, repair within budget, and review. See

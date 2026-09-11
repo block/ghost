@@ -1,6 +1,8 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { YAMLParseError } from "yaml";
 import { type PlacedNode, parseNode } from "#ghost-core";
+import { isMissingPathError } from "../internal/fs.js";
 import {
   GHOST_GLOSSARY_FILENAME,
   GHOST_MANIFEST_FILENAME,
@@ -67,8 +69,12 @@ async function walk(
   try {
     const dirents = await readdir(absDir, { withFileTypes: true });
     entries = dirents.map((d) => ({ name: d.name, isDir: d.isDirectory() }));
-  } catch {
-    return;
+  } catch (err) {
+    if (isMissingPathError(err)) return;
+    throw new Error(
+      `Cannot read node directory "${absDir}": ${err instanceof Error ? err.message : String(err)}. Check the path and directory permissions, then retry.`,
+      { cause: err },
+    );
   }
 
   for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
@@ -84,7 +90,15 @@ async function walk(
     if (!entry.name.endsWith(".md")) continue;
 
     const raw = await readFile(join(packageDir, relPath), "utf-8");
-    const { node, report } = parseNode(raw);
+    let parsed: ReturnType<typeof parseNode>;
+    try {
+      parsed = parseNode(raw);
+    } catch (err) {
+      if (!(err instanceof YAMLParseError)) throw err;
+      invalid.push({ file: relPath, message: err.message });
+      continue;
+    }
+    const { node, report } = parsed;
     if (node === null || report.errors > 0) {
       const first = report.issues.find((issue) => issue.severity === "error");
       invalid.push({

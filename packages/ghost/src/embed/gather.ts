@@ -29,12 +29,13 @@ export function gatherGhostPackage(
 
   return {
     kind: "menu",
+    diagnostics: snapshot.invalid,
     ...(ask ? { ask } : {}),
     source: {
       artifact: "ghost package",
       list: "Available guidance",
     },
-    contract: gatherContract(),
+    contract: gatherContract(snapshot.invalid.length === 0),
     coverage: menuCoverage(menu),
     ...(kinds.length > 0 ? { kinds } : {}),
     nodes: menu,
@@ -60,10 +61,10 @@ export const GATHER_IF_NONE_APPLY_INSTRUCTION =
 export const GATHER_NO_ASK_INSTRUCTION =
   "When no ask is supplied, this menu is not grounded to a task. Re-run `ghost gather <ask>` before pulling for a task.";
 
-export function gatherContract(): GhostGatherContract {
+export function gatherContract(complete = true): GhostGatherContract {
   return {
     completeness: {
-      complete: true,
+      complete,
       filtered: false,
       ranked: false,
       selectedByGhost: false,
@@ -101,11 +102,8 @@ export function menuCoverage(
 function menuKinds(snapshot: GhostEmbedSnapshot): GhostMenuKind[] {
   return (snapshot.glossary?.kinds ?? []).map((kind) => ({
     name: kind.name,
-    // Legend entries are one line each: keep the section's first paragraph
-    // and collapse internal wrapping. Empty purpose stays explicit so
-    // declared kind order survives even when the glossary has no prose yet.
-    purpose: (kind.purpose.split(/\n\s*\n/, 1)[0] ?? "")
-      .replace(/\s+/g, " ")
-      .trim(),
+    // Later paragraphs may carry selection rules. Preserve the parsed purpose,
+    // including Markdown structure, rather than silently shortening its meaning.
+    purpose: kind.purpose.trim(),
   }));
 }

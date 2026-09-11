@@ -2,6 +2,7 @@ import type { CAC } from "cac";
 import { type CatalogMenuEntry, UsageError } from "#ghost-core";
 import type { GhostGatherResult } from "../embed/index.js";
 import { gatherGhostPackage, loadGhostSnapshot } from "../embed/index.js";
+import { formatLoadDiagnostics } from "../internal/load-diagnostics.js";
 import { appendGhostEvent, resolveRunId } from "../observability-events.js";
 import { resolveGhostPackage } from "../package.js";
 import { exitCli, failFromError } from "./errors.js";
@@ -73,6 +74,7 @@ function normalizeAskParts(askParts: string[] | undefined): string | undefined {
 function formatGatherJson(menu: GhostGatherResult): Record<string, unknown> {
   return {
     kind: menu.kind,
+    diagnostics: menu.diagnostics,
     ...(menu.ask ? { ask: menu.ask } : {}),
     source: menu.source,
     contract: menu.contract,
@@ -91,7 +93,10 @@ function formatMenuMarkdown(menu: GhostGatherResult): string {
   const lines: string[] = [
     "# Guidance menu",
     "",
-    "This is the complete, unfiltered menu. For the task below, check every `Applies when` condition and pull every applicable ID. The entries have not been selected or ranked.",
+    ...(menu.diagnostics.length > 0
+      ? [formatLoadDiagnostics(menu.diagnostics), ""]
+      : []),
+    `${menu.contract.completeness.complete ? "This is the complete, unfiltered menu." : "This menu is incomplete because invalid guidance was skipped."} For the task below, check every \`Applies when\` condition and pull every applicable ID. The entries have not been selected or ranked.`,
     "",
     "## Task",
     "",
@@ -99,13 +104,18 @@ function formatMenuMarkdown(menu: GhostGatherResult): string {
     "",
     "## Available guidance",
     "",
-    "Pull the applicable IDs together with `ghost pull <id> [<id>…]`. If no listed guidance applies, run bare `ghost pull` to receive the cover and uncovered-guidance policy. Skip clear non-matches; topic overlap alone is not enough. Do not limit the number.",
+    "Pull the applicable IDs together with `ghost pull <id> [<id>…]`.",
+    menu.contract.selection.instruction,
+    menu.contract.ifNoneApply,
     "",
   ];
 
-  const groups = groupMenuByKind(menu.nodes, menu.kinds ?? []);
+  const kinds = menu.kinds ?? [];
+  const groups = groupMenuByKind(menu.nodes, kinds);
   for (const group of groups) {
     lines.push(group.kind ? `### ${group.kind}` : "### Other guidance", "");
+    const purpose = kinds.find((kind) => kind.name === group.kind)?.purpose;
+    if (purpose) lines.push(purpose, "");
     for (const entry of group.entries) {
       lines.push(`- \`${entry.id}\``);
       if (entry.for?.trim()) {

@@ -2,6 +2,7 @@ import type { CAC } from "cac";
 import { inferMaterialMime, type TransportedMaterial } from "#ghost-core";
 import type { GhostPulledNode, GhostPullResult } from "../embed/index.js";
 import { loadGhostSnapshot, pullGhostNodes } from "../embed/index.js";
+import { formatLoadDiagnostics } from "../internal/load-diagnostics.js";
 import { appendGhostEvent, resolveRunId } from "../observability-events.js";
 import {
   GHOST_EVENTS_FILENAME,
@@ -69,6 +70,9 @@ export function registerPullCommand(cli: CAC): void {
         }
 
         if (result.ids.length === 0 && result.missed.length > 0) {
+          if (result.diagnostics.length > 0) {
+            console.error(formatLoadDiagnostics(result.diagnostics));
+          }
           await exitCli(2);
           return;
         }
@@ -108,6 +112,7 @@ function formatPullJson(
 ): Record<string, unknown> {
   return {
     kind: "pull",
+    diagnostics: result.diagnostics,
     requested: result.requested,
     ids: result.ids,
     ...(result.missed.length > 0 ? { missed: result.missed } : {}),
@@ -136,6 +141,9 @@ function formatPullJson(
 
 function formatPullMarkdown(result: GhostPullResult): string {
   const sections: string[] = [];
+  if (result.diagnostics.length > 0) {
+    sections.push(formatLoadDiagnostics(result.diagnostics));
+  }
   if (result.cover.state === "resolved") {
     sections.push(formatNodeMarkdown(result.cover.node));
   }

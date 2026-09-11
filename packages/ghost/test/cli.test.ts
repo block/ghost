@@ -620,8 +620,8 @@ describe("ghost CLI", () => {
     expect(markdown.stdout).not.toContain("already in context");
     expect(markdown.stdout).not.toContain("concrete support");
     expect(markdown.stdout).not.toContain("Selection contract");
-    expect(markdown.stdout).not.toContain("selectable node");
-    expect(markdown.stdout).not.toContain("`for` payload");
+    expect(markdown.stdout).toContain("If no selectable node applies");
+    expect(markdown.stdout).toContain("whose `for` payload matches the task");
     expect(markdown.stdout).not.toContain("Numbering");
     expect(markdown.stdout).not.toContain("materials:");
     expect(markdown.stdout).not.toContain("payloads:");
@@ -828,7 +828,7 @@ describe("ghost CLI", () => {
     ).rejects.toThrow();
   });
 
-  it("keeps glossary kind purposes in JSON and only headings in Markdown", async () => {
+  it("keeps glossary kind purposes in JSON and Markdown", async () => {
     await runCli(["init"], dir);
 
     // JSON carries the glossary's declared kinds with their prose purposes.
@@ -841,13 +841,11 @@ describe("ghost CLI", () => {
     expect(foundation.purpose).toContain("load-bearing decisions");
     expect(foundation.purpose).toContain("Pull every foundation chapter");
 
-    // Markdown uses the kind only as navigation; purpose prose stays in JSON.
+    // Both formats preserve the kind's selection meaning.
     const markdown = await runCli(["gather", "build", "a", "page"], dir);
     expect(markdown.stdout).not.toContain("Kinds:");
     expect(markdown.stdout).toContain("### foundation");
-    expect(markdown.stdout).not.toContain(
-      "The brand's load-bearing decisions for color",
-    );
+    expect(markdown.stdout).toContain(foundation.purpose);
     expect(markdown.stdout).not.toContain(menu.contract.noAsk);
 
     // A missing glossary degrades to no legend, not an error.

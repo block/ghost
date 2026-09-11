@@ -1,11 +1,14 @@
 import { readdir, readFile } from "node:fs/promises";
 import { basename, join } from "node:path";
+import { YAMLParseError } from "yaml";
 import {
   type GhostCheckDocument,
   lintGhostCheck,
   loadGhostCheck,
   parseCheckMarkdown,
 } from "#ghost-core";
+
+import { isMissingPathError } from "../internal/fs.js";
 
 /** Reserved package-root directory holding review checks. */
 export const GHOST_CHECKS_DIR = "checks";
@@ -40,8 +43,14 @@ export async function loadCheckFiles(
   let entries: Array<{ name: string; isDirectory(): boolean }>;
   try {
     entries = await readdir(checksDir, { withFileTypes: true });
-  } catch {
-    return { hasChecksDir: false, checks, invalid };
+  } catch (err) {
+    if (isMissingPathError(err)) {
+      return { hasChecksDir: false, checks, invalid };
+    }
+    throw new Error(
+      `Cannot read checks directory "${checksDir}": ${err instanceof Error ? err.message : String(err)}. Check the path and directory permissions, then retry.`,
+      { cause: err },
+    );
   }
 
   for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
@@ -66,7 +75,14 @@ export async function loadCheckFiles(
     }
 
     const raw = await readFile(join(checksDir, entry.name), "utf-8");
-    const lint = lintGhostCheck(raw);
+    let lint: ReturnType<typeof lintGhostCheck>;
+    try {
+      lint = lintGhostCheck(raw);
+    } catch (err) {
+      if (!(err instanceof YAMLParseError)) throw err;
+      invalid.push({ file: `checks/${entry.name}`, message: err.message });
+      continue;
+    }
     if (lint.errors > 0) {
       const first = lint.issues.find((issue) => issue.severity === "error");
       invalid.push({
