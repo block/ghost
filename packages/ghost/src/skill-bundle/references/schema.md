@@ -41,10 +41,10 @@ Obligation or a replaceable Default), `foundation` (the brand's load-bearing
 decisions), and `context` (what bends in a named situation). A package may
 declare any vocabulary; the glossary is the only kind authority.
 
-`ghost gather --format json` includes each kind's first paragraph as its
-purpose for operator tooling. Agent-facing Markdown uses kind headings only;
-selection comes from each item's `Applies when` condition. Declared kinds render
-in frontmatter order even when their purpose is empty; undeclared kinds render
+`ghost gather` preserves each kind's full parsed purpose in JSON and shows it
+once above that kind's entries in Markdown. Read the kind's selection rules
+alongside each item's `Applies when` condition. Declared kinds render in
+frontmatter order even when their purpose is empty; undeclared kinds render
 alphabetically after declared kinds, and uncategorized guidance renders last.
 
 ## Nodes
@@ -130,8 +130,9 @@ it does not grade them.
   JSON retains node kinds and transport diagnostics omitted from agent-facing
   Markdown.
 - `ghost review` matches touched files to exact local material paths, offers
-  relevant checks, includes loading diagnostics, and emits a review packet for
-  the host agent.
+  relevant checks, includes loading diagnostics, and emits referenced baseline
+  prose for the host agent. Repeated baselines point to prose already included
+  in the packet.
 - `ghost stats` summarizes local gather and pull events.
 
 ### Loading diagnostics
@@ -146,3 +147,15 @@ Partial results retain their normal success status and show the exclusions.
 Run `ghost validate` to diagnose the package before claiming complete grounding.
 Unreadable directories and malformed present glossaries fail rather than
 appearing empty. Missing optional glossaries and checks remain normal.
+
+### Local material access
+
+Bundled-only inspection requires the resolved file to stay inside the resolved
+materials directory and the repository. A bundled symlink to another in-repo
+file is referenced material: inspection requires explicit permission, and pull
+applies the referenced-file inline limit. Links within the materials directory
+remain usable. Outside-repo targets stay unavailable.
+
+Pull still inlines eligible referenced text by default. Hosts that need
+explicit permission for each read should pull with `inlineMaterials: false`,
+then inspect under their chosen policy.

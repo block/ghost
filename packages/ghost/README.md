@@ -52,7 +52,7 @@ ghost manifest      # emit a machine-readable index of commands and flags
 ```
 
 For a task-specific gather, your agent reads the complete, unfiltered menu and
-pulls every node whose stated situation applies. Bare `ghost gather` inspects
+pulls every node whose stated situation applies. `ghost gather --format json` inspects
 the catalog without grounding a task.
 
 Run `ghost --help` for the core workflow and `ghost <command> --help` for
@@ -89,8 +89,11 @@ selected ids, returns misses with suggestions, stable concrete/prose ordering,
 stripped node bodies, extracted Skeletons, and material transport packets. Use
 `inspectGhostMaterial` only for materials declared by a pulled node; it is local
 and bundled-only by default, with explicit host policy required for referenced
-files. HTTPS inspection is always rejected. Included and inspected material is
-marked `untrusted: true`; hosts must keep it in a data or tool-result channel
+files. Symlinks must resolve within the permitted directory. Pull still inlines
+small referenced text by default; use `inlineMaterials: false` before inspection
+when the host requires explicit read permission. HTTPS inspection is always
+rejected. Included and inspected material is marked `untrusted: true`; hosts
+must keep it in a data or tool-result channel
 rather than an instruction channel. Embedded operations do not write
 `.ghost/.events`; hosts may
 persist exported observability events in their own telemetry.
