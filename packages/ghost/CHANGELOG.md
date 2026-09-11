@@ -1,5 +1,27 @@
 # @design-intelligence/ghost
 
+## 0.35.0
+
+### Minor Changes
+
+- [#294](https://github.com/block/ghost/pull/294) [`7621ceb`](https://github.com/block/ghost/commit/7621ceb60382dbb6c3adf47ea747d14cb094c785) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Add `ghost skill check` to compare installed skill instructions with the bundled files without writing, report missing, changed, and extra reference files, and suggest a reinstall command.
+
+- [#297](https://github.com/block/ghost/pull/297) [`7cc2e21`](https://github.com/block/ghost/commit/7cc2e21d331024c76dd2a3aebf8ae82f9aa1c608) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Allow `ghost review --node <id>` to include host-selected guidance and offer referencing checks alongside existing material matches without filtering other checks.
+
+- [#293](https://github.com/block/ghost/pull/293) [`d5952a6`](https://github.com/block/ghost/commit/d5952a6aa2221d77b4f7679dba1baddb495ae22a) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Add load diagnostics to gather, pull, and review JSON and embedded results, with actionable warnings in Markdown. Gather and pull report skipped invalid guidance; review also reports skipped invalid checks. All-miss CLI pulls keep stdout empty and report load diagnostics on stderr before exiting with code 2.
+
+  Breaking API change: gather's `contract.completeness.complete` changes from literal `true` to `boolean` and is `false` when invalid guidance was skipped. Consumers must check the value before treating the menu as complete. Healthy results include `diagnostics: []`; no on-disk schema migration is required. Unreadable directories and malformed present glossaries now fail loading instead of appearing absent.
+
+### Patch Changes
+
+- [#296](https://github.com/block/ghost/pull/296) [`1a9bb02`](https://github.com/block/ghost/commit/1a9bb02a3af311db76f9a983488cbeb7be76e945) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Clarify the tested delivery boundaries and distinguish complete process output from host receipt and model use.
+
+- [#299](https://github.com/block/ghost/pull/299) [`166f970`](https://github.com/block/ghost/commit/166f9709a16b6ed6dda23a38d80a46161c0f3677) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Fix the installed ghost skill metadata so goose can discover it.
+
+- [#291](https://github.com/block/ghost/pull/291) [`a10c5ae`](https://github.com/block/ghost/commit/a10c5ae321bbcb8556bd9e2c71ba69f97b20c627) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Treat bundled symlinks that resolve outside the materials directory as referenced files, requiring explicit inspection permission and honoring the referenced-file inline limit.
+
+- [#292](https://github.com/block/ghost/pull/292) [`ff9c093`](https://github.com/block/ghost/commit/ff9c093b8ccbc09207016d4d1c8c1c9ea67c1d32) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Include referenced baseline prose in Markdown review and preserve full parsed kind descriptions in guidance menus.
+
 ## 0.34.1
 
 ### Patch Changes
