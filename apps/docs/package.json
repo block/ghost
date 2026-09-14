@@ -16,15 +16,15 @@
     "@design-intelligence/vessel-react": "workspace:*",
     "@tailwindcss/vite": "^4.2.2",
     "astro": "5.16.7",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
     "tailwindcss": "^4.2.2"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.10",
     "@types/node": "^22.0.0",
-    "@types/react": "19.1.2",
-    "@types/react-dom": "19.1.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
     "typescript": "^5.7.0"
   }
 }
