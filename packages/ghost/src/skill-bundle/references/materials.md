@@ -108,9 +108,9 @@ tokens, or component contracts, sweep Skeletons, components, examples, and
 checks for stranded names or literals. Delete any copy whose maintenance cost
 exceeds its steering value.
 
-`ghost pull` inlines each distinct local material once per pull. Later nodes
-keep a pointer to the first copy, so sharing a material across nodes is safe and
-does not inflate its salience.
+`ghost pull` inlines each distinct local text material once per pull and emits
+visual assets as inspect-pointers. Later nodes keep a pointer to the first copy,
+so sharing a material across nodes is safe and does not inflate its salience.
 
 ## Concrete self-check
 

@@ -240,7 +240,10 @@ function formatMaterialAction(
   material: NonNullable<GhostPulledNode["materials"]>[number],
   target: string,
 ): string {
-  if (material.reason === "binary inspect-pointer") {
+  if (
+    material.reason === "binary inspect-pointer" ||
+    material.reason === "image inspect-pointer"
+  ) {
     const kind = inferMaterialMime(target).contentKind;
     return kind === "image"
       ? `- View before making: \`${target}\``
@@ -293,7 +296,8 @@ function formatJsonMaterial(material: TransportedMaterial): {
     ...(material.omitted
       ? { omitted: true as const, reason: material.reason ?? "not inlined" }
       : {}),
-    ...(material.reason === "binary inspect-pointer"
+    ...(material.reason === "binary inspect-pointer" ||
+    material.reason === "image inspect-pointer"
       ? { inspect: material.path ?? material.locator }
       : {}),
   };
