@@ -242,6 +242,14 @@ async function transportFile(
     return { ...base, omitted: true as const, reason: "not a file" };
   }
 
+  if (inferMaterialMime(contained.repoRelativePath).contentKind === "image") {
+    return {
+      ...base,
+      omitted: true as const,
+      reason: "image inspect-pointer",
+    };
+  }
+
   const inlineLimit =
     options.referencedInlineBytes ?? DEFAULT_REFERENCED_INLINE_BYTES;
   if (effectiveTier === "referenced" && s.size > inlineLimit) {
@@ -381,10 +389,10 @@ export function inferMaterialMime(path: string): MaterialMimeInfo {
 
   return {
     mime,
-    contentKind: isTextMime(mime)
-      ? "text"
-      : mime.startsWith("image/")
-        ? "image"
+    contentKind: mime.startsWith("image/")
+      ? "image"
+      : isTextMime(mime)
+        ? "text"
         : "binary",
   };
 }

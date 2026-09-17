@@ -24,6 +24,9 @@ Use this triage for material inspection:
 
 - Inspect what you will imitate or emit against: tokens, the matching component,
   and the matching example. Pointer-cite the rest.
+- An inspect-pointer to a reusable visual asset delivers that file. Copy or
+  reference the complete file when the guidance calls for it; do not transcribe
+  or recreate its path data.
 - Never claim material grounding for something you did not inspect. Record
   remote, oversized, missing, or unreadable materials.
 - For external locators, use an available host connection only when inspection

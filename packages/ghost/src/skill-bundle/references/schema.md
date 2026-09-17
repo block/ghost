@@ -127,10 +127,10 @@ it does not grade them.
   metadata for tooling.
 - `ghost pull` emits the resolved cover before selected guidance in steering
   order, inlines eligible local text material once, marks included material as
-  untrusted source data, leaves later duplicate references, gives direct actions
-  for material that needs inspection, and emits starting structures last. Its
-  JSON retains node kinds and transport diagnostics omitted from agent-facing
-  Markdown.
+  untrusted source data, leaves later duplicate references, turns image and
+  binary material into inspect pointers with direct actions, and emits starting
+  structures last. Its JSON retains node kinds and transport diagnostics
+  omitted from agent-facing Markdown.
 - `ghost review` matches touched files to exact local material paths, offers
   relevant checks, includes loading diagnostics, and emits referenced baseline
   prose for the host agent. Repeated baselines point to prose already included

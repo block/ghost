@@ -1221,9 +1221,56 @@ describe("ghost CLI", () => {
       locator: "brand/mark.png",
       tier: "referenced",
       omitted: true,
-      reason: "binary inspect-pointer",
+      reason: "image inspect-pointer",
       inspect: "brand/mark.png",
     });
+  });
+
+  it("pull emits SVG logo materials as inspect-pointers without injecting path data", async () => {
+    await writeBareTestPackage(dir);
+    await mkdir(join(dir, "brand"), { recursive: true });
+    const svg = '<svg viewBox="0 0 10 10"><path d="M0 0h10v10H0z"/></svg>';
+    await writeFile(join(dir, "brand", "square-logo.svg"), svg);
+    await writeFile(join(dir, "brand", "cash-app-logo.svg"), svg);
+    await writeFile(
+      join(dir, ".ghost", "asset.logos.md"),
+      [
+        "---",
+        "for: Approved brand logos.",
+        "materials:",
+        "  - brand/square-logo.svg",
+        "  - brand/cash-app-logo.svg",
+        "---",
+        "",
+        "Use the exact supplied logo file.",
+        "",
+      ].join("\n"),
+    );
+
+    const md = await runCli(["pull", "asset.logos"], dir);
+    expect(md.stdout).toContain(
+      "- View before making: `brand/square-logo.svg`",
+    );
+    expect(md.stdout).toContain(
+      "- View before making: `brand/cash-app-logo.svg`",
+    );
+    expect(md.stdout).not.toContain("<path");
+
+    const json = await runCli(["pull", "asset.logos", "--format", "json"], dir);
+    expect(JSON.parse(json.stdout).nodes[0].materials).toEqual([
+      expect.objectContaining({
+        locator: "brand/square-logo.svg",
+        omitted: true,
+        reason: "image inspect-pointer",
+        inspect: "brand/square-logo.svg",
+      }),
+      expect.objectContaining({
+        locator: "brand/cash-app-logo.svg",
+        omitted: true,
+        reason: "image inspect-pointer",
+        inspect: "brand/cash-app-logo.svg",
+      }),
+    ]);
   });
 
   it("gather and pull append structured local events", async () => {
