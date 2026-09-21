@@ -1230,16 +1230,16 @@ describe("ghost CLI", () => {
     await writeBareTestPackage(dir);
     await mkdir(join(dir, "brand"), { recursive: true });
     const svg = '<svg viewBox="0 0 10 10"><path d="M0 0h10v10H0z"/></svg>';
-    await writeFile(join(dir, "brand", "square-logo.svg"), svg);
-    await writeFile(join(dir, "brand", "cash-app-logo.svg"), svg);
+    await writeFile(join(dir, "brand", "primary-logo.svg"), svg);
+    await writeFile(join(dir, "brand", "secondary-logo.svg"), svg);
     await writeFile(
       join(dir, ".ghost", "asset.logos.md"),
       [
         "---",
         "for: Approved brand logos.",
         "materials:",
-        "  - brand/square-logo.svg",
-        "  - brand/cash-app-logo.svg",
+        "  - brand/primary-logo.svg",
+        "  - brand/secondary-logo.svg",
         "---",
         "",
         "Use the exact supplied logo file.",
@@ -1249,26 +1249,26 @@ describe("ghost CLI", () => {
 
     const md = await runCli(["pull", "asset.logos"], dir);
     expect(md.stdout).toContain(
-      "- View before making: `brand/square-logo.svg`",
+      "- View before making: `brand/primary-logo.svg`",
     );
     expect(md.stdout).toContain(
-      "- View before making: `brand/cash-app-logo.svg`",
+      "- View before making: `brand/secondary-logo.svg`",
     );
     expect(md.stdout).not.toContain("<path");
 
     const json = await runCli(["pull", "asset.logos", "--format", "json"], dir);
     expect(JSON.parse(json.stdout).nodes[0].materials).toEqual([
       expect.objectContaining({
-        locator: "brand/square-logo.svg",
+        locator: "brand/primary-logo.svg",
         omitted: true,
         reason: "image inspect-pointer",
-        inspect: "brand/square-logo.svg",
+        inspect: "brand/primary-logo.svg",
       }),
       expect.objectContaining({
-        locator: "brand/cash-app-logo.svg",
+        locator: "brand/secondary-logo.svg",
         omitted: true,
         reason: "image inspect-pointer",
-        inspect: "brand/cash-app-logo.svg",
+        inspect: "brand/secondary-logo.svg",
       }),
     ]);
   });
