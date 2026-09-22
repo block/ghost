@@ -128,7 +128,7 @@ describe("whole material content and explicit delivery outcomes", () => {
     expect(materials.map((material) => material.locator)).toEqual(locators);
     expect(materials[0]).toMatchObject({ inlined: text, untrusted: true });
     expect(materials.slice(1).map((material) => material.reason)).toEqual([
-      "binary inspect-pointer",
+      "image inspect-pointer",
       "not valid UTF-8 text",
       "matched no local files",
       "external locator; use an available host connection if the task requires it",
