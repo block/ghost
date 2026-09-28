@@ -3,7 +3,7 @@
   "private": true,
   "description": "Portable brand guidance for AI agents",
   "license": "Apache-2.0",
-  "packageManager": "pnpm@10.33.0",
+  "packageManager": "pnpm@10.34.5",
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   },
@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.12",
-    "@changesets/changelog-github": "^0.6.0",
+    "@changesets/changelog-github": "^0.7.0",
     "@changesets/cli": "^2.31.0",
     "@types/node": "^22.0.0",
     "lefthook": "^2.1.0",
