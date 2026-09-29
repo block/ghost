@@ -79,11 +79,10 @@ keeps the same decision and reason, remove it. If two sentences make the same
 point, keep the clearer one. If a sentence only introduces, summarizes, or
 repeats the section, cut it.
 
-Avoid clever labels, metaphors, academic phrasing, and broad design jargon when
-a visible choice can be named. Prefer ordinary words such as source, structure,
-scope, cause, confirmed decision, observation, proposal, approach, file, and
-guidance. Replace vague phrases with the specific background, layout, copy,
-motion, hierarchy, spacing, or interaction decision the agent must preserve.
+Avoid clever labels, metaphors, academic phrasing, and broad design jargon.
+Name the specific decision, element, condition, or action instead. Replace vague
+phrases with the background, layout, copy, motion, hierarchy, spacing, or
+interaction decision the agent must preserve.
 
 Watch for words that sound precise but hide the actual choice:
 
