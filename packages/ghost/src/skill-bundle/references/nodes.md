@@ -34,6 +34,11 @@ optional `## Skeleton` (always last):
 - `## Never` — selective, high-value failure modes, each paired with its
   replacement: "never X — instead Y."
 
+This is a closed heading set unless the package glossary declares another body
+shape. Do not add ad hoc sections for notes, exceptions, sources, or what to do
+when guidance is silent. Put a package-wide silence rule in the cover's prose
+only when the brand needs to override the host skill's default behavior.
+
 Route each claim to one home. Can a reviewer observe it in the artifact?
 Rules. Does it reject a plausible move and name the replacement? Never. Does
 it shape decisions not covered by either? Usage. None of these? Cut it.
