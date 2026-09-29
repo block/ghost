@@ -16,12 +16,18 @@ Use one workflow with a different first move:
 
 | Starting state | First move |
 | --- | --- |
-| No package | Run `ghost init`, then capture one repeated decision. Do not attempt the whole brand. |
+| No package | Run `ghost init`, inspect the complete starter, then capture one decision. Do not hand-create a smaller package or attempt the whole brand. |
 | Existing package | Run `ghost validate`, `ghost gather "update the package"`, and pull potentially affected nodes before proposing edits. |
 | Starter package | Treat every inherited answer as provisional until the owner replaces or accepts it. Change the manifest id only when the human takes ownership. |
 
 A monorepo or product suite uses one contract per package. Do not invent a
 hierarchy between packages.
+
+When no package exists, `ghost init` is required. Do not hand-create the
+manifest, glossary, cover, or starter structure to make the first change
+smaller. Inspect every initialized file before proposing edits. Treat inherited
+answers as provisional, but do not silently omit or replace them. Keep the first
+confirmed brand decision small, not the package scaffold.
 
 ## The authoring loop
 
@@ -120,7 +126,9 @@ existing guidance was clear and available, do not add another rule.
 ### 4. Propose the smallest useful diff
 
 Before editing, present a short proposal with the evidence, affected node,
-verdict, proposed change, and choice needed. The human may accept, correct,
+verdict, proposed change, and choice needed. Smallest refers to the authored
+brand decision, not permission to bypass required package scaffolding. The human
+may accept, correct,
 narrow, reject, mark legacy, or defer it. Write only accepted changes. Restate
 the final form after a correction or narrowing.
 
@@ -187,6 +195,7 @@ itself. Until adaptation finishes, identify starter guidance as provisional.
 
 ## Never
 
+- Never hand-create a package when `ghost init` can initialize it.
 - Never derive brand guidance from code, frequency, or a brand deck alone.
 - Never turn an observation into a brand decision without confirmation.
 - Never invent a value to fill a gap; ask for a decision or leave it out.
