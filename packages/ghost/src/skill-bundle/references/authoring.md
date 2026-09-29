@@ -125,7 +125,7 @@ narrow, reject, mark legacy, or defer it. Write only accepted changes. Restate
 the final form after a correction or narrowing.
 
 When no package exists, the first proposal should usually be one cover decision
-or one node, not a completed vocabulary. Grow the package when the next repeated
+or one node, not a completed taxonomy. Grow the package when the next repeated
 decision appears.
 
 Rank proposed changes by consequence. Lead with changes that affect brand
