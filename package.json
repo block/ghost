@@ -1,7 +1,7 @@
 {
   "name": "ghost",
   "private": true,
-  "description": "Task-specific brand guidance for AI agents. Plain files in your repo. The parts that apply, with a receipt.",
+  "description": "Portable brand guidance that agents read before making and use during review.",
   "license": "Apache-2.0",
   "packageManager": "pnpm@10.33.0",
   "engines": {
