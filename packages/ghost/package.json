@@ -1,7 +1,7 @@
 {
   "name": "@design-intelligence/ghost",
   "version": "0.35.0",
-  "description": "ghost CLI for portable .ghost/ packages of brand guidance your agent reads before it builds, with advisory review after",
+  "description": "Task-specific brand guidance for AI agents. Plain files in your repo. The parts that apply, with a receipt.",
   "license": "Apache-2.0",
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
