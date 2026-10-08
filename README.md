@@ -29,8 +29,8 @@ API key.
 
 ## What it looks like
 
-In a filled-in package, you ask your agent for a transactional email.
-The agent runs:
+This demo uses a filled-in package; `ghost init` gives you a usable
+starter. You ask your agent for a transactional email. The agent runs:
 
 ```bash
 ghost gather "write a transactional email about seller reverification"
@@ -41,23 +41,17 @@ applies. The cover is excluded from selection and included by every pull.
 gather never filters or ranks the menu. Selection belongs to the agent,
 which reads the menu and picks what governs the task:
 
-> *Agent's selection in a filled-in package:* `foundation.voice`,
+> *Agent's selection:* `foundation.voice`,
 > `context.email-transactional`, `shared.content-integrity` apply.
 > `context.marketing-web` is the wrong register for a transactional email.
 > `foundation.motion` does not apply; email has no motion.
 
-For that filled-in package, the agent runs
+The agent then runs
 `ghost pull foundation.voice context.email-transactional shared.content-integrity`.
-The email and content-integrity files in this example are authored guidance,
-not files created by `ghost init`.
-
 pull delivers the cover, the selected guidance in its original words, and
-any declared sources or source pointers. Not a summary.
-Not the whole brand book. Successful gather and pull calls are logged locally,
-so you can see what the CLI delivered for the run.
-
-Running `ghost init` gives you a usable starter package; the demo above
-shows a filled-in one.
+the sources each file declares, inlined or as pointers. Successful gather
+and pull calls are logged locally, so you can see what the CLI delivered
+for the run.
 
 > [!NOTE]
 > ghost is an early preview. The CLI, package format, and APIs may change
@@ -99,25 +93,23 @@ judge quickly.
 
 The starter package is usable before the brand is fully documented. Confirm
 or replace its provisional guidance as the brand becomes known. Run setup
-once per repo, then gather, pull, and review for each task. If you installed
-the skill during Install, skip the repeated `ghost skill install` command:
+once per repo, then gather, pull, and review for each task:
 
 ```bash
 # Setup (once per repo)
 ghost init          # create .ghost/ with a usable starter package
 ghost checks init   # opt in to review checks
-ghost skill install # teach your agent the ghost workflow
 ghost validate      # check the package is well-formed
 
-# The loop (every task; this example uses a starter-package ID)
+# The loop (every task)
 ghost gather "write a transactional email about seller reverification"
 ghost pull foundation.voice # deliver the cover plus selected guidance and sources
 ghost review        # assemble an advisory review packet for a diff
 ```
 
-Your agent supplies the actual task to gather and the applicable IDs to pull;
-the commands above use a concrete task and an ID available in the starter.
-Review requires review checks and a Git diff against an existing commit.
+Your agent supplies the task and the applicable IDs; the example above uses
+an ID from the starter package. Review requires review checks and a Git diff
+against an existing commit.
 
 While tuning the package, `ghost stats` summarizes what agents actually
 reached for. See the [CLI reference](https://github.com/block/ghost/blob/main/packages/ghost/src/skill-bundle/references/schema.md#command-behavior)
