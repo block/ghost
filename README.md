@@ -1,14 +1,10 @@
 # ghost
 
-**Give agents the brand guidance that applies, and know what they received.**
-
-Pasting a brand guide into a prompt is a guess. Searching it finds what
-sounds similar, which is not the same as what applies: a trust rule can
-govern a payment form even when nobody types the word "trust."
-
-ghost keeps brand guidance in your repo as plain files. Each file states
-when it applies. Your agent reads that menu, pulls what governs the task,
-and receives the original words plus pointers to their sources.
+An agent holds nothing it isn't handed. It can build the screen, write the
+email, draft the sentence, but your brand's stance, restraint, and trust
+moves live in heads and PDFs it never sees. ghost puts those decisions in
+the repo as plain files, each stating when it applies, so any agent can
+pick up what governs the task.
 
 ```text
 .ghost/
