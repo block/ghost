@@ -21,13 +21,6 @@ Before adding a doc here, ask:
   file. A doc belongs here only when it defends a boundary or model no
   single existing surface owns.
 
-## Advanced integration docs
-
-- [Embedding ghost](./embedding.md): library exports, material access, trust
-  boundaries, diagnostics, and host observability.
-- [Delivery guarantees](./delivery-guarantees.md): tested transport boundaries
-  and limits of delivery evidence.
-
 Every doc here should open with an audience/scope callout (see
 [`purposes.md`](./purposes.md) for the pattern) so a reader without the full
 vocabulary knows immediately whether to keep reading or go to the onboarding

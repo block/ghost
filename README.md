@@ -217,8 +217,7 @@ its CLI delivered, not evidence of what the model read.
 One honest boundary: a pull proves CLI delivery, not adherence. It does not
 prove that the host passed the full output to the model or that the model
 read it. Whether the agent followed the guidance is what review, and your
-assessment, are for. See [Delivery guarantees](./docs/delivery-guarantees.md) for the exact
-boundaries.
+assessment, are for.
 
 Don't take our word for it. The repo ships two evaluation harnesses:
 [`packages/context-control`](./packages/context-control) measures whether

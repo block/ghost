@@ -217,8 +217,7 @@ its CLI delivered, not evidence of what the model read.
 One honest boundary: a pull proves CLI delivery, not adherence. It does not
 prove that the host passed the full output to the model or that the model
 read it. Whether the agent followed the guidance is what review, and your
-assessment, are for. See [Delivery guarantees](https://github.com/block/ghost/blob/main/docs/delivery-guarantees.md) for the exact
-boundaries.
+assessment, are for.
 
 Don't take our word for it. The repo ships two evaluation harnesses:
 [`packages/context-control`](https://github.com/block/ghost/tree/main/packages/context-control) measures whether
@@ -259,28 +258,6 @@ starter package, and one real decision beats an empty taxonomy: write down
 the thing reviewers keep repeating, give it a condition, and let the
 package grow from use. Guidance is markdown in your repo, so maintenance
 is ordinary review: edit the file, see the diff, merge.
-
-## Library
-
-Embedded hosts get the same gather and pull semantics as the CLI without
-CLI-only presentation or event side effects:
-
-```ts
-import { loadGhostSnapshot, gatherGhostPackage, pullGhostNodes }
-  from "@design-intelligence/ghost/embed";
-```
-
-Source handling, trust boundaries, and diagnostics are documented in
-[Embedding ghost](https://github.com/block/ghost/blob/main/docs/embedding.md).
-Read that page before shipping an integration; the security posture is part
-of the contract.
-
-## Delivery evidence
-
-Delivery is tested end to end: process-pipe tests verify complete output
-survives transport, and included source content is always marked untrusted. See
-[Delivery guarantees](https://github.com/block/ghost/blob/main/docs/delivery-guarantees.md)
-for exactly what is and is not established.
 
 ## Project Status: Early Preview
 
