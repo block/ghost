@@ -1,256 +1,167 @@
 # @design-intelligence/ghost
 
-An agent holds nothing it isn't handed. It can build the screen, write the
-email, draft the sentence, but your brand's stance, restraint, and trust
-moves live in heads and PDFs it never sees. ghost puts those decisions in
-the repo as plain files, each stating when it applies, so any agent can
-pick up what governs the task.
+ghost is a brand context router for agents. You record your brand's design
+decisions and when they apply. Your agent selects the guidance for the task,
+and ghost delivers it before work begins.
 
-```text
-.ghost/
-  glossary.md           # your vocabulary
-  principle.trust.md    # "near the moment of payment, reduce felt risk…"
-  voice.md              # how the brand talks
-  asset.logo.md         # points at the actual SVGs
-```
+Keep the guidance as markdown files in your repo, alongside the code and
+assets it refers to. You confirm the decisions and review the work your
+agent makes with them.
 
-Each file says when it applies, what the brand wants, what it refuses, and
-which real files back it up.
+ghost works with Claude Code, Codex, Cursor, OpenCode, and Goose. The CLI
+calls no model and needs no API key.
 
-Claude Code, Codex, Cursor, and Goose can all use the same guidance.
-ghost is bring-your-own-agent: the CLI never calls a model and needs no
-API key.
-
-[Project site](https://block.github.io/ghost/) · [Repo](https://github.com/block/ghost)
-
-## What it looks like
-
-This demo uses a filled-in package; `ghost init` gives you a usable
-starter. You ask your agent for a transactional email. The agent runs:
-
-```bash
-ghost gather "write a transactional email about seller reverification"
-```
-
-gather prints the complete menu: every selectable guidance file and when it
-applies. The cover is excluded from selection and included by every pull.
-gather never filters or ranks the menu. Selection belongs to the agent,
-which reads the menu and picks what governs the task:
-
-> *Agent's selection:* `foundation.voice`,
-> `context.email-transactional`, `shared.content-integrity` apply.
-> `context.marketing-web` is the wrong register for a transactional email.
-> `foundation.motion` does not apply; email has no motion.
-
-The agent then runs
-`ghost pull foundation.voice context.email-transactional shared.content-integrity`.
-pull delivers the cover, the selected guidance in its original words, and
-the sources each file declares, inlined or as pointers. Successful gather
-and pull calls are logged locally, so you can see what the CLI delivered
-for the run.
+[Project site](https://block.github.io/ghost/) ·
+[Repo](https://github.com/block/ghost)
 
 > [!NOTE]
-> ghost is an early preview. The CLI, package format, and APIs may change
-> without migration support, and breaking changes can ship in minor
-> versions. If that doesn't scare you, we'd love your feedback: try it on a
-> real repo and tell us what broke or confused you.
+> ghost is an early preview. The CLI, package format, and APIs can change
+> without migration support, and breaking changes can ship in minor versions.
+> Try it on a real repo and tell us what broke or confused you.
 
 ## Install
 
-Use the local CLI with `npx ghost`, or make `ghost` available on your PATH
-for the commands below.
+Requires Node 20.19+ or 22.12+.
 
 ```bash
 npm install -D @design-intelligence/ghost
 npx ghost skill install
 ```
 
-## Use It
+The skill gives your agent instructions for setting up and using ghost.
+If you use several agents, choose the destination with
+`npx ghost skill install --agent goose`, for example.
 
-Install the skill bundle so your host agent knows how to author and use the
-ghost package, then ask in plain English:
+With the skill installed, ask your agent to do the setup:
 
 ```text
 Set up the ghost package for this repo.
-Write down the decision I keep repeating about checkout.
-Brief this work from the ghost package.
-Review this diff against the ghost review checks.
 ```
 
-Your agent selects, interprets, and applies the guidance.
+Your agent runs `ghost init` to create a `.ghost/` folder with starter
+guidance. Treat those starting answers as provisional until you accept or
+replace them. Share existing brand docs, examples you like, or corrections
+you keep making; your agent can help turn them into guidance for you to
+confirm.
 
-ghost never grades the work. It makes sure the CLI delivers the brand's
-actual words, and shows you what it delivered. Whether the result is good is
-still your call, and `ghost review` is built for that moment: it lays the
-change, the guidance, and the review checks side by side so a reviewer can
-judge quickly.
+## Write down one decision
 
-## The loop
-
-The starter package is usable before the brand is fully documented. Confirm
-or replace its provisional guidance as the brand becomes known. Run setup
-once per repo, then gather, pull, and review for each task:
-
-```bash
-# Setup (once per repo)
-ghost init          # create .ghost/ with a usable starter package
-ghost checks init   # opt in to review checks
-ghost validate      # check the package is well-formed
-
-# The loop (every task)
-ghost gather "write a transactional email about seller reverification"
-ghost pull foundation.voice # deliver the cover plus selected guidance and sources
-ghost review        # assemble an advisory review packet for a diff
-```
-
-Your agent supplies the task and the applicable IDs; the example above uses
-an ID from the starter package. Review requires review checks and a Git diff
-against an existing commit.
-
-While tuning the package, `ghost stats` summarizes what agents actually
-reached for. See the [CLI reference](https://github.com/block/ghost/blob/main/packages/ghost/src/skill-bundle/references/schema.md#command-behavior)
-for all commands, including `stats`, `skill check`, and `manifest`.
-
-## Thesis
-
-Agents now make screens, emails, and sentences. Polishing one output does not
-help the next generation. Record where the model's default is good enough and
-where the brand must differ, then give those decisions to the agent before it
-starts.
-
-A `.ghost/` package keeps that guidance in the repo with the sources it
-points at and the conditions where it applies. Buttons stay buttons. The
-moments that carry your brand get your stance instead of the default. Write the
-decision once, and each agent can use it when the same situation returns.
-
-Selection is by applicability, not similarity. The menu states when each
-file applies, and the agent pulls what governs the task, including guidance
-whose words never appear in the prompt.
-
-## How it works
-
-The package is a folder of guidance files. Each file is one brand
-decision: frontmatter saying when it applies and which sources back it,
-and the guidance itself in prose. There is no hierarchy to learn. The
-folder is flat, and directories are only for browsing.
+Give your agent one decision and the situation it applies to:
 
 ```text
-.ghost/
-  manifest.yml          # schema + package id + optional cover id
-  glossary.md           # your kind vocabulary + what each kind means
-  brand.md              # example cover included by every pull
-  principle.trust.md    # guidance of kind `principle`
-  asset.logo.md         # guidance that points at concrete sources
-  checks/               # optional review checks; not guidance files
+Record this decision as ghost guidance: a payment-failure message states
+the known fact and the recovery action. It never speculates about the cause.
 ```
 
-The optional `cover:` in `manifest.yml` names the one page always included
-by pull. gather excludes it from the selectable menu. The starting structure
-calls it `brand`, but the filename is not reserved.
+Your agent drafts a file for you to confirm. Something like
+`.ghost/payment-failure.md`:
 
 ```markdown
 ---
-for: Placing, sizing, or choosing a logo lockup or glyph.
-materials:
-  - brand/logo-lockup.svg
-  - brand/logo-glyph.svg
-  - https://figma.com/file/example?node-id=logo-lockups
+for: Writing an email, error message, or support reply about a failed payment.
 ---
 
-Use the full lockup when recognition matters. Use the glyph only when space is
-constrained or when brand presence should recede.
+State what we know and what the customer can do next. "Your card was
+declined. Try another card or contact your bank." Do not guess at the
+reason, and do not imply fault.
 ```
 
-`for` states when the file applies. `materials` lists its sources as explicit
-repo-relative paths or supported external references. Name each file instead
-of using a glob. A reference may include a short note about what the agent
-will find there. Guidance stays in prose; sources say where to look.
+Check the wording before accepting the draft. The `for` line tells the
+agent when to use it; the body gives the decision. Ask your agent to link
+relevant code or assets if you have them. Review changes to the guidance
+through Git, as you would any other file in your repo.
 
-**Review checks** are optional assertions in `.ghost/checks/`. Core
-`ghost init` ships no review checks; opt in with `ghost checks init`.
-They are used only by review, never by gather or pull:
+The same rule can apply to an email, an error message, or a support reply.
+Each task may need different guidance alongside it, such as email structure
+or the tone of a support response.
 
-```markdown
----
-name: logo-clearspace-holds
-description: Logo usage preserves clearspace, lockup integrity, and glyph rules.
-severity: medium
-references:
-  - asset.logo
----
+Now give your agent the actual work:
 
-Assess whether the change preserves the logo guidance in `asset.logo`.
+```text
+Use the ghost guidance to write the email we send when a subscription
+renewal is declined.
 ```
 
-review reads a diff, matches touched files to guidance sources, and offers
-review checks for the agent to weigh. Review output never enters generation
-context. Use `ghost review --node` to add guidance that governs a change even
-when its sources were not touched. See the CLI reference for flag usage.
+You don't need to run retrieval commands yourself. Under that request,
+your agent runs something like:
 
-## What ghost can verify
+```bash
+npx ghost gather "email for a declined subscription renewal"
+npx ghost pull payment-failure foundation.voice
+```
 
-ghost's CLI delivery is observable by design. That is a deliberate contrast
-with pasting a document into a prompt: ghost supplies a local record of what
-its CLI delivered, not evidence of what the model read.
+`foundation.voice` comes from the starter; `payment-failure` is the file you
+added. `gather` lists all valid, selectable guidance, without filtering or
+ranking by the task. Your agent selects every applicable file and uses
+`pull` to read it, along with the package's cover if it has one. A rule can
+apply even if its words don't appear in your request.
 
-- Successful `gather` and `pull` calls are logged locally in a private
-  run log excluded from git, so a run shows which guidance was requested and delivered.
-- Agents can keep delivered context task-scoped. An email task can pull the
-  email guidance; a deck task can pull the deck guidance. Different tasks
-  can pull different subsets instead of the whole book every time.
-- Delivery is tested end to end: transport tests verify that complete
-  guidance survives the pipe, and included source content is always marked
-  as untrusted source data.
+When guidance points to source files, the CLI includes eligible local text
+or provides pointers for your agent to inspect. It doesn't fetch external
+references. `ghost stats` summarizes the local selection log so you can see
+which guidance agents pull.
 
-One honest boundary: a pull proves CLI delivery, not adherence. It does not
-prove that the host passed the full output to the model or that the model
-read it. Whether the agent followed the guidance is what review, and your
-assessment, are for.
+## What you still have to do
 
-Don't take our word for it. The repo ships two evaluation harnesses:
-[`packages/context-control`](https://github.com/block/ghost/tree/main/packages/context-control) measures whether
-agents select the applicable guidance from the menu, and
-[`packages/steering-control`](https://github.com/block/ghost/tree/main/packages/steering-control) measures what a
-package buys before and after, as a self-contained report. Run them
-against your own package.
+Review the email against the decision you recorded. Did it state the known
+failure and give a recovery action without inventing a cause?
 
-## What ghost does not do
+ghost doesn't learn your brand on its own or score the result. You confirm
+the decisions; your agent interprets them. The local log records selections
+and delivery counts, not proof that the model received or followed the
+guidance. You can use the same guidance files with another agent or model.
 
-- It does not score brand quality or grade outputs.
-- It does not learn the brand automatically; humans confirm every decision.
-- It does not guarantee adherence; it makes delivery and review inspectable.
-- It does not lock you to a model, agent, or service. The package is plain
-  files in your git.
+## Review checks, if you want them
 
-## Why not just…
+You can add review instructions in `.ghost/checks/` for your agent to assess
+a change against your guidance. Ask it:
 
-**…put it in AGENTS.md?** Agent instruction files are always-on: every
-rule rides along on every task, whether it applies or not. ghost guidance
-is selected per task, so the agent can leave email rules out of a dashboard,
-and the package can grow without growing every prompt.
+```text
+Set up ghost review checks for our payment-failure guidance.
+Review this diff against those checks.
+```
 
-**…paste the brand guide into the prompt?** All-or-nothing delivery, no
-CLI record of what was delivered, and the guide competes with the task for
-attention. ghost delivers the subset the agent selects and logs successful
-pulls.
+The default starter has no checks. `ghost checks init` adds an example for
+you to adapt. `ghost review` requires the checks directory and a diff; it
+assembles the change, matched guidance, and checks for your agent to assess.
+It doesn't grade the work. Checks stay out of gather and pull output.
 
-**…use RAG over the brand docs?** Search finds what sounds similar.
-Applicability is situational: the guidance that governs a payment form may
-never share vocabulary with the request. ghost shows the whole selectable
-menu with explicit conditions and lets the agent judge applicability directly.
+## Reference
 
-## What it costs to start
+If you want to run the CLI yourself, use `npx ghost`:
 
-You do not need a finished brand book. `ghost init` scaffolds a usable
-starter package, and one real decision beats an empty taxonomy: write down
-the thing reviewers keep repeating, give it a condition, and let the
-package grow from use. Guidance is markdown in your repo, so maintenance
-is ordinary review: edit the file, see the diff, merge.
+```bash
+npx ghost validate          # check guidance and review checks
+npx ghost gather "<task>"   # list the guidance menu for your agent to select from
+npx ghost pull <id>         # read selected guidance and the cover, if present
+npx ghost review            # assemble a review packet for a diff
+npx ghost stats             # summarize local usage
+```
 
-## Project Status
+See the [package and CLI reference](https://github.com/block/ghost/blob/main/packages/ghost/src/skill-bundle/references/schema.md)
+for formats and flags, or the [authoring guide](https://github.com/block/ghost/blob/main/packages/ghost/src/skill-bundle/references/authoring.md)
+for creating and updating guidance.
 
-Early preview; see the note above Install for what that means.
+## Alongside other tools
+
+Keep repo-wide instructions in `AGENTS.md`. Use `.ghost/` for brand decisions
+that apply to particular tasks, so email rules don't need to accompany a
+dashboard request.
+
+For a short guide, pasting the text into a prompt may be enough. With ghost,
+you maintain the guidance in your repo and let your agent choose from the
+menu for each task, rather than choosing passages to paste each time.
+
+## Contributing and evaluations
+
+See [Contributing](https://github.com/block/ghost/blob/main/CONTRIBUTING.md)
+for development and release checks. To test your own guidance, use
+[context-control](https://github.com/block/ghost/tree/main/packages/context-control)
+to measure selection and
+[steering-control](https://github.com/block/ghost/tree/main/packages/steering-control)
+to compare outputs with and without a package.
 
 ## License
 
-Apache-2.0
+[Apache License 2.0](https://github.com/block/ghost/blob/main/LICENSE) ·
+[Governance](https://github.com/block/ghost/blob/main/GOVERNANCE.md)
