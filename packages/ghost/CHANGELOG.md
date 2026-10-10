@@ -1,5 +1,13 @@
 # @design-intelligence/ghost
 
+## 0.35.1
+
+### Patch Changes
+
+- [#302](https://github.com/block/ghost/pull/302) [`b6bc905`](https://github.com/block/ghost/commit/b6bc905f41dd2e6bf043929698e5cb3e4c0df538) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Clarify task-specific brand guidance, early-preview status, agent selection, and delivery boundaries.
+
+- [#304](https://github.com/block/ghost/pull/304) [`438bae7`](https://github.com/block/ghost/commit/438bae7d4ed0698f0b98def6a77c95819dafc1e3) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Describe ghost as a brand context router across the project and npm READMEs, package descriptions, and site opening, with a consumer-first setup and guidance example.
+
 ## 0.35.0
 
 ### Minor Changes
