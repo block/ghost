@@ -1,7 +1,7 @@
 {
   "name": "ghost",
   "private": true,
-  "description": "Portable brand guidance that agents read before making and use during review.",
+  "description": "A brand context router for agents. Your agent selects the guidance; ghost delivers it.",
   "license": "Apache-2.0",
   "packageManager": "pnpm@10.33.0",
   "engines": {
