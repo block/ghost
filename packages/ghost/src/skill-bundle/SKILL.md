@@ -1,10 +1,10 @@
 ---
 name: ghost
 description: >-
-  Author, validate, consume, and review against a repo-local ghost package: the
-  medium-agnostic articulation of a product's brand. Use when the user wants to
-  set up a .ghost package, write or update guidance nodes, gather brand context
-  before generation, or assemble a review packet from ghost checks.
+  Author, validate, consume, and review against a repo-local package of brand
+  guidance. Use when the user wants to set up a .ghost package, write or update
+  guidance nodes, gather brand context before generation, or assemble a review
+  packet from ghost checks.
 license: Apache-2.0
 metadata:
   homepage: https://github.com/block/ghost
@@ -13,7 +13,7 @@ metadata:
 
 # ghost: Brand Guidance Packages
 
-A ghost package is the medium-agnostic articulation of a brand: its guidance,
+A ghost package is a repo-local package of brand guidance: its guidance,
 its stance, its conditions, and optional pointers to the concrete materials that
 guidance governs. Each brand decision is stated once, at the broadest level where
 it applies, and an agent reads the relevant guidance before building.
@@ -75,6 +75,8 @@ ghost pull <ids>    # pull the cover plus selected node bodies and materials
 ghost review        # assemble diff + matched material-backed nodes + checks
 ghost stats         # summarize local gather/pull events while tuning
 ```
+
+Review is advisory: ghost never grades; the host agent or human judges the packet.
 
 `gather` does no selection. Its Markdown is an agent-facing instruction
 surface: the task, then every selectable id and its applicability. Check the

@@ -1,7 +1,7 @@
 {
   "name": "ghost",
   "private": true,
-  "description": "Portable brand guidance for AI agents",
+  "description": "Portable brand guidance that agents read before making and use during review.",
   "license": "Apache-2.0",
   "packageManager": "pnpm@10.33.0",
   "engines": {
