@@ -34,6 +34,11 @@ optional `## Skeleton` (always last):
 - `## Never` — selective, high-value failure modes, each paired with its
   replacement: "never X — instead Y."
 
+This is a closed heading set unless the package glossary declares another body
+shape. Do not add ad hoc sections for notes, exceptions, sources, or what to do
+when guidance is silent. Put a package-wide silence rule in the cover's prose
+only when the brand needs to override the host skill's default behavior.
+
 Route each claim to one home. Can a reviewer observe it in the artifact?
 Rules. Does it reject a plausible move and name the replacement? Never. Does
 it shape decisions not covered by either? Usage. None of these? Cut it.
@@ -67,6 +72,40 @@ lines. Elsewhere, remove filler and unchosen hedges: "elevate," "delight,"
 "seamless," "best-in-class," "generally," "where possible," and "consider."
 If the human has not picked a side, return to authoring rather than laundering
 uncertainty into prose.
+
+## Edit sentence by sentence
+
+After drafting, tighten the node before presenting it. Use plain, direct
+language and keep one idea per sentence. Name the element, decision, condition,
+and reason instead of using abstract brand language.
+
+Read each sentence against the one before and after it. If removing a sentence
+keeps the same decision and reason, remove it. If two sentences make the same
+point, keep the clearer one. If a sentence only introduces, summarizes, or
+repeats the section, cut it.
+
+Avoid clever labels, metaphors, academic phrasing, and broad design jargon.
+Name the specific decision, element, condition, or action instead. Replace vague
+phrases with the background, layout, copy, motion, hierarchy, spacing, or
+interaction decision the agent must preserve.
+
+Watch for words that sound precise but hide the actual choice:
+
+| Instead of... | Name... |
+| --- | --- |
+| `signal` | the exact cue: color, copy, position, size, motion, contrast, or timing |
+| `restraint` | the concrete limit: count, spacing, frequency, contrast, ornament, or emphasis |
+| `temperature`, `personality`, or `brand soul` | the observable behavior: tone, pace, density, formality, or visual treatment |
+| `worldview`, `standing`, or `provenance` | the decision, source, reason, or authority the agent should use |
+| `furniture`, `artifact`, or `thing` | the actual page, screen, document, component, example, or output |
+| `taxonomy`, `ladder`, `rung`, `front door`, or `junk drawer` | the file, group, order, entry point, or purpose |
+| `carry the field`, `let the signal land`, or similar phrasing | the background, spacing, hierarchy, or emphasis to apply |
+
+In node prose, rewrite these words when they stand in for the actual
+instruction. Name what to change, preserve, avoid, or check.
+
+Every prohibition needs the preferred alternative. Do not write a blacklist item
+unless the node also says what to do instead.
 
 ## Patterns bind and open
 
