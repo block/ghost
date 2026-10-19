@@ -5,7 +5,6 @@ description: Use plain words in authored guidance and explanations without chang
 
 # Recipe: Use Plain Words
 
-
 Apply these restrictions to authored guidance and explanations to the human.
 They govern writing, not source identifiers, paths, quoted evidence, or literal
 technical uses. Do not change a source name to satisfy a writing rule.
@@ -30,4 +29,3 @@ Do not describe flat guidance files as parents, children, or nested guidance.
 Use `artifact` only when page, screen, document, presentation, file, or output
 would be less precise. Avoid flowery language, academic phrasing, internal
 jargon, and clever labels for ordinary design work.
-
