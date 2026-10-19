@@ -98,6 +98,12 @@ decision appears.
 
 ### 5. Write and confirm
 
+After the human approves intake conclusions, use
+[preventive-authoring.md](preventive-authoring.md) to find consequential
+ambiguity before first generation. One node can satisfy several needs. Routine
+drafting under approved decisions does not require per-file approval, but new or
+changed brand decisions still do.
+
 Use [nodes.md](nodes.md) for node craft, [materials.md](materials.md) for material
 bindings, and [schema.md](schema.md) for the package contract.
 

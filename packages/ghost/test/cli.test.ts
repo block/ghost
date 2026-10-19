@@ -1876,6 +1876,7 @@ describe("ghost CLI", () => {
         "references/making.md",
         "references/materials.md",
         "references/nodes.md",
+        "references/preventive-authoring.md",
         "references/schema.md",
         "references/steering-audit.md",
       ].sort(),

@@ -47,8 +47,9 @@ directly from the returned guidance.
 Do not substitute plausible tokens, assets, components, or copy when a pulled
 material governs the choice and was inspectable. Follow example instructions:
 keep what the node says to preserve, change what belongs to the task, and use an
-example only in the situation it covers. Do not turn one example into a
-universal target.
+example only in the situation it covers. Preventive examples are generation
+context only when selected through normal gather and pull. Do not turn one
+example into a universal target.
 
 ## Verify
 
