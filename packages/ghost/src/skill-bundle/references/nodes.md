@@ -7,6 +7,7 @@ description: Write durable ghost guidance with discriminating context, purposefu
 
 **Goal:** write the smallest node that forces a real brand decision. Package
 shape belongs in [schema.md](schema.md); this recipe owns the guidance itself.
+Apply [vocabulary.md](vocabulary.md) to guidance and explanations.
 
 ## One node, one purpose
 
@@ -25,22 +26,22 @@ Unless the package's glossary declares another vocabulary, structure a node
 body with three semantic sections, each a home for one type of claim, plus an
 optional `## Skeleton` (always last):
 
-- `## Usage` — the worldview and decision logic that help the model handle
+- `## Usage` — the approach and decision logic that help the model handle
   decisions the author did not anticipate.
 - `## Rules` — observable requirements a reviewer can assess in the finished
-  artifact, one per bullet. Exact values where useful. Put a known gap inside
+  output, one per bullet. Exact values where useful. Put a known gap inside
   the rule it affects: name the gap and state that the model must not invent
   a value.
 - `## Never` — selective, high-value failure modes, each paired with its
   replacement: "never X — instead Y."
 
-Route each claim to one home. Can a reviewer observe it in the artifact?
+Route each claim to one home. Can a reviewer observe it in the output?
 Rules. Does it reject a plausible move and name the replacement? Never. Does
 it shape decisions not covered by either? Usage. None of these? Cut it.
-A claim gets one home; do not repeat it as worldview, rationale, and rule.
+A claim gets one home; do not repeat it as approach, reason, and rule.
 Include only the sections the node needs; a short node may be plain prose.
 
-Altitude lives in prose:
+State scope in prose:
 
 - State universal guidance plainly.
 - Give narrower guidance a condition that names when it holds.
@@ -65,8 +66,8 @@ again" does.
 Keep real absolutes. `Never` and `always` are correct for human-confirmed hard
 lines. Elsewhere, remove filler and unchosen hedges: "elevate," "delight,"
 "seamless," "best-in-class," "generally," "where possible," and "consider."
-If the human has not picked a side, return to authoring rather than laundering
-uncertainty into prose.
+If the human has not picked a side, return to authoring rather than presenting
+uncertainty as a decision.
 
 ## Patterns bind and open
 
@@ -135,7 +136,7 @@ Before curation, ask:
 | Testimony | Can you name the human words or evidence behind this? |
 | Discrimination | Does the `for` payload select a real situation rather than a topic? |
 | Force | Does the body decide something and reject a plausible alternative? |
-| Altitude | Is it universal on purpose, or conditioned? |
+| Scope | Is it universal on purpose, or conditioned? |
 | Residue | Is it free of starter prose, API mirroring, and brand-deck filler? |
 
 A weak answer returns to the human or evidence. Scores do not make guidance
