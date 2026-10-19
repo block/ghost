@@ -15,12 +15,18 @@ Use one workflow with a different first move:
 
 | Starting state | First move |
 | --- | --- |
-| No package | Run `ghost init`, then capture one repeated decision. Do not attempt the whole brand. |
+| No package | After intake approval, run `ghost init` and inspect the complete starter before authoring. Keep the first brand decision small, not the scaffold. |
 | Existing package | Run `ghost validate`, `ghost gather "update the package"`, and pull potentially affected nodes before proposing edits. |
 | Starter package | Treat every inherited answer as provisional until the owner replaces or accepts it. Change the manifest id only when the human takes ownership. |
 
 A monorepo or product suite uses one contract per package. Do not invent a
 hierarchy between packages.
+
+When no package exists, use `ghost init` after intake approval. Do not
+hand-create the manifest, glossary, cover, or a reduced starter. Inspect every
+initialized file before proposing brand edits. Treat inherited answers as
+provisional until the human accepts or replaces them. Do not silently omit
+starter files to make the first change smaller.
 
 ## After intake
 

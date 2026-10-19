@@ -34,7 +34,9 @@ brand decision and only needs package edits, go to [authoring.md](authoring.md).
    material locator, check, or package boundary.
 7. **Hand off approved decisions.** After approval, use
    [authoring.md](authoring.md) and [nodes.md](nodes.md) to make the smallest
-   package change that preserves the approved decision.
+   package change that preserves the approved decision. If no package exists,
+   run `ghost init` and inspect the complete starter after intake approval,
+   before authoring. Do not hand-create a reduced package.
 
 Missing information is not always a blocker. Start with the useful approved
 scope, name what is out of scope, and leave open questions outside `.ghost/`
