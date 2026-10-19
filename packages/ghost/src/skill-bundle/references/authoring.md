@@ -85,6 +85,20 @@ Prefer, in order: no change, material locator, existing-node edit, new node,
 then split, rename, or removal. A new node is not a dumping ground for evidence.
 Contradictions are never resolved silently.
 
+Choose the smallest effective form:
+
+- Use prose for priorities, choices, conditions, and reasons.
+- Use `materials` when a concrete source makes guidance exact or inspectable.
+- Use an example when several decisions need to be seen together. Explain what
+  matters so it is not copied blindly.
+- Use a `## Skeleton` only when matching work must begin from that structure.
+- Use a rejection when it prevents a likely harmful choice. Name the preferred
+  alternative.
+
+If clearer wording fixes the problem, rewrite existing guidance. Reference the
+source that owns an exact value instead of inventing one. If guidance was clear
+and available, inspect why it was not followed before adding another rule.
+
 ### 4. Propose the smallest useful diff
 
 Before editing, present a short proposal with the evidence, affected node,
@@ -111,6 +125,22 @@ Keep each edit attributable to something the human said, showed, or accepted.
 Ask the human to keep, soften, narrow, reject, or mark important claims as
 legacy. Uncommitted edits remain drafts. Git review is the approval boundary.
 
+Treat each edit as a complete package change:
+
+- Give each decision one authoritative home. Examples may demonstrate it, but
+  must not add a second, competing rule.
+- Check the cover and related nodes for duplication or conflict.
+- Ensure each edited node remains usable with the cover when pulled on its own.
+- Update affected material locators, glossary entries, manifest pointers, and
+  check references.
+- Keep checks review-only. Every obligation in a check must already be stated
+  in its referenced guidance.
+
+Before moving or deleting guidance, account for every original decision. A topic
+still appearing somewhere is not proof that its decision survived. Preserve each
+decision or propose its removal and explain why. New or changed decisions still
+need human approval.
+
 ### 6. Validate
 
 ```bash
@@ -119,7 +149,8 @@ ghost validate
 
 Fix errors. Treat warnings as decisions to resolve, not output to hide. Present
 the final package diff and call out contradictions that were kept, conditioned,
-replaced, or deferred.
+replaced, or deferred. Validation confirms package shape, not whether a brand
+decision is correct.
 
 ## Adapting a starter
 
