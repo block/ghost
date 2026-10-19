@@ -53,10 +53,12 @@ fenced block under `## Skeleton`, in the target medium, with real token or class
 names and `{placeholders}` for task facts. Include only enough structure to
 commit the shape. A Skeleton in a materials file forfeits guaranteed delivery.
 
-**Components are earned by repeated, diverse surfaces.** The source is the API
-reference. Point to each component file explicitly and keep prose to usage
-grammar: purpose, reach-when, neighboring alternative, and never. Do not copy
-props into markdown. For a class vocabulary, lead each class block with a
+**Components are earned by repeated, diverse surfaces.** Prefer existing
+components before inventing new structure. The source is the API reference.
+Point to each component file explicitly and keep prose to usage grammar:
+purpose, reach-when, neighboring alternative, and never. Do not copy props into
+markdown. Component APIs, states, and registry manifests stay in their owning
+docs or source files. For a class vocabulary, lead each class block with a
 one-line contract comment so a skimming agent can recover the grammar.
 
 Examples are ordinary materials. When a complete runnable surface helps, point
@@ -87,8 +89,9 @@ which neighboring component fits instead. For a novel library, the component
 source supplies missing API knowledge; prose supplies the usage decision.
 
 Do not add a component schema, registry mirror, or prop manifest to ghost. Those
-copies drift. `materials` locates implementation; the node body explains why
-and when.
+copies drift. `materials` points to concrete sources and makes them available
+for inspection; it does not import authority by itself. The node body explains
+why and when.
 
 ## Bundle or reference
 
