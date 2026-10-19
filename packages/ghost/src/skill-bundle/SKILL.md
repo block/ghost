@@ -32,6 +32,7 @@ it applies, and an agent reads the relevant guidance before building.
 
 - Making something against a package: [references/making.md](references/making.md)
 - Grounding before generating: [references/ground.md](references/ground.md)
+- Plain words for guidance and explanations: [references/vocabulary.md](references/vocabulary.md)
 - Writing or revising a node: [references/nodes.md](references/nodes.md)
 - Binding guidance to materials: [references/materials.md](references/materials.md)
 - Creating or overhauling a package: [references/authoring.md](references/authoring.md)
@@ -53,7 +54,7 @@ it applies, and an agent reads the relevant guidance before building.
 - The **glossary** declares the kind vocabulary and what each kind means.
 - The manifest's `cover` names the unconditional node every `pull` includes
   before selected guidance. `gather` excludes it from the selectable menu. It
-  carries essence, temperature, and brand-only refusals. Admission
+  carries shared character and brand-only refusals. Admission
   test: a violation visible in one element belongs in that element's chapter;
   visible in one view, in the composition chapter; visible only across the
   whole body of work, on the cover.
