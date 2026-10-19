@@ -66,7 +66,9 @@ Keep real absolutes. `Never` and `always` are correct for human-confirmed hard
 lines. Elsewhere, remove filler and unchosen hedges: "elevate," "delight,"
 "seamless," "best-in-class," "generally," "where possible," and "consider."
 If the human has not picked a side, return to authoring rather than laundering
-uncertainty into prose.
+uncertainty into prose. After [intake.md](intake.md), only approved decisions
+become node prose. Keep facts, observations, and machine inferences out of final
+nodes unless the human confirms the decision they support.
 
 ## Patterns bind and open
 

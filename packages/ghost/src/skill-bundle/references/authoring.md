@@ -22,15 +22,31 @@ Use one workflow with a different first move:
 A monorepo or product suite uses one contract per package. Do not invent a
 hierarchy between packages.
 
+## After intake
+
+When loose evidence has already gone through [intake.md](intake.md), treat the
+approved brand decisions as the source for package edits. Do not ask the human
+to approve the same decision again for each node, locator, wording pass, or
+validation fix. Routine file placement and prose edits may proceed when they
+preserve the approved decision.
+
+If editing reveals a new brand decision, wider scope, contradiction, or changed
+meaning, stop and ask for approval of that grouped decision. The optional
+`.ghost-workbench/intake.md` handoff is session evidence, not canonical guidance.
+Only `.ghost/` package files validated and accepted through ordinary review
+become the package.
+
 ## The authoring loop
 
 ### 1. Orient
 
-Ask for the decision whose feedback keeps repeating: the checkout always
-flagged for trust, the voice always re-toned, the empty state always rewritten.
-One grounded node beats an empty catalog and a broad first pass.
+For loose material, use [intake.md](intake.md) first. Inspect the supplied
+evidence and propose a useful starting direction before asking questions.
+If intake is complete, start from its approved decisions without repeating the
+interview. One grounded node beats an empty catalog and a broad first pass.
 
-Interview only for answers that change guidance:
+Use these questions only for unresolved choices that change guidance. Do not
+present them as a required questionnaire:
 
 - What should this brand never become, and what replaces that default?
 - Who is acting, and what are they trying to finish?
@@ -87,8 +103,10 @@ Contradictions are never resolved silently.
 
 ### 4. Propose the smallest useful diff
 
-Before editing, present a short proposal with the evidence, affected node,
-verdict, proposed change, and choice needed. The human may accept, correct,
+For a new or changed brand decision, present a short proposal with the
+evidence, affected node, verdict, proposed change, and choice needed.
+If intake already approved that decision, summarize the intended edits and
+proceed without asking again. The human may accept, correct,
 narrow, reject, mark legacy, or defer it. Write only accepted changes. Restate
 the final form after a correction or narrowing.
 
@@ -102,8 +120,8 @@ Use [nodes.md](nodes.md) for node craft, [materials.md](materials.md) for materi
 bindings, and [schema.md](schema.md) for the package contract.
 
 Keep each edit attributable to something the human said, showed, or accepted.
-Ask the human to keep, soften, narrow, reject, or mark important claims as
-legacy. Uncommitted edits remain drafts. Git review is the approval boundary.
+For claims not already approved, ask the human to keep, soften, narrow, reject,
+or mark them as legacy. Uncommitted edits remain drafts. Git review is the approval boundary.
 
 ### 6. Validate
 
