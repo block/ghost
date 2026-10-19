@@ -1,6 +1,6 @@
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { parse as parseYaml } from "yaml";
 import { runCli } from "./cli-test-utils.js";
@@ -93,6 +93,7 @@ describe("ghost skill bundle frontmatter", () => {
         "SKILL.md",
         "references/authoring.md",
         "references/ground.md",
+        "references/intake.md",
         "references/making.md",
         "references/materials.md",
         "references/nodes.md",
@@ -108,5 +109,64 @@ describe("ghost skill bundle frontmatter", () => {
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
+  });
+
+  it("delivers machine-led intake guidance with the handoff structure", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "ghost-skill-bundle-intake-"));
+    try {
+      const install = await runCli(
+        ["skill", "install", "--dest", "skills/ghost"],
+        dir,
+      );
+      expect(install.code).toBe(0);
+
+      const raw = await readFile(
+        join(dir, "skills", "ghost", "references", "intake.md"),
+        "utf-8",
+      );
+      const parsed = parseSkillMarkdown(raw);
+      expect(parsed.frontmatter).toMatchObject({
+        name: "intake",
+      });
+      for (const heading of [
+        "## Intended use",
+        "## Accessible evidence",
+        "## Facts checked by the agent",
+        "## Machine inferences",
+        "## Proposed brand decisions for approval",
+        "## Approved brand decisions",
+        "## Excluded or weak evidence",
+        "## Open questions",
+        "## Scope limits",
+      ]) {
+        expect(parsed.body).toContain(heading);
+      }
+      expect(parsed.body).toContain(".ghost-workbench/intake.md");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("uses the loose-material fixture as a qualitative intake scenario", async () => {
+    const fixture = await readFile(
+      resolve(
+        import.meta.dirname,
+        "fixtures",
+        "authoring",
+        "intake-loose-material.md",
+      ),
+      "utf-8",
+    );
+
+    for (const heading of [
+      "### Facts checked by the agent",
+      "### Machine inferences",
+      "### Proposed brand decisions for approval",
+      "### Open questions",
+    ]) {
+      expect(fixture).toContain(heading);
+    }
+    expect(fixture).toContain("None. Explicit approval required");
+    expect(fixture).toContain("not a semantic guarantee");
   });
 });
