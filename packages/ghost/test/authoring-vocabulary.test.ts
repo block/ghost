@@ -45,6 +45,30 @@ it("delivers writing restrictions and their scope through the installed skill", 
     expect(vocabulary).toContain(
       "page, screen, document, presentation, file, or output",
     );
+    expect(vocabulary).toContain("## Name the observable choice");
+    for (const [word, replacement] of [
+      ["signal", "the exact cue: color, copy, position"],
+      ["restraint", "the concrete limit: count, spacing"],
+      ["personality", "the observable behavior: tone, pace"],
+      ["thing", "the actual page, screen, document"],
+      ["carry the field", "the background, spacing, hierarchy"],
+      ["let the signal land", "the background, spacing, hierarchy"],
+    ]) {
+      expect(vocabulary).toContain(`\`${word}\``);
+      expect(vocabulary).toContain(replacement);
+    }
+    const nodes = (
+      await readFile(join(root, "references/nodes.md"), "utf8")
+    ).replace(/\s+/g, " ");
+    expect(nodes).toContain("## Edit sentence by sentence");
+    expect(nodes).toContain("keep one idea per sentence");
+    expect(nodes).toContain(
+      "If removing it preserves the decision and reason, remove it",
+    );
+    expect(nodes).toContain(
+      "Cut introductions and summaries that add no instruction",
+    );
+    expect(nodes).toContain("Every prohibition needs a preferred alternative");
     for (const file of [
       "SKILL.md",
       "references/authoring.md",

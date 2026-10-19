@@ -29,3 +29,16 @@ Do not describe flat guidance files as parents, children, or nested guidance.
 Use `artifact` only when page, screen, document, presentation, file, or output
 would be less precise. Avoid flowery language, academic phrasing, internal
 jargon, and clever labels for ordinary design work.
+
+## Name the observable choice
+
+When a word hides the instruction, replace it with what the agent must do.
+These are editing prompts, not blanket bans on literal or technical uses.
+
+| Instead of... | Name... |
+| --- | --- |
+| `signal` | the exact cue: color, copy, position, size, motion, contrast, or timing |
+| `restraint` | the concrete limit: count, spacing, frequency, contrast, ornament, or emphasis |
+| `personality` | the observable behavior: tone, pace, density, formality, or visual treatment |
+| `thing` | the actual page, screen, document, component, example, or output |
+| `carry the field`, `let the signal land`, or similar phrasing | the background, spacing, hierarchy, or emphasis to apply |

@@ -69,6 +69,20 @@ lines. Elsewhere, remove filler and unchosen hedges: "elevate," "delight,"
 If the human has not picked a side, return to authoring rather than presenting
 uncertainty as a decision.
 
+## Edit sentence by sentence
+
+After drafting, tighten the node before presenting it. Use plain, direct
+language and keep one idea per sentence. Name the element, decision, condition,
+and reason instead of using abstract brand language.
+
+Read each sentence against its neighbors. If removing it preserves the decision
+and reason, remove it. If two sentences make the same point, keep the clearer
+one. Cut introductions and summaries that add no instruction.
+
+Use the concrete replacements in [vocabulary.md](vocabulary.md). Name what to
+change, preserve, avoid, or check. Every prohibition needs a preferred
+alternative.
+
 ## Patterns bind and open
 
 A pattern fixes part of a reusable structure and leaves the rest available:
