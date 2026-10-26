@@ -15,13 +15,13 @@
     "@astrojs/rss": "4.0.19",
     "@design-intelligence/vessel-react": "workspace:*",
     "@tailwindcss/vite": "^4.2.2",
-    "astro": "5.16.7",
+    "astro": "5.18.2",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "tailwindcss": "^4.2.2"
   },
   "devDependencies": {
-    "@astrojs/check": "0.9.10",
+    "@astrojs/check": "0.9.12",
     "@types/node": "^22.0.0",
     "@types/react": "19.1.2",
     "@types/react-dom": "19.1.2",
