@@ -59,29 +59,6 @@ export function inspectLayeredContext(
   }
   for (const id of [...(manifest.core ?? []), ...roots]) visit(id);
 
-  function hasBaselineInterface(id: string, seen = new Set<string>()): boolean {
-    if (seen.has(id)) return false;
-    seen.add(id);
-    const node = nodes.get(id);
-    if (!node) return false;
-    if (node.scope === "baseline" && node.layer === "interface") return true;
-    return (node.requires ?? []).some((dependency) =>
-      hasBaselineInterface(dependency, seen),
-    );
-  }
-  for (const id of ids) {
-    const node = nodes.get(id);
-    if (
-      node?.scope === "brand" &&
-      node.layer === "interface" &&
-      !hasBaselineInterface(id)
-    ) {
-      issues.push({
-        path: `${id}.md.requires`,
-        message: `brand/interface node "${id}" must require a baseline/interface node, directly or transitively`,
-      });
-    }
-  }
   return { ids, issues };
 }
 

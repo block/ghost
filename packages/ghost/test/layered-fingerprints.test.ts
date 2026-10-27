@@ -279,11 +279,6 @@ describe("layered fingerprints", () => {
   it.each([
     ["missing", `requires: [missing]`, "missing or invalid"],
     ["cycle", `requires: [${email}]`, "requires cycle"],
-    [
-      "unpaired",
-      `requires: [${identity}]`,
-      "must require a baseline/interface",
-    ],
   ])(
     "rejects %s required context in validate and pull",
     async (_, requires, message) => {
@@ -297,6 +292,26 @@ describe("layered fingerprints", () => {
       expect((await pull()).ids).toEqual([core]);
     },
   );
+
+  it("accepts interfaces without inventing a baseline for their medium", async () => {
+    await node(
+      "interface.social",
+      `scope: brand\nlayer: interface\nrequires: [${identity}]`,
+      "Lead social posts with the subject and a short caption.",
+    );
+    const result = await pull(["interface.social"]);
+    expect(result.ids).toEqual([core, identity, "interface.social"]);
+    expect(result.ids).not.toContain(baseline);
+    expect((await lintGhostPackage(pkg, dir)).errors).toBe(0);
+
+    // Classification does not imply a dependency, even without a core or baseline.
+    await manifest("cover: framing");
+    await node("interface.physical", "scope: brand\nlayer: interface");
+    expect((await pull(["interface.physical"])).ids).toEqual([
+      "interface.physical",
+    ]);
+    expect((await lintGhostPackage(pkg, dir)).errors).toBe(0);
+  });
 
   it("rejects invalid required targets, but does not block on unrelated invalid guidance", async () => {
     await node(identity, "scope: brand\nlayer: fundamentals");
@@ -418,7 +433,7 @@ describe("layered fingerprints", () => {
       ids: [core],
       cover: "framing",
     });
-    await node(email, "scope: brand\nlayer: interface");
+    await node(email, "scope: brand\nlayer: interface\nrequires: [missing]");
     expect((await runCli(["pull", email], dir)).code).toBe(2);
     expect(
       (await readFile(join(pkg, ".events"), "utf8")).trim().split("\n"),

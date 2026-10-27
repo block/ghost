@@ -164,12 +164,14 @@ requires:
 Apply the identity palette to one primary action. Keep supporting links quiet.
 ```
 
-Each brand/interface node must require at least one baseline/interface node,
-directly or transitively. A variant can require its base brand interface.
-Identity nodes may require fundamentals such as `baseline.fundamentals.typesetting`;
-these dependencies are explicit, not inferred from names or prose. The author
-chooses the correct medium pairing; validation checks classification and reachability,
-not whether email guidance semantically matches an email.
+A brand/interface node requires the applicable baseline/interface when one exists.
+A variant can require its base brand interface. When no baseline covers the medium,
+require only the applicable identity and fundamentals; do not add an unrelated
+format or invent an empty baseline to satisfy classification.
+Identity nodes may require fundamentals such as `baseline.fundamentals.typesetting`.
+These dependencies are explicit, not inferred from names or prose. Authors choose
+applicable guidance; validation checks declared dependencies, not whether the
+baseline covers a medium or semantically matches the task.
 
 Gather remains the complete flat selection menu, with scope/layer on entries.
 It excludes the cover and core from `nodes`, and exposes core separately as
@@ -189,7 +191,7 @@ classified or prerequisite-bearing packages, this ordering applies to both
 `ids` and pull event IDs record delivered guidance including core and prerequisites;
 the cover stays in its separate `cover` field. An all-miss selection still emits no
 packet, just as for legacy packages. Missing or invalid required nodes, invalid
-core targets, cycles and missing baseline interface pairing fail pull. Validation
+core targets and cycles fail pull. Validation
 checks the whole package; pull checks required context only. Unrelated broken
 nodes remain diagnostics rather than blocking an otherwise valid pull.
 
