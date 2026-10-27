@@ -45,6 +45,11 @@ const AnnotatedMaterialSchema = z
 export const GhostNodeFrontmatterSchema = z
   .object({
     for: z.string().min(1).optional(),
+    scope: z.enum(["baseline", "brand"]).optional(),
+    layer: z
+      .enum(["fundamentals", "framing", "identity", "interface"])
+      .optional(),
+    requires: z.array(NodeIdSchema).optional(),
     materials: z
       .array(z.union([MaterialLocatorSchema, AnnotatedMaterialSchema]))
       .optional(),
@@ -56,15 +61,34 @@ export const GhostNodeFrontmatterSchema = z
     description: z
       .never({ message: "`description` is not a node key; use `for`" })
       .optional(),
-    // `relates` (and all typed edges) were removed. Reject it with a message
-    // that names the key so authors get a clear signal.
+    // `relates` was removed. `requires` names explicit prerequisites only.
     relates: z
-      .never({ message: "`relates` is a removed key (edges no longer exist)" })
+      .never({
+        message: "`relates` is a removed key; use `requires` for prerequisites",
+      })
       .optional(),
   })
   // Passthrough, not strict: authors may add free-form descriptive keys
   // (e.g. `audience`, `stage`) that describe what the node is. ghost does not
   // gate on them; they ride along as part of the node's descriptive surface.
-  .passthrough();
+  .passthrough()
+  .superRefine((node, ctx) => {
+    if ((node.scope === undefined) !== (node.layer === undefined)) {
+      ctx.addIssue({
+        code: "custom",
+        message: "scope and layer must be declared together",
+      });
+    } else if (
+      (node.scope === "baseline" &&
+        node.layer !== "fundamentals" &&
+        node.layer !== "interface") ||
+      (node.scope === "brand" && node.layer === "fundamentals")
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        message: `invalid scope/layer combination: ${node.scope}/${node.layer}`,
+      });
+    }
+  });
 
 export { NodeIdSchema, NodeRefSchema };

@@ -53,6 +53,7 @@ function cloneNodeMap(
       deepFreeze({
         ...node,
         ...(node.materials ? { materials: [...node.materials] } : {}),
+        ...(node.requires ? { requires: [...node.requires] } : {}),
       }),
     ]),
   );

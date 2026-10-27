@@ -45,7 +45,8 @@ Altitude lives in prose:
 - State universal guidance plainly.
 - Give narrower guidance a condition that names when it holds.
 - Name the reversal condition when a decision can legitimately flip.
-- Do not encode scope through folders, hierarchy, inheritance, or edges.
+- Keep files flat. Optional `scope` + `layer` classify content; `requires` names
+  explicit local prerequisites, not overrides. See [schema.md](schema.md#layered-fingerprints).
 
 While drafting, ask three questions. They are prompts, not fields:
 

@@ -3,7 +3,7 @@ import type { GhostMaterial } from "../materials.js";
 export const GHOST_NODE_SCHEMA = "ghost.node/v1" as const;
 
 /**
- * A node's frontmatter: descriptive properties only. Identity, kind, and
+ * A node's frontmatter: retrieval, classification, prerequisites and materials. Identity, kind, and
  * containment are not here — the file path is the node id, and the optional
  * filename prefix is the kind. The prose body carries the design expression;
  * why / with-what / how-assembled are drafting prompts, never fields.
@@ -18,6 +18,9 @@ export interface GhostNodeFrontmatter {
    * any node worth anchoring a task at.
    */
   for?: string;
+  scope?: "baseline" | "brand";
+  layer?: "fundamentals" | "framing" | "identity" | "interface";
+  requires?: string[];
   /**
    * Optional locators for the concrete materials this guidance is about:
    * explicit repo-relative file paths and supported external locators. Glob

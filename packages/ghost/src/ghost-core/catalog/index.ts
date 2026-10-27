@@ -1,7 +1,7 @@
 /**
  * Public surface for the in-memory ghost catalog — a flat map of prose
- * nodes assembled from the package's markdown files. No edges, no cascade, no
- * traversal: the agent selects from the menu (`gather`).
+ * nodes assembled from the package's markdown files. Optional scope/layer metadata
+ * classifies content; explicit prerequisites expand selected pulls.
  */
 
 export {

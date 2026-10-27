@@ -9,7 +9,7 @@ description: >-
 
 ```text
 .ghost/
-  manifest.yml        ghost.package/v1: schema + id + optional cover
+  manifest.yml        ghost.package/v1: schema + id + optional cover/core
   glossary.md         kind vocabulary + meanings
   materials/          bundled materials; never a node source
   <kind>.<slug>.md    guidance of a declared kind
@@ -18,12 +18,12 @@ description: >-
 ```
 
 Reserved at the root: `manifest.yml`, `glossary.md`, `materials/`, and
-`checks/`. Every other `*.md` is a node. The corpus is flat: no hierarchy,
-inheritance, or edges.
+`checks/`. Every other `*.md` is a node. The files and selection menu are flat. Optional content layers and explicit
+prerequisites do not imply directory hierarchy or inheritance.
 
 ## Manifest
 
-`manifest.yml` declares `schema`, `id`, and optionally `cover`. `cover` is a
+`manifest.yml` declares `schema`, `id`, and optionally `cover` and `core`. `cover` is a
 node id. `ghost gather` excludes it from the selectable menu; every `ghost pull`
 includes it before selected guidance when it resolves.
 
@@ -76,6 +76,109 @@ Use the full lockup when recognition matters.
 A node is concrete when it has non-empty `materials`, a fenced code block of at
 least three lines, or a `## Skeleton` section. `gather` reports those payload
 labels; they are not ranking signals.
+
+## Layered fingerprints
+
+Scope and layer are first-class consumed metadata, independent of filename kinds:
+
+| Scope | Legal layers | Purpose |
+| --- | --- | --- |
+| `baseline` | `fundamentals`, `interface` | General design foundations and medium-specific defaults |
+| `brand` | `framing`, `identity`, `interface` | Brand stance, explicit identity decisions and medium-specific expression |
+
+Declare both `scope` and `layer`, or neither. Unclassified packages keep their
+existing output. `materials` remains the locator field, not a layer. `requires`
+is an optional array of exact local node IDs. It includes those prerequisites
+transitively, never an inferred relationship or an authority override.
+
+```yaml
+schema: ghost.package/v1
+id: example-brand
+cover: framing
+core: [baseline.fundamentals.core]
+```
+
+`core`, when declared, is a nonempty list of baseline/fundamentals IDs. Keep it
+small: actual fundamentals such as legibility, hierarchy and accessibility,
+not an authority-only node. Larger fundamentals remain selectable. There is no
+arbitrary size limit and no semantic inspection of prose. The cover remains a
+separate manifest role; a layered brand uses its `brand/framing` node as cover.
+
+A flat file layout can express the full structure:
+
+```text
+manifest.yml
+framing.md
+baseline.fundamentals.core.md
+baseline.fundamentals.composition.md
+baseline.fundamentals.typesetting.md
+baseline.fundamentals.accessibility.md
+baseline.interface.email.md
+baseline.interface.deck.md
+baseline.interface.document.md
+baseline.interface.web.md
+baseline.interface.product.md
+identity.color.md
+identity.type.md
+interface.email.md
+interface.email.receipt.md
+interface.deck.md
+interface.deck.pitch.md
+interface.document.md
+interface.document.report.md
+```
+
+For example, `interface.email.md`:
+
+```markdown
+---
+for: Making a branded email.
+scope: brand
+layer: interface
+requires:
+  - baseline.interface.email
+  - identity.color
+  - identity.type
+---
+
+Apply the identity palette to one primary action. Keep supporting links quiet.
+```
+
+Each brand/interface node must require at least one baseline/interface node,
+directly or transitively. A variant can require its base brand interface.
+Identity nodes may require fundamentals such as `baseline.fundamentals.typesetting`;
+these dependencies are explicit, not inferred from names or prose. The author
+chooses the correct medium pairing; validation checks classification and reachability,
+not whether email guidance semantically matches an email.
+
+Gather remains the complete flat selection menu, with scope/layer on entries.
+It excludes the cover and core from `nodes`, and exposes core separately as
+`automatic`. The field is absent for manifests without core. Coverage counts
+selectable entries only. Do not select automatic nodes. Bare pull delivers the
+cover and core even when no selectable guidance applies.
+
+Pull expands core, selected nodes and all explicit prerequisites, with no duplicate
+bodies or inlined materials. The cover retains its separate first position; the
+remaining guidance is ordered baseline fundamentals, baseline interface, brand
+framing, brand identity, brand interface, then unclassified nodes. Prerequisites
+precede dependents within that guidance, even when they cross layer order. For
+classified or prerequisite-bearing packages, this ordering applies to both
+`--order steering` and `--order given`. There is no general precedence engine.
+
+`requested` records explicit selection (deduplicated, excluding the cover alias).
+`ids` and pull event IDs record delivered guidance including core and prerequisites;
+the cover stays in its separate `cover` field. An all-miss selection still emits no
+packet, just as for legacy packages. Missing or invalid required nodes, invalid
+core targets, cycles and missing baseline interface pairing fail pull. Validation
+checks the whole package; pull checks required context only. Unrelated broken
+nodes remain diagnostics rather than blocking an otherwise valid pull.
+
+Classified pull packets contain one `authority` prose field: baseline defaults
+yield to explicit brand decisions; exceptions name the changed rule and scope;
+requirements cannot be overridden; `requires` does not confer override authority;
+framing does not override explicit decisions; unresolved conflicts must be reported;
+delivery order is not authority. ghost does not infer semantic conflicts or decide
+which prose statements are requirements. Unclassified packets omit this field.
 
 ## Skeletons
 

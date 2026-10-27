@@ -4,8 +4,11 @@ import {
   extractSkeletonFences,
   type GhostCatalogNode,
   type GhostMaterial,
+  inspectLayeredContext,
+  LAYERED_AUTHORITY,
   type MaterialTransportResult,
   normalizeMaterial,
+  orderLayeredNodes,
   resolveLocalMaterialLocator,
   stripSkeletonSections,
   transportMaterials,
@@ -58,7 +61,45 @@ export async function pullGhostNodes(
   const known = selectedRequested.filter((id) => selectableNodes.has(id));
   const missed: PullMiss[] = selectedRequested
     .filter((id) => !selectableNodes.has(id))
-    .map((id) => ({ requested: id, suggested: closestIds(id, selectableIds) }));
+    .map((id) => ({
+      requested: id,
+      suggested: closestIds(id, selectableIds),
+    }));
+
+  const manifest = snapshot.package.manifest;
+  const layered = [...snapshot.catalog.nodes.values()].some(
+    (node) => node.scope !== undefined,
+  );
+  const expanded =
+    manifest.core !== undefined ||
+    layered ||
+    [...snapshot.catalog.nodes.values()].some(
+      (node) => node.requires !== undefined,
+    );
+  const invalidRequested = selectedRequested.find((id) =>
+    snapshot.invalid.some(
+      (entry) =>
+        entry.file === `${id}.md` &&
+        (expanded ||
+          /^(scope|layer|requires)|scope\/layer/.test(entry.message)),
+    ),
+  );
+  if (invalidRequested) {
+    throw new UsageError(
+      `required node "${invalidRequested}" is invalid; run ghost validate`,
+    );
+  }
+  const context = inspectLayeredContext(snapshot.catalog.nodes, manifest, [
+    ...(coverId ? [coverId] : []),
+    ...known,
+  ]);
+  if (context.issues.length > 0) {
+    throw new UsageError(
+      context.issues
+        .map((issue) => `${issue.path}: ${issue.message}`)
+        .join("\n"),
+    );
+  }
 
   if (known.length === 0 && missed.length > 0) {
     return emptyMissResult(
@@ -72,8 +113,13 @@ export async function pullGhostNodes(
   const givenNodes = known.map(
     (id) => selectableNodes.get(id) as GhostCatalogNode,
   );
-  const orderedSelectedNodes =
-    (options.order ?? "steering") === "given"
+  const orderedSelectedNodes = expanded
+    ? orderLayeredNodes(
+        context.ids
+          .filter((id) => id !== coverId)
+          .map((id) => snapshot.catalog.nodes.get(id) as GhostCatalogNode),
+      )
+    : (options.order ?? "steering") === "given"
       ? givenNodes
       : orderPulledNodes(givenNodes);
   const nodesToPull = [
@@ -99,7 +145,7 @@ export async function pullGhostNodes(
     kind: "pull",
     diagnostics: snapshot.invalid,
     requested: selectedRequested,
-    ids: known,
+    ids: expanded ? orderedSelectedNodes.map((node) => node.id) : known,
     missed,
     cover:
       coverPulled !== undefined
@@ -110,6 +156,7 @@ export async function pullGhostNodes(
           }
         : { state: "absent" },
     ...(fallback ? { fallback } : {}),
+    ...(layered ? { authority: LAYERED_AUTHORITY } : {}),
     nodes: selectedPulled.map(formatPulledNode),
     skeletons: pulledSkeletons(pulledNodes),
     materialCounts,
@@ -264,6 +311,10 @@ function formatPulledNode({ node, materials }: PulledNode): GhostPulledNode {
     id: node.id,
     ...(node.kind !== undefined ? { kind: node.kind } : {}),
     ...(node.for ? { for: node.for } : {}),
+    ...(node.scope !== undefined
+      ? { scope: node.scope, layer: node.layer }
+      : {}),
+    ...(node.requires !== undefined ? { requires: [...node.requires] } : {}),
     ...(node.materials !== undefined
       ? { declaredMaterials: [...node.materials] }
       : {}),

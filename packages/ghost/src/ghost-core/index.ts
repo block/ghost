@@ -11,6 +11,12 @@ export {
   type GhostCatalogNode,
   type PlacedNode,
 } from "./catalog/index.js";
+export {
+  inspectLayeredContext,
+  LAYERED_AUTHORITY,
+  layerOrder,
+  orderLayeredNodes,
+} from "./catalog/layers.js";
 // --- Check (ghost.check/v1) — markdown checks, agent-evaluated ---
 export {
   GHOST_CHECK_SCHEMA,

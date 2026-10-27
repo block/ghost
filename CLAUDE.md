@@ -54,9 +54,9 @@ checks/               # optional review assertions; never a node source
 The **corpus is flat**. A node is a markdown file: a `for` payload in
 frontmatter (the retrieval payload: the situation or activity the guidance is
 for), optional `materials`, and brand guidance in the prose body. A node's identity is its filename minus `.md`; its kind is the
-filename prefix before the first dot, declared in the glossary. There is no
-hierarchy, no inheritance, no edges; nesting into folders is a browsing
-convenience only.
+filename prefix before the first dot, declared in the glossary. Files stay flat. Optional `scope` + `layer` classify content; `requires` names
+local prerequisites. Manifest `core` names a small automatic baseline fundamentals
+subset. These are consumed metadata, not a folder hierarchy or inheritance engine.
 
 `materials` is the single locator field for concrete materials the guidance is
 about. It accepts explicit repo-relative file paths and supported external

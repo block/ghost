@@ -33,7 +33,7 @@ export async function loadGhostPackage(
   }
   const manifest = parseManifest(manifestRaw, "manifest.yml");
 
-  // The catalog is flat and valid by construction — no edges to resolve.
+  // The catalog is flat; prerequisite integrity is checked by validate and pull.
   // Per-node schema failures are collected as `invalid`.
   const { nodes: placedNodes, invalid } = await loadNodeFiles(paths.packageDir);
   const checkFiles = await loadCheckFiles(paths.packageDir);

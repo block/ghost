@@ -31,7 +31,7 @@ export interface LoadedNodeFiles {
 
 /**
  * Load authored prose nodes from the package directory. The corpus is flat:
- * there is no hierarchy, no inheritance, no edges. Nesting into directories is a
+ * directories do not determine content layers or prerequisites. Nesting is a
  * browsing convenience only.
  *
  * Every `*.md` file under the package directory is a node. Its id is its path
@@ -68,11 +68,16 @@ async function walk(
   let entries: Array<{ name: string; isDir: boolean }>;
   try {
     const dirents = await readdir(absDir, { withFileTypes: true });
-    entries = dirents.map((d) => ({ name: d.name, isDir: d.isDirectory() }));
+    entries = dirents.map((d) => ({
+      name: d.name,
+      isDir: d.isDirectory(),
+    }));
   } catch (err) {
     if (isMissingPathError(err)) return;
     throw new Error(
-      `Cannot read node directory "${absDir}": ${err instanceof Error ? err.message : String(err)}. Check the path and directory permissions, then retry.`,
+      `Cannot read node directory "${absDir}": ${
+        err instanceof Error ? err.message : String(err)
+      }. Check the path and directory permissions, then retry.`,
       { cause: err },
     );
   }
@@ -103,7 +108,10 @@ async function walk(
       const first = report.issues.find((issue) => issue.severity === "error");
       invalid.push({
         file: relPath,
-        message: first?.message ?? "invalid node",
+        message:
+          first?.path && /^(scope|layer|requires)(\.|$)/.test(first.path)
+            ? `${first.path}: ${first.message}`
+            : first?.message ?? "invalid node",
       });
       continue;
     }

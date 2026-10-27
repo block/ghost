@@ -14,7 +14,8 @@ export function gatherGhostPackage(
   const ask = normalizeAsk(options.ask);
   const coverId =
     snapshot.cover.state === "resolved" ? snapshot.cover.id : undefined;
-  const menu = buildCatalogMenu({
+  const core = new Set(snapshot.package.manifest.core ?? []);
+  const entries = buildCatalogMenu({
     nodes: new Map(
       [...snapshot.catalog.nodes].map(([id, node]) => [
         id,
@@ -24,7 +25,10 @@ export function gatherGhostPackage(
         },
       ]),
     ),
-  }).filter((entry) => entry.id !== coverId);
+  });
+  const menu = entries.filter(
+    (entry) => entry.id !== coverId && !core.has(entry.id),
+  );
   const kinds = menuKinds(snapshot);
 
   return {
@@ -35,10 +39,21 @@ export function gatherGhostPackage(
       artifact: "ghost package",
       list: "Available guidance",
     },
-    contract: gatherContract(snapshot.invalid.length === 0),
+    contract: {
+      ...gatherContract(snapshot.invalid.length === 0),
+      ...(core.size > 0
+        ? {
+            ifNoneApply:
+              "If no selectable node applies, run bare `ghost pull` to receive the cover, automatic core fundamentals, and uncovered-guidance policy. Do not select automatic nodes.",
+          }
+        : {}),
+    },
     coverage: menuCoverage(menu),
     ...(kinds.length > 0 ? { kinds } : {}),
     nodes: menu,
+    ...(snapshot.package.manifest.core !== undefined
+      ? { automatic: entries.filter((entry) => core.has(entry.id)) }
+      : {}),
   };
 }
 

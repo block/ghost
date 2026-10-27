@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { NodeIdSchema as LocalNodeIdSchema } from "./node/schema.js";
 
 /** Schema emitted for newly initialized `.ghost/` packages. */
 export const GHOST_PACKAGE_SCHEMA = "ghost.package/v1" as const;
@@ -22,11 +23,13 @@ export const GhostPackageManifestSchema = z
     schema: z.literal(GHOST_PACKAGE_SCHEMA),
     id: SlugIdSchema,
     /**
-     * Optional id of the cover node: the one node gather inlines above the menu
-     * on every invocation. Guaranteed presence for content selection cannot
+     * Optional id of the cover node, excluded from selection and included by
+     * every successful pull. Guaranteed presence for content selection cannot
      * retrieve: essence, temperature, and brand-level refusals.
      */
     cover: NodeIdSchema.optional(),
+    /** A small, always-delivered subset of baseline fundamentals. */
+    core: z.array(LocalNodeIdSchema).min(1).optional(),
   })
   .strict();
 

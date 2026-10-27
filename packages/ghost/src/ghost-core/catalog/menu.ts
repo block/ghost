@@ -11,6 +11,9 @@ export interface CatalogMenuEntry {
   /** The node's kind (filename prefix), when it declares one. */
   kind?: string;
   for?: string;
+  scope?: "baseline" | "brand";
+  layer?: "fundamentals" | "framing" | "identity" | "interface";
+  requires?: string[];
   /** Count of material locators available after pulling this node. */
   materials?: number;
   /** True when this entry carries a material locator, fenced example, or Skeleton. */
@@ -23,8 +26,8 @@ export interface CatalogMenuEntry {
 
 /**
  * Build the gather menu: every authored node, with its kind and `for`
- * payload, sorted by id for stable output. A flat catalog with no anchor or
- * hierarchy; the agent selects from it.
+ * payload, sorted by id for stable output. The selection menu stays flat even when nodes
+ * declare content layers and prerequisites.
  */
 export function buildCatalogMenu(catalog: GhostCatalog): CatalogMenuEntry[] {
   const entries: CatalogMenuEntry[] = [];
@@ -34,6 +37,10 @@ export function buildCatalogMenu(catalog: GhostCatalog): CatalogMenuEntry[] {
       id: node.id,
       ...(node.kind !== undefined ? { kind: node.kind } : {}),
       ...(node.for ? { for: node.for } : {}),
+      ...(node.scope !== undefined
+        ? { scope: node.scope, layer: node.layer }
+        : {}),
+      ...(node.requires !== undefined ? { requires: [...node.requires] } : {}),
       ...(node.materials !== undefined && node.materials.length > 0
         ? { materials: node.materials.length }
         : {}),

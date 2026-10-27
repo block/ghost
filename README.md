@@ -76,7 +76,7 @@ ghost manifest      # emit a machine-readable index of commands and flags
 
 For a task-specific gather, your agent reads the complete, unfiltered menu and
 pulls every node whose stated situation applies. `ghost gather --format json` inspects
-the catalog without grounding a task. Because only selected nodes enter the
+the catalog without grounding a task. Because only selected guidance and its automatic context enter the
 working context, the agent can see the shape of the brand without loading the
 whole package.
 
@@ -142,6 +142,32 @@ include a short note describing what the agent will find there. Components,
 patterns, logos, motion files, illustrations, and external asset libraries all
 use the same field. Guidance stays in prose; `materials` only says where the
 material is.
+
+### Layered fingerprints
+
+Keep package files flat while distinguishing baseline foundations from brand
+expression. Nodes may declare `scope: baseline | brand` and
+`layer: fundamentals | framing | identity | interface` together. Baseline uses
+fundamentals/interface; brand uses framing/identity/interface. `requires: [ids]`
+explicitly includes prerequisites. A brand interface must require a baseline
+interface, directly or transitively.
+
+```yaml
+schema: ghost.package/v1
+id: example-brand
+cover: framing
+core: [baseline.fundamentals.core]
+```
+
+`core` names a small subset of real baseline fundamentals, delivered even by bare
+`ghost pull`. Gather shows these entries separately as `automatic`, not selectable
+nodes. Pull delivers the cover, core, selections and transitive prerequisites once,
+exposes scope/layer, and supplies an authority instruction for layered content.
+Defaults yield to explicit brand decisions; delivery order is not authority.
+Existing unclassified packages need no migration.
+
+See the [schema and flat layout example](packages/ghost/src/skill-bundle/references/schema.md#layered-fingerprints)
+and [complete runnable example](packages/ghost/test/fixtures/layered-fingerprint).
 
 **Checks** are optional review assertions in a flat `.ghost/checks/` directory.
 Core `ghost init` ships no checks; add them explicitly:

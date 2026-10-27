@@ -61,7 +61,9 @@ export function registerPullCommand(cli: CAC): void {
         for (const miss of result.missed) {
           const hint =
             miss.suggested.length > 0
-              ? ` (did you mean ${miss.suggested.map((s) => `\`${s}\``).join(", ")}?)`
+              ? ` (did you mean ${miss.suggested
+                  .map((s) => `\`${s}\``)
+                  .join(", ")}?)`
               : "";
           console.error(`Warning: unknown node \`${miss.requested}\`${hint}`);
         }
@@ -83,6 +85,7 @@ export function registerPullCommand(cli: CAC): void {
             event: "pull",
             ...(runId ? { run: runId } : {}),
             ids: [...result.ids],
+            ...(result.authority ? { requested: [...result.requested] } : {}),
             ...(result.cover.state === "resolved"
               ? { cover: result.cover.id }
               : {}),
@@ -94,7 +97,11 @@ export function registerPullCommand(cli: CAC): void {
 
         if (format === "json") {
           process.stdout.write(
-            `${JSON.stringify(formatPullJson(result, opts.materials !== false), null, 2)}\n`,
+            `${JSON.stringify(
+              formatPullJson(result, opts.materials !== false),
+              null,
+              2,
+            )}\n`,
           );
         } else {
           process.stdout.write(formatPullMarkdown(result));
@@ -132,6 +139,7 @@ function formatPullJson(
           },
         }
       : {}),
+    ...(result.authority ? { authority: result.authority } : {}),
     nodes: result.nodes.map((node) =>
       formatPullJsonNode(node, inlineMaterials),
     ),
@@ -144,6 +152,7 @@ function formatPullMarkdown(result: GhostPullResult): string {
   if (result.diagnostics.length > 0) {
     sections.push(formatLoadDiagnostics(result.diagnostics));
   }
+  if (result.authority) sections.push(`# Authority\n\n${result.authority}`);
   if (result.cover.state === "resolved") {
     sections.push(formatNodeMarkdown(result.cover.node));
   }
@@ -180,6 +189,9 @@ function formatPullMarkdown(result: GhostPullResult): string {
 
 function formatNodeMarkdown(node: GhostPulledNode): string {
   const lines = [`# \`${node.id}\``];
+  if (node.scope) lines.push("", `Scope: ${node.scope}; layer: ${node.layer}`);
+  if (node.requires?.length)
+    lines.push("", `Requires: ${node.requires.join(", ")}`);
   if (node.for) lines.push("", `Applies when: ${node.for}`);
   lines.push("", node.body.trim());
   if (node.materials !== undefined && node.materials.length > 0) {
@@ -198,6 +210,10 @@ function formatPullJsonNode(
     id: node.id,
     ...(node.kind !== undefined ? { kind: node.kind } : {}),
     ...(node.for ? { for: node.for } : {}),
+    ...(node.scope !== undefined
+      ? { scope: node.scope, layer: node.layer }
+      : {}),
+    ...(node.requires !== undefined ? { requires: [...node.requires] } : {}),
     ...(node.declaredMaterials !== undefined
       ? {
           materials: inlineMaterials

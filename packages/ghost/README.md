@@ -76,6 +76,21 @@ checks alongside existing diff matches; it never filters other checks.
 Unknown IDs stop review rather than produce a partial packet. Review still
 requires `.ghost/checks/`, and the agent decides which offered checks apply.
 
+## Layered fingerprints
+
+Optional paired `scope` and `layer` metadata distinguishes baseline fundamentals
+and interface defaults from brand framing, identity, and interface expression.
+Manifest `core` names a small baseline fundamentals subset, automatically delivered
+by every pull. Gather lists it separately as `automatic`, never selectable guidance.
+Node `requires` includes explicit local prerequisites transitively. Brand interfaces
+must require baseline interface guidance, directly or transitively. Files stay flat;
+existing unclassified packages retain their output.
+
+Pull exposes classification and one authority instruction for layered content.
+Its `requested` IDs describe selection; `ids` describe delivered context, including
+core and prerequisites. The cover remains separate. See the
+[schema and example](https://github.com/block/ghost/blob/main/packages/ghost/src/skill-bundle/references/schema.md#layered-fingerprints).
+
 ## Library
 
 ```ts

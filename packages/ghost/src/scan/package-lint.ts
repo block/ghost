@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { relative, resolve } from "node:path";
 import {
   classifyMaterialLocator,
+  inspectLayeredContext,
   closestIds,
   extractSkeletonSections,
   type GhostCatalog,
@@ -79,6 +80,15 @@ export async function lintGhostPackage(
       );
       await lintGlossary(paths.glossary, issues);
       lintCover(manifest.cover, catalog, issues);
+      issues.push(
+        ...inspectLayeredContext(catalog.nodes, manifest).issues.map(
+          (issue) => ({
+            ...issue,
+            severity: "error" as const,
+            rule: "layered-context-invalid",
+          }),
+        ),
+      );
       await lintKindPrefixes(paths, catalog, issues);
       lintNodeForPayloads(catalog, issues);
       lintSkeletonSections(catalog, issues);

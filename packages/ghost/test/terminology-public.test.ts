@@ -23,8 +23,7 @@ const EXEMPT_PATHS = ["apps/docs/src/content/log"] as const;
 const FORBIDDEN_TERMS = [
   /\bgraph\b/i,
   /\bcascade\b/i,
-  /\blayer\b/i,
-  /\blayers\b/i,
+  // scope/layer now classify content. Package chains and directory merging stay retired.
   /Package Chain/,
   /Intent Cascade/,
   /Selected [A-Za-z]+ Cascade/,

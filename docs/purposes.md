@@ -30,15 +30,16 @@ The package is a **flat corpus of prose nodes**. A node is a markdown file, its
 id is its filename with `.md` dropped (`principle.density.md` is
 `principle.density`), its kind is the filename prefix before the first dot, and a
 bare name (`voice.md`) is uncategorized. The glossary declares the category
-vocabulary. There is no graph: no hierarchy, no inheritance, no edges. Nesting
-into folders is a browsing convenience only.
+vocabulary. Scope/layer metadata classifies content independently of filenames. Explicit
+`requires` entries include local prerequisites. Neither creates inheritance or
+folder hierarchy; nesting is a browsing convenience only.
 
 | Part | Job |
 | --- | --- |
-| `manifest.yml` | Schema version and package id; the package's anchor. |
+| `manifest.yml` | Schema version, package id, optional cover and a small automatic baseline fundamentals core. |
 | `glossary.md` | The author's dictionary: every term with defined meaning in the corpus. ghost ships no fixed vocabulary. |
 | Prose nodes (`<kind>.<slug>.md`, `<slug>.md`) | Durable brand guidance; each body answers why (the stance), with what (the materials), or how it is assembled (the patterns). Altitude lives in prose; narrower guidance names its condition. |
-| Node frontmatter | `for` (retrieval payload) and optional `materials` (explicit repo-relative file paths or supported external locators, with optional retrieval notes; see the schema reference for the supported schemes). |
+| Node frontmatter | `for` (retrieval payload), optional paired `scope`/`layer`, optional local `requires`, and optional `materials` (explicit repo-relative file paths or supported external locators, with optional retrieval notes; see the schema reference for the supported schemes). |
 | `checks/` | Optional review assertions binding to nodes with `references`. Never a node source and never generation input. |
 
 One resolution mechanism, read-only:
@@ -49,7 +50,10 @@ One resolution mechanism, read-only:
 
 The optional `cover` in `manifest.yml` names the package's unconditional
 front door. `ghost gather` excludes that node from selection; every `ghost pull`
-includes it before selected guidance.
+includes it before selected guidance. Manifest `core` names a small subset of
+baseline fundamentals, shown separately in gather and delivered on every pull.
+Pull expands explicit prerequisites and orders content broad-to-narrow, subject
+to dependency order. These are consumed metadata, not semantic conflict inference.
 
 Checks are **not** nodes and are **never gathered**. They live in `checks/`,
 bind to the prose they enforce via `references`, and are consumed only by
@@ -99,14 +103,15 @@ Two rules keep the reservation honest:
    artifact.
    *Fix: a check says what prose it enforces via explicit node references.*
 
-6. **A consumer demanding structure back.** Any consumer that wants edges,
-   hierarchy, inheritance, or a precomputed slice is asking the corpus to do the
-   projection's job.
-   *Fix: the consumer builds its projection at read time; the corpus stays flat.*
+6. **A consumer inventing implicit structure.** Directory-based inheritance or
+   semantic conflict inference asks the runtime to interpret prose.
+   *Fix: files remain flat; scope/layer and explicit prerequisites are structural
+   metadata. The host interprets authority and reports unresolved conflicts.*
 
 ## What we are NOT doing
 
-- **Not** reintroducing a graph: no hierarchy, inheritance, or cross-node edges.
+- **Not** adding directory inheritance, package chains or an override engine.
+  Local prerequisites are explicit and do not confer authority.
 - **Not** adding a selection engine inside the artifact; the agent selects
   against contexts.
 - **Not** letting checks become generation input.

@@ -57,8 +57,12 @@ it applies, and an agent reads the relevant guidance before building.
   test: a violation visible in one element belongs in that element's chapter;
   visible in one view, in the composition chapter; visible only across the
   whole body of work, on the cover.
-- There is **no hierarchy, no inheritance, no edges**. Directories are for browsing
-  only; the model reads a flat menu.
+- Files and the selection menu stay **flat**. Optional `scope` + `layer` classify
+  content; `requires` names local prerequisites, not overrides. Manifest `core`
+  names a small baseline fundamentals subset delivered on every pull. Gather
+  lists it separately as automatic; do not select it. Pull includes transitive
+  prerequisites and supplies one authority instruction for classified packages.
+  See [schema.md](references/schema.md#layered-fingerprints) for the structure.
 - **Checks** are optional review assertions in a flat `.ghost/checks/*.md`
   directory. Checks are feed-back only; they never leak into generation
   context. Each check declares `references` to node ids and is used by

@@ -82,6 +82,7 @@ function formatGatherJson(menu: GhostGatherResult): Record<string, unknown> {
     coverage: menu.coverage,
     ...(menu.kinds !== undefined ? { kinds: menu.kinds } : {}),
     nodes: menu.nodes,
+    ...(menu.automatic !== undefined ? { automatic: menu.automatic } : {}),
   };
 }
 
@@ -96,7 +97,11 @@ function formatMenuMarkdown(menu: GhostGatherResult): string {
     ...(menu.diagnostics.length > 0
       ? [formatLoadDiagnostics(menu.diagnostics), ""]
       : []),
-    `${menu.contract.completeness.complete ? "This is the complete, unfiltered menu." : "This menu is incomplete because invalid guidance was skipped."} For the task below, check every \`Applies when\` condition and pull every applicable ID. The entries have not been selected or ranked.`,
+    `${
+      menu.contract.completeness.complete
+        ? "This is the complete, unfiltered menu."
+        : "This menu is incomplete because invalid guidance was skipped."
+    } For the task below, check every \`Applies when\` condition and pull every applicable ID. The entries have not been selected or ranked.`,
     "",
     "## Task",
     "",
@@ -110,6 +115,19 @@ function formatMenuMarkdown(menu: GhostGatherResult): string {
     "",
   ];
 
+  if (menu.automatic !== undefined) {
+    lines.push(
+      "## Automatic core",
+      "",
+      "Already included by every pull. Do not select these IDs.",
+      "",
+    );
+    for (const entry of menu.automatic) {
+      lines.push(`- \`${entry.id}\` (${entry.scope}/${entry.layer})`);
+      if (entry.for) lines.push(`  - Applies when: ${entry.for}`);
+    }
+    lines.push("", "## Selectable guidance", "");
+  }
   const kinds = menu.kinds ?? [];
   const groups = groupMenuByKind(menu.nodes, kinds);
   for (const group of groups) {
@@ -118,6 +136,8 @@ function formatMenuMarkdown(menu: GhostGatherResult): string {
     if (purpose) lines.push(purpose, "");
     for (const entry of group.entries) {
       lines.push(`- \`${entry.id}\``);
+      if (entry.scope)
+        lines.push(`  - Scope: ${entry.scope}; layer: ${entry.layer}`);
       if (entry.for?.trim()) {
         lines.push(`  - Applies when: ${entry.for.trim()}`);
       }
@@ -165,5 +185,8 @@ function groupMenuByKind(
     ...(groups.has(undefined) ? [undefined] : []),
   ];
 
-  return orderedKeys.map((kind) => ({ kind, entries: groups.get(kind) ?? [] }));
+  return orderedKeys.map((kind) => ({
+    kind,
+    entries: groups.get(kind) ?? [],
+  }));
 }

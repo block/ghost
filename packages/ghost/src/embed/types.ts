@@ -95,6 +95,8 @@ export interface GhostGatherResult {
   kinds?: readonly GhostMenuKind[];
   /** Selectable menu entries. A resolved cover is intentionally excluded. */
   nodes: readonly CatalogMenuEntry[];
+  /** Core guidance delivered automatically, not selected by the model. */
+  automatic?: readonly CatalogMenuEntry[];
 }
 
 export type GhostPullOrder = "steering" | "given";
@@ -109,6 +111,9 @@ export interface GhostPulledNode {
   id: string;
   kind?: string;
   for?: string;
+  scope?: "baseline" | "brand";
+  layer?: "fundamentals" | "framing" | "identity" | "interface";
+  requires?: string[];
   declaredMaterials?: readonly GhostMaterial[];
   materials?: readonly TransportedMaterial[];
   body: string;
@@ -140,10 +145,13 @@ export interface GhostPullResult {
   diagnostics: GhostEmbedSnapshot["invalid"];
   /** Caller-selected ids after de-duplicating and removing a cover alias. */
   requested: readonly string[];
+  /** Delivered ids, including core and prerequisites; cover is recorded separately. */
   ids: readonly string[];
   missed: readonly PullMiss[];
   cover: GhostPullCover;
   fallback?: GhostPullFallback;
+  /** Interpretation contract, present only for classified packages. */
+  authority?: string;
   nodes: readonly GhostPulledNode[];
   skeletons: readonly GhostPulledSkeleton[];
   materialCounts: {
