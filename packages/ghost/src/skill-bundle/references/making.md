@@ -50,6 +50,10 @@ keep what the node says to preserve, change what belongs to the task, and use an
 example only in the situation it covers. Do not turn one example into a
 universal target.
 
+For copy governed by a separate language reference, follow
+[writing.md](writing.md). Required wording and qualifications must survive
+composition and rendered verification.
+
 ## Verify
 
 Render with host-native tooling: browser skill, preview, Storybook, screenshots,

@@ -32,6 +32,7 @@ it applies, and an agent reads the relevant guidance before building.
 
 - Making something against a package: [references/making.md](references/making.md)
 - Grounding before generating: [references/ground.md](references/ground.md)
+- Writing with language references: [references/writing.md](references/writing.md)
 - Writing or revising a node: [references/nodes.md](references/nodes.md)
 - Binding guidance to materials: [references/materials.md](references/materials.md)
 - Creating or overhauling a package: [references/authoring.md](references/authoring.md)
@@ -149,6 +150,8 @@ legal, or brand-defining choices.
 
 - Never invent hierarchy, inheritance, or cross-node edges.
 - Never file a node by destination (`for-emails.md`); state its condition in prose.
-- Never put guidance in `materials`; it belongs in the node body.
+- Never put the package's scope, delegation, or conflict policy in `materials`;
+  those decisions belong in the node body. A scoped language reference may
+  supply terms or required wording as data; see [writing.md](references/writing.md).
 - Never gather checks as generation context.
 - Never claim provisional or local-convention reasoning as ghost-backed.

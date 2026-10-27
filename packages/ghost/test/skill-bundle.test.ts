@@ -98,6 +98,7 @@ describe("ghost skill bundle frontmatter", () => {
         "references/nodes.md",
         "references/schema.md",
         "references/steering-audit.md",
+        "references/writing.md",
       ];
 
       for (const file of files) {

@@ -30,6 +30,9 @@ rewriting it into a brief or checklist. Inspect any material the output tells
 you to inspect before generating; [making.md](making.md) covers unavailable or
 external material.
 
+When a selected node delegates language decisions to a separate reference,
+follow [writing.md](writing.md) for source scope, complete reads, and reporting.
+
 `ghost pull` records the selected ids. After compaction or a session handoff,
 re-run it with the same ids to restore the cover and selected guidance.
 
