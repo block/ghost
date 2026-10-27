@@ -17,6 +17,8 @@ const CHECK_ID_PATTERN = /^[a-z0-9][a-z0-9._-]*$/;
 
 export interface LoadedCheck {
   id: string;
+  /** Absolute owning package, populated by the package loader. */
+  packageDir?: string;
   doc: GhostCheckDocument;
   references: string[];
   usesDeprecatedSource: boolean;

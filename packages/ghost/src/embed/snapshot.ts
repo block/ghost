@@ -23,6 +23,21 @@ export async function loadGhostSnapshot(
       manifest: loaded.manifest,
       manifestRaw: loaded.manifestRaw,
     },
+    ...(loaded.core ? { core: [...loaded.core] } : {}),
+    ...(loaded.baseline
+      ? {
+          baseline: {
+            id: loaded.baseline.manifest.id,
+            dir: loaded.baseline.paths.packageDir,
+            manifest: loaded.baseline.manifest,
+            manifestRaw: loaded.baseline.manifestRaw,
+            repoRoot: loaded.baseline.repoRoot,
+            glossary: await loadSnapshotGlossary(
+              loaded.baseline.paths.glossary,
+            ),
+          },
+        }
+      : {}),
     catalog: {
       nodes,
     },
@@ -67,6 +82,7 @@ function cloneCheckMap(
       id,
       deepFreeze({
         id: check.id,
+        ...(check.packageDir ? { packageDir: check.packageDir } : {}),
         doc: {
           frontmatter: cloneCheckFrontmatter(check.doc.frontmatter),
           body: check.doc.body,

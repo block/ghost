@@ -35,3 +35,8 @@ re-run it with the same ids to restore the cover and selected guidance.
 
 Then make the requested artifact. When the output includes a matching starting
 structure, begin from it verbatim and fill it with task content.
+
+When the host supplies an external baseline, retain `--baseline <dir>` alongside
+`--package <dir>` on gather, pull, validate, and review. Never copy its nodes into
+the brand fingerprint. Resolve pulled materials from their owning `packageDir`,
+not by assuming every locator belongs to the brand package.

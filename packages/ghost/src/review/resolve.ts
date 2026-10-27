@@ -1,3 +1,4 @@
+import { relative, resolve } from "node:path";
 import {
   classifyMaterialLocator,
   type GhostCatalog,
@@ -87,7 +88,20 @@ export function resolveReview(
       // raw locator text silently missed every exact-path locator whenever
       // the package lives below the repo root.
       const locators = localLocators.filter((locator) =>
-        materialLocatorClaimsPath(locator, file.path, transport),
+        materialLocatorClaimsPath(
+          locator,
+          node.repoRoot
+            ? relative(
+                node.repoRoot,
+                resolve(transport.repoRoot, file.path),
+              ).replaceAll("\\", "/")
+            : file.path,
+          {
+            ...transport,
+            packageDir: node.packageDir ?? transport.packageDir,
+            repoRoot: node.repoRoot ?? transport.repoRoot,
+          },
+        ),
       );
       if (locators.length === 0) continue;
       claimedFiles.add(file.path);

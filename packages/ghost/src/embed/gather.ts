@@ -14,7 +14,7 @@ export function gatherGhostPackage(
   const ask = normalizeAsk(options.ask);
   const coverId =
     snapshot.cover.state === "resolved" ? snapshot.cover.id : undefined;
-  const core = new Set(snapshot.package.manifest.core ?? []);
+  const core = new Set(snapshot.core ?? snapshot.package.manifest.core ?? []);
   const entries = buildCatalogMenu({
     nodes: new Map(
       [...snapshot.catalog.nodes].map(([id, node]) => [
@@ -51,7 +51,7 @@ export function gatherGhostPackage(
     coverage: menuCoverage(menu),
     ...(kinds.length > 0 ? { kinds } : {}),
     nodes: menu,
-    ...(snapshot.package.manifest.core !== undefined
+    ...((snapshot.core ?? snapshot.package.manifest.core) !== undefined
       ? { automatic: entries.filter((entry) => core.has(entry.id)) }
       : {}),
   };
@@ -115,7 +115,10 @@ export function menuCoverage(
 }
 
 function menuKinds(snapshot: GhostEmbedSnapshot): GhostMenuKind[] {
-  return (snapshot.glossary?.kinds ?? []).map((kind) => ({
+  return [
+    ...(snapshot.baseline?.glossary?.kinds ?? []),
+    ...(snapshot.glossary?.kinds ?? []),
+  ].map((kind) => ({
     name: kind.name,
     // Later paragraphs may carry selection rules. Preserve the parsed purpose,
     // including Markdown structure, rather than silently shortening its meaning.

@@ -29,11 +29,19 @@ export interface GhostPackagePaths {
   packageDir: string;
   manifest: string;
   glossary: string;
+  /** Explicit external baseline; never discovered or copied into the package. */
+  baseline?: GhostPackagePaths;
 }
 
 export interface LoadedGhostPackage {
   manifest: GhostPackageManifest;
   manifestRaw: string;
+  /** Effective automatic core, without changing either authored manifest. */
+  core?: string[];
+  baseline?: LoadedGhostPackage & {
+    paths: GhostPackagePaths;
+    repoRoot: string;
+  };
   /** The in-memory flat node catalog: the ghost package model. */
   catalog: GhostCatalog;
   /** Whether `.ghost/checks/` exists; `ghost review` requires it. */
@@ -76,6 +84,7 @@ export interface InitGhostPackageResult {
 export function resolveGhostPackage(
   dirArg: string | undefined,
   cwd = process.cwd(),
+  baselineDir?: string,
 ): GhostPackagePaths {
   const dir = resolve(cwd, dirArg ?? resolveGhostDirDefault());
   const packageDir = dir;
@@ -84,6 +93,9 @@ export function resolveGhostPackage(
     packageDir,
     manifest: join(packageDir, GHOST_MANIFEST_FILENAME),
     glossary: join(packageDir, GHOST_GLOSSARY_FILENAME),
+    ...(baselineDir !== undefined
+      ? { baseline: resolveGhostPackage(baselineDir, cwd) }
+      : {}),
   };
 }
 

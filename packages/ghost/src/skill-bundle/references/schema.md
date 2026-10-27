@@ -77,6 +77,26 @@ A node is concrete when it has non-empty `materials`, a fenced code block of at
 least three lines, or a `## Skeleton` section. `gather` reports those payload
 labels; they are not ranking signals.
 
+## External baseline input
+
+Keep shared fundamentals and interfaces outside a brand fingerprint. Supply a
+separate existing `ghost.package/v1` package with `--baseline <dir>` on gather,
+pull, validate, and review. There is no implicit discovery or on-disk flattening.
+The external package owns its manifest `core`, declares `baseline` in its glossary,
+contains only baseline-scoped nodes, and has no cover. Its prerequisites must
+resolve inside that package. The brand's prerequisites resolve against the
+combined catalog. Duplicate node IDs, check IDs, or glossary kind names are
+errors, not overrides.
+
+Materials and checks retain their owning package. Glossaries validate separately;
+gather includes both kind legends. Bare pull includes the external core without
+rewriting the brand manifest. Embedded hosts use the third argument of
+`resolveGhostPackage(dir, cwd, baselineDir)` and
+`lintGhostPackage(dir, cwd, baselineDir)`. `snapshot.baseline` describes that input,
+`snapshot.core` is the combined core, and `GhostPulledNode.packageDir` identifies
+the absolute material-owning directory. Preserve `--baseline` when following up
+on pulled material pointers. The self-contained layout below remains supported.
+
 ## Layered fingerprints
 
 Scope and layer are first-class consumed metadata, independent of filename kinds:
@@ -88,7 +108,7 @@ Scope and layer are first-class consumed metadata, independent of filename kinds
 
 Declare both `scope` and `layer`, or neither. Unclassified packages keep their
 existing output. `materials` remains the locator field, not a layer. `requires`
-is an optional array of exact local node IDs. It includes those prerequisites
+is an optional array of exact node IDs in the package or supplied baseline. It includes those prerequisites
 transitively, never an inferred relationship or an authority override.
 
 ```yaml

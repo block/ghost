@@ -16,12 +16,13 @@ export async function resolveGitRoot(cwd = process.cwd()): Promise<string> {
   try {
     const { stdout } = await execFileAsync(
       "git",
-      ["rev-parse", "--show-toplevel"],
+      ["rev-parse", "--show-cdup"],
       {
         cwd,
       },
     );
-    return resolve(stdout.trim());
+    // Preserve the caller's symlink spelling (for example /var vs /private/var).
+    return resolve(cwd, stdout.trim());
   } catch {
     return resolve(cwd);
   }

@@ -2,10 +2,10 @@ import { readFile } from "node:fs/promises";
 import { relative, resolve } from "node:path";
 import {
   classifyMaterialLocator,
-  inspectLayeredContext,
   closestIds,
   extractSkeletonSections,
   type GhostCatalog,
+  inspectLayeredContext,
   listBundledMaterialFiles,
   materialLocator,
   materialLocatorClaimsPath,
@@ -36,8 +36,9 @@ import { resolveGitRoot } from "./package-paths.js";
 export async function lintGhostPackage(
   dirArg: string | undefined,
   cwd = process.cwd(),
+  baselineDir?: string,
 ): Promise<LintReport> {
-  const paths = resolveGhostPackage(dirArg, cwd);
+  const paths = resolveGhostPackage(dirArg, cwd, baselineDir);
   const issues: LintIssue[] = [];
 
   const manifestRaw = await readRequired(
@@ -58,8 +59,8 @@ export async function lintGhostPackage(
     if (manifestHasErrors) return finalize(issues);
     // catalog pass: load + validate the node catalog.
     try {
-      const { manifest, catalog, checks, invalid, invalidChecks } =
-        await loadGhostPackage(paths);
+      const loaded = await loadGhostPackage(paths);
+      const { manifest, catalog, checks, invalid, invalidChecks } = loaded;
       // node pass: a node that failed its own schema was skipped while loading
       // the catalog; surface it here so a malformed node is loud, not silent.
       issues.push(
@@ -78,22 +79,67 @@ export async function lintGhostPackage(
           path: entry.file,
         })),
       );
-      await lintGlossary(paths.glossary, issues);
-      lintCover(manifest.cover, catalog, issues);
-      issues.push(
-        ...inspectLayeredContext(catalog.nodes, manifest).issues.map(
-          (issue) => ({
-            ...issue,
-            severity: "error" as const,
-            rule: "layered-context-invalid",
-          }),
+      const ownCatalog = {
+        nodes: new Map(
+          [...catalog.nodes].filter(
+            ([, node]) => node.packageDir === paths.packageDir,
+          ),
         ),
+      };
+      lintCover(manifest.cover, ownCatalog, issues);
+      issues.push(
+        ...inspectLayeredContext(catalog.nodes, {
+          ...manifest,
+          core: loaded.core,
+        }).issues.map((issue) => ({
+          ...issue,
+          severity: "error" as const,
+          rule: "layered-context-invalid",
+        })),
       );
-      await lintKindPrefixes(paths, catalog, issues);
+      for (const owner of [
+        paths,
+        ...(paths.baseline ? [paths.baseline] : []),
+      ]) {
+        const ownerCatalog = {
+          nodes: new Map(
+            [...catalog.nodes].filter(
+              ([, node]) => node.packageDir === owner.packageDir,
+            ),
+          ),
+        };
+        const ownerIssues: LintIssue[] = [];
+        await lintGlossary(owner.glossary, ownerIssues);
+        await lintKindPrefixes(owner, ownerCatalog, ownerIssues);
+        await lintMaterialLocators(
+          owner,
+          ownerCatalog,
+          ownerIssues,
+          paths.baseline ? owner.packageDir : cwd,
+        );
+        issues.push(
+          ...ownerIssues.map((issue) =>
+            owner === paths
+              ? issue
+              : { ...issue, path: resolve(owner.packageDir, issue.path ?? "") },
+          ),
+        );
+      }
       lintNodeForPayloads(catalog, issues);
       lintSkeletonSections(catalog, issues);
-      await lintMaterialLocators(paths, catalog, issues, cwd);
-      lintCheckReferences(catalog, checks, issues);
+      for (const check of checks.values()) {
+        const externalBaseline =
+          loaded.baseline &&
+          check.packageDir === loaded.baseline.paths.packageDir
+            ? loaded.baseline
+            : undefined;
+        lintCheckReferences(
+          externalBaseline?.catalog ?? catalog,
+          new Map([[check.id, check]]),
+          issues,
+          externalBaseline?.paths.packageDir,
+        );
+      }
     } catch (err) {
       issues.push({
         severity: "error",
@@ -309,15 +355,18 @@ function lintCheckReferences(
   catalog: GhostCatalog,
   checks: Map<string, LoadedCheck>,
   issues: LintIssue[],
+  externalPackageDir?: string,
 ): void {
   for (const check of checks.values()) {
+    const file = `checks/${check.id}.md`;
+    const path = externalPackageDir ? resolve(externalPackageDir, file) : file;
     if (check.usesDeprecatedSource) {
       issues.push({
         severity: "warning",
         rule: "check-source-deprecated",
         message:
           "`source` is deprecated; replace it with `references:\n  - <node-id>`",
-        path: `checks/${check.id}.md.source`,
+        path: `${path}.source`,
       });
     }
     for (const raw of check.references) {
@@ -327,7 +376,7 @@ function lintCheckReferences(
           severity: "error",
           rule: "check-reference-malformed",
           message: `check reference '${raw}' is not a node id with optional '> Heading' anchor`,
-          path: `checks/${check.id}.md.references`,
+          path: `${path}.references`,
         });
         continue;
       }
@@ -337,7 +386,7 @@ function lintCheckReferences(
           severity: "warning",
           rule: "check-reference-unresolved",
           message: `check reference '${raw}' does not resolve to a ghost package node — if you pruned this rule from the node, delete its paired flag in the check too`,
-          path: `checks/${check.id}.md.references`,
+          path: `${path}.references`,
         });
         continue;
       }
@@ -349,7 +398,7 @@ function lintCheckReferences(
           severity: "warning",
           rule: "check-reference-heading-missing",
           message: `check reference '${raw}' names a heading that was not found — if you pruned this rule from the node, delete its paired flag in the check too`,
-          path: `checks/${check.id}.md.references`,
+          path: `${path}.references`,
         });
       }
     }

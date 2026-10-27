@@ -14,6 +14,7 @@ export function registerGatherCommand(cli: CAC): void {
       "gather [...ask]",
       "Emit the complete available guidance menu so the agent can pull applicable nodes.",
     )
+    .option("--baseline <dir>", "Use this separate baseline ghost package")
     .option(
       "--package <dir>",
       "Use this ghost package directory (default: ./.ghost)",
@@ -33,7 +34,11 @@ export function registerGatherCommand(cli: CAC): void {
         ] as const);
 
         const ask = normalizeAskParts(askParts);
-        const paths = resolveGhostPackage(opts.package, process.cwd());
+        const paths = resolveGhostPackage(
+          opts.package,
+          process.cwd(),
+          opts.baseline,
+        );
         const snapshot = await loadGhostSnapshot(paths);
         if (format === "markdown" && ask === undefined) {
           throw new UsageError(
@@ -54,10 +59,15 @@ export function registerGatherCommand(cli: CAC): void {
         // conditions apply.
         if (format === "json") {
           process.stdout.write(
-            `${JSON.stringify(formatGatherJson(menu), null, 2)}\n`,
+            `${JSON.stringify(formatGatherJson(menu, paths.baseline ? `ghost pull [<id>…] --package ${JSON.stringify(paths.packageDir)} --baseline ${JSON.stringify(paths.baseline.packageDir)}` : undefined), null, 2)}\n`,
           );
         } else {
-          process.stdout.write(formatMenuMarkdown(menu));
+          process.stdout.write(
+            formatMenuMarkdown(menu) +
+              (paths.baseline
+                ? `\nContinue with --package ${JSON.stringify(paths.packageDir)} --baseline ${JSON.stringify(paths.baseline.packageDir)} on pull, validate, and review.\n`
+                : ""),
+          );
         }
         await exitCli(0);
       } catch (err) {
@@ -71,14 +81,17 @@ function normalizeAskParts(askParts: string[] | undefined): string | undefined {
   return ask.length > 0 ? ask : undefined;
 }
 
-function formatGatherJson(menu: GhostGatherResult): Record<string, unknown> {
+function formatGatherJson(
+  menu: GhostGatherResult,
+  command = "ghost pull [<id>…]",
+): Record<string, unknown> {
   return {
     kind: menu.kind,
     diagnostics: menu.diagnostics,
     ...(menu.ask ? { ask: menu.ask } : {}),
     source: menu.source,
     contract: menu.contract,
-    next: { command: "ghost pull [<id>…]" },
+    next: { command },
     coverage: menu.coverage,
     ...(menu.kinds !== undefined ? { kinds: menu.kinds } : {}),
     nodes: menu.nodes,

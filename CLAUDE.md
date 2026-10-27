@@ -55,8 +55,10 @@ The **corpus is flat**. A node is a markdown file: a `for` payload in
 frontmatter (the retrieval payload: the situation or activity the guidance is
 for), optional `materials`, and brand guidance in the prose body. A node's identity is its filename minus `.md`; its kind is the
 filename prefix before the first dot, declared in the glossary. Files stay flat. Optional `scope` + `layer` classify content; `requires` names
-local prerequisites. Manifest `core` names a small automatic baseline fundamentals
-subset. These are consumed metadata, not a folder hierarchy or inheritance engine.
+prerequisites within the package or its explicitly supplied external baseline. Manifest `core` names a small automatic baseline fundamentals
+subset. Pass `--baseline <dir>` to gather, pull, validate, or review to consume a
+separate baseline package without copying it into the brand fingerprint.
+These are consumed metadata, not a folder hierarchy or inheritance engine.
 
 `materials` is the single locator field for concrete materials the guidance is
 about. It accepts explicit repo-relative file paths and supported external

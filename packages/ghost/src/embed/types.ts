@@ -36,6 +36,12 @@ export interface GhostEmbedSnapshot {
     manifest: Readonly<GhostPackageManifest>;
     manifestRaw: string;
   }>;
+  /** Combined automatic core; authored manifests remain unchanged. */
+  core?: readonly string[];
+  baseline?: GhostEmbedSnapshot["package"] & {
+    repoRoot: string;
+    glossary?: Readonly<GhostGlossarySnapshot>;
+  };
   catalog: Readonly<{
     nodes: ReadOnlySnapshotMap<string, Readonly<GhostCatalogNode>>;
   }>;
@@ -109,6 +115,8 @@ export interface GhostPulledSkeleton {
 
 export interface GhostPulledNode {
   id: string;
+  /** Absolute owning package directory, for host material staging. */
+  packageDir?: string;
   kind?: string;
   for?: string;
   scope?: "baseline" | "brand";

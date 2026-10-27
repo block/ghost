@@ -1,22 +1,166 @@
 import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { parse as parseYaml } from "yaml";
 import {
   assembleCatalog,
   type GhostPackageManifest,
   GhostPackageManifestSchema,
+  inspectLayeredContext,
+  parseCheckReference,
+  parseGlossary,
   UsageError,
 } from "#ghost-core";
-import { isMissingPathError } from "../internal/fs.js";
+import { isMissingPathError, readOptionalUtf8 } from "../internal/fs.js";
 import { loadCheckFiles } from "./check-files.js";
 import type { GhostPackagePaths, LoadedGhostPackage } from "./ghost-package.js";
 import type { LintIssue } from "./lint.js";
 import { loadNodeFiles } from "./node-files.js";
+import { resolveGitRoot } from "./package-paths.js";
 
 const RETIRED_PACKAGE_SCHEMA = "ghost.fingerprint-package/v1";
 const RETIRED_SCHEMA_MESSAGE =
   "manifest.yml uses the retired schema ghost.fingerprint-package/v1. Replace it with `schema: ghost.package/v1`, then run `ghost validate`.";
 
 export async function loadGhostPackage(
+  paths: GhostPackagePaths,
+): Promise<LoadedGhostPackage> {
+  const loaded = await loadSinglePackage(paths);
+  if (!paths.baseline) return loaded;
+  const baseline = await loadSinglePackage(paths.baseline);
+  const baselineDir = paths.baseline.packageDir;
+  if (
+    loaded.manifest.cover &&
+    !loaded.catalog.nodes.has(loaded.manifest.cover)
+  ) {
+    throw new UsageError(
+      `manifest cover "${loaded.manifest.cover}" must belong to the consuming package`,
+    );
+  }
+  if (baseline.manifest.cover !== undefined) {
+    throw new UsageError(`Baseline ${baselineDir} must not declare a cover`);
+  }
+  if (!baseline.manifest.core?.length) {
+    throw new UsageError(`Baseline ${baselineDir} must declare manifest core`);
+  }
+  const glossary = parseGlossary(
+    await readFile(paths.baseline.glossary, "utf-8"),
+  );
+  if (!glossary.glossary?.kinds.some((kind) => kind.name === "baseline")) {
+    throw new UsageError(
+      `Baseline ${baselineDir} needs a valid glossary declaring the baseline kind`,
+    );
+  }
+  const brandGlossary = parseGlossary(
+    (await readOptionalUtf8(paths.glossary)) ?? "",
+  );
+  const baselineKinds = new Set(
+    glossary.glossary.kinds.map((kind) => kind.name),
+  );
+  for (const kind of brandGlossary.glossary?.kinds ?? []) {
+    if (baselineKinds.has(kind.name)) {
+      throw new UsageError(
+        `Duplicate glossary kind "${kind.name}" in package ${paths.packageDir} and baseline ${baselineDir}; overlapping declared kinds are not allowed`,
+      );
+    }
+  }
+  for (const node of baseline.catalog.nodes.values()) {
+    if (node.scope !== "baseline") {
+      throw new UsageError(
+        `Baseline node "${node.id}" must have baseline scope`,
+      );
+    }
+  }
+  // Baselines are independent: their prerequisites and core resolve locally,
+  // never by borrowing a brand node from the consuming package.
+  const context = inspectLayeredContext(
+    baseline.catalog.nodes,
+    baseline.manifest,
+  );
+  if (context.issues.length) {
+    throw new UsageError(
+      `Baseline ${baselineDir}: ${context.issues.map((issue) => `${issue.path}: ${issue.message}`).join("\n")}`,
+    );
+  }
+  for (const [label, own, other, invalid, otherInvalid] of [
+    [
+      "node",
+      loaded.catalog.nodes,
+      baseline.catalog.nodes,
+      loaded.invalid,
+      baseline.invalid,
+    ],
+    [
+      "check",
+      loaded.checks,
+      baseline.checks,
+      loaded.invalidChecks,
+      baseline.invalidChecks,
+    ],
+  ] as const) {
+    const ids = new Set([
+      ...own.keys(),
+      ...invalid.map((entry) =>
+        entry.file.replace(/^checks\//, "").replace(/\.md$/, ""),
+      ),
+    ]);
+    for (const id of [
+      ...other.keys(),
+      ...otherInvalid.map((entry) =>
+        entry.file.replace(/^checks\//, "").replace(/\.md$/, ""),
+      ),
+    ]) {
+      if (ids.has(id))
+        throw new UsageError(
+          `Duplicate ${label} ID "${id}" in package and baseline; no precedence overwrites are allowed`,
+        );
+    }
+  }
+  for (const check of baseline.checks.values()) {
+    for (const reference of check.references) {
+      const id = parseCheckReference(reference)?.nodeId;
+      if (
+        id &&
+        !baseline.catalog.nodes.has(id) &&
+        loaded.catalog.nodes.has(id)
+      ) {
+        throw new UsageError(
+          `Baseline check "${check.id}" cannot reference brand node "${id}"`,
+        );
+      }
+    }
+  }
+  const brandRepoRoot = await resolveGitRoot(paths.packageDir);
+  for (const node of loaded.catalog.nodes.values())
+    node.repoRoot = brandRepoRoot;
+  const repoRoot = await resolveGitRoot(baselineDir);
+  for (const node of baseline.catalog.nodes.values()) node.repoRoot = repoRoot;
+  return {
+    ...loaded,
+    core: [...new Set([...(baseline.core ?? []), ...(loaded.core ?? [])])],
+    baseline: { ...baseline, paths: paths.baseline, repoRoot },
+    catalog: {
+      nodes: new Map([...loaded.catalog.nodes, ...baseline.catalog.nodes]),
+    },
+    checks: new Map([...loaded.checks, ...baseline.checks]),
+    hasChecksDir: loaded.hasChecksDir || baseline.hasChecksDir,
+    invalid: [
+      ...loaded.invalid,
+      ...baseline.invalid.map((entry) => ({
+        ...entry,
+        file: join(baselineDir, entry.file),
+      })),
+    ],
+    invalidChecks: [
+      ...loaded.invalidChecks,
+      ...baseline.invalidChecks.map((entry) => ({
+        ...entry,
+        file: join(baselineDir, entry.file),
+      })),
+    ],
+  };
+}
+
+async function loadSinglePackage(
   paths: GhostPackagePaths,
 ): Promise<LoadedGhostPackage> {
   let manifestRaw: string;
@@ -38,10 +182,14 @@ export async function loadGhostPackage(
   const { nodes: placedNodes, invalid } = await loadNodeFiles(paths.packageDir);
   const checkFiles = await loadCheckFiles(paths.packageDir);
   const catalog = assembleCatalog({ placedNodes });
+  for (const node of catalog.nodes.values()) node.packageDir = paths.packageDir;
+  for (const check of checkFiles.checks.values())
+    check.packageDir = paths.packageDir;
 
   return {
     manifest,
     manifestRaw,
+    ...(manifest.core ? { core: [...manifest.core] } : {}),
     catalog,
     hasChecksDir: checkFiles.hasChecksDir,
     checks: checkFiles.checks,

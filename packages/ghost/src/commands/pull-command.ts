@@ -1,3 +1,4 @@
+import { resolve } from "node:path";
 import type { CAC } from "cac";
 import { inferMaterialMime, type TransportedMaterial } from "#ghost-core";
 import type { GhostPulledNode, GhostPullResult } from "../embed/index.js";
@@ -18,6 +19,7 @@ export function registerPullCommand(cli: CAC): void {
       "pull [...ids]",
       "Emit the package cover plus named node bodies, and append the pull to the events tape.",
     )
+    .option("--baseline <dir>", "Use this separate baseline ghost package")
     .option(
       "--package <dir>",
       "Use this ghost package directory (default: ./.ghost)",
@@ -48,15 +50,37 @@ export function registerPullCommand(cli: CAC): void {
           "given",
         ] as const);
 
-        const paths = resolveGhostPackage(opts.package, process.cwd());
+        const paths = resolveGhostPackage(
+          opts.package,
+          process.cwd(),
+          opts.baseline,
+        );
         const snapshot = await loadGhostSnapshot(paths);
-        const repoRoot = await resolveGitRoot(process.cwd());
+        const repoRoot = await resolveGitRoot(
+          paths.baseline ? paths.packageDir : process.cwd(),
+        );
         const result = await pullGhostNodes(snapshot, {
           ids: ids ?? [],
           repoRoot,
           inlineMaterials: opts.materials !== false,
           order,
         });
+
+        // External packages may live in different repositories. Inspection
+        // pointers must remain directly addressable from the caller's cwd.
+        if (paths.baseline) {
+          for (const node of [
+            ...(result.cover.state === "resolved" ? [result.cover.node] : []),
+            ...result.nodes,
+          ]) {
+            const ownerRoot =
+              snapshot.catalog.nodes.get(node.id)?.repoRoot ?? repoRoot;
+            for (const material of node.materials ?? []) {
+              if (material.path)
+                material.path = resolve(ownerRoot, material.path);
+            }
+          }
+        }
 
         for (const miss of result.missed) {
           const hint =
@@ -98,13 +122,30 @@ export function registerPullCommand(cli: CAC): void {
         if (format === "json") {
           process.stdout.write(
             `${JSON.stringify(
-              formatPullJson(result, opts.materials !== false),
+              {
+                ...formatPullJson(
+                  result,
+                  opts.materials !== false,
+                  !!paths.baseline,
+                ),
+                ...(paths.baseline
+                  ? {
+                      baseline: paths.baseline.packageDir,
+                      context: `--package ${JSON.stringify(paths.packageDir)} --baseline ${JSON.stringify(paths.baseline.packageDir)}`,
+                    }
+                  : {}),
+              },
               null,
               2,
             )}\n`,
           );
         } else {
-          process.stdout.write(formatPullMarkdown(result));
+          process.stdout.write(
+            formatPullMarkdown(result, !!paths.baseline) +
+              (paths.baseline
+                ? `\nMaterial ownership: use each node's package directory. Retain --package ${JSON.stringify(paths.packageDir)} --baseline ${JSON.stringify(paths.baseline.packageDir)} for subsequent ghost commands.\n`
+                : ""),
+          );
         }
         await exitCli(0);
       } catch (err) {
@@ -116,6 +157,7 @@ export function registerPullCommand(cli: CAC): void {
 function formatPullJson(
   result: GhostPullResult,
   inlineMaterials: boolean,
+  external = false,
 ): Record<string, unknown> {
   return {
     kind: "pull",
@@ -128,7 +170,11 @@ function formatPullJson(
         ? {
             state: "resolved",
             id: result.cover.id,
-            node: formatPullJsonNode(result.cover.node, inlineMaterials),
+            node: formatPullJsonNode(
+              result.cover.node,
+              inlineMaterials,
+              external,
+            ),
           }
         : result.cover,
     ...(result.fallback
@@ -141,20 +187,20 @@ function formatPullJson(
       : {}),
     ...(result.authority ? { authority: result.authority } : {}),
     nodes: result.nodes.map((node) =>
-      formatPullJsonNode(node, inlineMaterials),
+      formatPullJsonNode(node, inlineMaterials, external),
     ),
     skeletons: result.skeletons,
   };
 }
 
-function formatPullMarkdown(result: GhostPullResult): string {
+function formatPullMarkdown(result: GhostPullResult, external = false): string {
   const sections: string[] = [];
   if (result.diagnostics.length > 0) {
     sections.push(formatLoadDiagnostics(result.diagnostics));
   }
   if (result.authority) sections.push(`# Authority\n\n${result.authority}`);
   if (result.cover.state === "resolved") {
-    sections.push(formatNodeMarkdown(result.cover.node));
+    sections.push(formatNodeMarkdown(result.cover.node, external));
   }
   if (result.fallback !== undefined) {
     sections.push(
@@ -168,7 +214,7 @@ function formatPullMarkdown(result: GhostPullResult): string {
     );
   }
   for (const node of result.nodes) {
-    sections.push(formatNodeMarkdown(node));
+    sections.push(formatNodeMarkdown(node, external));
   }
 
   if (result.skeletons.length > 0) {
@@ -187,8 +233,10 @@ function formatPullMarkdown(result: GhostPullResult): string {
   return `${sections.join("\n\n---\n\n")}\n`;
 }
 
-function formatNodeMarkdown(node: GhostPulledNode): string {
+function formatNodeMarkdown(node: GhostPulledNode, external: boolean): string {
   const lines = [`# \`${node.id}\``];
+  if (external && node.packageDir)
+    lines.push("", `Owning package: ${node.packageDir}`);
   if (node.scope) lines.push("", `Scope: ${node.scope}; layer: ${node.layer}`);
   if (node.requires?.length)
     lines.push("", `Requires: ${node.requires.join(", ")}`);
@@ -205,9 +253,11 @@ function formatNodeMarkdown(node: GhostPulledNode): string {
 function formatPullJsonNode(
   node: GhostPulledNode,
   inlineMaterials: boolean,
+  external = false,
 ): Record<string, unknown> {
   return {
     id: node.id,
+    ...(external ? { packageDir: node.packageDir } : {}),
     ...(node.kind !== undefined ? { kind: node.kind } : {}),
     ...(node.for ? { for: node.for } : {}),
     ...(node.scope !== undefined

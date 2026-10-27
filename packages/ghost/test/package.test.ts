@@ -406,6 +406,37 @@ Replacement rule.
     expect(loaded.invalidChecks).toEqual([]);
   });
 
+  it("keeps standalone check diagnostic paths package-relative", async () => {
+    await writeManifest(dir);
+    await writeFile(
+      join(dir, "voice.md"),
+      "---\nfor: Writing.\n---\nBe clear.\n",
+    );
+    await writeChecks(dir, [
+      [
+        "legacy.md",
+        "---\nname: legacy\ndescription: Legacy check.\nseverity: medium\nsource: voice\n---\nCheck the guidance.\n",
+      ],
+      [
+        "problems.md",
+        '---\nname: problems\ndescription: Reference checks.\nseverity: medium\nreferences: ["not a valid id", missing, "voice > Missing"]\n---\nCheck the guidance.\n',
+      ],
+    ]);
+
+    const report = await lintGhostPackage(dir);
+    expect(
+      report.issues
+        .filter((issue) => issue.rule.startsWith("check-"))
+        .map(({ rule, path }) => ({ rule, path })),
+    ).toEqual([
+      { rule: "check-source-deprecated", path: "checks/legacy.md.source" },
+      ...["malformed", "unresolved", "heading-missing"].map((finding) => ({
+        rule: `check-reference-${finding}`,
+        path: "checks/problems.md.references",
+      })),
+    ]);
+  });
+
   it("reports an absent checks/ directory without error", async () => {
     await writeManifest(dir);
 

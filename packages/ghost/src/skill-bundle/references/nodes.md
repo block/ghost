@@ -46,7 +46,7 @@ Altitude lives in prose:
 - Give narrower guidance a condition that names when it holds.
 - Name the reversal condition when a decision can legitimately flip.
 - Keep files flat. Optional `scope` + `layer` classify content; `requires` names
-  explicit local prerequisites, not overrides. See [schema.md](schema.md#layered-fingerprints).
+  explicit package or external-baseline prerequisites, not overrides. See [schema.md](schema.md#layered-fingerprints).
 
 While drafting, ask three questions. They are prompts, not fields:
 

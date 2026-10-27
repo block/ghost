@@ -22,6 +22,7 @@ export type { BaselineProse };
 
 export interface PacketMaterialNode {
   id: string;
+  packageDir?: string;
   kind?: string;
   for?: string;
   prose: string;
@@ -38,6 +39,7 @@ export type PacketExplicitNode = Omit<
 
 export interface PacketCheck {
   id: string;
+  packageDir?: string;
   severity: string | undefined;
   offered: "matched" | "always" | "explicit";
   via: string[];
@@ -98,6 +100,9 @@ export async function buildReviewPacket(
       const node = ghostPackage.catalog.nodes.get(id) as GhostCatalogNode;
       return {
         id: node.id,
+        ...(ghostPackage.baseline && node.packageDir
+          ? { packageDir: node.packageDir }
+          : {}),
         ...(node.kind !== undefined ? { kind: node.kind } : {}),
         ...(node.for !== undefined ? { for: node.for } : {}),
         prose: node.body,
@@ -109,6 +114,9 @@ export async function buildReviewPacket(
     const check = ghostPackage.checks.get(offered.id);
     return {
       id: offered.id,
+      ...(ghostPackage.baseline && check?.packageDir
+        ? { packageDir: check.packageDir }
+        : {}),
       severity: offered.severity,
       offered: offered.offered,
       via: offered.via,
@@ -143,6 +151,9 @@ function materialNodeFromMatch(
   const node = ghostPackage.catalog.nodes.get(matched.id) as GhostCatalogNode;
   return {
     id: node.id,
+    ...(ghostPackage.baseline && node.packageDir
+      ? { packageDir: node.packageDir }
+      : {}),
     ...(node.kind !== undefined ? { kind: node.kind } : {}),
     ...(node.for !== undefined ? { for: node.for } : {}),
     prose: node.body,

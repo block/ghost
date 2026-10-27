@@ -7,6 +7,10 @@ import type { GhostMaterial } from "../materials.js";
  */
 export interface GhostCatalogNode {
   id: string;
+  /** Absolute owning package, populated by the package loader. */
+  packageDir?: string;
+  /** External baseline repository root, independent of the consuming cwd. */
+  repoRoot?: string;
   /** Optional filename prefix before the first dot (`principle.density`). */
   kind?: string;
   /** Filename slug: bare name, or the part after the first dot. */

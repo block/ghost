@@ -58,11 +58,13 @@ it applies, and an agent reads the relevant guidance before building.
   visible in one view, in the composition chapter; visible only across the
   whole body of work, on the cover.
 - Files and the selection menu stay **flat**. Optional `scope` + `layer` classify
-  content; `requires` names local prerequisites, not overrides. Manifest `core`
+  content; `requires` names prerequisites in the package or an explicitly supplied baseline, not overrides. Manifest `core`
   names a small baseline fundamentals subset delivered on every pull. Gather
   lists it separately as automatic; do not select it. Pull includes transitive
   prerequisites and supplies one authority instruction for classified packages.
-  See [schema.md](references/schema.md#layered-fingerprints) for the structure.
+  Supply an external baseline with `--baseline <dir>` on gather, pull, validate,
+  and review; never copy its files into the brand fingerprint.
+  See [schema.md](references/schema.md#external-baseline-input) for the structure.
 - **Checks** are optional review assertions in a flat `.ghost/checks/*.md`
   directory. Checks are feed-back only; they never leak into generation
   context. Each check declares `references` to node ids and is used by

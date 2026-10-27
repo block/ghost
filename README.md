@@ -166,6 +166,28 @@ exposes scope/layer, and supplies an authority instruction for layered content.
 Defaults yield to explicit brand decisions; delivery order is not authority.
 Existing unclassified packages need no migration.
 
+A shared baseline can instead live outside the brand package. Pass it explicitly
+on every command; ghost combines the two packages only in memory:
+
+```bash
+ghost gather "Make an email" --package brands/acme/fingerprint --baseline baseline
+ghost pull interface.email --package brands/acme/fingerprint --baseline baseline
+ghost validate --package brands/acme/fingerprint --baseline baseline
+ghost review --package brands/acme/fingerprint --baseline baseline
+```
+
+The baseline is an ordinary `ghost.package/v1` package with its own `core`,
+glossary declaring the `baseline` kind, baseline-scoped nodes, materials, and
+optional checks. It has no cover and cannot depend on brand nodes. Node IDs and
+check IDs and declared glossary kind names must be unique across the two packages. No implicit discovery, copies,
+or precedence overwrites occur. Standalone and self-contained packages still work.
+
+Embedded hosts pass `resolveGhostPackage(dir, cwd, baselineDir)` or
+`lintGhostPackage(dir, cwd, baselineDir)`. Snapshots expose `baseline` metadata and
+combined `core` separately from the unchanged brand manifest. Pulled nodes expose
+`packageDir`, their absolute owning directory, for material staging. External
+baseline materials resolve in their owning repository, not the caller's cwd.
+
 See the [schema and flat layout example](packages/ghost/src/skill-bundle/references/schema.md#layered-fingerprints)
 and [complete runnable example](packages/ghost/test/fixtures/layered-fingerprint).
 

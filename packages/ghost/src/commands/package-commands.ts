@@ -27,6 +27,7 @@ export function registerPackageCommands(cli: CAC): void {
       "validate [file]",
       "Validate the ghost package: manifest shape, node validity, material locators, check references, and glossary kind prefixes. Defaults to .ghost.",
     )
+    .option("--baseline <dir>", "Use this separate baseline ghost package")
     .option(
       "--package <dir>",
       "Use this ghost package directory (default: ./.ghost)",
@@ -44,12 +45,20 @@ export function registerPackageCommands(cli: CAC): void {
         const target = resolveGhostPackage(packagePath, process.cwd()).dir;
         let report: LintReport;
         if (path === undefined || (await isDirectory(target))) {
-          report = await lintGhostPackage(packagePath, process.cwd());
+          report = await lintGhostPackage(
+            packagePath,
+            process.cwd(),
+            opts.baseline,
+          );
           writeLintReport(report, format);
           await exitCli(report.errors > 0 ? 1 : 0);
           return;
         }
 
+        if (opts.baseline !== undefined)
+          throw new UsageError(
+            "--baseline requires package validation, not a single file",
+          );
         const fileTarget = resolve(process.cwd(), path ?? target);
         let raw: string;
         try {

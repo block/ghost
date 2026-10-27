@@ -82,9 +82,11 @@ Optional paired `scope` and `layer` metadata distinguishes baseline fundamentals
 and interface defaults from brand framing, identity, and interface expression.
 Manifest `core` names a small baseline fundamentals subset, automatically delivered
 by every pull. Gather lists it separately as `automatic`, never selectable guidance.
-Node `requires` includes explicit local prerequisites transitively. Brand interfaces
+Node `requires` includes explicit package or external-baseline prerequisites transitively. Brand interfaces
 must require baseline interface guidance, directly or transitively. Files stay flat;
-existing unclassified packages retain their output.
+existing unclassified packages retain their output. Supply external fundamentals
+and interfaces with `--baseline <dir>` on gather, pull, validate, and review. The
+baseline owns its core and stays outside the brand package.
 
 Pull exposes classification and one authority instruction for layered content.
 Its `requested` IDs describe selection; `ids` describe delivered context, including

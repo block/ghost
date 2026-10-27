@@ -21,6 +21,7 @@ export function registerReviewCommand(cli: CAC): void {
       "review",
       "Emit an advisory review packet for a diff using matched and explicit guidance plus checks.",
     )
+    .option("--baseline <dir>", "Use this separate baseline ghost package")
     .option(
       "--package <dir>",
       "Use this ghost package directory (default: ./.ghost)",
@@ -41,7 +42,11 @@ export function registerReviewCommand(cli: CAC): void {
           "json",
         ] as const);
 
-        const paths = resolveGhostPackage(opts.package, process.cwd());
+        const paths = resolveGhostPackage(
+          opts.package,
+          process.cwd(),
+          opts.baseline,
+        );
         const ghostPackage = await loadGhostPackage(paths);
         if (!ghostPackage.hasChecksDir) {
           console.error(

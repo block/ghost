@@ -1,3 +1,4 @@
+import { resolve } from "node:path";
 import {
   classifyMaterialLocator,
   closestIds,
@@ -28,6 +29,8 @@ import type {
 interface PulledNode {
   node: GhostCatalogNode;
   materials: MaterialTransportResult;
+  packageDir: string;
+  repoRoot: string;
 }
 
 export const GHOST_DEFAULT_FALLBACK_BODY =
@@ -66,7 +69,10 @@ export async function pullGhostNodes(
       suggested: closestIds(id, selectableIds),
     }));
 
-  const manifest = snapshot.package.manifest;
+  const manifest = {
+    ...snapshot.package.manifest,
+    core: snapshot.core ? [...snapshot.core] : snapshot.package.manifest.core,
+  };
   const layered = [...snapshot.catalog.nodes.values()].some(
     (node) => node.scope !== undefined,
   );
@@ -79,7 +85,12 @@ export async function pullGhostNodes(
   const invalidRequested = selectedRequested.find((id) =>
     snapshot.invalid.some(
       (entry) =>
-        entry.file === `${id}.md` &&
+        (entry.file === `${id}.md` ||
+          entry.file ===
+            resolve(
+              snapshot.baseline?.dir ?? snapshot.package.dir,
+              `${id}.md`,
+            )) &&
         (expanded ||
           /^(scope|layer|requires)|scope\/layer/.test(entry.message)),
     ),
@@ -194,13 +205,19 @@ async function resolvePulledNodes(
   return Promise.all(
     nodes.map(async (node) => ({
       node,
+      packageDir: node.packageDir ?? packageDir,
+      repoRoot: node.repoRoot ?? repoRoot,
       materials: inlineMaterials
         ? await transportMaterials(node.materials, {
-            repoRoot,
-            packageDir,
+            repoRoot: node.repoRoot ?? repoRoot,
+            packageDir: node.packageDir ?? packageDir,
             materialsDir: GHOST_MATERIALS_DIR,
           })
-        : locatorOnlyMaterials(node.materials, repoRoot, packageDir),
+        : locatorOnlyMaterials(
+            node.materials,
+            node.repoRoot ?? repoRoot,
+            node.packageDir ?? packageDir,
+          ),
     })),
   );
 }
@@ -215,14 +232,15 @@ async function resolvePulledNodes(
  */
 function dedupeInlinedMaterials(nodes: readonly PulledNode[]): void {
   const firstCarrier = new Map<string, string>();
-  for (const { node, materials } of nodes) {
+  for (const { node, materials, repoRoot } of nodes) {
     for (const material of materials.materials) {
       if (material.inlined === undefined || material.path === undefined) {
         continue;
       }
-      const carrier = firstCarrier.get(material.path);
+      const absolutePath = resolve(repoRoot, material.path);
+      const carrier = firstCarrier.get(absolutePath);
       if (carrier === undefined) {
-        firstCarrier.set(material.path, node.id);
+        firstCarrier.set(absolutePath, node.id);
         continue;
       }
       materials.materials[materials.materials.indexOf(material)] = {
@@ -306,9 +324,14 @@ function pulledSkeletons(nodes: readonly PulledNode[]): GhostPulledSkeleton[] {
   );
 }
 
-function formatPulledNode({ node, materials }: PulledNode): GhostPulledNode {
+function formatPulledNode({
+  node,
+  materials,
+  packageDir,
+}: PulledNode): GhostPulledNode {
   return {
     id: node.id,
+    packageDir,
     ...(node.kind !== undefined ? { kind: node.kind } : {}),
     ...(node.for ? { for: node.for } : {}),
     ...(node.scope !== undefined
