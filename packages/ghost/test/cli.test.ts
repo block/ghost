@@ -692,7 +692,7 @@ describe("ghost CLI", () => {
       "brand",
     );
     expect(payload.coverage).toEqual({
-      nodes: 9,
+      nodes: 10,
       concrete: 0,
       payloads: { materials: 0, fencedExamples: 0, skeletons: 0 },
       withoutFor: 0,
@@ -2109,7 +2109,9 @@ describe("ghost CLI", () => {
         "brand/icon.svg",
       ],
     });
-    expect(packet.checks[0]).toMatchObject({
+    expect(
+      packet.checks.find((c: { id: string }) => c.id === "logo-clearspace"),
+    ).toMatchObject({
       id: "logo-clearspace",
       offered: "matched",
     });

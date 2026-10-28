@@ -59,8 +59,16 @@ and `ghost checks init` scaffolds its paired check.
 
 ## Sources
 
-`standard.language` cites WCAG 2.2 success criteria, ISO 24495-1:2023 plain
-language, the deceptive.design pattern types, and Unicode CLDR plural rules.
+`standard.language` cites its sources inline in each rule:
+
+- [WCAG 2.2](https://www.w3.org/TR/WCAG22/) success criteria, by number
+- [ISO 24495-1:2023](https://www.iso.org/standard/78907.html), plain language
+- [deceptive.design pattern types](https://www.deceptive.design/types)
+- [Unicode CLDR plural rules](https://cldr.unicode.org/index/cldr-spec/plural-rules)
+
+The citations are provenance, not materials, so agents are not sent to fetch
+the standards while writing.
+
 `standard.copy-defaults` marks which rules come from Ghost's measured
 model defaults and which come from editorial practice that has not been
 measured.

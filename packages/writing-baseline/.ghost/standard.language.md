@@ -1,14 +1,5 @@
 ---
 for: Writing or editing copy a person will read, from interface labels and errors to email, marketing, and documentation.
-materials:
-  - locator: https://www.w3.org/TR/WCAG22/
-    note: WCAG 2.2; success criteria are cited by number in the rules below
-  - locator: https://www.iso.org/standard/78907.html
-    note: ISO 24495-1:2023, plain language governing principles and guidelines
-  - locator: https://www.deceptive.design/types
-    note: Deceptive pattern types behind the honesty rules
-  - locator: https://cldr.unicode.org/index/cldr-spec/plural-rules
-    note: Unicode CLDR plural categories behind the whole-strings rule
 ---
 
 Shared language obligations: what any brand's copy owes its reader. Every
