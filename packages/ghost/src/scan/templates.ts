@@ -42,6 +42,7 @@ const SKELETON_FILE_ORDER = new Map(
     "glossary.md",
     "brand.md",
     "standard.model-defaults.md",
+    "standard.language.md",
     "foundation.composition.md",
     "foundation.color.md",
     "foundation.type.md",
@@ -56,11 +57,12 @@ const SKELETON_FILE_ORDER = new Map(
 const SKELETON_TEMPLATE: GhostInitTemplate = {
   name: "skeleton",
   description:
-    "Naked skeleton: a brand cover, foundation chapters with open questions, and the shared model-defaults floor.",
+    "Naked skeleton: a brand cover, foundation chapters with open questions, the shared model-defaults floor, and the shared language obligations.",
   async files() {
     const skeletonFiles = [
       ...(await loadPackedPayload("skeleton")),
       await medianTemplateFile(),
+      await languageTemplateFile(),
     ];
     skeletonFiles.sort(
       (a, b) =>
@@ -77,6 +79,13 @@ async function medianTemplateFile(): Promise<TemplateFile> {
   return {
     relativePath: "standard.model-defaults.md",
     content: await loadPayloadFile("median", "standard.model-defaults.md"),
+  };
+}
+
+async function languageTemplateFile(): Promise<TemplateFile> {
+  return {
+    relativePath: "standard.language.md",
+    content: await loadPayloadFile("writing-baseline", "standard.language.md"),
   };
 }
 
@@ -103,15 +112,22 @@ const VESSEL_LIGHT_BODY: GhostInitBody = {
   includesChecks: true,
   async files() {
     const payload = await loadPackedPayload("vessel-light");
-    payload.sort((a, b) => {
-      const ao = BODY_FILE_ORDER.get(a.relativePath);
-      const bo = BODY_FILE_ORDER.get(b.relativePath);
-      return (
-        (ao ?? Number.MAX_SAFE_INTEGER) - (bo ?? Number.MAX_SAFE_INTEGER) ||
-        a.relativePath.localeCompare(b.relativePath)
-      );
-    });
+    payload.sort(compareBodyFiles);
     // The payload carries its own manifest.yml (id stays `vessel-light`);
+    // only the gitignore is generated locally.
+    return [gitignoreFile(), ...payload];
+  },
+};
+
+const WRITING_BASELINE_BODY: GhostInitBody = {
+  name: "writing-baseline",
+  description:
+    "Brand-agnostic writing baseline: language obligations, copy defaults, and voice, tone, and mechanics chapters with open questions.",
+  includesChecks: true,
+  async files() {
+    const payload = await loadPackedPayload("writing-baseline");
+    payload.sort(compareBodyFiles);
+    // The payload carries its own manifest.yml (id stays `writing-baseline`);
     // only the gitignore is generated locally.
     return [gitignoreFile(), ...payload];
   },
@@ -119,11 +135,24 @@ const VESSEL_LIGHT_BODY: GhostInitBody = {
 
 /** Listing order for the body scaffold output: anchors first, then the rest. */
 const BODY_FILE_ORDER = new Map<string, number>(
-  ["manifest.yml", "glossary.md", "index.md"].map((path, i) => [path, i]),
+  ["manifest.yml", "glossary.md", "index.md", "baseline.md"].map((path, i) => [
+    path,
+    i,
+  ]),
 );
+
+function compareBodyFiles(a: TemplateFile, b: TemplateFile): number {
+  const ao = BODY_FILE_ORDER.get(a.relativePath);
+  const bo = BODY_FILE_ORDER.get(b.relativePath);
+  return (
+    (ao ?? Number.MAX_SAFE_INTEGER) - (bo ?? Number.MAX_SAFE_INTEGER) ||
+    a.relativePath.localeCompare(b.relativePath)
+  );
+}
 
 const BODIES = new Map<string, GhostInitBody>([
   [VESSEL_LIGHT_BODY.name, VESSEL_LIGHT_BODY],
+  [WRITING_BASELINE_BODY.name, WRITING_BASELINE_BODY],
 ]);
 
 /** Look up a registered init body by name. */

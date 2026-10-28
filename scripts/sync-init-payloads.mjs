@@ -26,14 +26,16 @@ if (existsSync(sourceInitPayloadsDir)) {
   await cp(sourceInitPayloadsDir, distInitPayloadsDir, { recursive: true });
 }
 
-await cp(
-  join(ROOT, "packages", "vessel-light", ".ghost"),
-  join(distInitPayloadsDir, "vessel-light"),
-  {
-    recursive: true,
-    filter(source) {
-      const name = source.split(/[\\/]/).at(-1);
-      return name !== ".events" && name !== ".gitignore";
+for (const body of ["vessel-light", "writing-baseline"]) {
+  await cp(
+    join(ROOT, "packages", body, ".ghost"),
+    join(distInitPayloadsDir, body),
+    {
+      recursive: true,
+      filter(source) {
+        const name = source.split(/[\\/]/).at(-1);
+        return name !== ".events" && name !== ".gitignore";
+      },
     },
-  },
-);
+  );
+}

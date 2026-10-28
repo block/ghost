@@ -7,7 +7,7 @@ import type { TemplateFile } from "./templates.js";
 /**
  * Payload roots, first match wins. At runtime this module lives in
  * `dist/scan/`, so `../init-payloads` is the packed payload dir. Under
- * vitest it runs from `src/scan/`; use the repository's vessel-light source
+ * vitest it runs from `src/scan/`; use the repository's body package sources
  * before the generated dist copy so a concurrent package rebuild cannot remove
  * the payload while tests read it. Published installs use the first root.
  */
@@ -15,16 +15,22 @@ const INIT_PAYLOAD_ROOTS = [
   fileURLToPath(new URL("../init-payloads", import.meta.url)),
   fileURLToPath(new URL("../../dist/init-payloads", import.meta.url)),
 ];
-const REPOSITORY_VESSEL_LIGHT_DIR = fileURLToPath(
-  new URL("../../../vessel-light/.ghost", import.meta.url),
+
+/** Body payloads whose source is a sibling repository package's `.ghost/`. */
+const REPOSITORY_BODY_DIRS = new Map(
+  ["vessel-light", "writing-baseline"].map((name) => [
+    name,
+    fileURLToPath(new URL(`../../../${name}/.ghost`, import.meta.url)),
+  ]),
 );
+const REPOSITORY_BODY_DIR_SET = new Set(REPOSITORY_BODY_DIRS.values());
 
 const BINARY_EXTENSIONS = new Set([".woff", ".woff2"]);
 
 export async function loadPackedPayload(name: string): Promise<TemplateFile[]> {
   const payloadDir = resolvePayloadDir(name);
   const files = (await listPayloadFiles(payloadDir)).filter((path) => {
-    if (payloadDir !== REPOSITORY_VESSEL_LIGHT_DIR) return true;
+    if (!REPOSITORY_BODY_DIR_SET.has(payloadDir)) return true;
     const relativePath = relative(payloadDir, path);
     return relativePath !== ".events" && relativePath !== ".gitignore";
   });
@@ -45,9 +51,10 @@ export async function loadPayloadFile(
 }
 
 function resolvePayloadDir(name: string): string {
+  const repositoryDir = REPOSITORY_BODY_DIRS.get(name);
   const repositorySource =
-    name === "vessel-light" && existsSync(REPOSITORY_VESSEL_LIGHT_DIR)
-      ? REPOSITORY_VESSEL_LIGHT_DIR
+    repositoryDir !== undefined && existsSync(repositoryDir)
+      ? repositoryDir
       : undefined;
   return (
     repositorySource ??

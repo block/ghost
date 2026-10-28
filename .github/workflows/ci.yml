@@ -46,3 +46,4 @@ jobs:
           pnpm --filter @design-intelligence/ghost --fail-if-no-match build
           node packages/ghost/dist/bin.js --version
           node packages/ghost/dist/bin.js validate --package packages/vessel-light/.ghost
+          node packages/ghost/dist/bin.js validate --package packages/writing-baseline/.ghost

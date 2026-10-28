@@ -95,6 +95,7 @@ edits and checks.
 | `packages/ghost` | yes: `@design-intelligence/ghost` | The public package. Ships the `ghost` CLI, node authoring, corpus validation, gather/pull/stats, review packet assembly, and the unified skill bundle. Shared runtime lives in `packages/ghost/src/ghost-core`. |
 | `packages/vessel-react` | no | A standalone shadcn component registry and reference component system: the opinionated default reference body. Design-system-agnostic; nothing in ghost requires it. |
 | `packages/vessel-light` | no | Vessel's design language as a portable `.ghost/` package for agents writing raw HTML/CSS. No build, no dependencies. |
+| `packages/writing-baseline` | no | Brand-agnostic writing baseline as a portable `.ghost/` package: language obligations, copy defaults, and voice, tone, and mechanics chapters with open questions. Source of the starter's `standard.language`. No build, no dependencies. |
 | `packages/context-control` | no | Selection evaluation bench: measures whether agents choose applicable guidance from the complete menu. |
 | `packages/steering-control` | no | Before/after evaluation harness: measures what handing an agent a `.ghost` package buys, as a deterministic `report.html`. |
 | `apps/docs` | no | Public thesis site and development log. |
@@ -105,7 +106,7 @@ Core workflow:
 
 | Command | Description |
 | --- | --- |
-| `ghost init` | Scaffold `.ghost/` with the starter package: manifest, glossary, a `brand.md` cover, foundation chapters, context nodes, and the shared model-defaults floor. `--body vessel-light` installs a full inhabited package instead. `--with checks` also adds the checks directory. |
+| `ghost init` | Scaffold `.ghost/` with the starter package: manifest, glossary, a `brand.md` cover, foundation chapters, context nodes, and the shared model-defaults floor. `--body vessel-light` or `--body writing-baseline` installs a full inhabited package instead. `--with checks` also adds the checks directory. |
 | `ghost checks init` | Scaffold `.ghost/checks/` with an example review assertion. |
 | `ghost validate` | Validate the package: manifest shape, node validity, material locators, check references, and glossary kind prefixes. |
 | `ghost gather [ask…]` | Emit the complete guidance menu so the agent can pull applicable nodes. |

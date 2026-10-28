@@ -86,7 +86,8 @@ when the opening structure itself must arrive verbatim; see
 A strong `Never` entry says **not X; instead Y; recognize the switch by Z**.
 Negation alone makes the rejected default more salient without committing the
 replacement. Put shared, measured model behavior in `standard.model-defaults`;
-put a brand-specific rejection in the applicable foundation, context, or
+put what any brand's copy owes its reader in `standard.language`; put a
+brand-specific rejection in the applicable foundation, context, or
 pattern node.
 
 ```markdown

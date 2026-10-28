@@ -186,6 +186,7 @@ describe("ghost CLI", () => {
     "glossary.md",
     "brand.md",
     "standard.model-defaults.md",
+    "standard.language.md",
     "foundation.composition.md",
     "foundation.color.md",
     "foundation.type.md",
@@ -342,6 +343,57 @@ describe("ghost CLI", () => {
     expect(report.warnings).toBe(0);
   });
 
+  it("installs the writing-baseline body: language corpus and checks", async () => {
+    const init = await runCli(
+      ["init", "--body", "writing-baseline", "--format", "json"],
+      dir,
+    );
+    expect(init.code).toBe(0);
+    const { written } = JSON.parse(init.stdout) as { written: string[] };
+
+    expect([...written].sort()).toEqual(
+      [
+        ".gitignore",
+        "manifest.yml",
+        "glossary.md",
+        "baseline.md",
+        "standard.language.md",
+        "standard.copy-defaults.md",
+        "foundation.voice.md",
+        "foundation.tone.md",
+        "foundation.mechanics.md",
+        "checks/language-obligations.md",
+        "checks/copy-defaults.md",
+      ].sort(),
+    );
+
+    const manifest = await readFile(
+      join(dir, ".ghost", "manifest.yml"),
+      "utf-8",
+    );
+    expect(manifest).toContain("id: writing-baseline");
+    expect(manifest).toContain("cover: baseline");
+
+    // The skeleton's standard.language is this body's node, not a copy.
+    const [installed, source] = await Promise.all([
+      readFile(join(dir, ".ghost", "standard.language.md"), "utf-8"),
+      readFile(
+        new URL(
+          "../../writing-baseline/.ghost/standard.language.md",
+          import.meta.url,
+        ),
+        "utf-8",
+      ),
+    ]);
+    expect(installed).toBe(source);
+
+    const validate = await runCli(["validate", "--format", "json"], dir);
+    expect(validate.code).toBe(0);
+    const report = JSON.parse(validate.stdout);
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(0);
+  });
+
   it("rejects unknown bodies and contradictory body flags", async () => {
     const unknown = await runCli(["init", "--body", "nope"], dir, {
       allowNoExit: true,
@@ -349,6 +401,7 @@ describe("ghost CLI", () => {
     expect(unknown.code).toBe(2);
     expect(unknown.stderr).toContain("Unknown init body 'nope'");
     expect(unknown.stderr).toContain("vessel-light");
+    expect(unknown.stderr).toContain("writing-baseline");
 
     const withChecks = await runCli(
       ["init", "--body", "vessel-light", "--with", "checks"],
@@ -2233,7 +2286,11 @@ describe("ghost CLI", () => {
     const add = await runCli(["checks", "init", "--format", "json"], dir);
     expect(add.code).toBe(0);
     const added = JSON.parse(add.stdout);
-    expect(added.written).toEqual(["median-tells.md", "example.md.example"]);
+    expect(added.written).toEqual([
+      "median-tells.md",
+      "language-obligations.md",
+      "example.md.example",
+    ]);
     expect(added.skipped).toEqual([]);
     await expect(
       readFile(join(dir, ".ghost", "checks", "example.md.example"), "utf-8"),
@@ -2251,6 +2308,14 @@ describe("ghost CLI", () => {
       "`ghost validate` warns; delete the flag and its reference together.",
     );
     expect(median).not.toContain("Vessel");
+
+    // The language check pairs with the skeleton's standard.language node.
+    const language = await readFile(
+      join(dir, ".ghost", "checks", "language-obligations.md"),
+      "utf-8",
+    );
+    expect(language).toContain("standard.language > Invented evidence");
+    expect(language).not.toContain("Vessel");
 
     // Running init twice is a usage error.
     const again = await runCli(["checks", "init"], dir);

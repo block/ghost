@@ -15,7 +15,7 @@ export function registerInitCommand(cli: CAC): void {
     .option("--package <dir>", "Exact ghost package directory to initialize")
     .option(
       "--body <name>",
-      "Init body to install: a full inhabited package (e.g. vessel-light)",
+      "Init body to install: a full inhabited package (e.g. vessel-light, writing-baseline)",
     )
     .option(
       "--with <capabilities>",

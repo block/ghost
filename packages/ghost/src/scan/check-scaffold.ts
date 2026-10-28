@@ -15,6 +15,10 @@ const MEDIAN_TELLS_FILENAME = "median-tells.md";
 const MODEL_DEFAULTS_NODE_ID = "standard.model-defaults";
 const LEGACY_MODEL_DEFAULTS_NODE_IDS = ["cliche.median"];
 
+/** The shared language obligations node and its paired check. */
+const LANGUAGE_NODE_ID = "standard.language";
+const LANGUAGE_OBLIGATIONS_FILENAME = "language-obligations.md";
+
 const EXAMPLE_CHECK_CONTENT = `---
 name: logo-clearspace-holds
 description: Logo usage preserves clearspace, lockup integrity, and glyph rules.
@@ -58,6 +62,22 @@ export async function addChecksDir(
   } else {
     skipped.push(
       `${MEDIAN_TELLS_FILENAME} (no ${MODEL_DEFAULTS_NODE_ID} node)`,
+    );
+  }
+
+  if (await exists(join(packageDir, `${LANGUAGE_NODE_ID}.md`))) {
+    await writeFile(
+      join(checksDir, LANGUAGE_OBLIGATIONS_FILENAME),
+      await loadPayloadFile(
+        "writing-baseline",
+        `checks/${LANGUAGE_OBLIGATIONS_FILENAME}`,
+      ),
+      "utf-8",
+    );
+    written.push(LANGUAGE_OBLIGATIONS_FILENAME);
+  } else {
+    skipped.push(
+      `${LANGUAGE_OBLIGATIONS_FILENAME} (no ${LANGUAGE_NODE_ID} node)`,
     );
   }
 
