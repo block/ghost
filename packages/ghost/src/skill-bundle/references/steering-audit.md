@@ -36,15 +36,15 @@ Report first:
 
 | Row | Status | Evidence | Next move |
 | --- | --- | --- | --- |
-| Retrieval | strong / weak | `for` payloads, ids, cover | sharpen `for` payloads or move universal guidance to the cover |
+| Retrieval | strong / weak | `for` payloads, ids, framing | sharpen `for` payloads or move universal guidance to the framing |
 | Concreteness | strong / thin | materials, fenced examples, Skeletons | add concrete locators, examples, or opening structures |
 | Replacements | present / missing / vague | `Never` sections, `standard.model-defaults`, review packet | write not-X-instead-Y replacements and material locators |
 | Consistency | clean / conflicting | guidance vs concrete material | update or remove stale material |
-| Stance | present / missing | cover, `foundation.*` | write forced-choice foundations |
+| Stance | present / missing | framing, `foundation.*` | write forced-choice foundations |
 | Materials | present / missing | `materials`, inspect-pointers | point at real assets/components/tokens |
 | Patterns | bound-open / loose / missing | `pattern.*`, Skeletons | state applies / bound / open and add a Skeleton when opening structure matters |
 | Checks | covered / partial / missing | checks/, review packet | add checks for high-risk invariants |
-| Silence posture | defined / missing | cover | say when to proceed provisionally or ask |
+| Silence posture | defined / missing | framing | say when to proceed provisionally or ask |
 
 For task-level use, gather, pull, inspect material when available, name gaps,
 proceed provisionally for reversible gaps, and ask or author guidance for

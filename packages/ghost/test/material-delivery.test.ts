@@ -154,10 +154,10 @@ describe("whole material content and explicit delivery outcomes", () => {
       ids: ["second", "first"],
       repoRoot: dir,
     });
-    expect(packet.cover.state).toBe("resolved");
-    if (packet.cover.state !== "resolved")
+    expect(packet.framing.state).toBe("resolved");
+    if (packet.framing.state !== "resolved")
       throw new Error("fixture cover missing");
-    const carrier = packet.cover.node.materials?.[0];
+    const carrier = packet.framing.node.materials?.[0];
     expect(carrier).toMatchObject({ inlined: text, untrusted: true });
     expect(packet.nodes.map((entry) => entry.id)).toEqual(["second", "first"]);
     for (const entry of packet.nodes) {
@@ -166,7 +166,7 @@ describe("whole material content and explicit delivery outcomes", () => {
         locator: carrier?.locator,
         path: carrier?.path,
         omitted: true,
-        reason: `content inlined above under node ${packet.cover.id}`,
+        reason: `content inlined above under node ${packet.framing.id}`,
       });
       expect(entry.materials?.[0]).not.toHaveProperty("inlined");
     }

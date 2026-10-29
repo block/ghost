@@ -13,10 +13,17 @@ import {
   UsageError,
 } from "#ghost-core";
 import { isMissingPathError, readOptionalUtf8 } from "../internal/fs.js";
+import { lintBaselineVersion } from "./baseline-version.js";
+import { bundledBaselineDir } from "./bundled-baseline.js";
 import { loadCheckFiles } from "./check-files.js";
-import type { GhostPackagePaths, LoadedGhostPackage } from "./ghost-package.js";
+import {
+  type GhostPackagePaths,
+  type LoadedGhostPackage,
+  resolveGhostPackage,
+} from "./ghost-package.js";
 import type { LintIssue } from "./lint.js";
 import { loadNodeFiles } from "./node-files.js";
+import { hashGhostPackage } from "./package-hash.js";
 import { resolveGitRoot } from "./package-paths.js";
 
 const RETIRED_PACKAGE_SCHEMA = "ghost.fingerprint-package/v1";
@@ -36,17 +43,22 @@ export async function loadGhostPackage(
         message:
           "--baseline is ignored for a legacy package; declare manifest baseline to enable layering",
       });
+    if (isBaselinePackage(loaded.manifest))
+      loaded.notices?.push(
+        ...lintBaselineVersion(loaded.manifest, loaded.manifest),
+      );
     return loaded;
   }
-  if (!paths.baseline) return loaded;
-  const baseline = await loadSinglePackage(paths.baseline);
-  const baselineDir = paths.baseline.packageDir;
+  const baselinePaths =
+    paths.baseline ?? resolveGhostPackage(bundledBaselineDir());
+  const baseline = await loadSinglePackage(baselinePaths);
+  const baselineDir = baselinePaths.packageDir;
   if (!isBaselinePackage(baseline.manifest)) {
     throw new UsageError(
       `Baseline ${baselineDir} must declare manifest core or version`,
     );
   }
-  const baselineGlossaryRaw = await readOptionalUtf8(paths.baseline.glossary);
+  const baselineGlossaryRaw = await readOptionalUtf8(baselinePaths.glossary);
   const glossary = parseGlossary(baselineGlossaryRaw ?? "");
   if (baselineGlossaryRaw !== undefined && glossary.glossary === null) {
     throw new UsageError(
@@ -142,8 +154,17 @@ export async function loadGhostPackage(
   for (const node of baseline.catalog.nodes.values()) node.repoRoot = repoRoot;
   return {
     ...loaded,
+    provenance: {
+      package: loaded.provenance.package,
+      baseline: baseline.provenance.package,
+    },
+    notices: [
+      ...(loaded.notices ?? []),
+      ...(baseline.notices ?? []),
+      ...lintBaselineVersion(loaded.manifest, baseline.manifest),
+    ],
     core: [...new Set([...(baseline.core ?? []), ...(loaded.core ?? [])])],
-    baseline: { ...baseline, paths: paths.baseline, repoRoot },
+    baseline: { ...baseline, paths: baselinePaths, repoRoot },
     catalog: {
       nodes: new Map([...loaded.catalog.nodes, ...baseline.catalog.nodes]),
     },
@@ -234,7 +255,16 @@ async function loadSinglePackage(
   for (const check of checkFiles.checks.values())
     check.packageDir = paths.packageDir;
 
+  const identity = {
+    id: manifest.id,
+    version: manifest.version ?? null,
+    hash: await hashGhostPackage(paths.packageDir),
+  };
   return {
+    provenance: {
+      package: identity,
+      baseline: isBaselinePackage(manifest) ? identity : null,
+    },
     manifest,
     manifestRaw,
     notices,

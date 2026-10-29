@@ -57,8 +57,16 @@ Layered node frontmatter accepts only `for`, `requires`, and `materials`. Never 
 `scope`, `layer`, or kind. `requires` names explicit delivery prerequisites,
 expanded transitively for layered packages. Legacy pulls ignore `requires`
 and validate warns. Baseline `core` names a small, automatically delivered
-fundamentals subset. `--baseline <dir>` supplies an external baseline for a
-brand declaring `baseline`; distribution support is developed separately.
+fundamentals subset. Layered brands use `packages/ghost/src/baseline/`, copied to
+`dist/baseline/` at build with the ghost release version. `--baseline <dir>`
+substitutes another baseline with its own version. Validate compares compatibility
+using SemVer precedence and warns for newer or unversioned baselines.
+
+Gather/pull events and generation/review packets carry `provenance`: requested
+package and effective baseline ids, versions and stable SHA-256 content hashes.
+Hashes cover sorted relative paths and file bytes, excluding local dotfiles;
+see the schema reference for the encoding. JSON/events use `framing` for the
+automatic node; only legacy authored manifests retain the old compatibility key.
 
 `materials` is the single locator field for concrete materials the guidance is
 about. It accepts explicit repo-relative file paths and supported external

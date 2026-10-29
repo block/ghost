@@ -583,7 +583,7 @@ describe("ghost CLI", () => {
       false,
     );
     const pull = await runCli(["pull", "--format", "json"], dir);
-    expect(JSON.parse(pull.stdout).cover.id).toBe("framing");
+    expect(JSON.parse(pull.stdout).framing.id).toBe("framing");
   });
 
   it("requires a task for Markdown but keeps bare JSON for inspection", async () => {
@@ -742,7 +742,7 @@ describe("ghost CLI", () => {
 
     const json = await runCli(["pull", "--format", "json"], dir);
     const packet = JSON.parse(json.stdout);
-    expect(packet.cover.node.materials[0]).toMatchObject({
+    expect(packet.framing.node.materials[0]).toMatchObject({
       locator: "materials/cover.txt",
       inlined: "Cover data.\n",
       untrusted: true,
@@ -755,7 +755,7 @@ describe("ghost CLI", () => {
     const bare = await runCli(["pull", "--format", "json"], dir);
     expect(bare.code).toBe(0);
     const barePacket = JSON.parse(bare.stdout);
-    expect(barePacket.cover).toMatchObject({
+    expect(barePacket.framing).toMatchObject({
       state: "resolved",
       id: "framing",
     });
@@ -768,7 +768,7 @@ describe("ghost CLI", () => {
     );
     expect(explicit.code).toBe(0);
     const explicitPacket = JSON.parse(explicit.stdout);
-    expect(explicitPacket.cover.id).toBe("framing");
+    expect(explicitPacket.framing.id).toBe("framing");
     expect(explicitPacket.requested).toEqual(["foundation.layout"]);
     expect(explicitPacket.ids).toEqual(["foundation.layout"]);
   });
@@ -784,7 +784,7 @@ describe("ghost CLI", () => {
     const pull = await runCli(["pull", "--format", "json"], dir);
     expect(pull.code).toBe(0);
     const packet = JSON.parse(pull.stdout);
-    expect(packet.cover).toEqual({ state: "absent" });
+    expect(packet.framing).toEqual({ state: "absent" });
     expect(packet.fallback).toMatchObject({ source: "ghost-default" });
     expect(packet.nodes).toEqual([]);
   });
@@ -1348,7 +1348,7 @@ describe("ghost CLI", () => {
     expect(events[2]).toMatchObject({
       event: "pull",
       ids: ["principle.trust", "voice"],
-      cover: "framing",
+      framing: "framing",
     });
 
     // The tape is a dotfile: never a node, and gitignored by the scaffold.
@@ -1651,7 +1651,7 @@ describe("ghost CLI", () => {
     );
     expect(cliPull.requested).toEqual(embedPull.requested);
     expect(cliPull.ids).toEqual(embedPull.ids);
-    expect(cliPull.cover).toMatchObject({
+    expect(cliPull.framing).toMatchObject({
       state: "resolved",
       id: "framing",
     });

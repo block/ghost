@@ -83,8 +83,9 @@ separately from the filename and manifest contract.
 
 ## External baseline and delivery
 
-Supply an external baseline using `--baseline <dir>` on gather, pull, validate,
-and review. Only a brand manifest declaring `baseline` consumes it; legacy
+Layered brands use the baseline shipped with ghost automatically.
+Supply `--baseline <dir>` on gather, pull, validate, and review to substitute
+another baseline. Only a brand manifest declaring `baseline` consumes it; legacy
 packages ignore it. The external baseline declares `core` and/or `version`,
 contains baseline-prefixed nodes, and resolves dependencies locally. Node and
 check ids must be unique across the two packages. Materials and checks retain
@@ -103,9 +104,47 @@ Embedded hosts use `resolveGhostPackage(dir, cwd, baselineDir)` and
 `lintGhostPackage(dir, cwd, baselineDir)`. `snapshot.baseline` records the external
 input, `snapshot.core` holds automatic fundamentals, and pulled nodes carry their
 owning `packageDir`. Preserve `--baseline` on subsequent material lookups.
-For compatibility, the current JSON packet's `cover` field carries `framing.md`;
+JSON packets and new tape events use `framing` for the unconditional node;
 `requested` excludes that alias, and `ids` contains delivered non-framing ids.
 Layered pulls contain one authority instruction; delivery order adds no authority.
+
+## Baseline releases and compatibility
+
+The reviewed baseline payload lives in `packages/ghost/src/baseline/`. The build
+copies it to `dist/baseline/` and stamps its manifest `version` from the public
+package's release version. Refresh content by updating that source directory in
+Git and rebuilding; a release never reads another checkout or fetches guidance.
+The current payload is a placeholder copied from ghost-internal's existing
+baseline, with delivery headers migrated. The design-content rebuild is separate.
+
+An explicit `--baseline` directory supplies its own version and entirely replaces
+the bundle. Validate warns for an unversioned baseline and for an effective
+version newer than the brand's authored-against `baseline`. Newer means SemVer
+2.0 precedence: numeric major/minor/patch, prereleases below the corresponding
+release, and build metadata ignored. Invalid compatibility versions warn too.
+The declaration is compatibility information, never a version pin.
+
+## Packet and event provenance
+
+Snapshots, gather, pull, and review packets carry `provenance` with `package`
+and `baseline` identities: `{ id, version, hash }`. Missing versions and absent
+baselines are explicit `null`. A standalone baseline records itself as baseline;
+legacy packages have no effective baseline. New gather/pull tape events carry the
+same identities. Markdown packets append one machine-readable
+`<!-- ghost provenance {...} -->` footer. JSON and new events use `framing`,
+replacing the old output `cover` field; legacy authored manifests still accept
+their compatibility key. Existing historical events remain readable.
+
+Hash format is `sha256:<hex>`, domain `ghost.package.sha256/v1` followed by a NUL
+byte. Enumerate package-relative paths using `/`, skipping dotfiles and dot
+folders such as `.events` and `.git`. Sort paths by JavaScript string order,
+independent of locale. For each path hash three byte fields: kind (`file` or
+`symlink`), UTF-8 relative path, and content. Each field begins with its unsigned
+64-bit big-endian byte length. Regular files contribute exact bytes, including
+checks and material files; symlinks contribute their UTF-8 target text and are
+never followed. Empty directories, timestamps, permissions, absolute package
+locations, and bytes behind external references do not participate. A hash
+identifies the package content, not mutable external material or the artifact.
 
 ## Skeletons
 
@@ -155,7 +194,7 @@ it does not grade them.
   incomplete menu never means the package has no applicable guidance.
   `--format json` also retains coverage, kind metadata, and concrete payload
   metadata for tooling.
-- `ghost pull` emits the resolved cover before selected guidance in steering
+- `ghost pull` emits framing before selected guidance in steering
   order, inlines eligible local text material once, marks included material as
   untrusted source data, leaves later duplicate references, turns image and
   binary material into inspect pointers with direct actions, and emits starting
@@ -166,7 +205,7 @@ it does not grade them.
   prose for the host agent. Repeated baselines point to prose already included
   in the packet.
   Repeat `--node <id>` to add exact guidance IDs, including nested IDs or the
-  cover. The cover is not added automatically. Unknown IDs stop review with
+  framing. Framing is not added automatically. Unknown IDs stop review with
   exit 2; duplicates are ignored in first-request order. The flag accepts node
   IDs rather than paths to node files, globs, or heading references.
   Explicit selection adds referencing checks without suppressing material

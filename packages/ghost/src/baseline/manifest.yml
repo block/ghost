@@ -1,0 +1,4 @@
+schema: ghost.package/v1
+id: design-baseline
+core: [baseline.fundamentals.core]
+version: "0.35.0"

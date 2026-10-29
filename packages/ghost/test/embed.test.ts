@@ -110,7 +110,10 @@ describe("embed contract", () => {
     const paths = resolveGhostPackage(undefined, dir);
 
     const resolved = await loadGhostSnapshot(paths);
-    expect(resolved.cover).toMatchObject({ state: "resolved", id: "framing" });
+    expect(resolved.framing).toMatchObject({
+      state: "resolved",
+      id: "framing",
+    });
     expect(resolved.checks.size).toBe(1);
     await expect(
       readFile(join(dir, ".ghost", ".events"), "utf-8"),
@@ -119,10 +122,10 @@ describe("embed contract", () => {
 
     await writeFile(join(dir, ".ghost", "framing.md"), "No frontmatter.");
     const dangling = await loadGhostSnapshot(paths);
-    expect(dangling.cover).toEqual({ state: "dangling", id: "framing" });
+    expect(dangling.framing).toEqual({ state: "dangling", id: "framing" });
     await rm(join(dir, ".ghost", "framing.md"));
     const absent = await loadGhostSnapshot(paths);
-    expect(absent.cover).toEqual({ state: "absent" });
+    expect(absent.framing).toEqual({ state: "absent" });
   });
 
   it("gathers complete selectable menu, coverage, kinds, and separates checks", async () => {
@@ -176,9 +179,9 @@ describe("embed contract", () => {
     expect(result.missed).toEqual([
       { requested: "principle.rul", suggested: ["principle.rule"] },
     ]);
-    expect(result.cover).toMatchObject({ state: "resolved", id: "framing" });
+    expect(result.framing).toMatchObject({ state: "resolved", id: "framing" });
     expect(
-      result.cover.state === "resolved" ? result.cover.node.body : "",
+      result.framing.state === "resolved" ? result.framing.node.body : "",
     ).toContain("Silence posture.");
     expect(result.nodes.map((node) => node.id)).toEqual([
       "asset.tokens",
@@ -216,7 +219,7 @@ describe("embed contract", () => {
     expect(result.requested).toEqual([]);
     expect(result.ids).toEqual([]);
     expect(result.missed).toEqual([]);
-    expect(result.cover).toMatchObject({ state: "resolved", id: "framing" });
+    expect(result.framing).toMatchObject({ state: "resolved", id: "framing" });
     expect(result.nodes).toEqual([]);
     expect(result.fallback?.body).toContain("ordinary reasoning");
   });
@@ -233,10 +236,10 @@ describe("embed contract", () => {
 
     const result = await pullGhostNodes(snapshot, { repoRoot: dir });
 
-    expect(result.cover).toMatchObject({ state: "resolved", id: "framing" });
+    expect(result.framing).toMatchObject({ state: "resolved", id: "framing" });
     expect(result.fallback).toBeUndefined();
     expect(
-      result.cover.state === "resolved" ? result.cover.node.body : "",
+      result.framing.state === "resolved" ? result.framing.node.body : "",
     ).toContain("Use authored policy.");
   });
 
@@ -256,7 +259,7 @@ describe("embed contract", () => {
         "## Skeleton",
         "",
         "```css",
-        ".cover {}",
+        ".framing {}",
         "```",
       ].join("\n"),
     );
@@ -287,9 +290,9 @@ describe("embed contract", () => {
       repoRoot: dir,
     });
 
-    expect(result.cover.state).toBe("resolved");
-    if (result.cover.state !== "resolved") throw new Error("missing cover");
-    expect(result.cover.node.materials?.[0]).toMatchObject({
+    expect(result.framing.state).toBe("resolved");
+    if (result.framing.state !== "resolved") throw new Error("missing cover");
+    expect(result.framing.node.materials?.[0]).toMatchObject({
       inlined: ":root{}\n",
       untrusted: true,
     });
@@ -328,7 +331,7 @@ describe("embed contract", () => {
 
     expect(result.requested).toEqual(["principle.rule"]);
     expect(result.ids).toEqual(["principle.rule"]);
-    expect(result.cover).toMatchObject({ state: "resolved", id: "framing" });
+    expect(result.framing).toMatchObject({ state: "resolved", id: "framing" });
     expect(result.nodes.map((node) => node.id)).toEqual(["principle.rule"]);
   });
 
@@ -345,7 +348,7 @@ describe("embed contract", () => {
 
     expect(result.ids).toEqual([]);
     expect(result.missed).toHaveLength(1);
-    expect(result.cover).toEqual({ state: "not-emitted", id: "framing" });
+    expect(result.framing).toEqual({ state: "not-emitted", id: "framing" });
     expect(result.fallback).toBeUndefined();
     expect(result.nodes).toEqual([]);
   });

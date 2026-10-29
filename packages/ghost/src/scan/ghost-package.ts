@@ -12,6 +12,7 @@ import {
   GHOST_MANIFEST_FILENAME,
 } from "./constants.js";
 import type { LintIssue } from "./lint.js";
+import type { GhostProvenance } from "./package-hash.js";
 import { lintGhostPackage } from "./package-lint.js";
 import { loadGhostPackage } from "./package-loader.js";
 import { resolveGhostDirDefault } from "./package-paths.js";
@@ -30,11 +31,12 @@ export interface GhostPackagePaths {
   packageDir: string;
   manifest: string;
   glossary: string;
-  /** Explicit external baseline; never discovered or copied into the package. */
+  /** Optional external override; layered brands otherwise use the bundled baseline. */
   baseline?: GhostPackagePaths;
 }
 
 export interface LoadedGhostPackage {
+  provenance: GhostProvenance;
   notices?: LintIssue[];
   manifest: GhostPackageManifest;
   manifestRaw: string;

@@ -1,12 +1,14 @@
 import { access, appendFile, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { GHOST_EVENTS_FILENAME } from "./scan/constants.js";
+import type { GhostProvenance } from "./scan/package-hash.js";
 
 const FIRST_WRITE_NOTICE = `ghost: logging selection events locally to .ghost/${GHOST_EVENTS_FILENAME} (gitignored; never leaves your machine). Summarize with \`ghost stats\`.`;
 
 export type GatherObservabilityEvent = {
   ts: string;
   event: "gather";
+  provenance?: GhostProvenance;
   /** Caller-supplied run identifier (--run or GHOST_RUN_ID); attribution only. */
   run?: string;
   ask?: string;
@@ -22,14 +24,15 @@ export type PullMiss = {
 export type PullObservabilityEvent = {
   ts: string;
   event: "pull";
+  provenance?: GhostProvenance;
   /** Caller-supplied run identifier (--run or GHOST_RUN_ID); attribution only. */
   run?: string;
   /** Explicit selection, recorded when automatic delivery adds nodes. */
   requested?: string[];
-  /** Delivered node ids, including core and prerequisites. The cover is recorded separately. */
+  /** Delivered node ids, including core and prerequisites. The framing is recorded separately. */
   ids: string[];
   /** Cover id included automatically in the pull packet, when resolved. */
-  cover?: string;
+  framing?: string;
   missed?: PullMiss[];
   inlinedMaterials?: number;
   omittedMaterials?: number;

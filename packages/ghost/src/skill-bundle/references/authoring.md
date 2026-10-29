@@ -92,7 +92,7 @@ verdict, proposed change, and choice needed. The human may accept, correct,
 narrow, reject, mark legacy, or defer it. Write only accepted changes. Restate
 the final form after a correction or narrowing.
 
-When no package exists, the first proposal should usually be one cover decision
+When no package exists, the first proposal should usually be one framing decision
 or one node, not a completed taxonomy. Grow the package when the next repeated
 decision appears.
 
@@ -120,7 +120,7 @@ replaced, or deferred.
 A starter is owned after copy. Its inherited answers remain provisional until the owner accepts or replaces them. Adapt it in this order:
 
 1. Change the manifest id when the human explicitly takes ownership.
-2. Replace cover scaffolding with the shared stance and brand-only refusals.
+2. Replace framing scaffolding with the shared stance and brand-only refusals.
 3. Answer foundation questions with human-approved decisions. Never freehand a
    value and present it as brand-backed.
 4. Repoint every material locator to an explicit file in the receiving repo.

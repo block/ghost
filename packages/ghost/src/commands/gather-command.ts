@@ -5,6 +5,7 @@ import { gatherGhostPackage, loadGhostSnapshot } from "../embed/index.js";
 import { formatLoadDiagnostics } from "../internal/load-diagnostics.js";
 import { appendGhostEvent, resolveRunId } from "../observability-events.js";
 import { resolveGhostPackage } from "../package.js";
+import { formatProvenance } from "../scan/package-hash.js";
 import { exitCli, failFromError } from "./errors.js";
 import { parseEnumOption } from "./options.js";
 
@@ -51,6 +52,7 @@ export function registerGatherCommand(cli: CAC): void {
         const runId = resolveRunId(opts.run);
         await appendGhostEvent(paths.packageDir, {
           event: "gather",
+          provenance: menu.provenance,
           ...(runId ? { run: runId } : {}),
           ...(menu.ask ? { ask: menu.ask } : {}),
           menu: menu.nodes.map((entry) => entry.id),
@@ -61,13 +63,14 @@ export function registerGatherCommand(cli: CAC): void {
         // conditions apply.
         if (format === "json") {
           process.stdout.write(
-            `${JSON.stringify(formatGatherJson(menu, paths.baseline ? `ghost pull [<id>…] --package ${JSON.stringify(paths.packageDir)} --baseline ${JSON.stringify(paths.baseline.packageDir)}` : undefined), null, 2)}\n`,
+            `${JSON.stringify(formatGatherJson(menu, snapshot.baseline ? `ghost pull [<id>…] --package ${JSON.stringify(paths.packageDir)} --baseline ${JSON.stringify(snapshot.baseline.dir)}` : undefined), null, 2)}\n`,
           );
         } else {
           process.stdout.write(
             formatMenuMarkdown(menu) +
-              (paths.baseline
-                ? `\nContinue with --package ${JSON.stringify(paths.packageDir)} --baseline ${JSON.stringify(paths.baseline.packageDir)} on pull, validate, and review.\n`
+              formatProvenance(menu.provenance) +
+              (snapshot.baseline
+                ? `\nContinue with --package ${JSON.stringify(paths.packageDir)} --baseline ${JSON.stringify(snapshot.baseline.dir)} on pull, validate, and review.\n`
                 : ""),
           );
         }
@@ -89,6 +92,7 @@ function formatGatherJson(
 ): Record<string, unknown> {
   return {
     kind: menu.kind,
+    provenance: menu.provenance,
     diagnostics: menu.diagnostics,
     ...(menu.ask ? { ask: menu.ask } : {}),
     source: menu.source,

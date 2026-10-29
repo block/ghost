@@ -6,14 +6,14 @@ import type { LoadedCheck } from "../scan/check-files.js";
 import type { GhostPackagePaths } from "../scan/ghost-package.js";
 import { loadGhostPackage } from "../scan/ghost-package.js";
 import { snapshotMap } from "./readonly-map.js";
-import type { GhostCoverState, GhostEmbedSnapshot } from "./types.js";
+import type { GhostEmbedSnapshot, GhostFramingState } from "./types.js";
 
 export async function loadGhostSnapshot(
   paths: GhostPackagePaths,
 ): Promise<GhostEmbedSnapshot> {
   const loaded = await loadGhostPackage(paths);
   const nodes = snapshotMap(cloneNodeMap(loaded.catalog.nodes));
-  const cover = resolveCoverState(
+  const framing = resolveFramingState(
     loaded.manifest.cover !== undefined
       ? loaded.manifest.cover
       : nodes.has("framing") ||
@@ -27,6 +27,7 @@ export async function loadGhostSnapshot(
 
   return deepFreeze({
     notices: loaded.notices,
+    provenance: loaded.provenance,
     package: {
       id: loaded.manifest.id,
       dir: paths.packageDir,
@@ -51,7 +52,7 @@ export async function loadGhostSnapshot(
     catalog: {
       nodes,
     },
-    cover,
+    framing,
     ...(glossary ? { glossary } : {}),
     checks: snapshotMap(cloneCheckMap(loaded.checks)),
     invalid: loaded.invalid.map((entry) => ({ ...entry })),
@@ -59,14 +60,14 @@ export async function loadGhostSnapshot(
   });
 }
 
-function resolveCoverState(
-  coverId: string | undefined,
+function resolveFramingState(
+  framingId: string | undefined,
   nodes: ReadonlyMap<string, Readonly<GhostCatalogNode>>,
-): GhostCoverState {
-  if (coverId === undefined) return { state: "absent" };
-  const node = nodes.get(coverId);
-  if (node === undefined) return { state: "dangling", id: coverId };
-  return { state: "resolved", id: coverId, node };
+): GhostFramingState {
+  if (framingId === undefined) return { state: "absent" };
+  const node = nodes.get(framingId);
+  if (node === undefined) return { state: "dangling", id: framingId };
+  return { state: "resolved", id: framingId, node };
 }
 
 function cloneNodeMap(

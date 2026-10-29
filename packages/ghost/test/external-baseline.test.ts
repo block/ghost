@@ -86,7 +86,7 @@ beforeEach(async () => {
   await file(
     baseline,
     "manifest.yml",
-    `schema: ghost.package/v1\nid: baseline\ncore: [${core}]\n`,
+    `schema: ghost.package/v1\nid: baseline\nversion: "1.0.0"\ncore: [${core}]\n`,
   );
   await file(
     brand,
@@ -338,7 +338,7 @@ describe("explicit external baseline", () => {
     ).toBeGreaterThan(0);
   });
 
-  it("fails missing baseline paths and absent baseline dependencies, without discovery", async () => {
+  it("fails a missing explicit baseline and defaults to the bundled baseline otherwise", async () => {
     await expect(
       loadGhostSnapshot(
         resolveGhostPackage(brand, elsewhere, join(root, "missing")),
@@ -350,12 +350,14 @@ describe("explicit external baseline", () => {
     const alone = await loadGhostSnapshot(
       resolveGhostPackage(brand, elsewhere),
     );
-    await expect(
-      pullGhostNodes(alone, { ids: [email], repoRoot: root }),
-    ).rejects.toThrow("missing or invalid");
-    expect((await lintGhostPackage(brand, elsewhere)).errors).toBeGreaterThan(
-      0,
-    );
+    const bundled = await pullGhostNodes(alone, {
+      ids: [email],
+      repoRoot: root,
+    });
+    expect(bundled.ids).toContain(medium);
+    expect(bundled.ids).toContain(email);
+    expect(alone.provenance.baseline?.id).toBe("design-baseline");
+    expect((await lintGhostPackage(brand, elsewhere)).errors).toBe(0);
   });
 
   it.each([
@@ -426,11 +428,13 @@ describe("explicit external baseline", () => {
     const alone = await loadGhostSnapshot(
       resolveGhostPackage(brand, elsewhere),
     );
-    expect(alone.baseline).toBeUndefined();
-    expect(gatherGhostPackage(alone).automatic).toBeUndefined();
+    expect(alone.baseline?.id).toBe("design-baseline");
+    expect(
+      gatherGhostPackage(alone).automatic?.map((node) => node.id),
+    ).toContain(core);
     expect(
       (await pullGhostNodes(alone, { ids: [email], repoRoot: brand })).ids,
-    ).toEqual([email]);
+    ).toContain(email);
   });
 
   it("threads --baseline through gather, pull, validate, and review from another cwd", async () => {
@@ -554,9 +558,9 @@ describe("package ownership and legacy compatibility", () => {
     await node(brand, "voice", "audience: writers");
     const loaded = await snapshot();
     expect(loaded.baseline).toBeUndefined();
-    expect(loaded.cover).toMatchObject({ state: "resolved", id: "index" });
+    expect(loaded.framing).toMatchObject({ state: "resolved", id: "index" });
     const result = await pull(["voice"]);
-    expect(result.cover).toMatchObject({ state: "resolved", id: "index" });
+    expect(result.framing).toMatchObject({ state: "resolved", id: "index" });
     expect(result.nodes[0]?.body).toContain("Guidance for voice");
     const report = await lintGhostPackage(brand, elsewhere, baseline);
     expect(report.errors).toBe(0);

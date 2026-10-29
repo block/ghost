@@ -8,9 +8,10 @@ import type {
 } from "#ghost-core";
 import type { PullMiss } from "../observability-events.js";
 import type { LoadedCheck } from "../scan/check-files.js";
+import type { GhostProvenance } from "../scan/package-hash.js";
 import type { ReadOnlySnapshotMap } from "./readonly-map.js";
 
-export type GhostCoverState =
+export type GhostFramingState =
   | {
       state: "resolved";
       id: string;
@@ -30,6 +31,7 @@ export interface GhostGlossarySnapshot {
 }
 
 export interface GhostEmbedSnapshot {
+  provenance: GhostProvenance;
   notices?: readonly import("../scan/lint.js").LintIssue[];
   package: Readonly<{
     id: string;
@@ -46,7 +48,7 @@ export interface GhostEmbedSnapshot {
   catalog: Readonly<{
     nodes: ReadOnlySnapshotMap<string, Readonly<GhostCatalogNode>>;
   }>;
-  cover: GhostCoverState;
+  framing: GhostFramingState;
   glossary?: Readonly<GhostGlossarySnapshot>;
   checks: ReadOnlySnapshotMap<string, Readonly<LoadedCheck>>;
   invalid: readonly Readonly<{ file: string; message: string }>[];
@@ -89,6 +91,7 @@ export interface GhostGatherContract {
 }
 
 export interface GhostGatherResult {
+  provenance: GhostProvenance;
   kind: "menu";
   /** Invalid guidance files skipped during loading; never includes checks. */
   diagnostics: GhostEmbedSnapshot["invalid"];
@@ -100,7 +103,7 @@ export interface GhostGatherResult {
   contract: GhostGatherContract;
   coverage: GhostGatherCoverage;
   kinds?: readonly GhostMenuKind[];
-  /** Selectable menu entries. A resolved cover is intentionally excluded. */
+  /** Selectable menu entries. A resolved framing is intentionally excluded. */
   nodes: readonly CatalogMenuEntry[];
   /** Core guidance delivered automatically, not selected by the model. */
   automatic?: readonly CatalogMenuEntry[];
@@ -128,7 +131,7 @@ export interface GhostPulledNode {
   body: string;
 }
 
-export type GhostPullCover =
+export type GhostPullFraming =
   | {
       state: "resolved";
       id: string;
@@ -149,15 +152,16 @@ export interface GhostPullFallback {
 }
 
 export interface GhostPullResult {
+  provenance: GhostProvenance;
   kind: "pull";
   /** Invalid guidance files skipped during loading, including all-miss pulls. */
   diagnostics: GhostEmbedSnapshot["invalid"];
-  /** Caller-selected ids after de-duplicating and removing a cover alias. */
+  /** Caller-selected ids after de-duplicating and removing a framing alias. */
   requested: readonly string[];
-  /** Delivered ids, including core and prerequisites; cover is recorded separately. */
+  /** Delivered ids, including core and prerequisites; framing is recorded separately. */
   ids: readonly string[];
   missed: readonly PullMiss[];
-  cover: GhostPullCover;
+  framing: GhostPullFraming;
   fallback?: GhostPullFallback;
   /** Interpretation contract, present only for classified packages. */
   authority?: string;

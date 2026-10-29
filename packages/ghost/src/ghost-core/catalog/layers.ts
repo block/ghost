@@ -2,7 +2,7 @@ import type { GhostPackageManifest } from "../package-manifest.js";
 import type { GhostCatalogNode } from "./types.js";
 
 export const LAYERED_AUTHORITY =
-  "Baseline defaults yield to explicit brand decisions. An exception must name the changed rule and its scope. Requirements cover applicable accessibility obligations, legal obligations, or documented technical limits; they cannot be overridden within their stated scope. The requires field declares prerequisites, not overrides. Framing does not override explicit decisions. Report unresolved conflicts rather than guessing. Delivery order is not authority.";
+  "A more specific rule replaces or augments the rule it names, within the scope it states. Everything it doesn't name still applies. Required: exempts a rule from the cascade. A required rule cannot be replaced within its stated scope, wherever it lives. It is reserved for accessibility and legal obligations and documented technical limits, and it carries its reason and scope in the same bullet. The requires field declares delivery dependencies, not overrides. Report unresolved conflicts rather than guessing. Delivery order confers no authority.";
 
 type Nodes = ReadonlyMap<string, Readonly<GhostCatalogNode>>;
 

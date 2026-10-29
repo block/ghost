@@ -19,8 +19,8 @@ If the output reports excluded guidance, do not interpret it as silence. Run
 `ghost validate` against the same package, resolve the reported failures, or
 state the grounding gap before continuing provisionally.
 
-The cover is not in this menu because every pull includes it automatically. If
-nothing in the list applies, run bare `ghost pull` for the cover and uncovered-
+The framing is not in this menu because every pull includes it automatically. If
+nothing in the list applies, run bare `ghost pull` for the framing and uncovered-
 guidance policy.
 
 ## Pull and inspect
@@ -31,7 +31,7 @@ you to inspect before generating; [making.md](making.md) covers unavailable or
 external material.
 
 `ghost pull` records the selected ids. After compaction or a session handoff,
-re-run it with the same ids to restore the cover and selected guidance.
+re-run it with the same ids to restore the framing and selected guidance.
 
 Then make the requested artifact. When the output includes a matching starting
 structure, begin from it verbatim and fill it with task content.

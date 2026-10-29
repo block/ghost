@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { existsSync } from "node:fs";
-import { cp, rm } from "node:fs/promises";
+import { cp, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -36,4 +36,21 @@ await cp(
       return name !== ".events" && name !== ".gitignore";
     },
   },
+);
+
+const ghostDir = join(ROOT, "packages", "ghost");
+const baselineDir = join(ghostDir, "dist", "baseline");
+await rm(baselineDir, { recursive: true, force: true });
+await cp(join(ghostDir, "src", "baseline"), baselineDir, { recursive: true });
+const release = JSON.parse(
+  await readFile(join(ghostDir, "package.json"), "utf8"),
+);
+const manifestPath = join(baselineDir, "manifest.yml");
+const manifest = (await readFile(manifestPath, "utf8")).replace(
+  /^version:.*\n?/m,
+  "",
+);
+await writeFile(
+  manifestPath,
+  `${manifest.trimEnd()}\nversion: "${release.version}"\n`,
 );

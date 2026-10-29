@@ -13,7 +13,7 @@ export function gatherGhostPackage(
 ): GhostGatherResult {
   const ask = normalizeAsk(options.ask);
   const coverId =
-    snapshot.cover.state === "resolved" ? snapshot.cover.id : undefined;
+    snapshot.framing.state === "resolved" ? snapshot.framing.id : undefined;
   const core = new Set(snapshot.core ?? snapshot.package.manifest.core ?? []);
   const entries = buildCatalogMenu({
     nodes: new Map(
@@ -33,6 +33,7 @@ export function gatherGhostPackage(
 
   return {
     kind: "menu",
+    provenance: snapshot.provenance,
     diagnostics: snapshot.invalid,
     ...(ask ? { ask } : {}),
     source: {
@@ -44,7 +45,7 @@ export function gatherGhostPackage(
       ...(core.size > 0
         ? {
             ifNoneApply:
-              "If no selectable node applies, run bare `ghost pull` to receive the cover, automatic core fundamentals, and uncovered-guidance policy. Do not select automatic nodes.",
+              "If no selectable node applies, run bare `ghost pull` to receive the framing, automatic core fundamentals, and uncovered-guidance policy. Do not select automatic nodes.",
           }
         : {}),
     },
@@ -71,7 +72,7 @@ export const GATHER_SELECTION_INSTRUCTION =
   "Pull every node whose `for` payload matches the task. Skip clear non-matches; topic overlap alone is not a match. Do not rank matches or cap their count. When uncertain, pull unless the node's kind legend states a stricter rule.";
 
 export const GATHER_IF_NONE_APPLY_INSTRUCTION =
-  "If no selectable node applies, run bare `ghost pull` to receive the cover and uncovered-guidance policy.";
+  "If no selectable node applies, run bare `ghost pull` to receive the framing and uncovered-guidance policy.";
 
 export const GATHER_NO_ASK_INSTRUCTION =
   "When no ask is supplied, this menu is not grounded to a task. Re-run `ghost gather <ask>` before pulling for a task.";

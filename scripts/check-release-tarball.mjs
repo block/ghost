@@ -8,6 +8,7 @@ import {
   readFileSync,
   rmSync,
   statSync,
+  writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -65,6 +66,7 @@ try {
   const requiredPaths = [
     "package.json",
     "dist/bin.js",
+    "dist/baseline/manifest.yml",
     "dist/cli.js",
     "dist/init-payloads/median/standard.model-defaults.md",
     "dist/init-payloads/median/median-tells.md",
@@ -127,6 +129,35 @@ try {
   ) {
     fail(
       "release tarball ghost init did not scaffold the expected node package",
+    );
+  }
+
+  // The standalone artifact must deliver baseline guidance without another checkout.
+  writeFileSync(
+    join(tmpRoot, ".ghost", "manifest.yml"),
+    `schema: ghost.package/v1\nid: standalone-layered\nbaseline: "${PACKAGE_JSON.version}"\n`,
+  );
+  const layeredPull = JSON.parse(
+    run(
+      "node",
+      [
+        join(packageDir, "dist", "bin.js"),
+        "pull",
+        "baseline.interface.email",
+        "--format",
+        "json",
+        "--no-events",
+      ],
+      { cwd: tmpRoot },
+    ),
+  );
+  if (
+    layeredPull.provenance?.baseline?.version !== PACKAGE_JSON.version ||
+    !layeredPull.ids?.includes("baseline.interface.email") ||
+    layeredPull.framing?.id !== "framing"
+  ) {
+    fail(
+      "standalone artifact did not deliver its release-versioned bundled baseline",
     );
   }
 

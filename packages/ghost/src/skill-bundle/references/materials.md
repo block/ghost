@@ -75,7 +75,7 @@ consumer's brand.
 
 1. Vendor or install the components and packet together.
 2. Repoint every `materials` locator to the receiving repo's exact files.
-3. State in the cover that local brand guidance overrides the vendored floor.
+3. Name the baseline rule and scope in each brand delta that changes it. Framing supplies context for choices; it does not override rules.
 4. Give prose only to components whose purpose or divergence is not generic.
 5. Put token and theming invariants in contract nodes.
 6. Add checks only for countable, review-critical invariants.

@@ -56,8 +56,26 @@ describe("complete producer output through process pipes", () => {
     );
   }
 
-  function run(args: string[], slow = false) {
-    return captureProcess(["--package", packageDir, ...args], dir, slow);
+  async function run(args: string[], slow = false) {
+    const result = await captureProcess(
+      ["--package", packageDir, ...args],
+      dir,
+      slow,
+    );
+    if (result.code === 0 && !args.includes("json")) {
+      const marker = Buffer.from("<!-- ghost provenance ");
+      const offset = result.stdout.lastIndexOf(marker);
+      expect(offset).toBeGreaterThanOrEqual(0);
+      const footer = result.stdout.subarray(offset).toString("utf8");
+      expect(footer.endsWith(" -->\n")).toBe(true);
+      const provenance = JSON.parse(footer.slice(marker.length, -5));
+      expect(provenance.package.id).toBe("delivery-test");
+      expect(provenance.package.hash).toMatch(/^sha256:[0-9a-f]{64}$/);
+      expect(provenance.baseline).toBeNull();
+      // Keep byte-fidelity assertions independent of runtime identity metadata.
+      result.stdout = result.stdout.subarray(0, offset);
+    }
+    return result;
   }
 
   it("preserves every byte of a large Unicode Markdown pull with a slow reader", async () => {
@@ -90,7 +108,7 @@ describe("complete producer output through process pipes", () => {
     expect(result.stderr).toBe("");
     const packet = JSON.parse(result.stdout.toString("utf8"));
     expect(packet.ids).toEqual([node.id]);
-    expect(packet.cover.node.body).toBe(COVER);
+    expect(packet.framing.node.body).toBe(COVER);
     expect(packet.nodes).toEqual([
       { id: node.id, kind: "rule", for: node.applicability, body: node.body },
     ]);
@@ -176,7 +194,7 @@ describe("complete producer output through process pipes", () => {
     expect(
       packet.missed.map((miss: { requested: string }) => miss.requested),
     ).toEqual(["rule.unknown"]);
-    expect(packet.cover.node.body).toBe(COVER);
+    expect(packet.framing.node.body).toBe(COVER);
     expect(packet.nodes[0].body).toBe(body);
     expect(packet.skeletons).toEqual([
       { nodeId: "rule.surface", info: "html", content: skeleton },
@@ -232,7 +250,7 @@ describe("complete producer output through process pipes", () => {
     const json = await run(["pull", "--no-events", "--format", "json"]);
     expect(json.code).toBe(0);
     const packet = JSON.parse(json.stdout.toString("utf8"));
-    expect(packet.cover).toEqual({ state: "absent" });
+    expect(packet.framing).toEqual({ state: "absent" });
     expect(packet.fallback).toEqual({
       source: "ghost-default",
       body: FALLBACK,

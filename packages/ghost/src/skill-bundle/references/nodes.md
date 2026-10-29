@@ -146,7 +146,7 @@ canonical; human curation does.
 
 | If the agent keeps... | Author... |
 | --- | --- |
-| missing guidance | sharper `for` payload; universal guidance may belong on the cover |
+| missing guidance | sharper `for` payload; universal guidance may belong on the framing |
 | inventing values | a material-backed node with exact vocabulary |
 | producing generic output | a reject-and-replace `Never` entry plus a well-explained example |
 | choosing the wrong structure | bound/open pattern and, when needed, a Skeleton |

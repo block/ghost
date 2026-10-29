@@ -168,6 +168,36 @@ try {
   }
   run("pnpm", ["exec", "ghost", "validate", ".ghost"], { cwd: consumerDir });
 
+  // Verify automatic baseline delivery from the installed tarball, not the repo.
+  writeFileSync(
+    join(consumerDir, ".ghost", "manifest.yml"),
+    `schema: ghost.package/v1\nid: packed-layered\nbaseline: "${packedPackageJson.version}"\n`,
+  );
+  const layeredPull = JSON.parse(
+    run(
+      "pnpm",
+      [
+        "exec",
+        "ghost",
+        "pull",
+        "baseline.interface.email",
+        "--format",
+        "json",
+        "--no-events",
+      ],
+      { cwd: consumerDir },
+    ),
+  );
+  if (
+    layeredPull.provenance?.baseline?.version !== packedPackageJson.version ||
+    !layeredPull.ids?.includes("baseline.interface.email") ||
+    layeredPull.framing?.id !== "framing"
+  ) {
+    fail(
+      "installed package did not deliver its release-versioned bundled baseline",
+    );
+  }
+
   // The vessel-light body must survive packing: corpus, binary fonts, checks.
   // Run from the consumer root (where the tarball is installed) and target a
   // separate package dir — `pnpm exec` from a bare subdirectory would escape

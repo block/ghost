@@ -10,6 +10,7 @@ import {
   resolveGhostPackage,
   resolveGitRoot,
 } from "../package.js";
+import { formatProvenance } from "../scan/package-hash.js";
 import { exitCli, failFromError } from "./errors.js";
 import { parseEnumOption } from "./options.js";
 
@@ -59,7 +60,7 @@ export function registerPullCommand(cli: CAC): void {
         for (const notice of snapshot.notices ?? [])
           console.error(`${notice.severity}: ${notice.message}`);
         const repoRoot = await resolveGitRoot(
-          paths.baseline ? paths.packageDir : process.cwd(),
+          snapshot.baseline ? paths.packageDir : process.cwd(),
         );
         const result = await pullGhostNodes(snapshot, {
           ids: ids ?? [],
@@ -70,9 +71,11 @@ export function registerPullCommand(cli: CAC): void {
 
         // External packages may live in different repositories. Inspection
         // pointers must remain directly addressable from the caller's cwd.
-        if (paths.baseline) {
+        if (snapshot.baseline) {
           for (const node of [
-            ...(result.cover.state === "resolved" ? [result.cover.node] : []),
+            ...(result.framing.state === "resolved"
+              ? [result.framing.node]
+              : []),
             ...result.nodes,
           ]) {
             const ownerRoot =
@@ -109,11 +112,12 @@ export function registerPullCommand(cli: CAC): void {
           const runId = resolveRunId(opts.run);
           await appendGhostEvent(paths.packageDir, {
             event: "pull",
+            provenance: result.provenance,
             ...(runId ? { run: runId } : {}),
             ids: [...result.ids],
             ...(result.authority ? { requested: [...result.requested] } : {}),
-            ...(result.cover.state === "resolved"
-              ? { cover: result.cover.id }
+            ...(result.framing.state === "resolved"
+              ? { framing: result.framing.id }
               : {}),
             inlinedMaterials: result.materialCounts.inlined,
             omittedMaterials: result.materialCounts.omitted,
@@ -128,12 +132,12 @@ export function registerPullCommand(cli: CAC): void {
                 ...formatPullJson(
                   result,
                   opts.materials !== false,
-                  !!paths.baseline,
+                  !!snapshot.baseline,
                 ),
-                ...(paths.baseline
+                ...(snapshot.baseline
                   ? {
-                      baseline: paths.baseline.packageDir,
-                      context: `--package ${JSON.stringify(paths.packageDir)} --baseline ${JSON.stringify(paths.baseline.packageDir)}`,
+                      baseline: snapshot.baseline.dir,
+                      context: `--package ${JSON.stringify(paths.packageDir)} --baseline ${JSON.stringify(snapshot.baseline.dir)}`,
                     }
                   : {}),
               },
@@ -143,9 +147,10 @@ export function registerPullCommand(cli: CAC): void {
           );
         } else {
           process.stdout.write(
-            formatPullMarkdown(result, !!paths.baseline) +
-              (paths.baseline
-                ? `\nMaterial ownership: use each node's package directory. Retain --package ${JSON.stringify(paths.packageDir)} --baseline ${JSON.stringify(paths.baseline.packageDir)} for subsequent ghost commands.\n`
+            formatPullMarkdown(result, !!snapshot.baseline) +
+              formatProvenance(result.provenance) +
+              (snapshot.baseline
+                ? `\nMaterial ownership: use each node's package directory. Retain --package ${JSON.stringify(paths.packageDir)} --baseline ${JSON.stringify(snapshot.baseline.dir)} for subsequent ghost commands.\n`
                 : ""),
           );
         }
@@ -163,22 +168,23 @@ function formatPullJson(
 ): Record<string, unknown> {
   return {
     kind: "pull",
+    provenance: result.provenance,
     diagnostics: result.diagnostics,
     requested: result.requested,
     ids: result.ids,
     ...(result.missed.length > 0 ? { missed: result.missed } : {}),
-    cover:
-      result.cover.state === "resolved"
+    framing:
+      result.framing.state === "resolved"
         ? {
             state: "resolved",
-            id: result.cover.id,
+            id: result.framing.id,
             node: formatPullJsonNode(
-              result.cover.node,
+              result.framing.node,
               inlineMaterials,
               external,
             ),
           }
-        : result.cover,
+        : result.framing,
     ...(result.fallback
       ? {
           fallback: {
@@ -201,8 +207,8 @@ function formatPullMarkdown(result: GhostPullResult, external = false): string {
     sections.push(formatLoadDiagnostics(result.diagnostics));
   }
   if (result.authority) sections.push(`# Authority\n\n${result.authority}`);
-  if (result.cover.state === "resolved") {
-    sections.push(formatNodeMarkdown(result.cover.node, external));
+  if (result.framing.state === "resolved") {
+    sections.push(formatNodeMarkdown(result.framing.node, external));
   }
   if (result.fallback !== undefined) {
     sections.push(

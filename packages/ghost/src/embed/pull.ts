@@ -48,20 +48,20 @@ export async function pullGhostNodes(
     order?: GhostPullOrder;
   },
 ): Promise<GhostPullResult> {
-  if (snapshot.cover.state === "dangling") {
+  if (snapshot.framing.state === "dangling") {
     throw new UsageError(
-      `framing node "${snapshot.cover.id}" is missing; add framing.md before pulling.`,
+      `framing node "${snapshot.framing.id}" is missing; add framing.md before pulling.`,
     );
   }
 
-  const coverId =
-    snapshot.cover.state === "resolved" ? snapshot.cover.id : undefined;
+  const framingId =
+    snapshot.framing.state === "resolved" ? snapshot.framing.id : undefined;
   const selectableNodes = new Map(
-    [...snapshot.catalog.nodes].filter(([id]) => id !== coverId),
+    [...snapshot.catalog.nodes].filter(([id]) => id !== framingId),
   );
   const selectableIds = [...selectableNodes.keys()];
   const requested = [...new Set(options.ids ?? [])];
-  const selectedRequested = requested.filter((id) => id !== coverId);
+  const selectedRequested = requested.filter((id) => id !== framingId);
   const known = selectedRequested.filter((id) => selectableNodes.has(id));
   const missed: PullMiss[] = selectedRequested
     .filter((id) => !selectableNodes.has(id))
@@ -96,7 +96,7 @@ export async function pullGhostNodes(
   }
   const context = layered
     ? inspectLayeredContext(snapshot.catalog.nodes, manifest, [
-        ...(coverId ? [coverId] : []),
+        ...(framingId ? [framingId] : []),
         ...known,
       ])
     : { ids: known, issues: [] };
@@ -112,8 +112,9 @@ export async function pullGhostNodes(
     return emptyMissResult(
       selectedRequested,
       missed,
-      coverId,
+      framingId,
       snapshot.invalid,
+      snapshot.provenance,
     );
   }
 
@@ -123,14 +124,14 @@ export async function pullGhostNodes(
   const orderedSelectedNodes = expanded
     ? orderLayeredNodes(
         context.ids
-          .filter((id) => id !== coverId)
+          .filter((id) => id !== framingId)
           .map((id) => snapshot.catalog.nodes.get(id) as GhostCatalogNode),
       )
     : (options.order ?? "steering") === "given"
       ? givenNodes
       : orderPulledNodes(givenNodes);
   const nodesToPull = [
-    ...(snapshot.cover.state === "resolved" ? [snapshot.cover.node] : []),
+    ...(snapshot.framing.state === "resolved" ? [snapshot.framing.node] : []),
     ...orderedSelectedNodes,
   ];
   const packageDir = snapshot.package.dir;
@@ -142,24 +143,25 @@ export async function pullGhostNodes(
   );
   dedupeInlinedMaterials(pulledNodes);
   const materialCounts = sumMaterialCounts(pulledNodes);
-  const coverPulled =
-    snapshot.cover.state === "resolved" ? pulledNodes[0] : undefined;
+  const framingPulled =
+    snapshot.framing.state === "resolved" ? pulledNodes[0] : undefined;
   const selectedPulled =
-    snapshot.cover.state === "resolved" ? pulledNodes.slice(1) : pulledNodes;
-  const fallback = fallbackForCover(snapshot.cover);
+    snapshot.framing.state === "resolved" ? pulledNodes.slice(1) : pulledNodes;
+  const fallback = fallbackForFraming(snapshot.framing);
 
   return {
     kind: "pull",
+    provenance: snapshot.provenance,
     diagnostics: snapshot.invalid,
     requested: selectedRequested,
     ids: expanded ? orderedSelectedNodes.map((node) => node.id) : known,
     missed,
-    cover:
-      coverPulled !== undefined
+    framing:
+      framingPulled !== undefined
         ? {
             state: "resolved",
-            id: coverPulled.node.id,
-            node: formatPulledNode(coverPulled),
+            id: framingPulled.node.id,
+            node: formatPulledNode(framingPulled),
           }
         : { state: "absent" },
     ...(fallback ? { fallback } : {}),
@@ -173,18 +175,20 @@ export async function pullGhostNodes(
 function emptyMissResult(
   requested: readonly string[],
   missed: readonly PullMiss[],
-  coverId: string | undefined,
+  framingId: string | undefined,
   diagnostics: GhostPullResult["diagnostics"],
+  provenance: GhostPullResult["provenance"],
 ): GhostPullResult {
   return {
     kind: "pull",
+    provenance,
     diagnostics,
     requested,
     ids: [],
     missed,
-    cover: {
+    framing: {
       state: "not-emitted",
-      ...(coverId !== undefined ? { id: coverId } : {}),
+      ...(framingId !== undefined ? { id: framingId } : {}),
     },
     nodes: [],
     skeletons: [],
@@ -342,15 +346,15 @@ function formatPulledNode({
   };
 }
 
-function fallbackForCover(
-  cover: GhostEmbedSnapshot["cover"],
+function fallbackForFraming(
+  framing: GhostEmbedSnapshot["framing"],
 ): GhostPullFallback | undefined {
-  if (cover.state === "absent") {
+  if (framing.state === "absent") {
     return { source: "ghost-default", body: GHOST_DEFAULT_FALLBACK_BODY };
   }
   if (
-    cover.state === "resolved" &&
-    !NO_GUIDANCE_HEADING.test(cover.node.body)
+    framing.state === "resolved" &&
+    !NO_GUIDANCE_HEADING.test(framing.node.body)
   ) {
     return { source: "ghost-default", body: GHOST_DEFAULT_FALLBACK_BODY };
   }

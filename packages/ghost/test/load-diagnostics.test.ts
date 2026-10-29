@@ -106,7 +106,7 @@ describe("load diagnostics", () => {
       ids: ["broken"],
       repoRoot: dir,
     });
-    expect(miss.cover.state).toBe("not-emitted");
+    expect(miss.framing.state).toBe("not-emitted");
     expect(miss.nodes).toEqual([]);
   });
 

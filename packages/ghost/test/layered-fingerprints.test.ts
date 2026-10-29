@@ -137,7 +137,7 @@ describe("layered fingerprints", () => {
       repoRoot: dir,
     });
     const nodes = [
-      ...(result.cover.state === "resolved" ? [result.cover.node] : []),
+      ...(result.framing.state === "resolved" ? [result.framing.node] : []),
       ...result.nodes,
     ];
     expect(
@@ -175,7 +175,7 @@ describe("layered fingerprints", () => {
     expect(result.nodes).toHaveLength(1);
     const miss = await pull(["missing"]);
     expect(miss.ids).toEqual([]);
-    expect(miss.cover.state).toBe("not-emitted");
+    expect(miss.framing.state).toBe("not-emitted");
   });
 
   it("ignores legacy prerequisites without an authority field", async () => {
@@ -229,7 +229,7 @@ describe("layered fingerprints", () => {
     const result = await pull();
     expect(result.requested).toEqual([]);
     expect(result.ids).toEqual([core]);
-    expect(result.cover).toMatchObject({
+    expect(result.framing).toMatchObject({
       state: "resolved",
       node: { scope: "brand", layer: "framing" },
     });
@@ -238,7 +238,7 @@ describe("layered fingerprints", () => {
       layer: "fundamentals",
       body: expect.stringContaining("visible hierarchy"),
     });
-    expect(result.authority).toContain("Delivery order is not authority");
+    expect(result.authority).toContain("Delivery order confers no authority");
     await rm(join(pkg, "framing.md"));
     await expect(pull()).rejects.toThrow("framing node");
   });
@@ -401,7 +401,7 @@ describe("layered fingerprints", () => {
       scope: "baseline",
       layer: "fundamentals",
     });
-    expect(output.cover.node).toMatchObject({
+    expect(output.framing.node).toMatchObject({
       scope: "brand",
       layer: "framing",
     });
@@ -419,12 +419,12 @@ describe("layered fingerprints", () => {
       event: "pull",
       requested: [email],
       ids: output.ids,
-      cover: "framing",
+      framing: "framing",
     });
     expect(events.at(-1)).toMatchObject({
       event: "pull",
       ids: [core],
-      cover: "framing",
+      framing: "framing",
     });
     await node(email, "requires: [missing]");
     expect((await runCli(["pull", email], dir)).code).toBe(2);
