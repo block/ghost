@@ -244,3 +244,154 @@ describe("SemVer precedence", () => {
     expect(compareVersions(a, b)).toBe(result);
   });
 });
+
+it("omits bundled baseline paths from gather continuations and preserves explicit overrides", async () => {
+  for (const format of ["json", "markdown"]) {
+    const bundled = await runCli(
+      ["gather", "email", "--package", brand, "--format", format],
+      root,
+    );
+    expect(bundled.code).toBe(0);
+    const next =
+      format === "json"
+        ? JSON.parse(bundled.stdout).next.command
+        : bundled.stdout;
+    expect(next).not.toContain("--baseline");
+    expect(next).toContain(brand);
+    const external = await runCli(
+      [
+        "gather",
+        "email",
+        "--package",
+        brand,
+        "--baseline",
+        baseline,
+        "--format",
+        format,
+      ],
+      root,
+    );
+    expect(external.code).toBe(0);
+    expect(external.stdout).toContain("--baseline");
+  }
+});
+
+it("supplies built-in legends once without a glossary and preserves stricter additions", async () => {
+  const menu = gatherGhostPackage(
+    await loadGhostSnapshot(resolveGhostPackage(brand, root, baseline)),
+  );
+  expect(menu.kinds?.map(({ name }) => name)).toEqual([
+    "framing",
+    "fundamentals",
+    "identity",
+    "interface",
+  ]);
+  expect(
+    (await lintGhostPackage(brand, root, baseline)).issues.filter(
+      ({ rule }) => rule === "kind-undeclared",
+    ),
+  ).toEqual([]);
+  await node(brand, "pattern.receipt", "Receipt decisions.");
+  expect((await lintGhostPackage(brand, root, baseline)).issues).toContainEqual(
+    expect.objectContaining({
+      rule: "kind-undeclared",
+      path: "pattern.receipt.md",
+    }),
+  );
+  const purpose = "Pull this brand interface only for exact email tasks.";
+  for (const dir of [brand, baseline])
+    await writeFile(
+      join(dir, "glossary.md"),
+      `---\nkinds: [{name: interface}]\n---\n# interface\n${purpose}\n`,
+    );
+  const json = await runCli(
+    [
+      "gather",
+      "email",
+      "--package",
+      brand,
+      "--baseline",
+      baseline,
+      "--format",
+      "json",
+    ],
+    root,
+  );
+  const kinds = JSON.parse(json.stdout).kinds.filter(
+    ({ name }: { name: string }) => name === "interface",
+  );
+  expect(kinds).toHaveLength(1);
+  expect(kinds[0].purpose.split(purpose)).toHaveLength(2);
+  const markdown = await runCli(
+    ["gather", "email", "--package", brand, "--baseline", baseline],
+    root,
+  );
+  expect(markdown.stdout.split(purpose)).toHaveLength(2);
+  expect(
+    markdown.stdout.split(
+      "Select guidance for the artifact or interaction being made.",
+    ),
+  ).toHaveLength(2);
+  expect(
+    markdown.stdout.split(
+      "Brand framing is included automatically on every pull.",
+    ),
+  ).toHaveLength(2);
+});
+
+it("warns only when a brand check references baseline-owned guidance", async () => {
+  for (const dir of [brand, baseline]) await mkdir(join(dir, "checks"));
+  const check = (reference: string) =>
+    `---\nname: owned\ndescription: Inspect owned guidance.\nseverity: medium\nreferences: [${reference}]\n---\nInspect against the referenced owner.\n`;
+  await writeFile(join(brand, "checks", "brand.md"), check(`${core} > Rules`));
+  await writeFile(join(baseline, "checks", "baseline.md"), check(core));
+  let report = await lintGhostPackage(brand, root, baseline);
+  expect(report.errors).toBe(0);
+  expect(
+    report.issues.filter(
+      ({ rule }) => rule === "check-reference-baseline-owned",
+    ),
+  ).toEqual([expect.objectContaining({ path: "checks/brand.md.references" })]);
+  await writeFile(join(brand, "checks", "brand.md"), check("interface.email"));
+  report = await lintGhostPackage(brand, root, baseline);
+  expect(
+    report.issues.filter(
+      ({ rule }) => rule === "check-reference-baseline-owned",
+    ),
+  ).toEqual([]);
+});
+
+it("rejects external, chained, hidden and unresolved package symlinks while permitting internal targets", async () => {
+  await writeFile(join(root, "external.txt"), "external");
+  await symlink("../external.txt", join(brand, "outside.txt"));
+  await symlink("outside.txt", join(brand, "chain.txt"));
+  await symlink("../external.txt", join(brand, ".hidden-link"));
+  await symlink("missing.txt", join(brand, "dangling.txt"));
+  await symlink("interface.email.md", join(brand, "inside.txt"));
+  await symlink(brand, join(root, "brand-link"));
+  const report = await lintGhostPackage(
+    join(root, "brand-link"),
+    root,
+    baseline,
+  );
+  expect(
+    report.issues
+      .filter(({ rule }) => rule === "package-symlink-outside")
+      .map(({ path }) => path)
+      .sort(),
+  ).toEqual([".hidden-link", "chain.txt", "dangling.txt", "outside.txt"]);
+  const result = await runCli(
+    [
+      "validate",
+      "--package",
+      brand,
+      "--baseline",
+      baseline,
+      "--format",
+      "json",
+    ],
+    root,
+  );
+  expect(result.code).not.toBe(0);
+  expect(JSON.parse(result.stdout).errors).toBe(4);
+});

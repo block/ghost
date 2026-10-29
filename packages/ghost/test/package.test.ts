@@ -134,7 +134,7 @@ Replacement rule.
     const report = await lintGhostPackage(dir);
 
     expect(report.errors).toBe(0);
-    // The only warning is the undeclared cover, never a kind complaint.
+    // The only warning is missing framing, not the kind.
     expect(report.warnings).toBe(1);
     expect(report.issues).not.toContainEqual(
       expect.objectContaining({ rule: "kind-undeclared" }),
@@ -152,7 +152,7 @@ Replacement rule.
     const report = await lintGhostPackage(dir);
 
     expect(report.errors).toBe(0);
-    // The only warning is the undeclared cover, never a kind complaint.
+    // The only warning is missing framing, not the kind.
     expect(report.warnings).toBe(1);
     expect(report.issues).not.toContainEqual(
       expect.objectContaining({ rule: "kind-undeclared" }),
@@ -252,7 +252,7 @@ Replacement rule.
     expect(kindIssue?.message).toContain("Did you mean `principle`?");
   });
 
-  it("does not warn about node kinds when no glossary is present", async () => {
+  it("warns about custom node kinds when no glossary is present", async () => {
     await writeManifest(dir);
     await writeFile(
       join(dir, "principles.density.md"),
@@ -262,9 +262,9 @@ Replacement rule.
     const report = await lintGhostPackage(dir);
 
     expect(report.errors).toBe(0);
-    // The only warning is the undeclared cover, never a kind complaint.
-    expect(report.warnings).toBe(1);
-    expect(report.issues).not.toContainEqual(
+    // Missing framing and undeclared custom kind are separate warnings.
+    expect(report.warnings).toBe(2);
+    expect(report.issues).toContainEqual(
       expect.objectContaining({ rule: "kind-undeclared" }),
     );
   });
@@ -320,8 +320,8 @@ Replacement rule.
     const report = await lintGhostPackage(dir, dir);
 
     expect(report.errors).toBe(0);
-    // Undeclared cover + dead locator + orphaned material.
-    expect(report.warnings).toBe(3);
+    // Missing framing + undeclared custom kind + dead locator + orphaned material.
+    expect(report.warnings).toBe(4);
     expect(report.issues).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

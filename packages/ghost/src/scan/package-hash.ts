@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
-import { readdir, readFile, readlink } from "node:fs/promises";
-import { join } from "node:path";
+import { readdir, readFile, readlink, realpath } from "node:fs/promises";
+import { isAbsolute, join, relative, sep } from "node:path";
 
 export interface GhostPackageIdentity {
   id: string;
@@ -48,4 +48,39 @@ export async function hashGhostPackage(packageDir: string): Promise<string> {
 /** Machine-readable identity footer without adding guidance to the packet. */
 export function formatProvenance(provenance: GhostProvenance): string {
   return `<!-- ghost provenance ${JSON.stringify(provenance).replaceAll("<", "\\u003c").replaceAll(">", "\\u003e")} -->\n`;
+}
+
+/** Validation checks link containment separately from the stable hash encoding. */
+export async function invalidPackageSymlinks(
+  packageDir: string,
+): Promise<string[]> {
+  const root = await realpath(packageDir);
+  const invalid: string[] = [];
+  async function walk(dir: string): Promise<void> {
+    for (const entry of await readdir(dir, { withFileTypes: true })) {
+      const file = join(dir, entry.name);
+      if (entry.isSymbolicLink()) {
+        try {
+          const target = relative(root, await realpath(file));
+          if (
+            target === ".." ||
+            target.startsWith(`..${sep}`) ||
+            isAbsolute(target)
+          )
+            invalid.push(relative(packageDir, file));
+        } catch (error) {
+          if (
+            !error ||
+            typeof error !== "object" ||
+            !("code" in error) ||
+            !["ENOENT", "ELOOP"].includes(String(error.code))
+          )
+            throw error;
+          invalid.push(relative(packageDir, file));
+        }
+      } else if (entry.isDirectory()) await walk(file);
+    }
+  }
+  await walk(packageDir);
+  return invalid;
 }

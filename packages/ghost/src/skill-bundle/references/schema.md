@@ -142,7 +142,9 @@ independent of locale. For each path hash three byte fields: kind (`file` or
 `symlink`), UTF-8 relative path, and content. Each field begins with its unsigned
 64-bit big-endian byte length. Regular files contribute exact bytes, including
 checks and material files; symlinks contribute their UTF-8 target text and are
-never followed. Empty directories, timestamps, permissions, absolute package
+never followed for hashing. Validation rejects links that resolve outside the
+package, including other files in the repository, and links whose targets cannot
+be resolved. Valid internal links retain the existing hash encoding. Empty directories, timestamps, permissions, absolute package
 locations, and bytes behind external references do not participate. A hash
 identifies the package content, not mutable external material or the artifact.
 
@@ -240,8 +242,9 @@ appearing empty. Missing optional glossaries and checks remain normal.
 
 Bundled-only inspection requires the resolved file to stay inside the resolved
 materials directory and the repository. A bundled symlink to another in-repo
-file is referenced material: inspection requires explicit permission, and pull
-applies the referenced-file inline limit. Links within the materials directory
+file outside the package is invalid at package validation. An internal link
+outside materials is referenced material: inspection requires explicit permission,
+and pull applies the referenced-file inline limit. Links within the materials directory
 remain usable. Outside-repo targets stay unavailable.
 
 Pull still inlines eligible referenced text by default. Hosts that need

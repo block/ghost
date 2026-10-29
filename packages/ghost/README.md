@@ -49,7 +49,7 @@ ghost init          # scaffold .ghost/ with the starter package
 ghost checks init   # opt in to review assertions
 ghost validate      # make sure the package is well-formed
 ghost gather <ask>  # before building: show the complete guidance menu
-ghost pull <ids>    # read the cover plus picked nodes' full bodies
+ghost pull <ids>    # read framing, core, and picked nodes' full bodies
 ghost review        # during review: match a diff to guidance and checks
 ghost stats         # while tuning: see what agents reached for
 ghost skill install # install the unified ghost skill bundle
@@ -78,20 +78,41 @@ requires `.ghost/checks/`, and the agent decides which offered checks apply.
 
 ## Layered fingerprints
 
-Optional paired `scope` and `layer` metadata distinguishes baseline fundamentals
-and interface defaults from brand framing, identity, and interface expression.
-Manifest `core` names a small baseline fundamentals subset, automatically delivered
-by every pull. Gather lists it separately as `automatic`, never selectable guidance.
-Node `requires` includes explicit package or external-baseline prerequisites transitively. Brand interfaces
-must require baseline interface guidance, directly or transitively. Files stay flat;
-existing unclassified packages retain their output. Supply external fundamentals
-and interfaces with `--baseline <dir>` on gather, pull, validate, and review. The
-baseline owns its core and stays outside the brand package.
+A brand manifest declares `schema: ghost.package/v1`, its `id`, and the
+`baseline` version it was authored against. It has no `cover`, `core`, or
+`version` field. Fixed `framing.md` is delivered automatically by every pull.
+The baseline declares its own `id`, release `version`, and automatic `core`.
+Layered brands use the bundled baseline unless `--baseline <dir>` substitutes
+another complete package with its own version. Compatibility uses SemVer
+precedence; the brand declaration is not a pin.
 
-Pull exposes classification and one authority instruction for layered content.
-Its `requested` IDs describe selection; `ids` describe delivered context, including
-core and prerequisites. The cover remains separate. See the
-[schema and example](https://github.com/block/ghost/blob/main/packages/ghost/src/skill-bundle/references/schema.md#layered-fingerprints).
+Node frontmatter contains only `for`, optional `requires`, and optional
+`materials`. Filenames derive scope, layer, and kind: `baseline.fundamentals.*`
+and `baseline.interface.*` belong to the baseline; `identity.*`, `interface.*`,
+and `framing.md` belong to the brand. `requires` transports prerequisites;
+it does not override a rule. Core and framing are excluded from selection.
+
+`glossary.md` is optional. Built-in `framing`, `identity`, `interface`, and
+`fundamentals` need no declaration; gather supplies their selection prose once.
+Declare custom kinds and their selection rules in the glossary. A custom kind
+without a declaration warns. Brand checks reference brand guidance; baseline
+checks reference baseline guidance. A brand-to-baseline check reference warns.
+
+A more specific rule replaces or augments the rule it names, within the scope it
+states. Everything it doesn't name still applies. `Required:` exempts a rule
+from downstream replacement. A required rule cannot be replaced within its stated scope,
+wherever it lives. It is reserved for accessibility and legal obligations and
+documented technical limits, and it carries its reason and scope in the same
+bullet. Delivery order confers no authority.
+
+Legacy packages with neither `baseline`, `core`, nor `version` remain supported
+with migration notices and no effective baseline. JSON and events name the
+automatic node `framing`; legacy authored manifests may retain `cover` until
+migration. Package validation rejects symlinks that resolve outside the package
+or cannot be resolved. See the schema reference for provenance encoding and
+material-access policy.
+
+Full authoring and provenance details: [schema and example](https://github.com/block/ghost/blob/main/packages/ghost/src/skill-bundle/references/schema.md#layered-fingerprints).
 
 ## Library
 
@@ -114,12 +135,12 @@ import { buildCli } from "@design-intelligence/ghost/cli";
 Embedded hosts can use `@design-intelligence/ghost/embed` for the same semantic
 contract as CLI `gather` and `pull` without CLI-only presentation fields or event
 side effects. `loadGhostSnapshot` reads the package, resolved/absent/dangling
-cover state, glossary kinds, and checks. `gatherGhostPackage` returns the
-unfiltered selectable menu without cover content; checks stay separate.
+framing state, glossary kinds, and checks. `gatherGhostPackage` returns the
+unfiltered selectable menu without framing content; checks stay separate.
 Gather and pull return skipped guidance files in `diagnostics`. Check gather's
 `contract.completeness.complete` before treating its menu as complete; these
 loading diagnostics do not replace `ghost validate`.
-`pullGhostNodes` includes the resolved cover before validated, de-duplicated
+`pullGhostNodes` includes the resolved framing before validated, de-duplicated
 selected ids, returns misses with suggestions, stable concrete/prose ordering,
 stripped node bodies, extracted Skeletons, and material transport packets. Use
 `inspectGhostMaterial` only for materials declared by a pulled node; it is local

@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { relative, resolve } from "node:path";
 import {
+  BUILTIN_KIND_PURPOSES,
   classifyMaterialLocator,
   closestIds,
   extractSkeletonSections,
@@ -11,19 +12,18 @@ import {
   listBundledMaterialFiles,
   materialLocator,
   materialLocatorClaimsPath,
-  parseCheckReference,
   parseGlossary,
   resolveLocalMaterialFile,
-  sliceNodeSection,
 } from "#ghost-core";
 import { isMissingPathError } from "../internal/fs.js";
-import type { LoadedCheck } from "./check-files.js";
+import { lintCheckReferences } from "./check-files.js";
 import { GHOST_GLOSSARY_FILENAME, GHOST_MATERIALS_DIR } from "./constants.js";
 import {
   type GhostPackagePaths,
   resolveGhostPackage,
 } from "./ghost-package.js";
 import type { LintIssue, LintReport } from "./lint.js";
+import { invalidPackageSymlinks } from "./package-hash.js";
 import {
   lintGhostPackageManifest,
   loadGhostPackage,
@@ -134,6 +134,14 @@ export async function lintGhostPackage(
           ),
         };
         const ownerIssues: LintIssue[] = [];
+        for (const path of await invalidPackageSymlinks(owner.packageDir))
+          ownerIssues.push({
+            severity: "error",
+            rule: "package-symlink-outside",
+            path,
+            message:
+              "Package symlinks must resolve within the package; external, dangling, or cyclic targets are invalid.",
+          });
         await lintGlossary(owner.glossary, ownerIssues);
         await lintKindPrefixes(owner, ownerCatalog, ownerIssues);
         await lintMaterialLocators(
@@ -175,6 +183,7 @@ export async function lintGhostPackage(
           new Map([[check.id, check]]),
           issues,
           externalBaseline?.paths.packageDir,
+          manifest.baseline !== undefined && externalBaseline === undefined,
         );
       }
     } catch (err) {
@@ -268,15 +277,14 @@ async function lintKindPrefixes(
   catalog: GhostCatalog,
   issues: LintIssue[],
 ): Promise<void> {
-  const declaredKinds = await readDeclaredGlossaryKinds(paths.glossary);
-  if (declaredKinds === undefined) return;
+  const declaredKinds = (await readDeclaredGlossaryKinds(paths.glossary)) ?? [];
 
   const declared = new Set(declaredKinds);
   for (const node of catalog.nodes.values()) {
     if (
       node.kind === undefined ||
       declared.has(node.kind) ||
-      ["framing", "identity", "interface", "fundamentals"].includes(node.kind)
+      Object.hasOwn(BUILTIN_KIND_PURPOSES, node.kind)
     )
       continue;
 
@@ -392,60 +400,6 @@ function toPackageRelative(
     .replace(/\\/g, "/")
     .replace(/^\.\//, "");
   return packageRelative.startsWith("../") ? repoRelativePath : packageRelative;
-}
-
-function lintCheckReferences(
-  catalog: GhostCatalog,
-  checks: Map<string, LoadedCheck>,
-  issues: LintIssue[],
-  externalPackageDir?: string,
-): void {
-  for (const check of checks.values()) {
-    const file = `checks/${check.id}.md`;
-    const path = externalPackageDir ? resolve(externalPackageDir, file) : file;
-    if (check.usesDeprecatedSource) {
-      issues.push({
-        severity: "warning",
-        rule: "check-source-deprecated",
-        message:
-          "`source` is deprecated; replace it with `references:\n  - <node-id>`",
-        path: `${path}.source`,
-      });
-    }
-    for (const raw of check.references) {
-      const parsed = parseCheckReference(raw);
-      if (parsed === null) {
-        issues.push({
-          severity: "error",
-          rule: "check-reference-malformed",
-          message: `check reference '${raw}' is not a node id with optional '> Heading' anchor`,
-          path: `${path}.references`,
-        });
-        continue;
-      }
-      const node = catalog.nodes.get(parsed.nodeId);
-      if (node === undefined) {
-        issues.push({
-          severity: "warning",
-          rule: "check-reference-unresolved",
-          message: `check reference '${raw}' does not resolve to a ghost package node — if you pruned this rule from the node, delete its paired flag in the check too`,
-          path: `${path}.references`,
-        });
-        continue;
-      }
-      if (
-        parsed.heading !== undefined &&
-        sliceNodeSection(node.body, parsed.heading) === null
-      ) {
-        issues.push({
-          severity: "warning",
-          rule: "check-reference-heading-missing",
-          message: `check reference '${raw}' names a heading that was not found — if you pruned this rule from the node, delete its paired flag in the check too`,
-          path: `${path}.references`,
-        });
-      }
-    }
-  }
 }
 
 async function readDeclaredGlossaryKinds(

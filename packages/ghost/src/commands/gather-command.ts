@@ -61,16 +61,19 @@ export function registerGatherCommand(cli: CAC): void {
         // ghost does no selection. It emits the complete catalog; the agent
         // reads the ask against it and pulls the nodes whose described
         // conditions apply.
+        const continuation = snapshot.baseline
+          ? `--package ${JSON.stringify(paths.packageDir)}${paths.baseline ? ` --baseline ${JSON.stringify(snapshot.baseline.dir)}` : ""}`
+          : undefined;
         if (format === "json") {
           process.stdout.write(
-            `${JSON.stringify(formatGatherJson(menu, snapshot.baseline ? `ghost pull [<id>…] --package ${JSON.stringify(paths.packageDir)} --baseline ${JSON.stringify(snapshot.baseline.dir)}` : undefined), null, 2)}\n`,
+            `${JSON.stringify(formatGatherJson(menu, continuation ? `ghost pull [<id>…] ${continuation}` : undefined), null, 2)}\n`,
           );
         } else {
           process.stdout.write(
             formatMenuMarkdown(menu) +
               formatProvenance(menu.provenance) +
-              (snapshot.baseline
-                ? `\nContinue with --package ${JSON.stringify(paths.packageDir)} --baseline ${JSON.stringify(snapshot.baseline.dir)} on pull, validate, and review.\n`
+              (continuation
+                ? `\nContinue with ${continuation} on pull, validate, and review.\n`
                 : ""),
           );
         }
@@ -148,6 +151,9 @@ function formatMenuMarkdown(menu: GhostGatherResult): string {
     lines.push("", "## Selectable guidance", "");
   }
   const kinds = menu.kinds ?? [];
+  const framing = kinds.find((kind) => kind.name === "framing");
+  if (framing?.purpose && !menu.nodes.some((entry) => entry.kind === "framing"))
+    lines.push(framing.purpose, "");
   const groups = groupMenuByKind(menu.nodes, kinds);
   for (const group of groups) {
     lines.push(group.kind ? `### ${group.kind}` : "### Other guidance", "");

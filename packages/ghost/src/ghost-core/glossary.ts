@@ -1,6 +1,17 @@
 import { z } from "zod";
 import { splitMarkdownFrontmatter } from "./markdown.js";
 
+export const BUILTIN_KIND_PURPOSES: Readonly<Record<string, string>> = {
+  framing:
+    "Brand framing is included automatically on every pull. Do not select it; apply its framing alongside applicable rules.",
+  fundamentals:
+    "Select applicable cross-brand subject guidance. Automatic core fundamentals already arrive on every pull and are not selectable.",
+  identity:
+    "Select brand decisions that apply across formats whenever their stated situation applies to the task.",
+  interface:
+    "Select guidance for the artifact or interaction being made. Interface guidance adds format-specific decisions to its declared prerequisites.",
+};
+
 export const GhostGlossaryFrontmatterSchema = z
   .object({
     kinds: z.array(

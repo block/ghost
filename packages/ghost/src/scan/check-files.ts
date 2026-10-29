@@ -1,14 +1,17 @@
 import { readdir, readFile } from "node:fs/promises";
-import { basename, join } from "node:path";
+import { basename, join, resolve } from "node:path";
 import { YAMLParseError } from "yaml";
 import {
+  type GhostCatalog,
   type GhostCheckDocument,
   lintGhostCheck,
   loadGhostCheck,
   parseCheckMarkdown,
+  parseCheckReference,
+  sliceNodeSection,
 } from "#ghost-core";
-
 import { isMissingPathError } from "../internal/fs.js";
+import type { LintIssue } from "./lint.js";
 
 /** Reserved package-root directory holding review checks. */
 export const GHOST_CHECKS_DIR = "checks";
@@ -127,4 +130,66 @@ function referencesFromFrontmatter(
     );
   }
   return typeof frontmatter.source === "string" ? [frontmatter.source] : [];
+}
+
+export function lintCheckReferences(
+  catalog: GhostCatalog,
+  checks: Map<string, LoadedCheck>,
+  issues: LintIssue[],
+  externalPackageDir?: string,
+  brandCheck = false,
+): void {
+  for (const check of checks.values()) {
+    const file = `checks/${check.id}.md`;
+    const path = externalPackageDir ? resolve(externalPackageDir, file) : file;
+    if (check.usesDeprecatedSource) {
+      issues.push({
+        severity: "warning",
+        rule: "check-source-deprecated",
+        message:
+          "`source` is deprecated; replace it with `references:\n  - <node-id>`",
+        path: `${path}.source`,
+      });
+    }
+    for (const raw of check.references) {
+      const parsed = parseCheckReference(raw);
+      if (parsed === null) {
+        issues.push({
+          severity: "error",
+          rule: "check-reference-malformed",
+          message: `check reference '${raw}' is not a node id with optional '> Heading' anchor`,
+          path: `${path}.references`,
+        });
+        continue;
+      }
+      const node = catalog.nodes.get(parsed.nodeId);
+      if (brandCheck && node?.scope === "baseline")
+        issues.push({
+          severity: "warning",
+          rule: "check-reference-baseline-owned",
+          message: `Brand check references baseline guidance '${raw}'; keep checks in the package that owns the guidance.`,
+          path: `${path}.references`,
+        });
+      if (node === undefined) {
+        issues.push({
+          severity: "warning",
+          rule: "check-reference-unresolved",
+          message: `check reference '${raw}' does not resolve to a ghost package node — if you pruned this rule from the node, delete its paired flag in the check too`,
+          path: `${path}.references`,
+        });
+        continue;
+      }
+      if (
+        parsed.heading !== undefined &&
+        sliceNodeSection(node.body, parsed.heading) === null
+      ) {
+        issues.push({
+          severity: "warning",
+          rule: "check-reference-heading-missing",
+          message: `check reference '${raw}' names a heading that was not found — if you pruned this rule from the node, delete its paired flag in the check too`,
+          path: `${path}.references`,
+        });
+      }
+    }
+  }
 }

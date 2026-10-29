@@ -1,4 +1,9 @@
-import { buildCatalogMenu, type CatalogMenuEntry } from "#ghost-core";
+import {
+  BUILTIN_KIND_PURPOSES,
+  buildCatalogMenu,
+  type CatalogMenuEntry,
+  isLayeredPackage,
+} from "#ghost-core";
 import type {
   GhostEmbedSnapshot,
   GhostGatherContract,
@@ -116,21 +121,23 @@ export function menuCoverage(
 }
 
 function menuKinds(snapshot: GhostEmbedSnapshot): GhostMenuKind[] {
-  const kinds = new Map<string, GhostMenuKind>();
+  const kinds = new Map<string, string[]>();
+  if (isLayeredPackage(snapshot.package.manifest)) {
+    for (const [name, purpose] of Object.entries(BUILTIN_KIND_PURPOSES))
+      kinds.set(name, [purpose]);
+  }
   for (const kind of [
     ...(snapshot.baseline?.glossary?.kinds ?? []),
     ...(snapshot.glossary?.kinds ?? []),
   ]) {
     const purpose = kind.purpose.trim();
-    const previous = kinds.get(kind.name);
+    const parts = kinds.get(kind.name) ?? [];
     // A shared built-in kind has one menu heading with both selection legends.
-    kinds.set(kind.name, {
-      name: kind.name,
-      purpose:
-        previous?.purpose && purpose && previous.purpose !== purpose
-          ? `${previous.purpose}\n\n${purpose}`
-          : previous?.purpose || purpose,
-    });
+    if (purpose && !parts.includes(purpose)) parts.push(purpose);
+    kinds.set(kind.name, parts);
   }
-  return [...kinds.values()];
+  return [...kinds].map(([name, parts]) => ({
+    name,
+    purpose: parts.join("\n\n"),
+  }));
 }

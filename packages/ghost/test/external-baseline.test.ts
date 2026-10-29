@@ -148,9 +148,10 @@ describe("explicit external baseline", () => {
     expect(menu.automatic?.map((entry) => entry.id)).toEqual([core]);
     expect(menu.nodes.map((entry) => entry.id)).toEqual([medium, email]);
     expect(menu.kinds?.map((kind) => kind.name)).toEqual([
-      "fundamentals",
-      "interface",
       "framing",
+      "fundamentals",
+      "identity",
+      "interface",
     ]);
     expect((await pull()).ids).toEqual([core]);
     const result = await pull([email]);

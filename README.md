@@ -106,18 +106,17 @@ repeatable commands for scaffolding, validation, retrieval, and review.
 
 ```text
 .ghost/
-  manifest.yml          # schema + package id + optional cover id
-  glossary.md           # your kind vocabulary + what each kind means
-  brand.md              # example cover included by every pull
+  manifest.yml          # schema, package id, authored-against baseline version
+  glossary.md           # optional custom kinds and selection rules
+  framing.md            # brand framing included by every pull
   principle.trust.md    # guidance of kind `principle`
   asset.logo.md         # guidance that points at concrete materials
   checks/               # optional review assertions; never nodes
 ```
 
-The package is a **flat set of nodes**. The optional `cover:` in
-`manifest.yml` may name any node. `ghost gather` excludes it from selection;
-every `ghost pull` includes it before selected guidance. The default skeleton
-calls that node `brand`, but the filename is not reserved.
+The package is a **flat set of nodes**. Layered brands always use `framing.md`
+for unconditional brand framing. `ghost gather` excludes it from selection;
+every `ghost pull` includes it alongside automatic core and applicable guidance.
 A node is one markdown file: a `for` payload in frontmatter (the situation or
 activity the guidance is for), optional `materials`, and brand guidance in the
 prose body.
@@ -145,48 +144,39 @@ material is.
 
 ### Layered fingerprints
 
-Keep package files flat while distinguishing baseline foundations from brand
-expression. Nodes may declare `scope: baseline | brand` and
-`layer: fundamentals | framing | identity | interface` together. Baseline uses
-fundamentals/interface; brand uses framing/identity/interface. `requires: [ids]`
-explicitly includes prerequisites. A brand interface must require a baseline
-interface, directly or transitively.
+A brand manifest declares `schema: ghost.package/v1`, its `id`, and the
+`baseline` version it was authored against. It has no `cover`, `core`, or
+`version` field. Fixed `framing.md` is delivered automatically by every pull.
+The baseline declares its own `id`, release `version`, and automatic `core`.
+Layered brands use the bundled baseline unless `--baseline <dir>` substitutes
+another complete package with its own version. Compatibility uses SemVer
+precedence; the brand declaration is not a pin.
 
-```yaml
-schema: ghost.package/v1
-id: example-brand
-cover: framing
-core: [baseline.fundamentals.core]
-```
+Node frontmatter contains only `for`, optional `requires`, and optional
+`materials`. Filenames derive scope, layer, and kind: `baseline.fundamentals.*`
+and `baseline.interface.*` belong to the baseline; `identity.*`, `interface.*`,
+and `framing.md` belong to the brand. `requires` transports prerequisites;
+it does not override a rule. Core and framing are excluded from selection.
 
-`core` names a small subset of real baseline fundamentals, delivered even by bare
-`ghost pull`. Gather shows these entries separately as `automatic`, not selectable
-nodes. Pull delivers the cover, core, selections and transitive prerequisites once,
-exposes scope/layer, and supplies an authority instruction for layered content.
-Defaults yield to explicit brand decisions; delivery order is not authority.
-Existing unclassified packages need no migration.
+`glossary.md` is optional. Built-in `framing`, `identity`, `interface`, and
+`fundamentals` need no declaration; gather supplies their selection prose once.
+Declare custom kinds and their selection rules in the glossary. A custom kind
+without a declaration warns. Brand checks reference brand guidance; baseline
+checks reference baseline guidance. A brand-to-baseline check reference warns.
 
-A shared baseline can instead live outside the brand package. Pass it explicitly
-on every command; ghost combines the two packages only in memory:
+A more specific rule replaces or augments the rule it names, within the scope it
+states. Everything it doesn't name still applies. `Required:` exempts a rule
+from downstream replacement. A required rule cannot be replaced within its stated scope,
+wherever it lives. It is reserved for accessibility and legal obligations and
+documented technical limits, and it carries its reason and scope in the same
+bullet. Delivery order confers no authority.
 
-```bash
-ghost gather "Make an email" --package brands/acme/fingerprint --baseline baseline
-ghost pull interface.email --package brands/acme/fingerprint --baseline baseline
-ghost validate --package brands/acme/fingerprint --baseline baseline
-ghost review --package brands/acme/fingerprint --baseline baseline
-```
-
-The baseline is an ordinary `ghost.package/v1` package with its own `core`,
-glossary declaring the `baseline` kind, baseline-scoped nodes, materials, and
-optional checks. It has no cover and cannot depend on brand nodes. Node IDs and
-check IDs and declared glossary kind names must be unique across the two packages. No implicit discovery, copies,
-or precedence overwrites occur. Standalone and self-contained packages still work.
-
-Embedded hosts pass `resolveGhostPackage(dir, cwd, baselineDir)` or
-`lintGhostPackage(dir, cwd, baselineDir)`. Snapshots expose `baseline` metadata and
-combined `core` separately from the unchanged brand manifest. Pulled nodes expose
-`packageDir`, their absolute owning directory, for material staging. External
-baseline materials resolve in their owning repository, not the caller's cwd.
+Legacy packages with neither `baseline`, `core`, nor `version` remain supported
+with migration notices and no effective baseline. JSON and events name the
+automatic node `framing`; legacy authored manifests may retain `cover` until
+migration. Package validation rejects symlinks that resolve outside the package
+or cannot be resolved. See the schema reference for provenance encoding and
+material-access policy.
 
 See the [schema and flat layout example](packages/ghost/src/skill-bundle/references/schema.md#layered-fingerprints)
 and [complete runnable example](packages/ghost/test/fixtures/layered-fingerprint).

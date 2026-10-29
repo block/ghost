@@ -39,6 +39,7 @@ export {
 export { EXIT, UsageError } from "./errors.js";
 // --- Glossary (reserved ghost vocabulary slot) ---
 export {
+  BUILTIN_KIND_PURPOSES,
   type GhostGlossaryDocument,
   GhostGlossaryFrontmatterSchema,
   type GhostGlossaryKind,
