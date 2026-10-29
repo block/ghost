@@ -63,6 +63,7 @@ export async function lintGhostPackage(
     try {
       const loaded = await loadGhostPackage(paths);
       const { manifest, catalog, checks, invalid, invalidChecks } = loaded;
+      issues.push(...(loaded.notices ?? []));
       // node pass: a node that failed its own schema was skipped while loading
       // the catalog; surface it here so a malformed node is loud, not silent.
       issues.push(
@@ -90,13 +91,15 @@ export async function lintGhostPackage(
       };
       if (!isBaselinePackage(manifest))
         lintFraming(
-          ownCatalog.nodes.has("framing") ? "framing" : undefined,
+          manifest.cover ??
+            (ownCatalog.nodes.has("framing") ? "framing" : undefined),
           ownCatalog,
           issues,
           manifest.baseline !== undefined,
         );
       for (const node of catalog.nodes.values()) {
         if (
+          isLayeredPackage(manifest) &&
           node.id !== "framing" &&
           /^##[ \t]+If no guidance applies[ \t]*$/im.test(node.body)
         ) {

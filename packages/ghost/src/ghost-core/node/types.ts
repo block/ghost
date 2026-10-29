@@ -9,6 +9,8 @@ export const GHOST_NODE_SCHEMA = "ghost.node/v1" as const;
  * why / with-what / how-assembled are drafting prompts, never fields.
  */
 export interface GhostNodeFrontmatter {
+  /** Legacy packages may retain descriptive keys. Layered validation is strict. */
+  [key: string]: unknown;
   /**
    * Retrieval payload shown by gather: the situation or activity this
    * guidance is for, never an audience. Together with the node's id, it is

@@ -27,7 +27,18 @@ export async function loadGhostPackage(
   paths: GhostPackagePaths,
 ): Promise<LoadedGhostPackage> {
   const loaded = await loadSinglePackage(paths);
-  if (!paths.baseline || loaded.manifest.baseline === undefined) return loaded;
+  if (loaded.manifest.baseline === undefined) {
+    if (paths.baseline && !isLayeredPackage(loaded.manifest))
+      loaded.notices?.push({
+        severity: "info",
+        rule: "legacy-baseline-ignored",
+        path: "manifest.yml",
+        message:
+          "--baseline is ignored for a legacy package; declare manifest baseline to enable layering",
+      });
+    return loaded;
+  }
+  if (!paths.baseline) return loaded;
   const baseline = await loadSinglePackage(paths.baseline);
   const baselineDir = paths.baseline.packageDir;
   if (!isBaselinePackage(baseline.manifest)) {
@@ -174,12 +185,48 @@ async function loadSinglePackage(
 
   // The catalog is flat; prerequisite integrity is checked by validate and pull.
   // Per-node schema failures are collected as `invalid`.
-  const { nodes: placedNodes, invalid } = await loadNodeFiles(paths.packageDir);
+  const layered = isLayeredPackage(manifest);
+  const { nodes: placedNodes, invalid } = await loadNodeFiles(
+    paths.packageDir,
+    !layered,
+  );
+  const notices: LintIssue[] = [];
+  if (
+    !layered &&
+    (manifest.cover !== undefined ||
+      placedNodes.some((node) =>
+        Object.keys(node.doc.frontmatter).some(
+          (key) => !["for", "requires", "materials"].includes(key),
+        ),
+      ))
+  ) {
+    notices.push({
+      severity: "warning",
+      rule: "legacy-contract-deprecated",
+      path: "manifest.yml",
+      message:
+        "Legacy package metadata is deprecated; rename the cover node to framing.md and remove `cover`, remove descriptive node keys, and declare manifest baseline when ready to migrate",
+    });
+  }
   const checkFiles = await loadCheckFiles(paths.packageDir);
   const catalog = assembleCatalog({ placedNodes });
   for (const node of catalog.nodes.values()) {
     node.packageDir = paths.packageDir;
-    if (!isLayeredPackage(manifest)) {
+    if (layered) {
+      const baseline = isBaselinePackage(manifest);
+      if (
+        (!baseline && node.id.split("/").pop()?.startsWith("baseline.")) ||
+        (!baseline && node.layer === "fundamentals") ||
+        (baseline &&
+          (node.scope !== "baseline" ||
+            !["fundamentals", "interface"].includes(node.layer ?? "")))
+      ) {
+        throw new UsageError(
+          `Invalid filename classification for "${node.id}": brands cannot contain baseline-prefixed or fundamentals nodes; baselines contain only baseline.fundamentals.* and baseline.interface.* nodes`,
+        );
+      }
+    }
+    if (!layered) {
       delete node.scope;
       delete node.layer;
     }
@@ -190,6 +237,7 @@ async function loadSinglePackage(
   return {
     manifest,
     manifestRaw,
+    notices,
     ...(manifest.core ? { core: [...manifest.core] } : {}),
     catalog,
     hasChecksDir: checkFiles.hasChecksDir,

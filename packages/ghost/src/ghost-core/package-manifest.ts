@@ -13,7 +13,7 @@ const SlugIdSchema = z
   );
 
 /** `manifest.yml` schema for a `.ghost/` package. */
-export const GhostPackageManifestSchema = z
+const LayeredManifestSchema = z
   .object({
     schema: z.literal(GHOST_PACKAGE_SCHEMA),
     id: SlugIdSchema,
@@ -36,6 +36,41 @@ export const GhostPackageManifestSchema = z
           "baseline is brand-only; core and version are baseline-only and cannot be combined with baseline",
       });
     }
+  });
+
+const LegacyManifestSchema = z
+  .object({
+    schema: z.literal(GHOST_PACKAGE_SCHEMA),
+    id: SlugIdSchema,
+    cover: LocalNodeIdSchema.optional(),
+    plugins: z
+      .never({ message: "plugins is a retired manifest key" })
+      .optional(),
+    baseline: z.never().optional(),
+    version: z.never().optional(),
+    core: z.never().optional(),
+  })
+  .passthrough();
+
+/** The manifest chooses the contract before any node is parsed. */
+export const GhostPackageManifestSchema = z
+  .unknown()
+  .transform((value, ctx) => {
+    const layered =
+      typeof value === "object" &&
+      value !== null &&
+      ["baseline", "core", "version"].some((key) => key in value);
+    const result = (
+      layered ? LayeredManifestSchema : LegacyManifestSchema
+    ).safeParse(value);
+    if (!result.success) {
+      for (const issue of result.error.issues) ctx.addIssue({ ...issue });
+      return z.NEVER;
+    }
+    return result.data as z.infer<typeof LayeredManifestSchema> & {
+      cover?: string;
+      [key: string]: unknown;
+    };
   });
 
 export type GhostPackageManifest = z.infer<typeof GhostPackageManifestSchema>;

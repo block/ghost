@@ -48,6 +48,8 @@ export function registerReviewCommand(cli: CAC): void {
           opts.baseline,
         );
         const ghostPackage = await loadGhostPackage(paths);
+        for (const notice of ghostPackage.notices ?? [])
+          console.error(`${notice.severity}: ${notice.message}`);
         if (!ghostPackage.hasChecksDir) {
           console.error(
             "No checks directory. Run `ghost checks init` to add review assertions.",

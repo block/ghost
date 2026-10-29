@@ -50,10 +50,10 @@ Node filenames derive scope, layer, and kind: `[baseline.]<layer>.<topic>.md`.
 `baseline.interface.email.md` has baseline scope and interface kind/layer;
 `identity.color.md` has brand scope and identity kind/layer. `framing.md` is the
 fixed brand framing node, automatically delivered and excluded from gather.
-The manifest has no `cover` field. Only framing may contain
+Layered manifests have no `cover` field. Legacy manifests retain it with a migration warning. In layered packages, only framing may contain
 `## If no guidance applies`.
 
-Node frontmatter accepts only `for`, `requires`, and `materials`. Never declare
+Layered node frontmatter accepts only `for`, `requires`, and `materials`. Never declare
 `scope`, `layer`, or kind. `requires` names explicit delivery prerequisites,
 expanded transitively for layered packages. Legacy pulls ignore `requires`
 and validate warns. Baseline `core` names a small, automatically delivered

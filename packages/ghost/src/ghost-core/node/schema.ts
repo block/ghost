@@ -78,4 +78,9 @@ export const GhostNodeFrontmatterSchema = z
   })
   .strict();
 
+export const LegacyNodeFrontmatterSchema = GhostNodeFrontmatterSchema.omit({
+  scope: true,
+  layer: true,
+}).passthrough();
+
 export { NodeIdSchema, NodeRefSchema };

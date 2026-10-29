@@ -10,7 +10,7 @@ export function registerInitCommand(cli: CAC): void {
   cli
     .command(
       "init",
-      "Scaffold .ghost/ with the starter package: manifest, glossary, a brand cover, foundation chapters, and context nodes.",
+      "Scaffold .ghost/ with the starter package: manifest, glossary, framing.md, foundation chapters, and context nodes.",
     )
     .option("--package <dir>", "Exact ghost package directory to initialize")
     .option(

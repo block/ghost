@@ -111,7 +111,7 @@ const COMMAND_DISCOVERY = [
     defaultHelp: true,
     compactName: "init",
     summary:
-      "Scaffold .ghost/ with the starter package: manifest, glossary, a brand cover, foundation chapters, and context nodes.",
+      "Scaffold .ghost/ with the starter package: manifest, glossary, framing.md, foundation chapters, and context nodes.",
   },
   {
     name: "validate",
@@ -134,7 +134,7 @@ const COMMAND_DISCOVERY = [
     defaultHelp: true,
     compactName: "pull",
     summary:
-      "Emit the package cover plus named node bodies; log the pull to .ghost/.events.",
+      "Emit framing.md plus named node bodies; log the pull to .ghost/.events.",
   },
   {
     name: "stats",

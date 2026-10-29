@@ -491,8 +491,8 @@ Replacement rule.
 
     expect(report.errors).toBe(1);
     expect(report.issues[0]).toMatchObject({
-      rule: "schema/unrecognized_keys",
-      path: "manifest.yml",
+      rule: "schema/invalid_type",
+      path: "manifest.yml.plugins",
     });
   });
 

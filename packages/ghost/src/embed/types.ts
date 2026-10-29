@@ -30,6 +30,7 @@ export interface GhostGlossarySnapshot {
 }
 
 export interface GhostEmbedSnapshot {
+  notices?: readonly import("../scan/lint.js").LintIssue[];
   package: Readonly<{
     id: string;
     dir: string;

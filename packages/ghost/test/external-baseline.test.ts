@@ -17,6 +17,18 @@ import {
 import { buildReviewPacket } from "../src/review/review-packet.js";
 import { runCli } from "./cli-test-utils.js";
 
+// Git hooks pass repository routing to their children. Fixture commands and
+// cwd-based material lookup must address the temporary repositories instead.
+const gitRoutingKeys = [
+  "GIT_DIR",
+  "GIT_WORK_TREE",
+  "GIT_COMMON_DIR",
+  "GIT_INDEX_FILE",
+  "GIT_OBJECT_DIRECTORY",
+  "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+  "GIT_PREFIX",
+];
+let inheritedGitRouting: Map<string, string | undefined>;
 let root: string;
 let brand: string;
 let baseline: string;
@@ -51,6 +63,10 @@ const snapshot = () => loadGhostSnapshot(paths());
 const pull = async (ids: string[] = []) =>
   pullGhostNodes(await snapshot(), { ids, repoRoot: root });
 beforeEach(async () => {
+  inheritedGitRouting = new Map(
+    gitRoutingKeys.map((key) => [key, process.env[key]]),
+  );
+  for (const key of gitRoutingKeys) delete process.env[key];
   root = await mkdtemp(join(tmpdir(), "ghost-external-"));
   brand = join(root, "brand");
   baseline = join(root, "baseline");
@@ -110,6 +126,10 @@ beforeEach(async () => {
   await check(brand, "brand-email", email);
 });
 afterEach(async () => {
+  for (const [key, value] of inheritedGitRouting) {
+    if (value === undefined) delete process.env[key];
+    else process.env[key] = value;
+  }
   await rm(root, { recursive: true, force: true });
 });
 
@@ -299,7 +319,9 @@ describe("explicit external baseline", () => {
     } else {
       await node(brand, core, kind.startsWith("invalid") ? "scope: bad" : "");
     }
-    await expect(snapshot()).rejects.toThrow("Duplicate");
+    await expect(snapshot()).rejects.toThrow(
+      kind === "node" ? "Invalid filename classification" : "Duplicate",
+    );
     expect(
       (await lintGhostPackage(brand, elsewhere, baseline)).errors,
     ).toBeGreaterThan(0);
@@ -480,7 +502,7 @@ describe("legacy baseline isolation", () => {
 
   it("rejects a non-prefixed node in an external baseline", async () => {
     await node(baseline, "identity.color", "");
-    await expect(snapshot()).rejects.toThrow("must have baseline scope");
+    await expect(snapshot()).rejects.toThrow("Invalid filename classification");
   });
 });
 
@@ -500,4 +522,74 @@ it("prints overlapping builtin legends once while preserving both selection rule
   expect(kinds).toHaveLength(1);
   expect(kinds?.[0]?.purpose).toContain("Baseline selection rule.");
   expect(kinds?.[0]?.purpose).toContain("Brand selection rule.");
+});
+
+describe("package ownership and legacy compatibility", () => {
+  it.each([
+    ["brand baseline prefix", "brand", "baseline.fundamentals.extra"],
+    ["brand fundamentals", "brand", "fundamentals.extra"],
+    ["baseline identity", "baseline", "baseline.identity.x"],
+  ])("rejects %s", async (_, owner, id) => {
+    await node(owner === "brand" ? brand : baseline, id, "");
+    expect(
+      (await lintGhostPackage(brand, elsewhere, baseline)).errors,
+    ).toBeGreaterThan(0);
+    await expect(pull([email])).rejects.toThrow(
+      "Invalid filename classification",
+    );
+  });
+
+  it("loads an unchanged legacy cover and descriptive keys, warning with a migration hint", async () => {
+    await file(
+      brand,
+      "manifest.yml",
+      "schema: ghost.package/v1\nid: legacy\ncover: index\n",
+    );
+    await node(
+      brand,
+      "index",
+      "audience: enterprise\nstatus: stable",
+      "Legacy stance.\n## If no guidance applies\nContinue.",
+    );
+    await node(brand, "voice", "audience: writers");
+    const loaded = await snapshot();
+    expect(loaded.baseline).toBeUndefined();
+    expect(loaded.cover).toMatchObject({ state: "resolved", id: "index" });
+    const result = await pull(["voice"]);
+    expect(result.cover).toMatchObject({ state: "resolved", id: "index" });
+    expect(result.nodes[0]?.body).toContain("Guidance for voice");
+    const report = await lintGhostPackage(brand, elsewhere, baseline);
+    expect(report.errors).toBe(0);
+    expect(report.issues).toContainEqual(
+      expect.objectContaining({
+        severity: "warning",
+        rule: "legacy-contract-deprecated",
+        message: expect.stringContaining(
+          "rename the cover node to framing.md and remove `cover`",
+        ),
+      }),
+    );
+    expect(report.issues).toContainEqual(
+      expect.objectContaining({
+        severity: "info",
+        rule: "legacy-baseline-ignored",
+      }),
+    );
+    const cli = await runCli(
+      [
+        "pull",
+        "voice",
+        "--package",
+        brand,
+        "--baseline",
+        baseline,
+        "--format",
+        "json",
+        "--no-events",
+      ],
+      elsewhere,
+    );
+    expect(cli.code).toBe(0);
+    expect(cli.stderr).toContain("info: --baseline is ignored");
+  });
 });

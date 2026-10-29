@@ -56,7 +56,7 @@ const SKELETON_FILE_ORDER = new Map(
 const SKELETON_TEMPLATE: GhostInitTemplate = {
   name: "skeleton",
   description:
-    "Naked skeleton: a brand cover, foundation chapters with open questions, and the shared model-defaults floor.",
+    "Naked skeleton: framing.md, foundation chapters with open questions, and the shared model-defaults floor.",
   async files() {
     const skeletonFiles = [
       ...(await loadPackedPayload("skeleton")),

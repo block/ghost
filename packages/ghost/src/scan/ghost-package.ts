@@ -11,6 +11,7 @@ import {
   GHOST_GLOSSARY_FILENAME,
   GHOST_MANIFEST_FILENAME,
 } from "./constants.js";
+import type { LintIssue } from "./lint.js";
 import { lintGhostPackage } from "./package-lint.js";
 import { loadGhostPackage } from "./package-loader.js";
 import { resolveGhostDirDefault } from "./package-paths.js";
@@ -34,6 +35,7 @@ export interface GhostPackagePaths {
 }
 
 export interface LoadedGhostPackage {
+  notices?: LintIssue[];
   manifest: GhostPackageManifest;
   manifestRaw: string;
   /** Effective automatic core, without changing either authored manifest. */

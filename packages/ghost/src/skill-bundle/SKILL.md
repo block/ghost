@@ -51,20 +51,22 @@ it applies, and an agent reads the relevant guidance before building.
 - A node's **kind** comes from its filename prefix (`principle.density.md` →
   kind `principle`). A bare name (`voice.md`) has no kind.
 - The **glossary** declares the kind vocabulary and what each kind means.
-- The manifest's `cover` names the unconditional node every `pull` includes
-  before selected guidance. `gather` excludes it from the selectable menu. It
-  carries essence, temperature, and brand-only refusals. Admission
-  test: a violation visible in one element belongs in that element's chapter;
-  visible in one view, in the composition chapter; visible only across the
-  whole body of work, on the cover.
-- Files and the selection menu stay **flat**. Optional `scope` + `layer` classify
-  content; `requires` names prerequisites in the package or an explicitly supplied baseline, not overrides. Manifest `core`
-  names a small baseline fundamentals subset delivered on every pull. Gather
-  lists it separately as automatic; do not select it. Pull includes transitive
-  prerequisites and supplies one authority instruction for classified packages.
+- A layered brand declares `baseline` in its manifest. Baselines declare `core`
+  and/or `version`; legacy packages declare neither. Do not copy baseline nodes
+  into a brand. Brand nodes use framing, identity, interface, or custom kinds;
+  baseline nodes use the `baseline.fundamentals.*` or `baseline.interface.*` names.
+- `framing.md` is the unconditional brand node, delivered on every pull and
+  excluded from gather. It carries purpose, character, and reasons behind choices.
+  Only framing carries `## If no guidance applies`.
+- Filename derives scope, layer, and kind after any `baseline.` prefix. Layered
+  headers accept only `for`, `requires`, and `materials`. Dependencies expand
+  transitively; they declare delivery, never override authority. Manifest `core`
+  names a small baseline fundamentals subset delivered automatically.
   Supply an external baseline with `--baseline <dir>` on gather, pull, validate,
-  and review; never copy its files into the brand fingerprint.
-  See [schema.md](references/schema.md#external-baseline-input) for the structure.
+  and review. See [schema.md](references/schema.md#external-baseline-and-delivery).
+- Legacy packages retain their authored unconditional node and descriptive keys.
+  Migrate by renaming that node to `framing.md`, removing retired manifest and
+  descriptive node metadata, and declaring baseline compatibility.
 - **Checks** are optional review assertions in a flat `.ghost/checks/*.md`
   directory. Checks are feed-back only; they never leak into generation
   context. Each check declares `references` to node ids and is used by
@@ -77,7 +79,7 @@ ghost init          # scaffold .ghost/ with the starter package
 ghost checks init   # opt in to review assertions
 ghost validate      # artifact shape + node/material/check validation
 ghost gather <ask>  # emit Available guidance for this task
-ghost pull <ids>    # pull the cover plus selected node bodies and materials
+ghost pull <ids>    # pull framing plus selected node bodies and materials
 ghost review        # assemble diff + matched material-backed nodes + checks
 ghost stats         # summarize local gather/pull events while tuning
 ```
@@ -94,7 +96,7 @@ retains the selection contract, coverage, materials, substantial fenced
 examples, Skeletons, and missing `for` payloads for integrations and audits.
 
 Use `ghost pull` instead of reading node files directly. Every pull includes
-the package cover before the selected node bodies. Its Markdown is the guidance
+framing before the selected node bodies. Its Markdown is the guidance
 to apply: eligible local text material is inlined, image and binary material is
 delivered through inspect pointers, and any matching starting structure comes
 last.
@@ -145,7 +147,7 @@ conventions, but durable brand guidance should be curated by the human.
 A silent package does not require stopping. Proceed from nearby product
 surfaces, local conventions, and ordinary reasoning when safe, and label that
 reasoning as provisional and non-ghost-backed unless the package itself
-declares a stricter silence posture (check the cover), which overrides
+declares a stricter silence posture (check framing), which overrides
 this default. Ask a human before high-risk, irreversible, privacy, security,
 legal, or brand-defining choices.
 

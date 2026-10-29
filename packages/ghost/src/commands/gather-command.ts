@@ -40,6 +40,8 @@ export function registerGatherCommand(cli: CAC): void {
           opts.baseline,
         );
         const snapshot = await loadGhostSnapshot(paths);
+        for (const notice of snapshot.notices ?? [])
+          console.error(`${notice.severity}: ${notice.message}`);
         if (format === "markdown" && ask === undefined) {
           throw new UsageError(
             "gather needs a task. Run `ghost gather <ask>`. For package inspection, use `ghost gather --format json`.",

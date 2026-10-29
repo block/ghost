@@ -1,5 +1,8 @@
 import { splitMarkdownFrontmatter } from "../markdown.js";
-import { GhostNodeFrontmatterSchema } from "./schema.js";
+import {
+  GhostNodeFrontmatterSchema,
+  LegacyNodeFrontmatterSchema,
+} from "./schema.js";
 import type {
   GhostNodeDocument,
   GhostNodeLintIssue,
@@ -27,7 +30,10 @@ function finalize(issues: GhostNodeLintIssue[]): GhostNodeLintReport {
  * locators, and a non-empty prose body. Corpus-level rules (glossary kind
  * prefixes, check references) are a later phase.
  */
-export function parseNode(raw: string): ParseNodeResult {
+export function parseNode(
+  raw: string,
+  options: { legacy?: boolean } = {},
+): ParseNodeResult {
   const { frontmatter, body } = splitMarkdownFrontmatter(raw);
   if (frontmatter === null) {
     return {
@@ -47,7 +53,9 @@ export function parseNode(raw: string): ParseNodeResult {
   // meaningful. Normalize them so serialize → parse round-trips are stable.
   const normalizedBody = body.replace(/^\n+/, "").replace(/\s+$/, "");
 
-  const result = GhostNodeFrontmatterSchema.safeParse(frontmatter);
+  const result = (
+    options.legacy ? LegacyNodeFrontmatterSchema : GhostNodeFrontmatterSchema
+  ).safeParse(frontmatter);
   if (!result.success) {
     return {
       node: null,

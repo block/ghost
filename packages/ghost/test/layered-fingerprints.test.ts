@@ -14,10 +14,13 @@ import {
   serializeNode,
 } from "../src/ghost-core/index.js";
 import { lintGhostPackage, resolveGhostPackage } from "../src/package.js";
-import { runCli } from "./cli-test-utils.js";
+import { runCli as runBaseCli } from "./cli-test-utils.js";
 
 let dir: string;
 let pkg: string;
+let basePkg: string;
+const runCli = (args: string[], cwd: string) =>
+  runBaseCli([...args, "--baseline", basePkg], cwd);
 const core = "baseline.fundamentals.core";
 const baseline = "baseline.interface.email";
 const identity = "identity.type";
@@ -29,17 +32,28 @@ async function node(
   body = `Guidance for ${id}.`,
 ) {
   await writeFile(
-    join(pkg, `${id}.md`),
+    join(id.startsWith("baseline.") ? basePkg : pkg, `${id}.md`),
     `---\nfor: Making an email.\n${metadata}\n---\n\n${body}\n`,
   );
 }
 async function manifest(extra = `core: [${core}]`) {
+  const baseFields = /^(core|version):/.test(extra)
+    ? extra
+    : 'version: "1.0.0"';
+  await writeFile(
+    join(basePkg, "manifest.yml"),
+    `schema: ghost.package/v1\nid: test-baseline\n${baseFields}\n`,
+  );
+  const brandFields = /^(core|version):/.test(extra)
+    ? 'baseline: "1.0.0"'
+    : extra;
   await writeFile(
     join(pkg, "manifest.yml"),
-    `schema: ghost.package/v1\nid: layered\n${extra}\n`,
+    `schema: ghost.package/v1\nid: layered\n${brandFields}\n`,
   );
 }
-const snapshot = () => loadGhostSnapshot(resolveGhostPackage(pkg, dir));
+const snapshot = () =>
+  loadGhostSnapshot(resolveGhostPackage(pkg, dir, basePkg));
 const pull = async (
   ids: string[] = [],
   order: "steering" | "given" = "steering",
@@ -48,6 +62,8 @@ const pull = async (
 beforeEach(async () => {
   dir = await mkdtemp(join(tmpdir(), "ghost-layered-"));
   pkg = join(dir, ".ghost");
+  basePkg = join(dir, "baseline");
+  await mkdir(basePkg);
   await mkdir(join(pkg, "materials"), { recursive: true });
   await manifest();
   await writeFile(
@@ -82,7 +98,9 @@ describe("layered fingerprints", () => {
   it("fails validate and pull for malformed manifest core values", async () => {
     for (const value of ["[]", "not-an-array", "[42]", "[../outside]"]) {
       await manifest(`core: ${value}`);
-      expect((await lintGhostPackage(pkg, dir)).errors).toBeGreaterThan(0);
+      expect(
+        (await lintGhostPackage(pkg, dir, basePkg)).errors,
+      ).toBeGreaterThan(0);
       await expect(pull()).rejects.toThrow();
     }
   });
@@ -99,10 +117,20 @@ describe("layered fingerprints", () => {
   it("validates the complete flat public example and delivers all five classifications", async () => {
     const example = new URL("./fixtures/layered-fingerprint", import.meta.url)
       .pathname;
-    const report = await lintGhostPackage(example, dir);
+    const report = await lintGhostPackage(
+      example,
+      dir,
+      new URL("./fixtures/layered-baseline", import.meta.url).pathname,
+    );
     expect(report.errors).toBe(0);
     expect(report.warnings).toBe(0);
-    const loaded = await loadGhostSnapshot(resolveGhostPackage(example, dir));
+    const loaded = await loadGhostSnapshot(
+      resolveGhostPackage(
+        example,
+        dir,
+        new URL("./fixtures/layered-baseline", import.meta.url).pathname,
+      ),
+    );
     expect(loaded.catalog.nodes.size).toBe(18);
     const result = await pullGhostNodes(loaded, {
       ids: ["interface.email.receipt"],
@@ -129,9 +157,7 @@ describe("layered fingerprints", () => {
 
   it("classified packages without core omit automatic but still expand dependencies", async () => {
     await manifest('baseline: "1.0.0"');
-    expect(gatherGhostPackage(await snapshot())).not.toHaveProperty(
-      "automatic",
-    );
+    expect(gatherGhostPackage(await snapshot()).automatic).toEqual([]);
     expect((await pull()).ids).toEqual([]);
     expect((await pull([email])).ids).toEqual([
       core,
@@ -166,7 +192,8 @@ describe("layered fingerprints", () => {
   it("rejects invalid classification even when no valid classified node loads", async () => {
     await rm(pkg, { recursive: true });
     await mkdir(pkg);
-    await manifest("");
+    await manifest('baseline: "1.0.0"');
+    await node("framing", "");
     await node("broken", "scope: unknown\nlayer: interface");
     await expect(pull(["broken"])).rejects.toThrow("invalid");
   });
@@ -213,8 +240,7 @@ describe("layered fingerprints", () => {
     });
     expect(result.authority).toContain("Delivery order is not authority");
     await rm(join(pkg, "framing.md"));
-    expect((await pull()).ids).toEqual([core]);
-    expect((await pull()).cover.state).toBe("absent");
+    await expect(pull()).rejects.toThrow("framing node");
   });
 
   it.each([
@@ -236,17 +262,12 @@ describe("layered fingerprints", () => {
         .flatMap((entry) => entry.materials ?? [])
         .filter((material) => material.inlined),
     ).toHaveLength(1);
-    expect((await lintGhostPackage(pkg, dir)).errors).toBe(0);
+    expect((await lintGhostPackage(pkg, dir, basePkg)).errors).toBe(0);
   });
 
-  it("lets explicit prerequisites override delivery order, not authority", async () => {
+  it("rejects baseline prerequisites that borrow brand guidance", async () => {
     await node(baseline, `requires: [${identity}]`);
-    expect((await pull([email])).ids).toEqual([
-      core,
-      identity,
-      baseline,
-      email,
-    ]);
+    await expect(pull([email])).rejects.toThrow("missing or invalid");
   });
 
   it("accepts transitive baseline interface pairing through a variant", async () => {
@@ -265,7 +286,7 @@ describe("layered fingerprints", () => {
     ["cycle", `requires: [${email}]`, "requires cycle"],
   ])("rejects %s required context in validate and pull", async (_, requires, message) => {
     await node(email, `${requires}`);
-    const report = await lintGhostPackage(pkg, dir);
+    const report = await lintGhostPackage(pkg, dir, basePkg);
     expect(report.errors).toBeGreaterThan(0);
     expect(report.issues.some((issue) => issue.message.includes(message))).toBe(
       true,
@@ -283,7 +304,7 @@ describe("layered fingerprints", () => {
     const result = await pull(["interface.social"]);
     expect(result.ids).toEqual([core, identity, "interface.social"]);
     expect(result.ids).not.toContain(baseline);
-    expect((await lintGhostPackage(pkg, dir)).errors).toBe(0);
+    expect((await lintGhostPackage(pkg, dir, basePkg)).errors).toBe(0);
 
     // Classification does not imply a dependency, even without a core or baseline.
     await manifest('baseline: "1.0.0"');
@@ -291,7 +312,7 @@ describe("layered fingerprints", () => {
     expect((await pull(["interface.physical"])).ids).toEqual([
       "interface.physical",
     ]);
-    expect((await lintGhostPackage(pkg, dir)).errors).toBe(0);
+    expect((await lintGhostPackage(pkg, dir, basePkg)).errors).toBe(0);
   });
 
   it("rejects invalid required targets, but does not block on unrelated invalid guidance", async () => {
@@ -308,7 +329,9 @@ describe("layered fingerprints", () => {
     baseline,
   ])("rejects invalid core target %s on bare pull", async (target) => {
     await manifest(`core: [${target}]`);
-    expect((await lintGhostPackage(pkg, dir)).errors).toBeGreaterThan(0);
+    expect((await lintGhostPackage(pkg, dir, basePkg)).errors).toBeGreaterThan(
+      0,
+    );
     await expect(pull()).rejects.toThrow("baseline/fundamentals");
   });
 
@@ -430,7 +453,7 @@ describe("cascaded package contract", () => {
       { baseline: "1.0.0", core: [core] },
       { baseline: 1 },
       { version: 1 },
-      { cover: "framing" },
+      { baseline: "1.0.0", cover: "framing" },
     ]) {
       expect(
         GhostPackageManifestSchema.safeParse({ ...anchor, ...fields }).success,
@@ -451,7 +474,7 @@ describe("cascaded package contract", () => {
 
   it("derives classification and kind after the baseline prefix", async () => {
     await manifest('baseline: "1.0.0"');
-    await node("baseline.pattern.layout", "");
+    await node("pattern.layout", "");
     const loaded = await snapshot();
     for (const [id, scope, layer] of [
       [core, "baseline", "fundamentals"],
@@ -459,7 +482,7 @@ describe("cascaded package contract", () => {
       [identity, "brand", "identity"],
       [email, "brand", "interface"],
       ["framing", "brand", "framing"],
-      ["baseline.pattern.layout", "baseline", "pattern"],
+      ["pattern.layout", "brand", "pattern"],
     ] as const) {
       expect(loaded.catalog.nodes.get(id)).toMatchObject({
         scope,
@@ -486,7 +509,7 @@ describe("cascaded package contract", () => {
     expect(
       (await pull(["first", "second"], "given")).nodes.map((entry) => entry.id),
     ).toEqual(["first", "second"]);
-    const report = await lintGhostPackage(pkg, dir);
+    const report = await lintGhostPackage(pkg, dir, basePkg);
     expect(report.errors).toBe(0);
     expect(
       report.issues.filter((issue) => issue.rule === "legacy-requires-ignored"),
@@ -497,18 +520,29 @@ describe("cascaded package contract", () => {
     await manifest('baseline: "1.0.0"');
     await rm(join(pkg, "framing.md"));
     await expect(pull()).rejects.toThrow("framing node");
-    expect((await lintGhostPackage(pkg, dir)).issues).toContainEqual(
+    expect((await lintGhostPackage(pkg, dir, basePkg)).issues).toContainEqual(
       expect.objectContaining({ rule: "framing-missing", severity: "error" }),
     );
-    await manifest('version: "1.0.0"');
+    await writeFile(
+      join(pkg, "manifest.yml"),
+      'schema: ghost.package/v1\nid: baseline-alone\nversion: "1.0.0"\n',
+    );
+    await rm(pkg, { recursive: true });
+    await mkdir(pkg);
+    await writeFile(
+      join(pkg, "manifest.yml"),
+      'schema: ghost.package/v1\nid: baseline-alone\nversion: "1.0.0"\n',
+    );
     expect(
-      (await lintGhostPackage(pkg, dir)).issues.some(
+      (await lintGhostPackage(pkg, dir, basePkg)).issues.some(
         (issue) => issue.rule === "framing-missing",
       ),
     ).toBe(false);
     expect((await pull()).authority).toBeDefined();
+    await manifest('baseline: "1.0.0"');
+    await node("framing", "");
     await node(identity, "", "## If no guidance applies\nAsk first.");
-    expect((await lintGhostPackage(pkg, dir)).issues).toContainEqual(
+    expect((await lintGhostPackage(pkg, dir, basePkg)).issues).toContainEqual(
       expect.objectContaining({
         rule: "framing-policy-only",
         path: `${identity}.md`,

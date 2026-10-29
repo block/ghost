@@ -14,16 +14,19 @@ export async function loadGhostSnapshot(
   const loaded = await loadGhostPackage(paths);
   const nodes = snapshotMap(cloneNodeMap(loaded.catalog.nodes));
   const cover = resolveCoverState(
-    nodes.has("framing") ||
-      loaded.manifest.baseline !== undefined ||
-      loaded.invalid.some((entry) => entry.file === "framing.md")
-      ? "framing"
-      : undefined,
+    loaded.manifest.cover !== undefined
+      ? loaded.manifest.cover
+      : nodes.has("framing") ||
+          loaded.manifest.baseline !== undefined ||
+          loaded.invalid.some((entry) => entry.file === "framing.md")
+        ? "framing"
+        : undefined,
     nodes,
   );
   const glossary = await loadSnapshotGlossary(paths.glossary);
 
   return deepFreeze({
+    notices: loaded.notices,
     package: {
       id: loaded.manifest.id,
       dir: paths.packageDir,

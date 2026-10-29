@@ -24,7 +24,10 @@ description: >-
 A brand adds `baseline: "0.35.0"`, the baseline version it was authored against,
 not a pin. A baseline instead declares `version` (string) and/or `core` (a
 nonempty list of baseline fundamentals node ids). Combining `baseline` with
-`core` or `version` is invalid. `cover` is retired and rejected.
+`core` or `version` is invalid. `cover` is rejected in layered packages. Legacy packages retain their declared
+cover and descriptive headers with a deprecation warning: rename the cover node
+to framing.md and remove `cover`, remove descriptive node keys, and declare
+manifest baseline to migrate.
 
 A package is layered exactly when its manifest declares `baseline`, `core`, or
 `version`. Other packages remain legacy: no external baseline is added and
@@ -46,8 +49,9 @@ Node ids are filenames minus `.md`. For layered packages, filenames carry scope
 and layer: `[baseline.]<layer>.<topic>.md`; `framing.md` is the special bare name.
 Kind is the first segment after any `baseline.` prefix.
 `baseline.interface.email.md` is baseline/interface, kind `interface`;
-`identity.color.md` is brand/identity, kind `identity`. Legacy files may keep
-free-form kinds and bare names without layered classification in their output.
+`identity.color.md` is brand/identity, kind `identity`. Legacy files keep
+free-form kinds, descriptive frontmatter, and bare names without layered classification
+in their output. `--baseline` is ignored with an informational notice.
 
 ```markdown
 ---
@@ -64,7 +68,7 @@ materials:
 Apply the brand's email-specific decisions alongside the baseline.
 ```
 
-Only `for`, `requires`, and `materials` are accepted in node frontmatter.
+Only `for`, `requires`, and `materials` are accepted in layered node frontmatter.
 `scope` and `layer` are derived and rejected as authored keys. `for` is the
 situation or activity the agent matches at gather. `requires` is an array of
 exact ids to deliver transitively; it declares no override authority.

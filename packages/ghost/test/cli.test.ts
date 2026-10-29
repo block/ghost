@@ -664,7 +664,7 @@ describe("ghost CLI", () => {
     await runCli(["init"], dir);
     await writeFile(
       join(dir, ".ghost", "manifest.yml"),
-      "schema: ghost.package/v1\nid: local\ncover: framing\n",
+      "schema: ghost.package/v1\nid: local\nbaseline: 1.0.0\ncover: framing\n",
     );
     const retired = await runCli(["validate", "--format", "json"], dir);
     expect(retired.code).toBe(1);

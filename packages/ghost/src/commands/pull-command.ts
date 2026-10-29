@@ -17,7 +17,7 @@ export function registerPullCommand(cli: CAC): void {
   cli
     .command(
       "pull [...ids]",
-      "Emit the package cover plus named node bodies, and append the pull to the events tape.",
+      "Emit framing.md plus named node bodies, and append the pull to the events tape.",
     )
     .option("--baseline <dir>", "Use this separate baseline ghost package")
     .option(
@@ -56,6 +56,8 @@ export function registerPullCommand(cli: CAC): void {
           opts.baseline,
         );
         const snapshot = await loadGhostSnapshot(paths);
+        for (const notice of snapshot.notices ?? [])
+          console.error(`${notice.severity}: ${notice.message}`);
         const repoRoot = await resolveGitRoot(
           paths.baseline ? paths.packageDir : process.cwd(),
         );
