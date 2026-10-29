@@ -28,7 +28,7 @@ function content(label: string, lines: number): string {
 describe("complete producer output through process pipes", () => {
   let dir: string;
   let packageDir: string;
-  const cover = { id: "cover", applicability: "Every task.", body: COVER };
+  const cover = { id: "framing", applicability: "Every task.", body: COVER };
 
   beforeEach(async () => {
     dir = await mkdtemp(join(tmpdir(), "ghost-producer-delivery-"));
@@ -36,7 +36,7 @@ describe("complete producer output through process pipes", () => {
     await mkdir(packageDir);
     await writeFile(
       join(packageDir, "manifest.yml"),
-      "schema: ghost.package/v1\nid: delivery-test\ncover: cover\n",
+      "schema: ghost.package/v1\nid: delivery-test\n",
     );
     await writeFile(
       join(packageDir, "glossary.md"),
@@ -219,10 +219,7 @@ describe("complete producer output through process pipes", () => {
     expect(covered.stdout.equals(Buffer.from(`${markdownNode(cover)}\n`))).toBe(
       true,
     );
-    await writeFile(
-      join(packageDir, "manifest.yml"),
-      "schema: ghost.package/v1\nid: delivery-test\n",
-    );
+    await rm(join(packageDir, "framing.md"));
     const fallback = await run(["pull", "--no-events"]);
     expect(fallback.code).toBe(0);
     expect(

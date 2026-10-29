@@ -102,6 +102,8 @@ export type { GhostPackageManifest } from "./package-manifest.js";
 export {
   GHOST_PACKAGE_SCHEMA,
   GhostPackageManifestSchema,
+  isBaselinePackage,
+  isLayeredPackage,
 } from "./package-manifest.js";
 // --- Skill bundle loader ---
 export type { SkillBundleFile } from "./skill-bundle-loader.js";

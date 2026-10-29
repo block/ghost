@@ -1,7 +1,5 @@
 ---
 for: Making work for this example brand.
-scope: brand
-layer: framing
 ---
 
 Make the next step understandable without pressure.

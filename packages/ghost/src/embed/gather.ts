@@ -115,13 +115,21 @@ export function menuCoverage(
 }
 
 function menuKinds(snapshot: GhostEmbedSnapshot): GhostMenuKind[] {
-  return [
+  const kinds = new Map<string, GhostMenuKind>();
+  for (const kind of [
     ...(snapshot.baseline?.glossary?.kinds ?? []),
     ...(snapshot.glossary?.kinds ?? []),
-  ].map((kind) => ({
-    name: kind.name,
-    // Later paragraphs may carry selection rules. Preserve the parsed purpose,
-    // including Markdown structure, rather than silently shortening its meaning.
-    purpose: kind.purpose.trim(),
-  }));
+  ]) {
+    const purpose = kind.purpose.trim();
+    const previous = kinds.get(kind.name);
+    // A shared built-in kind has one menu heading with both selection legends.
+    kinds.set(kind.name, {
+      name: kind.name,
+      purpose:
+        previous?.purpose && purpose && previous.purpose !== purpose
+          ? `${previous.purpose}\n\n${purpose}`
+          : previous?.purpose || purpose,
+    });
+  }
+  return [...kinds.values()];
 }

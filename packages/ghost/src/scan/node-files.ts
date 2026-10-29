@@ -111,7 +111,7 @@ async function walk(
         message:
           first?.path && /^(scope|layer|requires)(\.|$)/.test(first.path)
             ? `${first.path}: ${first.message}`
-            : first?.message ?? "invalid node",
+            : (first?.message ?? "invalid node"),
       });
       continue;
     }
@@ -130,8 +130,8 @@ async function walk(
  * Compute a node's id and filename kind/slug from its package-relative path.
  *
  * The rule is uniform: the **id** is the path with `.md` dropped. The **kind**
- * is the leaf filename's first dotted segment, and only exists when the leaf
- * has a dot; the **slug** is the rest of the leaf. A kind never changes a
+ * is the first dotted segment after an optional `baseline.` prefix, and exists when the leaf
+ * has a dot (or is `framing`); the **slug** is the rest of the leaf. A kind never changes a
  * node's identity path. `index.md` is an ordinary node with id `index` — by
  * convention the human-curated front door, but nothing special to the loader.
  * - `index.md`               → id `index`,             slug `index` (no kind).
@@ -146,7 +146,10 @@ function locate(relPath: string): {
 } {
   const withoutExt = relPath.replace(/\.md$/, "");
   const segments = withoutExt.split("/");
-  const leaf = segments[segments.length - 1] ?? "";
+  const filename = segments[segments.length - 1] ?? "";
+  const leaf = filename.startsWith("baseline.")
+    ? filename.slice("baseline.".length)
+    : filename;
   const id = withoutExt;
 
   // A dotted leaf splits into kind (first segment) and slug (the remainder);
@@ -159,5 +162,5 @@ function locate(relPath: string): {
       slug: leaf.slice(dot + 1),
     };
   }
-  return { id, slug: leaf };
+  return { id, ...(leaf === "framing" ? { kind: "framing" } : {}), slug: leaf };
 }

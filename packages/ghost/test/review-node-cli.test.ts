@@ -34,8 +34,7 @@ describe("review explicit guidance CLI", () => {
     await mkdir(join(packageDir, "checks"), { recursive: true });
     await mkdir(join(dir, "brand"));
     const files: Record<string, string> = {
-      "manifest.yml":
-        "schema: ghost.package/v1\nid: review-test\ncover: voice\n",
+      "manifest.yml": "schema: ghost.package/v1\nid: review-test\n",
       "glossary.md": "---\nkinds:\n  - name: asset\n---\n",
       "voice.md": "---\nfor: All writing.\n---\n\nUse concrete words.\n",
     };

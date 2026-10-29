@@ -1,4 +1,3 @@
 schema: ghost.package/v1
 id: layered-example
-cover: framing
 core: [baseline.fundamentals.core]

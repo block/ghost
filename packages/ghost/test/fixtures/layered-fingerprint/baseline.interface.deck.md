@@ -1,7 +1,5 @@
 ---
 for: Making a deck.
-scope: baseline
-layer: interface
 requires: [baseline.fundamentals.accessibility]
 ---
 

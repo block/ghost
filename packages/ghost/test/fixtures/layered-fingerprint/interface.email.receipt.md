@@ -1,7 +1,5 @@
 ---
 for: Making a branded receipt email.
-scope: brand
-layer: interface
 requires: [interface.email]
 ---
 

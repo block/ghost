@@ -120,7 +120,7 @@ export interface GhostPulledNode {
   kind?: string;
   for?: string;
   scope?: "baseline" | "brand";
-  layer?: "fundamentals" | "framing" | "identity" | "interface";
+  layer?: string;
   requires?: string[];
   declaredMaterials?: readonly GhostMaterial[];
   materials?: readonly TransportedMaterial[];

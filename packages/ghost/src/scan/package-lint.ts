@@ -6,6 +6,8 @@ import {
   extractSkeletonSections,
   type GhostCatalog,
   inspectLayeredContext,
+  isBaselinePackage,
+  isLayeredPackage,
   listBundledMaterialFiles,
   materialLocator,
   materialLocatorClaimsPath,
@@ -86,20 +88,40 @@ export async function lintGhostPackage(
           ),
         ),
       };
-      lintCover(manifest.cover, ownCatalog, issues);
-      issues.push(
-        ...inspectLayeredContext(catalog.nodes, {
-          ...manifest,
-          core: loaded.core,
-        }).issues.map((issue) => ({
-          ...issue,
-          severity: "error" as const,
-          rule: "layered-context-invalid",
-        })),
-      );
+      if (!isBaselinePackage(manifest))
+        lintFraming(
+          ownCatalog.nodes.has("framing") ? "framing" : undefined,
+          ownCatalog,
+          issues,
+          manifest.baseline !== undefined,
+        );
+      for (const node of catalog.nodes.values()) {
+        if (
+          node.id !== "framing" &&
+          /^##[ \t]+If no guidance applies[ \t]*$/im.test(node.body)
+        ) {
+          issues.push({
+            severity: "error",
+            rule: "framing-policy-only",
+            path: `${node.id}.md`,
+            message: "Only framing.md may carry ## If no guidance applies",
+          });
+        }
+      }
+      if (isLayeredPackage(manifest))
+        issues.push(
+          ...inspectLayeredContext(catalog.nodes, {
+            ...manifest,
+            core: loaded.core,
+          }).issues.map((issue) => ({
+            ...issue,
+            severity: "error" as const,
+            rule: "layered-context-invalid",
+          })),
+        );
       for (const owner of [
         paths,
-        ...(paths.baseline ? [paths.baseline] : []),
+        ...(loaded.baseline ? [loaded.baseline.paths] : []),
       ]) {
         const ownerCatalog = {
           nodes: new Map(
@@ -115,7 +137,7 @@ export async function lintGhostPackage(
           owner,
           ownerCatalog,
           ownerIssues,
-          paths.baseline ? owner.packageDir : cwd,
+          loaded.baseline ? owner.packageDir : cwd,
         );
         issues.push(
           ...ownerIssues.map((issue) =>
@@ -124,6 +146,18 @@ export async function lintGhostPackage(
               : { ...issue, path: resolve(owner.packageDir, issue.path ?? "") },
           ),
         );
+      }
+      if (!isLayeredPackage(manifest)) {
+        for (const node of catalog.nodes.values()) {
+          if (node.requires !== undefined)
+            issues.push({
+              severity: "warning",
+              rule: "legacy-requires-ignored",
+              path: `${node.id}.md.requires`,
+              message:
+                "requires is ignored in legacy pulls; declare manifest baseline to enable layered delivery",
+            });
+        }
       }
       lintNodeForPayloads(catalog, issues);
       lintSkeletonSections(catalog, issues);
@@ -177,18 +211,19 @@ async function lintGlossary(
   );
 }
 
-function lintCover(
+function lintFraming(
   coverId: string | undefined,
   catalog: GhostCatalog,
   issues: LintIssue[],
+  required = false,
 ): void {
   if (coverId === undefined) {
     issues.push({
-      severity: "warning",
-      rule: "cover-undeclared",
+      severity: required ? "error" : "warning",
+      rule: "framing-missing",
       message:
-        'no cover declared in manifest.yml — ghost packages steer better with one node guaranteed in context; add "cover: <node-id>"',
-      path: "manifest.yml.cover",
+        "package has no framing.md; add the always-delivered brand framing node",
+      path: "framing.md",
     });
     return;
   }
@@ -197,9 +232,9 @@ function lintCover(
   if (cover === undefined) {
     issues.push({
       severity: "error",
-      rule: "cover-missing",
-      message: `manifest cover "${coverId}" does not match any node`,
-      path: "manifest.yml.cover",
+      rule: "framing-missing",
+      message: `framing node "${coverId}" is missing or invalid`,
+      path: "framing.md",
     });
     return;
   }
@@ -207,9 +242,9 @@ function lintCover(
   if (!/^##[ \t]+If no guidance applies[ \t]*$/im.test(cover.body)) {
     issues.push({
       severity: "warning",
-      rule: "cover-no-guidance-policy-missing",
+      rule: "framing-no-guidance-policy-missing",
       message:
-        'cover has no "## If no guidance applies" section; add the continuation or escalation rule for uncovered decisions',
+        'framing has no "## If no guidance applies" section; add the continuation or escalation rule for uncovered decisions',
       path: `${coverId}.md`,
     });
   }
@@ -218,8 +253,8 @@ function lintCover(
   if (bytes > 1500) {
     issues.push({
       severity: "warning",
-      rule: "cover-oversized",
-      message: `cover node "${coverId}" body is ${bytes} bytes — the cover is a one-screen budget; element-scoped rules belong in foundation chapters`,
+      rule: "framing-oversized",
+      message: `framing node "${coverId}" body is ${bytes} bytes; keep always-delivered framing short and put specific rules in the relevant nodes`,
       path: `${coverId}.md`,
     });
   }
@@ -235,7 +270,12 @@ async function lintKindPrefixes(
 
   const declared = new Set(declaredKinds);
   for (const node of catalog.nodes.values()) {
-    if (node.kind === undefined || declared.has(node.kind)) continue;
+    if (
+      node.kind === undefined ||
+      declared.has(node.kind) ||
+      ["framing", "identity", "interface", "fundamentals"].includes(node.kind)
+    )
+      continue;
 
     const suggestions = closestIds(node.kind, declaredKinds, 1);
     const suggestion = suggestions[0];

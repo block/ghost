@@ -23,7 +23,7 @@ describe("explicit review packet", () => {
     await mkdir(join(packageDir, "checks"), { recursive: true });
     await writeFile(
       join(packageDir, "manifest.yml"),
-      "schema: ghost.package/v1\nid: explicit-review\ncover: brand\n",
+      "schema: ghost.package/v1\nid: explicit-review\n",
     );
     await writeFile(
       join(packageDir, "brand.md"),

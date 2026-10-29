@@ -6,6 +6,7 @@ import {
   type GhostCatalogNode,
   type GhostMaterial,
   inspectLayeredContext,
+  isLayeredPackage,
   LAYERED_AUTHORITY,
   type MaterialTransportResult,
   normalizeMaterial,
@@ -49,7 +50,7 @@ export async function pullGhostNodes(
 ): Promise<GhostPullResult> {
   if (snapshot.cover.state === "dangling") {
     throw new UsageError(
-      `manifest cover "${snapshot.cover.id}" does not match any node. Fix manifest.yml cover or add .ghost/${snapshot.cover.id}.md before pulling.`,
+      `framing node "${snapshot.cover.id}" is missing; add framing.md before pulling.`,
     );
   }
 
@@ -73,15 +74,8 @@ export async function pullGhostNodes(
     ...snapshot.package.manifest,
     core: snapshot.core ? [...snapshot.core] : snapshot.package.manifest.core,
   };
-  const layered = [...snapshot.catalog.nodes.values()].some(
-    (node) => node.scope !== undefined,
-  );
-  const expanded =
-    manifest.core !== undefined ||
-    layered ||
-    [...snapshot.catalog.nodes.values()].some(
-      (node) => node.requires !== undefined,
-    );
+  const layered = isLayeredPackage(snapshot.package.manifest);
+  const expanded = layered;
   const invalidRequested = selectedRequested.find((id) =>
     snapshot.invalid.some(
       (entry) =>
@@ -100,11 +94,13 @@ export async function pullGhostNodes(
       `required node "${invalidRequested}" is invalid; run ghost validate`,
     );
   }
-  const context = inspectLayeredContext(snapshot.catalog.nodes, manifest, [
-    ...(coverId ? [coverId] : []),
-    ...known,
-  ]);
-  if (context.issues.length > 0) {
+  const context = layered
+    ? inspectLayeredContext(snapshot.catalog.nodes, manifest, [
+        ...(coverId ? [coverId] : []),
+        ...known,
+      ])
+    : { ids: known, issues: [] };
+  if (layered && context.issues.length > 0) {
     throw new UsageError(
       context.issues
         .map((issue) => `${issue.path}: ${issue.message}`)

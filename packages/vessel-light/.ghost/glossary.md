@@ -1,5 +1,6 @@
 ---
 kinds:
+  - name: framing
   - name: standard
   - name: foundation
   - name: context

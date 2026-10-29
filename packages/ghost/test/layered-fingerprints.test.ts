@@ -33,7 +33,7 @@ async function node(
     `---\nfor: Making an email.\n${metadata}\n---\n\n${body}\n`,
   );
 }
-async function manifest(extra = `cover: framing\ncore: [${core}]`) {
+async function manifest(extra = `core: [${core}]`) {
   await writeFile(
     join(pkg, "manifest.yml"),
     `schema: ghost.package/v1\nid: layered\n${extra}\n`,
@@ -56,26 +56,22 @@ beforeEach(async () => {
   );
   await node(
     "framing",
-    "scope: brand\nlayer: framing",
+    "",
     "Make the next step clear.\n\n## If no guidance applies\n\nAsk before brand-defining choices.",
   );
   await node(
     core,
-    "scope: baseline\nlayer: fundamentals",
+    "",
     "Use a visible hierarchy. Keep text legible. Preserve keyboard access.",
   );
-  await node(
-    baseline,
-    "scope: baseline\nlayer: interface",
-    "Keep email content readable without images.",
-  );
+  await node(baseline, "", "Keep email content readable without images.");
   await node(
     identity,
-    `scope: brand\nlayer: identity\nrequires: [${core}]\nmaterials: [materials/tokens.css]`,
+    `requires: [${core}]\nmaterials: [materials/tokens.css]`,
   );
   await node(
     email,
-    `scope: brand\nlayer: interface\nrequires: [${baseline}, ${identity}]\nmaterials: [materials/tokens.css]`,
+    `requires: [${baseline}, ${identity}]\nmaterials: [materials/tokens.css]`,
   );
 });
 afterEach(async () => {
@@ -92,11 +88,8 @@ describe("layered fingerprints", () => {
   });
 
   it("deduplicates repeated core entries and cover prerequisites", async () => {
-    await manifest(`cover: framing\ncore: [${core}, ${core}]`);
-    await node(
-      email,
-      `scope: brand\nlayer: interface\nrequires: [${baseline}, ${identity}, framing]`,
-    );
+    await manifest(`core: [${core}, ${core}]`);
+    await node(email, `requires: [${baseline}, ${identity}, framing]`);
     const result = await pull([email, core, "framing"]);
     expect(result.ids).toEqual([core, baseline, identity, email]);
     expect(result.nodes.map((entry) => entry.id)).not.toContain("framing");
@@ -135,7 +128,7 @@ describe("layered fingerprints", () => {
   });
 
   it("classified packages without core omit automatic but still expand dependencies", async () => {
-    await manifest("cover: framing");
+    await manifest('baseline: "1.0.0"');
     expect(gatherGhostPackage(await snapshot())).not.toHaveProperty(
       "automatic",
     );
@@ -159,14 +152,14 @@ describe("layered fingerprints", () => {
     expect(miss.cover.state).toBe("not-emitted");
   });
 
-  it("expands unclassified explicit prerequisites without an authority field", async () => {
+  it("ignores legacy prerequisites without an authority field", async () => {
     await rm(pkg, { recursive: true });
     await mkdir(pkg);
     await manifest("");
     await node("first", "requires: [second]");
     await node("second", "");
     const result = await pull(["first"]);
-    expect(result.ids).toEqual(["second", "first"]);
+    expect(result.ids).toEqual(["first"]);
     expect(result).not.toHaveProperty("authority");
   });
 
@@ -179,12 +172,9 @@ describe("layered fingerprints", () => {
   });
 
   it("fails bare pull on core cycles and invalid core node metadata", async () => {
-    await node(
-      core,
-      `scope: baseline\nlayer: fundamentals\nrequires: [${core}]`,
-    );
+    await node(core, `requires: [${core}]`);
     await expect(pull()).rejects.toThrow("requires cycle");
-    await node(core, "scope: baseline\nlayer: identity");
+    await node(core, "scope: baseline");
     await expect(pull()).rejects.toThrow("baseline/fundamentals");
   });
 
@@ -222,38 +212,35 @@ describe("layered fingerprints", () => {
       body: expect.stringContaining("visible hierarchy"),
     });
     expect(result.authority).toContain("Delivery order is not authority");
-    await manifest(`core: [${core}]`);
+    await rm(join(pkg, "framing.md"));
     expect((await pull()).ids).toEqual([core]);
     expect((await pull()).cover.state).toBe("absent");
   });
 
-  it.each(["steering", "given"] as const)(
-    "delivers transitive prerequisites once in %s order",
-    async (order) => {
-      const result = await pull([email, email, core, identity], order);
-      expect(result.requested).toEqual([email, core, identity]);
-      expect(result.ids).toEqual([core, baseline, identity, email]);
-      expect(result.nodes.map((entry) => entry.id)).toEqual(result.ids);
-      expect(result.nodes.find((entry) => entry.id === email)).toMatchObject({
-        scope: "brand",
-        layer: "interface",
-        requires: [baseline, identity],
-      });
-      expect(result.materialCounts).toEqual({ inlined: 1, omitted: 1 });
-      expect(
-        result.nodes
-          .flatMap((entry) => entry.materials ?? [])
-          .filter((material) => material.inlined),
-      ).toHaveLength(1);
-      expect((await lintGhostPackage(pkg, dir)).errors).toBe(0);
-    },
-  );
+  it.each([
+    "steering",
+    "given",
+  ] as const)("delivers transitive prerequisites once in %s order", async (order) => {
+    const result = await pull([email, email, core, identity], order);
+    expect(result.requested).toEqual([email, core, identity]);
+    expect(result.ids).toEqual([core, baseline, identity, email]);
+    expect(result.nodes.map((entry) => entry.id)).toEqual(result.ids);
+    expect(result.nodes.find((entry) => entry.id === email)).toMatchObject({
+      scope: "brand",
+      layer: "interface",
+      requires: [baseline, identity],
+    });
+    expect(result.materialCounts).toEqual({ inlined: 1, omitted: 1 });
+    expect(
+      result.nodes
+        .flatMap((entry) => entry.materials ?? [])
+        .filter((material) => material.inlined),
+    ).toHaveLength(1);
+    expect((await lintGhostPackage(pkg, dir)).errors).toBe(0);
+  });
 
   it("lets explicit prerequisites override delivery order, not authority", async () => {
-    await node(
-      baseline,
-      `scope: baseline\nlayer: interface\nrequires: [${identity}]`,
-    );
+    await node(baseline, `requires: [${identity}]`);
     expect((await pull([email])).ids).toEqual([
       core,
       identity,
@@ -263,10 +250,7 @@ describe("layered fingerprints", () => {
   });
 
   it("accepts transitive baseline interface pairing through a variant", async () => {
-    await node(
-      "interface.email.receipt",
-      `scope: brand\nlayer: interface\nrequires: [${email}]`,
-    );
+    await node("interface.email.receipt", `requires: [${email}]`);
     expect((await pull(["interface.email.receipt"])).ids).toEqual([
       core,
       baseline,
@@ -279,24 +263,21 @@ describe("layered fingerprints", () => {
   it.each([
     ["missing", `requires: [missing]`, "missing or invalid"],
     ["cycle", `requires: [${email}]`, "requires cycle"],
-  ])(
-    "rejects %s required context in validate and pull",
-    async (_, requires, message) => {
-      await node(email, `scope: brand\nlayer: interface\n${requires}`);
-      const report = await lintGhostPackage(pkg, dir);
-      expect(report.errors).toBeGreaterThan(0);
-      expect(
-        report.issues.some((issue) => issue.message.includes(message)),
-      ).toBe(true);
-      await expect(pull([email])).rejects.toThrow(message);
-      expect((await pull()).ids).toEqual([core]);
-    },
-  );
+  ])("rejects %s required context in validate and pull", async (_, requires, message) => {
+    await node(email, `${requires}`);
+    const report = await lintGhostPackage(pkg, dir);
+    expect(report.errors).toBeGreaterThan(0);
+    expect(report.issues.some((issue) => issue.message.includes(message))).toBe(
+      true,
+    );
+    await expect(pull([email])).rejects.toThrow(message);
+    expect((await pull()).ids).toEqual([core]);
+  });
 
   it("accepts interfaces without inventing a baseline for their medium", async () => {
     await node(
       "interface.social",
-      `scope: brand\nlayer: interface\nrequires: [${identity}]`,
+      `requires: [${identity}]`,
       "Lead social posts with the subject and a short caption.",
     );
     const result = await pull(["interface.social"]);
@@ -305,8 +286,8 @@ describe("layered fingerprints", () => {
     expect((await lintGhostPackage(pkg, dir)).errors).toBe(0);
 
     // Classification does not imply a dependency, even without a core or baseline.
-    await manifest("cover: framing");
-    await node("interface.physical", "scope: brand\nlayer: interface");
+    await manifest('baseline: "1.0.0"');
+    await node("interface.physical", "");
     expect((await pull(["interface.physical"])).ids).toEqual([
       "interface.physical",
     ]);
@@ -314,26 +295,25 @@ describe("layered fingerprints", () => {
   });
 
   it("rejects invalid required targets, but does not block on unrelated invalid guidance", async () => {
-    await node(identity, "scope: brand\nlayer: fundamentals");
+    await node(identity, "scope: brand");
     await expect(pull([email])).rejects.toThrow("missing or invalid");
     await expect(pull([identity])).rejects.toThrow("invalid");
     expect((await pull()).ids).toEqual([core]);
   });
 
-  it.each(["missing", identity, "framing", baseline])(
-    "rejects invalid core target %s on bare pull",
-    async (target) => {
-      await manifest(`core: [${target}]`);
-      expect((await lintGhostPackage(pkg, dir)).errors).toBeGreaterThan(0);
-      await expect(pull()).rejects.toThrow("baseline/fundamentals");
-    },
-  );
+  it.each([
+    "missing",
+    identity,
+    "framing",
+    baseline,
+  ])("rejects invalid core target %s on bare pull", async (target) => {
+    await manifest(`core: [${target}]`);
+    expect((await lintGhostPackage(pkg, dir)).errors).toBeGreaterThan(0);
+    await expect(pull()).rejects.toThrow("baseline/fundamentals");
+  });
 
   it("checks core prerequisites even on bare pull", async () => {
-    await node(
-      core,
-      "scope: baseline\nlayer: fundamentals\nrequires: [missing]",
-    );
+    await node(core, "requires: [missing]");
     await expect(pull()).rejects.toThrow("missing or invalid");
   });
 
@@ -360,26 +340,16 @@ describe("layered fingerprints", () => {
         }).success,
       ).toBe(false);
     }
-    for (const [scope, layer] of [
-      ["baseline", "fundamentals"],
-      ["baseline", "interface"],
-      ["brand", "framing"],
-      ["brand", "identity"],
-      ["brand", "interface"],
-    ]) {
-      const parsed = parseNode(
-        `---\nscope: ${scope}\nlayer: ${layer}\nrequires: [${core}]\n---\nBody.`,
-      );
-      expect(parsed.node).not.toBeNull();
-      if (parsed.node)
-        expect(parseNode(serializeNode(parsed.node)).node).toEqual(parsed.node);
-    }
+    const parsed = parseNode(`---\nrequires: [${core}]\n---\nBody.`);
+    expect(parsed.node).not.toBeNull();
+    if (parsed.node)
+      expect(parseNode(serializeNode(parsed.node)).node).toEqual(parsed.node);
   });
 
   it("preserves unclassified packages without adding automatic or authority fields", async () => {
     await rm(pkg, { recursive: true });
     await mkdir(pkg);
-    await manifest("cover: framing");
+    await manifest("");
     await node("framing", "");
     await node("voice", "");
     const menu = gatherGhostPackage(await snapshot());
@@ -433,10 +403,117 @@ describe("layered fingerprints", () => {
       ids: [core],
       cover: "framing",
     });
-    await node(email, "scope: brand\nlayer: interface\nrequires: [missing]");
+    await node(email, "requires: [missing]");
     expect((await runCli(["pull", email], dir)).code).toBe(2);
     expect(
       (await readFile(join(pkg, ".events"), "utf8")).trim().split("\n"),
     ).toHaveLength(events.length);
+  });
+});
+
+describe("cascaded package contract", () => {
+  it("accepts only compatible manifest roles and string versions", () => {
+    const anchor = { schema: "ghost.package/v1", id: "example" };
+    for (const fields of [
+      {},
+      { baseline: "1.0.0" },
+      { version: "1.0.0" },
+      { core: [core] },
+      { core: [core], version: "1.0.0" },
+    ]) {
+      expect(
+        GhostPackageManifestSchema.safeParse({ ...anchor, ...fields }).success,
+      ).toBe(true);
+    }
+    for (const fields of [
+      { baseline: "1.0.0", version: "1.0.0" },
+      { baseline: "1.0.0", core: [core] },
+      { baseline: 1 },
+      { version: 1 },
+      { cover: "framing" },
+    ]) {
+      expect(
+        GhostPackageManifestSchema.safeParse({ ...anchor, ...fields }).success,
+      ).toBe(false);
+    }
+  });
+
+  it("rejects non-delivery headers with actionable classification errors", () => {
+    for (const key of ["scope", "layer", "audience", "kind"]) {
+      const result = parseNode(`---\n${key}: brand\n---\nGuidance.`);
+      expect(result.report.errors).toBeGreaterThan(0);
+      if (key === "scope" || key === "layer")
+        expect(result.report.issues[0]?.message).toContain(
+          "derived from the filename",
+        );
+    }
+  });
+
+  it("derives classification and kind after the baseline prefix", async () => {
+    await manifest('baseline: "1.0.0"');
+    await node("baseline.pattern.layout", "");
+    const loaded = await snapshot();
+    for (const [id, scope, layer] of [
+      [core, "baseline", "fundamentals"],
+      [baseline, "baseline", "interface"],
+      [identity, "brand", "identity"],
+      [email, "brand", "interface"],
+      ["framing", "brand", "framing"],
+      ["baseline.pattern.layout", "baseline", "pattern"],
+    ] as const) {
+      expect(loaded.catalog.nodes.get(id)).toMatchObject({
+        scope,
+        layer,
+        kind: layer,
+      });
+    }
+  });
+
+  it("keeps legacy steering order and ignores dependency errors", async () => {
+    await rm(pkg, { recursive: true });
+    await mkdir(pkg);
+    await manifest("");
+    await node("first", "requires: [missing, second]");
+    await node(
+      "second",
+      "requires: [first]",
+      "## Skeleton\n```html\n<p>Literal</p>\n```",
+    );
+    expect((await pull(["first", "second"])).ids).toEqual(["first", "second"]);
+    expect(
+      (await pull(["first", "second"])).nodes.map((entry) => entry.id),
+    ).toEqual(["second", "first"]);
+    expect(
+      (await pull(["first", "second"], "given")).nodes.map((entry) => entry.id),
+    ).toEqual(["first", "second"]);
+    const report = await lintGhostPackage(pkg, dir);
+    expect(report.errors).toBe(0);
+    expect(
+      report.issues.filter((issue) => issue.rule === "legacy-requires-ignored"),
+    ).toHaveLength(2);
+  });
+
+  it("requires framing only for layered brands and confines the fallback heading", async () => {
+    await manifest('baseline: "1.0.0"');
+    await rm(join(pkg, "framing.md"));
+    await expect(pull()).rejects.toThrow("framing node");
+    expect((await lintGhostPackage(pkg, dir)).issues).toContainEqual(
+      expect.objectContaining({ rule: "framing-missing", severity: "error" }),
+    );
+    await manifest('version: "1.0.0"');
+    expect(
+      (await lintGhostPackage(pkg, dir)).issues.some(
+        (issue) => issue.rule === "framing-missing",
+      ),
+    ).toBe(false);
+    expect((await pull()).authority).toBeDefined();
+    await node(identity, "", "## If no guidance applies\nAsk first.");
+    expect((await lintGhostPackage(pkg, dir)).issues).toContainEqual(
+      expect.objectContaining({
+        rule: "framing-policy-only",
+        path: `${identity}.md`,
+        severity: "error",
+      }),
+    );
   });
 });

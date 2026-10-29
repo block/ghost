@@ -209,7 +209,7 @@ async function writeLargePullFixture(dir: string): Promise<void> {
   await Promise.all([
     writeFile(
       join(ghost, "manifest.yml"),
-      "schema: ghost.package/v1\nid: pipe-regression\ncover: index\n",
+      "schema: ghost.package/v1\nid: pipe-regression\n",
     ),
     writeFile(
       join(ghost, "glossary.md"),

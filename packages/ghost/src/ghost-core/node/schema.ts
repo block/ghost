@@ -45,9 +45,17 @@ const AnnotatedMaterialSchema = z
 export const GhostNodeFrontmatterSchema = z
   .object({
     for: z.string().min(1).optional(),
-    scope: z.enum(["baseline", "brand"]).optional(),
+    scope: z
+      .never({
+        message:
+          "scope is derived from the filename; remove scope from frontmatter",
+      })
+      .optional(),
     layer: z
-      .enum(["fundamentals", "framing", "identity", "interface"])
+      .never({
+        message:
+          "layer is derived from the filename; remove layer from frontmatter",
+      })
       .optional(),
     requires: z.array(NodeIdSchema).optional(),
     materials: z
@@ -68,27 +76,6 @@ export const GhostNodeFrontmatterSchema = z
       })
       .optional(),
   })
-  // Passthrough, not strict: authors may add free-form descriptive keys
-  // (e.g. `audience`, `stage`) that describe what the node is. ghost does not
-  // gate on them; they ride along as part of the node's descriptive surface.
-  .passthrough()
-  .superRefine((node, ctx) => {
-    if ((node.scope === undefined) !== (node.layer === undefined)) {
-      ctx.addIssue({
-        code: "custom",
-        message: "scope and layer must be declared together",
-      });
-    } else if (
-      (node.scope === "baseline" &&
-        node.layer !== "fundamentals" &&
-        node.layer !== "interface") ||
-      (node.scope === "brand" && node.layer === "fundamentals")
-    ) {
-      ctx.addIssue({
-        code: "custom",
-        message: `invalid scope/layer combination: ${node.scope}/${node.layer}`,
-      });
-    }
-  });
+  .strict();
 
 export { NodeIdSchema, NodeRefSchema };

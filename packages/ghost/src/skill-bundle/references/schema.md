@@ -9,198 +9,99 @@ description: >-
 
 ```text
 .ghost/
-  manifest.yml        ghost.package/v1: schema + id + optional cover/core
-  glossary.md         kind vocabulary + meanings
-  materials/          bundled materials; never a node source
-  <kind>.<slug>.md    guidance of a declared kind
-  <slug>.md           guidance without a kind
-  checks/             optional review assertions; never a node source
+  manifest.yml
+  glossary.md                 optional kind vocabulary and selection prose
+  framing.md                  brand framing, delivered automatically
+  identity.color.md
+  interface.email.md
+  materials/                  facts and assets, never selectable nodes
+  checks/                     review assertions, never generation context
 ```
 
-Reserved at the root: `manifest.yml`, `glossary.md`, `materials/`, and
-`checks/`. Every other `*.md` is a node. The files and selection menu are flat. Optional content layers and explicit
-prerequisites do not imply directory hierarchy or inheritance.
+## Manifest and package roles
 
-## Manifest
+`manifest.yml` contains `schema: ghost.package/v1` and a lowercase slug `id`.
+A brand adds `baseline: "0.35.0"`, the baseline version it was authored against,
+not a pin. A baseline instead declares `version` (string) and/or `core` (a
+nonempty list of baseline fundamentals node ids). Combining `baseline` with
+`core` or `version` is invalid. `cover` is retired and rejected.
 
-`manifest.yml` declares `schema`, `id`, and optionally `cover` and `core`. `cover` is a
-node id. `ghost gather` excludes it from the selectable menu; every `ghost pull`
-includes it before selected guidance when it resolves.
+A package is layered exactly when its manifest declares `baseline`, `core`, or
+`version`. Other packages remain legacy: no external baseline is added and
+pulls retain steering/given ordering without dependency expansion. Validate
+warns that any legacy node `requires` is ignored. Declaring `core` makes the
+package a baseline, so a legacy manifest cannot carry `core`.
 
-`ghost validate` reports a missing referenced cover as an error, an undeclared
-cover as a warning, a cover body over 1500 bytes as a warning, and a cover
-without an exact `## If no guidance applies` section as a warning. That section
-tells the agent when to continue and when to ask about uncovered decisions.
+`framing.md` is the fixed brand framing node. Gather excludes it; pull delivers
+it before the selected guidance. Only this node may carry
+`## If no guidance applies`. Validation warns when legacy framing is absent,
+when framing lacks that heading, or when its body exceeds the advisory
+1500-byte budget. Layered brands require framing; missing or invalid framing fails pull.
+Baselines do not need framing. When framing has no fallback
+policy, pull supplies the ordinary ghost fallback.
 
-## Glossary and identity
+## Filename identity and node headers
 
-`glossary.md` declares the package's kind vocabulary and defines each kind. A
-node's id is its filename minus `.md`; its kind is the first dotted filename
-segment. A bare filename has no kind. Undeclared kind prefixes warn.
-
-The starter vocabulary is `standard` (shared guidance, each rule an
-Obligation or a replaceable Default), `foundation` (the brand's load-bearing
-decisions), and `context` (what bends in a named situation). A package may
-declare any vocabulary; the glossary is the only kind authority.
-
-`ghost gather` preserves each kind's full parsed purpose in JSON and shows it
-once above that kind's entries in Markdown. Read the kind's selection rules
-alongside each item's `Applies when` condition. Declared kinds render in
-frontmatter order even when their purpose is empty; undeclared kinds render
-alphabetically after declared kinds, and uncategorized guidance renders last.
-
-## Nodes
-
-```markdown
----
-for: Placing, sizing, or choosing a logo lockup or glyph.
-materials:
-  - brand/logo-primary.svg
-  - https://figma.com/file/example?node-id=logo-lockups
-  - locator: mcp://brand-assets/logo-lockups
-    note: Source lockups and glyph exports
----
-
-Use the full lockup when recognition matters.
-```
-
-- `for` is the retrieval payload shown by `ghost gather`: the situation or
-  activity the guidance is for, never an audience.
-- `materials` accepts explicit repo-relative file paths and external locators
-  using `https:`, `mcp:`, `figma:`, or `github:`.
-- Glob patterns are invalid. Each local file must be named explicitly.
-- A material may be a bare locator or `{ locator, note }`.
-- External locators describe access; ghost does not fetch or authenticate.
-- Frontmatter may contain additional descriptive keys. Guidance stays in prose.
-
-A node is concrete when it has non-empty `materials`, a fenced code block of at
-least three lines, or a `## Skeleton` section. `gather` reports those payload
-labels; they are not ranking signals.
-
-## External baseline input
-
-Keep shared fundamentals and interfaces outside a brand fingerprint. Supply a
-separate existing `ghost.package/v1` package with `--baseline <dir>` on gather,
-pull, validate, and review. There is no implicit discovery or on-disk flattening.
-The external package owns its manifest `core`, declares `baseline` in its glossary,
-contains only baseline-scoped nodes, and has no cover. Its prerequisites must
-resolve inside that package. The brand's prerequisites resolve against the
-combined catalog. Duplicate node IDs, check IDs, or glossary kind names are
-errors, not overrides.
-
-Materials and checks retain their owning package. Glossaries validate separately;
-gather includes both kind legends. Bare pull includes the external core without
-rewriting the brand manifest. Embedded hosts use the third argument of
-`resolveGhostPackage(dir, cwd, baselineDir)` and
-`lintGhostPackage(dir, cwd, baselineDir)`. `snapshot.baseline` describes that input,
-`snapshot.core` is the combined core, and `GhostPulledNode.packageDir` identifies
-the absolute material-owning directory. Preserve `--baseline` when following up
-on pulled material pointers. The self-contained layout below remains supported.
-
-## Layered fingerprints
-
-Scope and layer are first-class consumed metadata, independent of filename kinds:
-
-| Scope | Legal layers | Purpose |
-| --- | --- | --- |
-| `baseline` | `fundamentals`, `interface` | General design foundations and medium-specific defaults |
-| `brand` | `framing`, `identity`, `interface` | Brand stance, explicit identity decisions and medium-specific expression |
-
-Declare both `scope` and `layer`, or neither. Unclassified packages keep their
-existing output. `materials` remains the locator field, not a layer. `requires`
-is an optional array of exact node IDs in the package or supplied baseline. It includes those prerequisites
-transitively, never an inferred relationship or an authority override.
-
-```yaml
-schema: ghost.package/v1
-id: example-brand
-cover: framing
-core: [baseline.fundamentals.core]
-```
-
-`core`, when declared, is a nonempty list of baseline/fundamentals IDs. Keep it
-small: actual fundamentals such as legibility, hierarchy and accessibility,
-not an authority-only node. Larger fundamentals remain selectable. There is no
-arbitrary size limit and no semantic inspection of prose. The cover remains a
-separate manifest role; a layered brand uses its `brand/framing` node as cover.
-
-A flat file layout can express the full structure:
-
-```text
-manifest.yml
-framing.md
-baseline.fundamentals.core.md
-baseline.fundamentals.composition.md
-baseline.fundamentals.typesetting.md
-baseline.fundamentals.accessibility.md
-baseline.interface.email.md
-baseline.interface.deck.md
-baseline.interface.document.md
-baseline.interface.web.md
-baseline.interface.product.md
-identity.color.md
-identity.type.md
-interface.email.md
-interface.email.receipt.md
-interface.deck.md
-interface.deck.pitch.md
-interface.document.md
-interface.document.report.md
-```
-
-For example, `interface.email.md`:
+Node ids are filenames minus `.md`. For layered packages, filenames carry scope
+and layer: `[baseline.]<layer>.<topic>.md`; `framing.md` is the special bare name.
+Kind is the first segment after any `baseline.` prefix.
+`baseline.interface.email.md` is baseline/interface, kind `interface`;
+`identity.color.md` is brand/identity, kind `identity`. Legacy files may keep
+free-form kinds and bare names without layered classification in their output.
 
 ```markdown
 ---
 for: Making a branded email.
-scope: brand
-layer: interface
-requires:
-  - baseline.interface.email
-  - identity.color
-  - identity.type
+requires: [baseline.interface.email, identity.color, identity.type]
+materials:
+  - materials/tokens.css
+  - locator: figma://file/example
+    note: Approved layouts
 ---
 
-Apply the identity palette to one primary action. Keep supporting links quiet.
+## Usage
+
+Apply the brand's email-specific decisions alongside the baseline.
 ```
 
-A brand/interface node requires the applicable baseline/interface when one exists.
-A variant can require its base brand interface. When no baseline covers the medium,
-require only the applicable identity and fundamentals; do not add an unrelated
-format or invent an empty baseline to satisfy classification.
-Identity nodes may require fundamentals such as `baseline.fundamentals.typesetting`.
-These dependencies are explicit, not inferred from names or prose. Authors choose
-applicable guidance; validation checks declared dependencies, not whether the
-baseline covers a medium or semantically matches the task.
+Only `for`, `requires`, and `materials` are accepted in node frontmatter.
+`scope` and `layer` are derived and rejected as authored keys. `for` is the
+situation or activity the agent matches at gather. `requires` is an array of
+exact ids to deliver transitively; it declares no override authority.
+`materials` lists explicit local files or `https:`, `mcp:`, `figma:`, `github:`
+locators, as strings or `{ locator, note }` objects. Globs are invalid. ghost
+does not fetch or authenticate external locators.
 
-Gather remains the complete flat selection menu, with scope/layer on entries.
-It excludes the cover and core from `nodes`, and exposes core separately as
-`automatic`. The field is absent for manifests without core. Coverage counts
-selectable entries only. Do not select automatic nodes. Bare pull delivers the
-cover and core even when no selectable guidance applies.
+The glossary is optional. When supplied, its frontmatter declares kinds and
+its body gives selection prose under one heading per kind. Gather prints the
+kind prose once above its entries. Built-in layer selection prose is handled
+separately from the filename and manifest contract.
 
-Pull expands core, selected nodes and all explicit prerequisites, with no duplicate
-bodies or inlined materials. The cover retains its separate first position; the
-remaining guidance is ordered baseline fundamentals, baseline interface, brand
-framing, brand identity, brand interface, then unclassified nodes. Prerequisites
-precede dependents within that guidance, even when they cross layer order. For
-classified or prerequisite-bearing packages, this ordering applies to both
-`--order steering` and `--order given`. There is no general precedence engine.
+## External baseline and delivery
 
-`requested` records explicit selection (deduplicated, excluding the cover alias).
-`ids` and pull event IDs record delivered guidance including core and prerequisites;
-the cover stays in its separate `cover` field. An all-miss selection still emits no
-packet, just as for legacy packages. Missing or invalid required nodes, invalid
-core targets and cycles fail pull. Validation
-checks the whole package; pull checks required context only. Unrelated broken
-nodes remain diagnostics rather than blocking an otherwise valid pull.
+Supply an external baseline using `--baseline <dir>` on gather, pull, validate,
+and review. Only a brand manifest declaring `baseline` consumes it; legacy
+packages ignore it. The external baseline declares `core` and/or `version`,
+contains baseline-prefixed nodes, and resolves dependencies locally. Node and
+check ids must be unique across the two packages. Materials and checks retain
+their owning directory. Glossaries validate separately. Shared built-in kinds keep both selection
+legends under one menu heading; duplicate custom kinds remain errors.
 
-Classified pull packets contain one `authority` prose field: baseline defaults
-yield to explicit brand decisions; exceptions name the changed rule and scope;
-requirements cannot be overridden; `requires` does not confer override authority;
-framing does not override explicit decisions; unresolved conflicts must be reported;
-delivery order is not authority. ghost does not infer semantic conflicts or decide
-which prose statements are requirements. Unclassified packets omit this field.
+Gather excludes framing and core from its selectable `nodes`, exposing core as
+`automatic`. Pull expands core, selection, and transitive prerequisites once.
+Framing is first; the rest follows baseline fundamentals, baseline interfaces,
+brand identity, brand interfaces, and custom kinds, with prerequisites before
+dependents. Both steering and given order use that layered assembly. Cycles,
+invalid core targets, and missing required nodes fail pull. Unrelated invalid
+nodes remain diagnostics. An all-miss selection emits no packet.
+
+Embedded hosts use `resolveGhostPackage(dir, cwd, baselineDir)` and
+`lintGhostPackage(dir, cwd, baselineDir)`. `snapshot.baseline` records the external
+input, `snapshot.core` holds automatic fundamentals, and pulled nodes carry their
+owning `packageDir`. Preserve `--baseline` on subsequent material lookups.
+For compatibility, the current JSON packet's `cover` field carries `framing.md`;
+`requested` excludes that alias, and `ids` contains delivered non-framing ids.
+Layered pulls contain one authority instruction; delivery order adds no authority.
 
 ## Skeletons
 

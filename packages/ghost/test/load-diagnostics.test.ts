@@ -32,9 +32,9 @@ beforeEach(async () => {
   await fs.mkdir(packageDir);
   await fs.writeFile(
     join(packageDir, "manifest.yml"),
-    "schema: ghost.package/v1\nid: diagnostics\ncover: cover\n",
+    "schema: ghost.package/v1\nid: diagnostics\n",
   );
-  await fs.writeFile(join(packageDir, "cover.md"), validNode);
+  await fs.writeFile(join(packageDir, "framing.md"), validNode);
   await fs.writeFile(join(packageDir, "voice.md"), validNode);
 });
 
@@ -115,7 +115,7 @@ describe("load diagnostics", () => {
       join(packageDir, "manifest.yml"),
       "schema: ghost.package/v1\nid: diagnostics\n",
     );
-    await fs.rm(join(packageDir, "cover.md"));
+    await fs.rm(join(packageDir, "framing.md"));
     await fs.writeFile(join(packageDir, "voice.md"), invalidNode);
     const incomplete = gatherGhostPackage(await loadGhostSnapshot(paths()));
     expect(incomplete.nodes).toEqual([]);
@@ -257,11 +257,11 @@ describe("load diagnostics", () => {
     expect(missing.code).toBe(2);
     expect(missing.stdout).toBe("");
     expect(missing.stderr).toContain("ghost init");
-    await fs.writeFile(join(packageDir, "cover.md"), invalidNode);
+    await fs.writeFile(join(packageDir, "framing.md"), invalidNode);
     const dangling = await runCli(["pull", "voice"], dir);
     expect(dangling.code).toBe(2);
     expect(dangling.stdout).toBe("");
-    expect(dangling.stderr).toContain('manifest cover "cover"');
+    expect(dangling.stderr).toContain('framing node "framing"');
   });
 });
 

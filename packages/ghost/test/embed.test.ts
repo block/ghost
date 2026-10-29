@@ -37,14 +37,14 @@ async function writePackage(dir: string): Promise<void> {
   await mkdir(join(dir, "brand"), { recursive: true });
   await writeFile(
     join(dir, ".ghost", "manifest.yml"),
-    "schema: ghost.package/v1\nid: local\ncover: cover\n",
+    "schema: ghost.package/v1\nid: local\n",
   );
   await writeFile(
     join(dir, ".ghost", "glossary.md"),
     "---\nkinds:\n  - name: asset\n  - name: uncaptioned\n  - name: principle\n---\n\n# asset\n\nConcrete materials.\n\n# principle\n\nRules.\n",
   );
   await writeFile(
-    join(dir, ".ghost", "cover.md"),
+    join(dir, ".ghost", "framing.md"),
     "---\nfor: Cover.\n---\n\nSilence posture.\n",
   );
   await writeFile(join(dir, ".ghost", "materials", "tokens.css"), ":root{}\n");
@@ -110,24 +110,17 @@ describe("embed contract", () => {
     const paths = resolveGhostPackage(undefined, dir);
 
     const resolved = await loadGhostSnapshot(paths);
-    expect(resolved.cover).toMatchObject({ state: "resolved", id: "cover" });
+    expect(resolved.cover).toMatchObject({ state: "resolved", id: "framing" });
     expect(resolved.checks.size).toBe(1);
     await expect(
       readFile(join(dir, ".ghost", ".events"), "utf-8"),
     ).rejects.toThrow();
     expect(Object.isFrozen(resolved)).toBe(true);
 
-    await writeFile(
-      join(dir, ".ghost", "manifest.yml"),
-      "schema: ghost.package/v1\nid: local\ncover: missing\n",
-    );
+    await writeFile(join(dir, ".ghost", "framing.md"), "No frontmatter.");
     const dangling = await loadGhostSnapshot(paths);
-    expect(dangling.cover).toEqual({ state: "dangling", id: "missing" });
-
-    await writeFile(
-      join(dir, ".ghost", "manifest.yml"),
-      "schema: ghost.package/v1\nid: local\n",
-    );
+    expect(dangling.cover).toEqual({ state: "dangling", id: "framing" });
+    await rm(join(dir, ".ghost", "framing.md"));
     const absent = await loadGhostSnapshot(paths);
     expect(absent.cover).toEqual({ state: "absent" });
   });
@@ -183,7 +176,7 @@ describe("embed contract", () => {
     expect(result.missed).toEqual([
       { requested: "principle.rul", suggested: ["principle.rule"] },
     ]);
-    expect(result.cover).toMatchObject({ state: "resolved", id: "cover" });
+    expect(result.cover).toMatchObject({ state: "resolved", id: "framing" });
     expect(
       result.cover.state === "resolved" ? result.cover.node.body : "",
     ).toContain("Silence posture.");
@@ -223,7 +216,7 @@ describe("embed contract", () => {
     expect(result.requested).toEqual([]);
     expect(result.ids).toEqual([]);
     expect(result.missed).toEqual([]);
-    expect(result.cover).toMatchObject({ state: "resolved", id: "cover" });
+    expect(result.cover).toMatchObject({ state: "resolved", id: "framing" });
     expect(result.nodes).toEqual([]);
     expect(result.fallback?.body).toContain("ordinary reasoning");
   });
@@ -231,7 +224,7 @@ describe("embed contract", () => {
   it("omits default fallback when the cover authors uncovered-guidance policy", async () => {
     await writePackage(dir);
     await writeFile(
-      join(dir, ".ghost", "cover.md"),
+      join(dir, ".ghost", "framing.md"),
       "---\nfor: Cover.\n---\n\nSilence posture.\n\n## If no guidance applies\n\nUse authored policy.\n",
     );
     const snapshot = await loadGhostSnapshot(
@@ -240,7 +233,7 @@ describe("embed contract", () => {
 
     const result = await pullGhostNodes(snapshot, { repoRoot: dir });
 
-    expect(result.cover).toMatchObject({ state: "resolved", id: "cover" });
+    expect(result.cover).toMatchObject({ state: "resolved", id: "framing" });
     expect(result.fallback).toBeUndefined();
     expect(
       result.cover.state === "resolved" ? result.cover.node.body : "",
@@ -250,7 +243,7 @@ describe("embed contract", () => {
   it("transports cover materials first and keeps cover skeletons first", async () => {
     await writePackage(dir);
     await writeFile(
-      join(dir, ".ghost", "cover.md"),
+      join(dir, ".ghost", "framing.md"),
       [
         "---",
         "for: Cover.",
@@ -302,27 +295,23 @@ describe("embed contract", () => {
     });
     expect(result.nodes[0].materials?.[0]).toMatchObject({
       omitted: true,
-      reason: "content inlined above under node cover",
+      reason: "content inlined above under node framing",
     });
     expect(result.nodes[0].materials?.[0]?.untrusted).toBeUndefined();
     expect(result.skeletons.map((skeleton) => skeleton.nodeId)).toEqual([
-      "cover",
+      "framing",
       "principle.rule",
     ]);
   });
 
-  it("throws before pull when the manifest cover is dangling", async () => {
+  it("throws before pull when framing is invalid", async () => {
     await writePackage(dir);
-    await writeFile(
-      join(dir, ".ghost", "manifest.yml"),
-      "schema: ghost.package/v1\nid: local\ncover: missing\n",
-    );
+    await writeFile(join(dir, ".ghost", "framing.md"), "No frontmatter.");
     const snapshot = await loadGhostSnapshot(
       resolveGhostPackage(undefined, dir),
     );
-
     await expect(pullGhostNodes(snapshot, { repoRoot: dir })).rejects.toThrow(
-      'manifest cover "missing" does not match any node',
+      "framing node",
     );
   });
 
@@ -333,13 +322,13 @@ describe("embed contract", () => {
     );
 
     const result = await pullGhostNodes(snapshot, {
-      ids: ["cover", "principle.rule", "cover"],
+      ids: ["framing", "principle.rule", "framing"],
       repoRoot: dir,
     });
 
     expect(result.requested).toEqual(["principle.rule"]);
     expect(result.ids).toEqual(["principle.rule"]);
-    expect(result.cover).toMatchObject({ state: "resolved", id: "cover" });
+    expect(result.cover).toMatchObject({ state: "resolved", id: "framing" });
     expect(result.nodes.map((node) => node.id)).toEqual(["principle.rule"]);
   });
 
@@ -356,7 +345,7 @@ describe("embed contract", () => {
 
     expect(result.ids).toEqual([]);
     expect(result.missed).toHaveLength(1);
-    expect(result.cover).toEqual({ state: "not-emitted", id: "cover" });
+    expect(result.cover).toEqual({ state: "not-emitted", id: "framing" });
     expect(result.fallback).toBeUndefined();
     expect(result.nodes).toEqual([]);
   });

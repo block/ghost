@@ -1,7 +1,5 @@
 ---
 for: Making a branded deck.
-scope: brand
-layer: interface
 requires: [baseline.interface.deck, identity.color, identity.type, baseline.fundamentals.composition]
 ---
 

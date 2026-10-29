@@ -40,25 +40,25 @@ validation, a flat gather menu, selected-node pulls, local stats summaries, and
 review packet assembly. The skill teaches the agent how to author and consume
 the brand guidance.
 
-The canonical root `.ghost/` package is a flat set of prose nodes plus optional
-checks:
+A package is flat: `manifest.yml`, optional `glossary.md`, prose nodes,
+optional `materials/`, and optional `checks/`. The manifest declares `schema`
+(`ghost.package/v1`) and `id`. A brand declares `baseline` as the version it was
+authored against; a baseline declares `core` and/or `version`. These roles cannot
+be combined. Packages with neither role are legacy; they load no external baseline.
 
-```text
-manifest.yml          # schema + id (the package anchor)
-glossary.md           # the author's category vocabulary + what each kind means
-<kind>.<slug>.md      # guidance of a declared kind (principle.density.md)
-<slug>.md             # uncategorized guidance (voice.md)
-checks/               # optional review assertions; never a node source
-```
+Node filenames derive scope, layer, and kind: `[baseline.]<layer>.<topic>.md`.
+`baseline.interface.email.md` has baseline scope and interface kind/layer;
+`identity.color.md` has brand scope and identity kind/layer. `framing.md` is the
+fixed brand framing node, automatically delivered and excluded from gather.
+The manifest has no `cover` field. Only framing may contain
+`## If no guidance applies`.
 
-The **corpus is flat**. A node is a markdown file: a `for` payload in
-frontmatter (the retrieval payload: the situation or activity the guidance is
-for), optional `materials`, and brand guidance in the prose body. A node's identity is its filename minus `.md`; its kind is the
-filename prefix before the first dot, declared in the glossary. Files stay flat. Optional `scope` + `layer` classify content; `requires` names
-prerequisites within the package or its explicitly supplied external baseline. Manifest `core` names a small automatic baseline fundamentals
-subset. Pass `--baseline <dir>` to gather, pull, validate, or review to consume a
-separate baseline package without copying it into the brand fingerprint.
-These are consumed metadata, not a folder hierarchy or inheritance engine.
+Node frontmatter accepts only `for`, `requires`, and `materials`. Never declare
+`scope`, `layer`, or kind. `requires` names explicit delivery prerequisites,
+expanded transitively for layered packages. Legacy pulls ignore `requires`
+and validate warns. Baseline `core` names a small, automatically delivered
+fundamentals subset. `--baseline <dir>` supplies an external baseline for a
+brand declaring `baseline`; distribution support is developed separately.
 
 `materials` is the single locator field for concrete materials the guidance is
 about. It accepts explicit repo-relative file paths and supported external
@@ -107,7 +107,7 @@ Core workflow:
 
 | Command | Description |
 | --- | --- |
-| `ghost init` | Scaffold `.ghost/` with the starter package: manifest, glossary, a `brand.md` cover, foundation chapters, context nodes, and the shared model-defaults floor. `--body vessel-light` installs a full inhabited package instead. `--with checks` also adds the checks directory. |
+| `ghost init` | Scaffold `.ghost/` with the starter package: manifest, glossary, a `framing.md` node, foundation chapters, context nodes, and the shared model-defaults floor. `--body vessel-light` installs a full inhabited package instead. `--with checks` also adds the checks directory. |
 | `ghost checks init` | Scaffold `.ghost/checks/` with an example review assertion. |
 | `ghost validate` | Validate the package: manifest shape, node validity, material locators, check references, and glossary kind prefixes. |
 | `ghost gather [ask…]` | Emit the complete guidance menu so the agent can pull applicable nodes. |
@@ -173,7 +173,7 @@ release.
 - The canonical on-disk form is a flat `.ghost/` package: `manifest.yml` plus
   `glossary.md` plus prose nodes (`<kind>.<slug>.md` or bare `<slug>.md`) plus
   an optional `.ghost/checks/` directory. The corpus is flat; kinds come
-  from filename prefixes declared in the glossary, never from a separate
+  from filename prefixes after an optional `baseline.` prefix, never from a separate
   declaration or a directory hierarchy.
 - Skill recipes live in `packages/ghost/src/skill-bundle/references/`; install
   them with `ghost skill install`.

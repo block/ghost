@@ -1,7 +1,5 @@
 ---
 for: Making a branded email.
-scope: brand
-layer: interface
 requires: [baseline.interface.email, identity.color, identity.type, baseline.fundamentals.composition]
 ---
 

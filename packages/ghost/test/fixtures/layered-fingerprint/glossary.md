@@ -1,11 +1,12 @@
 ---
 kinds:
-  - name: baseline
+  - name: fundamentals
+  - name: framing
   - name: identity
   - name: interface
 ---
 
-# baseline
+# fundamentals
 
 Baseline fundamentals and medium-specific guidance.
 

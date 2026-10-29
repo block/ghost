@@ -14,14 +14,14 @@ async function writeAccessPackage(dir: string): Promise<void> {
   await mkdir(join(dir, "brand"), { recursive: true });
   await writeFile(
     join(dir, ".ghost", "manifest.yml"),
-    "schema: ghost.package/v1\nid: local\ncover: cover\n",
+    "schema: ghost.package/v1\nid: local\n",
   );
   await writeFile(
     join(dir, ".ghost", "glossary.md"),
     "---\nkinds:\n  - name: asset\n---\n\n# asset\n\nConcrete materials.\n",
   );
   await writeFile(
-    join(dir, ".ghost", "cover.md"),
+    join(dir, ".ghost", "framing.md"),
     "---\nfor: Cover.\n---\n\nCover.\n",
   );
   await writeFile(join(dir, "brand", "outside-small.txt"), "Outside small.\n");
@@ -70,14 +70,14 @@ async function writeSymlinkedRootsPackage(dir: string): Promise<string> {
   await symlink(join(dir, "material-root"), join(dir, ".ghost", "materials"));
   await writeFile(
     join(dir, ".ghost", "manifest.yml"),
-    "schema: ghost.package/v1\nid: local\ncover: cover\n",
+    "schema: ghost.package/v1\nid: local\n",
   );
   await writeFile(
     join(dir, ".ghost", "glossary.md"),
     "---\nkinds:\n  - name: asset\n---\n\n# asset\n\nConcrete materials.\n",
   );
   await writeFile(
-    join(dir, ".ghost", "cover.md"),
+    join(dir, ".ghost", "framing.md"),
     "---\nfor: Cover.\n---\n\nCover.\n",
   );
   await writeFile(

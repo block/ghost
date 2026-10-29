@@ -18,7 +18,7 @@ export interface GhostCatalogNode {
   /** Retrieval payload shown in gather: the situation or activity this guidance is for. */
   for?: string;
   scope?: "baseline" | "brand";
-  layer?: "fundamentals" | "framing" | "identity" | "interface";
+  layer?: string;
   requires?: string[];
   /** Optional bare or annotated material locators carried by the authored node. */
   materials?: GhostMaterial[];

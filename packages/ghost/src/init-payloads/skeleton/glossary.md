@@ -1,5 +1,6 @@
 ---
 kinds:
+  - name: framing
   - name: standard
   - name: foundation
   - name: context
@@ -52,7 +53,7 @@ reviewer can assess in the finished artifact; `## Never` pairs each rejected
 move with its replacement; an optional `## Skeleton` (always last) carries
 literal opening structure. A node includes only the sections it needs.
 
-The cover node (`brand.md`, declared in the manifest) is the one page always
+The cover node (`framing.md`, declared in the manifest) is the one page always
 in context: what the brand is, its temperature, and the refusals only it
 makes. The ghost skill's `authoring` recipe explains how to grow this starter
 into a real ghost package: write the cover, answer each chapter's open

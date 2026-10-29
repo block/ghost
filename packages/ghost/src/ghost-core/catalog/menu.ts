@@ -12,7 +12,7 @@ export interface CatalogMenuEntry {
   kind?: string;
   for?: string;
   scope?: "baseline" | "brand";
-  layer?: "fundamentals" | "framing" | "identity" | "interface";
+  layer?: string;
   requires?: string[];
   /** Count of material locators available after pulling this node. */
   materials?: number;

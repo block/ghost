@@ -1,7 +1,5 @@
 ---
 for: Making a branded pitch deck.
-scope: brand
-layer: interface
 requires: [interface.deck]
 ---
 

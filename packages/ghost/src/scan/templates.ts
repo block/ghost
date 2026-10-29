@@ -18,10 +18,10 @@ export interface GhostInitTemplate {
   description: string;
   files(): TemplateFile[] | Promise<TemplateFile[]>;
 }
-function manifestFile(cover?: string): TemplateFile {
+function manifestFile(): TemplateFile {
   return {
     relativePath: "manifest.yml",
-    content: `schema: ${GHOST_PACKAGE_SCHEMA}\nid: local\n${cover ? `cover: ${cover}\n` : ""}`,
+    content: `schema: ${GHOST_PACKAGE_SCHEMA}\nid: local\n`,
   };
 }
 
@@ -40,7 +40,7 @@ function gitignoreFile(): TemplateFile {
 const SKELETON_FILE_ORDER = new Map(
   [
     "glossary.md",
-    "brand.md",
+    "framing.md",
     "standard.model-defaults.md",
     "foundation.composition.md",
     "foundation.color.md",
@@ -69,7 +69,7 @@ const SKELETON_TEMPLATE: GhostInitTemplate = {
             Number.MAX_SAFE_INTEGER) ||
         a.relativePath.localeCompare(b.relativePath),
     );
-    return [manifestFile("brand"), gitignoreFile(), ...skeletonFiles];
+    return [manifestFile(), gitignoreFile(), ...skeletonFiles];
   },
 };
 

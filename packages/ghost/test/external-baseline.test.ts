@@ -21,8 +21,8 @@ let root: string;
 let brand: string;
 let baseline: string;
 let elsewhere: string;
-const core = "baseline.core";
-const medium = "baseline.email";
+const core = "baseline.fundamentals.core";
+const medium = "baseline.interface.email";
 const email = "interface.email";
 async function file(dir: string, name: string, body: string) {
   await writeFile(join(dir, name), body);
@@ -65,7 +65,7 @@ beforeEach(async () => {
   await file(
     brand,
     "manifest.yml",
-    "schema: ghost.package/v1\nid: brand\ncover: framing\n",
+    "schema: ghost.package/v1\nid: brand\nbaseline: 1.0.0\n",
   );
   await file(
     baseline,
@@ -75,12 +75,12 @@ beforeEach(async () => {
   await file(
     brand,
     "glossary.md",
-    "---\nkinds: [{name: interface}]\n---\n## interface\nBrand interfaces.\n",
+    "---\nkinds: [{name: framing}]\n---\n## interface\nBrand interfaces.\n",
   );
   await file(
     baseline,
     "glossary.md",
-    "---\nkinds: [{name: baseline}]\n---\n## baseline\nUniversal defaults.\n",
+    "---\nkinds: [{name: fundamentals}, {name: interface}]\n---\n## fundamentals\nUniversal defaults.\n",
   );
   await file(brand, "materials/tokens.css", ":root { --brand: 1; }");
   await file(baseline, "materials/tokens.css", ":root { --baseline: 1; }");
@@ -92,19 +92,19 @@ beforeEach(async () => {
   await node(
     brand,
     "framing",
-    "scope: brand\nlayer: framing",
+    "",
     "Be clear.\n## If no guidance applies\nAsk first.",
   );
   await node(
     brand,
     email,
-    `scope: brand\nlayer: interface\nrequires: [${medium}]\nmaterials: [materials/tokens.css]`,
+    `requires: [${medium}]\nmaterials: [materials/tokens.css]`,
   );
-  await node(baseline, core, "scope: baseline\nlayer: fundamentals");
+  await node(baseline, core, "");
   await node(
     baseline,
     medium,
-    "scope: baseline\nlayer: interface\nmaterials: [materials/tokens.css, materials/pixel.png]",
+    "materials: [materials/tokens.css, materials/pixel.png]",
   );
   await check(baseline, "base-email", medium);
   await check(brand, "brand-email", email);
@@ -128,8 +128,9 @@ describe("explicit external baseline", () => {
     expect(menu.automatic?.map((entry) => entry.id)).toEqual([core]);
     expect(menu.nodes.map((entry) => entry.id)).toEqual([medium, email]);
     expect(menu.kinds?.map((kind) => kind.name)).toEqual([
-      "baseline",
+      "fundamentals",
       "interface",
+      "framing",
     ]);
     expect((await pull()).ids).toEqual([core]);
     const result = await pull([email]);
@@ -142,7 +143,7 @@ describe("explicit external baseline", () => {
     });
     expect(await readFile(join(brand, "manifest.yml"), "utf8")).toBe(original);
     await file(brand, "manifest.yml", `${original}core: [${core}]\n`);
-    expect((await pull()).ids).toEqual([core]);
+    await expect(pull()).rejects.toThrow("baseline-only");
   });
 
   it("pulls and inspects materials in the owning repository, not the caller cwd", async () => {
@@ -162,7 +163,7 @@ describe("explicit external baseline", () => {
     await node(
       baseline,
       medium,
-      "scope: baseline\nlayer: interface\nmaterials: [materials/tokens.css, materials/pixel.png, reference.css]",
+      "materials: [materials/tokens.css, materials/pixel.png, reference.css]",
     );
     const references = await pull([email]);
     expect(
@@ -208,45 +209,44 @@ describe("explicit external baseline", () => {
     );
   });
 
-  it.each(["baseline", "unused"])(
-    "rejects overlapping declared kind %s before gathering either format",
-    async (kind) => {
-      await file(
-        brand,
-        "glossary.md",
-        `---\nkinds: [{name: interface}, {name: ${kind}}]\n---\n## ${kind}\nBrand purpose.\n`,
-      );
-      if (kind !== "baseline")
-        await file(
+  it.each([
+    "custom",
+    "unused",
+  ])("rejects overlapping declared kind %s before gathering either format", async (kind) => {
+    await file(
+      brand,
+      "glossary.md",
+      `---\nkinds: [{name: interface}, {name: ${kind}}]\n---\n## ${kind}\nBrand purpose.\n`,
+    );
+    await file(
+      baseline,
+      "glossary.md",
+      `---\nkinds: [{name: fundamentals}, {name: interface}, {name: ${kind}}]\n---\n## ${kind}\nBaseline purpose.\n`,
+    );
+    const message = `Duplicate glossary kind "${kind}" in package ${brand} and baseline ${baseline}; overlapping declared kinds are not allowed`;
+    await expect(loadGhostPackage(paths())).rejects.toThrow(message);
+    await expect(snapshot()).rejects.toThrow(message);
+    expect(
+      (await lintGhostPackage(brand, elsewhere, baseline)).issues,
+    ).toContainEqual(expect.objectContaining({ message }));
+    for (const format of ["markdown", "json"]) {
+      const result = await runCli(
+        [
+          "gather",
+          "email",
+          "--package",
+          brand,
+          "--baseline",
           baseline,
-          "glossary.md",
-          `---\nkinds: [{name: baseline}, {name: ${kind}}]\n---\n## ${kind}\nBaseline purpose.\n`,
-        );
-      const message = `Duplicate glossary kind "${kind}" in package ${brand} and baseline ${baseline}; overlapping declared kinds are not allowed`;
-      await expect(loadGhostPackage(paths())).rejects.toThrow(message);
-      await expect(snapshot()).rejects.toThrow(message);
-      expect(
-        (await lintGhostPackage(brand, elsewhere, baseline)).issues,
-      ).toContainEqual(expect.objectContaining({ message }));
-      for (const format of ["markdown", "json"]) {
-        const result = await runCli(
-          [
-            "gather",
-            "email",
-            "--package",
-            brand,
-            "--baseline",
-            baseline,
-            "--format",
-            format,
-          ],
-          elsewhere,
-        );
-        expect(result.code).not.toBe(0);
-        expect(result.stderr).toContain(message);
-      }
-    },
-  );
+          "--format",
+          format,
+        ],
+        elsewhere,
+      );
+      expect(result.code).not.toBe(0);
+      expect(result.stderr).toContain(message);
+    }
+  });
 
   it("prefixes only external baseline check diagnostics with their owning package", async () => {
     for (const [owner, id, reference] of [
@@ -286,41 +286,28 @@ describe("explicit external baseline", () => {
     );
   });
 
-  it.each(["node", "check", "invalid node", "invalid check"])(
-    "rejects %s collisions without precedence",
-    async (kind) => {
-      if (kind.includes("check")) {
-        await check(brand, "base-email", medium);
-        if (kind.startsWith("invalid"))
-          await file(brand, "checks/base-email.md", "invalid");
-      } else {
-        await node(
-          brand,
-          core,
-          kind.startsWith("invalid")
-            ? "scope: bad"
-            : "scope: baseline\nlayer: fundamentals",
-        );
-      }
-      await expect(snapshot()).rejects.toThrow("Duplicate");
-      expect(
-        (await lintGhostPackage(brand, elsewhere, baseline)).errors,
-      ).toBeGreaterThan(0);
-    },
-  );
+  it.each([
+    "node",
+    "check",
+    "invalid node",
+    "invalid check",
+  ])("rejects %s collisions without precedence", async (kind) => {
+    if (kind.includes("check")) {
+      await check(brand, "base-email", medium);
+      if (kind.startsWith("invalid"))
+        await file(brand, "checks/base-email.md", "invalid");
+    } else {
+      await node(brand, core, kind.startsWith("invalid") ? "scope: bad" : "");
+    }
+    await expect(snapshot()).rejects.toThrow("Duplicate");
+    expect(
+      (await lintGhostPackage(brand, elsewhere, baseline)).errors,
+    ).toBeGreaterThan(0);
+  });
 
   it.each([
-    [
-      "reverse dependency",
-      `scope: baseline\nlayer: interface\nrequires: [${email}]`,
-      "missing or invalid",
-    ],
-    [
-      "cycle",
-      `scope: baseline\nlayer: interface\nrequires: [${medium}]`,
-      "cycle",
-    ],
-    ["brand scope", "scope: brand\nlayer: identity", "baseline scope"],
+    ["reverse dependency", `requires: [${email}]`, "missing or invalid"],
+    ["cycle", `requires: [${medium}]`, "cycle"],
   ])("rejects baseline %s", async (_, metadata, message) => {
     await node(baseline, medium, metadata);
     await expect(snapshot()).rejects.toThrow(message);
@@ -349,29 +336,28 @@ describe("explicit external baseline", () => {
     );
   });
 
-  it.each(["cover", "core", "glossary"])(
-    "validates baseline %s separately",
-    async (part) => {
-      if (part === "cover")
-        await file(
-          baseline,
-          "manifest.yml",
-          `schema: ghost.package/v1\nid: baseline\ncover: ${core}\ncore: [${core}]\n`,
-        );
-      if (part === "core")
-        await file(
-          baseline,
-          "manifest.yml",
-          "schema: ghost.package/v1\nid: baseline\n",
-        );
-      if (part === "glossary")
-        await file(baseline, "glossary.md", "---\nkinds: []\n---\n");
-      await expect(snapshot()).rejects.toThrow();
-      expect(
-        (await lintGhostPackage(brand, elsewhere, baseline)).errors,
-      ).toBeGreaterThan(0);
-    },
-  );
+  it.each([
+    "cover",
+    "core",
+  ])("validates baseline %s separately", async (part) => {
+    if (part === "cover")
+      await file(
+        baseline,
+        "manifest.yml",
+        `schema: ghost.package/v1\nid: baseline\ncover: ${core}\ncore: [${core}]\n`,
+      );
+    if (part === "core")
+      await file(
+        baseline,
+        "manifest.yml",
+        "schema: ghost.package/v1\nid: baseline\n",
+      );
+
+    await expect(snapshot()).rejects.toThrow();
+    expect(
+      (await lintGhostPackage(brand, elsewhere, baseline)).errors,
+    ).toBeGreaterThan(0);
+  });
 
   it("keeps baseline checks independent of brand references", async () => {
     await check(baseline, "brand-dependent", email);
@@ -381,14 +367,14 @@ describe("explicit external baseline", () => {
     ).toBeGreaterThan(0);
   });
 
-  it("validates each glossary against only its owning nodes", async () => {
+  it("recognizes builtin kinds and validates glossary shape", async () => {
     await file(brand, "glossary.md", "---\nkinds: [{name: other}]\n---\n");
     const report = await lintGhostPackage(brand, elsewhere, baseline);
     expect(
       report.issues
         .filter((issue) => issue.rule === "kind-undeclared")
         .map((issue) => issue.path),
-    ).toEqual([`${email}.md`]);
+    ).toEqual([]);
     await file(baseline, "glossary.md", "---\nkinds: bad\n---\n");
     expect(
       (await lintGhostPackage(brand, elsewhere, baseline)).errors,
@@ -400,11 +386,7 @@ describe("explicit external baseline", () => {
     expect(resolved.packageDir).toBe(brand);
     expect(resolved.baseline?.packageDir).toBe(baseline);
     expect((await loadGhostSnapshot(resolved)).baseline?.dir).toBe(baseline);
-    await node(
-      brand,
-      email,
-      "scope: brand\nlayer: interface\nrequires: [missing]",
-    );
+    await node(brand, email, "requires: [missing]");
     await expect(pull([email])).rejects.toThrow("missing or invalid");
     expect(
       (await lintGhostPackage(brand, elsewhere, baseline)).errors,
@@ -464,4 +446,58 @@ describe("explicit external baseline", () => {
     expect(review.code).toBe(0);
     expect(JSON.parse(review.stdout).checks[0].packageDir).toBe(baseline);
   });
+});
+
+describe("legacy baseline isolation", () => {
+  it("ignores even a missing explicit baseline input without manifest baseline", async () => {
+    await file(brand, "manifest.yml", "schema: ghost.package/v1\nid: legacy\n");
+    const missing = join(root, "missing");
+    const loaded = await loadGhostSnapshot(
+      resolveGhostPackage(brand, elsewhere, missing),
+    );
+    expect(loaded.baseline).toBeUndefined();
+    expect(loaded.core).toBeUndefined();
+    const result = await pullGhostNodes(loaded, {
+      ids: [email],
+      repoRoot: root,
+    });
+    expect(result.ids).toEqual([email]);
+    expect(result.authority).toBeUndefined();
+    expect((await lintGhostPackage(brand, elsewhere, missing)).errors).toBe(0);
+  });
+
+  it("accepts a version-only baseline without a glossary", async () => {
+    await file(
+      baseline,
+      "manifest.yml",
+      'schema: ghost.package/v1\nid: baseline\nversion: "1.0.0"\n',
+    );
+    await rm(join(baseline, "glossary.md"));
+    const loaded = await snapshot();
+    expect(loaded.baseline?.manifest.version).toBe("1.0.0");
+    expect((await pull([email])).ids).toEqual([medium, email]);
+  });
+
+  it("rejects a non-prefixed node in an external baseline", async () => {
+    await node(baseline, "identity.color", "");
+    await expect(snapshot()).rejects.toThrow("must have baseline scope");
+  });
+});
+
+it("prints overlapping builtin legends once while preserving both selection rules", async () => {
+  await file(
+    brand,
+    "glossary.md",
+    "---\nkinds: [{name: interface}]\n---\n# interface\nBrand selection rule.\n",
+  );
+  await file(
+    baseline,
+    "glossary.md",
+    "---\nkinds: [{name: fundamentals}, {name: interface}]\n---\n# interface\nBaseline selection rule.\n",
+  );
+  const menu = gatherGhostPackage(await snapshot());
+  const kinds = menu.kinds?.filter((kind) => kind.name === "interface");
+  expect(kinds).toHaveLength(1);
+  expect(kinds?.[0]?.purpose).toContain("Baseline selection rule.");
+  expect(kinds?.[0]?.purpose).toContain("Brand selection rule.");
 });

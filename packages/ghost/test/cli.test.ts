@@ -30,14 +30,14 @@ async function writeBareTestPackage(dir: string): Promise<void> {
   await Promise.all([
     writeFile(
       join(packageDir, "manifest.yml"),
-      "schema: ghost.package/v1\nid: local\ncover: index\n",
+      "schema: ghost.package/v1\nid: local\n",
     ),
     writeFile(
       join(packageDir, "glossary.md"),
       "---\nkinds:\n  - name: principle\n  - name: condition\n  - name: anti-goal\n  - name: standard\n  - name: asset\n  - name: pattern\n---\n",
     ),
     writeFile(
-      join(packageDir, "index.md"),
+      join(packageDir, "framing.md"),
       "---\nfor: Test package cover.\n---\n\nTest package.\n\n## If no guidance applies\n\nContinue with ordinary reasoning.\n",
     ),
     writeFile(
@@ -163,7 +163,7 @@ describe("ghost CLI", () => {
     for (const args of [
       ["validate", "--format", "nope"],
       ["gather", "--format", "nope"],
-      ["pull", "index", "--format", "nope"],
+      ["pull", "framing", "--format", "nope"],
       ["stats", "--format", "nope"],
       ["review", "--format", "nope"],
       ["checks", "init", "--format", "nope"],
@@ -184,7 +184,7 @@ describe("ghost CLI", () => {
     "manifest.yml",
     ".gitignore",
     "glossary.md",
-    "brand.md",
+    "framing.md",
     "standard.model-defaults.md",
     "foundation.composition.md",
     "foundation.color.md",
@@ -210,7 +210,7 @@ describe("ghost CLI", () => {
     ).resolves.toContain("schema: ghost.package/v1");
     await expect(
       readFile(join(dir, ".ghost", "manifest.yml"), "utf-8"),
-    ).resolves.toContain("cover: brand");
+    ).resolves.not.toContain("cover:");
 
     // The scaffolded package validates with zero errors AND zero warnings.
     const validate = await runCli(["validate", "--format", "json"], dir);
@@ -229,8 +229,8 @@ describe("ghost CLI", () => {
         node.kind,
       ]),
     );
-    expect(byId.get("brand")).toBeUndefined;
-    expect(byId.has("brand")).toBe(false);
+    expect(byId.get("framing")).toBeUndefined;
+    expect(byId.has("framing")).toBe(false);
     expect(byId.get("standard.model-defaults")).toBe("standard");
     for (const slug of [
       "composition",
@@ -459,7 +459,7 @@ describe("ghost CLI", () => {
   it("refuses to overwrite existing ghost package files unless forced", async () => {
     await runCli(["init"], dir);
     await writeFile(
-      join(dir, ".ghost", "brand.md"),
+      join(dir, ".ghost", "framing.md"),
       "---\n---\n\nCurated Surface voice.\n",
     );
 
@@ -470,14 +470,14 @@ describe("ghost CLI", () => {
       "Refusing to overwrite existing ghost package file(s)",
     );
     await expect(
-      readFile(join(dir, ".ghost", "brand.md"), "utf-8"),
+      readFile(join(dir, ".ghost", "framing.md"), "utf-8"),
     ).resolves.toContain("Curated Surface");
 
     const forced = await runCli(["init", "--force"], dir);
 
     expect(forced.code).toBe(0);
     await expect(
-      readFile(join(dir, ".ghost", "brand.md"), "utf-8"),
+      readFile(join(dir, ".ghost", "framing.md"), "utf-8"),
     ).resolves.toContain("Use a quiet, precise, content-first stance");
   });
 
@@ -544,7 +544,7 @@ describe("ghost CLI", () => {
     expect(init.code).toBe(0);
     expect(init.stdout).toContain("manifest.yml");
     expect(init.stdout).toContain("glossary.md");
-    expect(init.stdout).toContain("brand.md");
+    expect(init.stdout).toContain("framing.md");
     expect(init.stdout).not.toContain("cache/:");
     expect(init.stdout).not.toContain("memory/intent.md:");
     expect(
@@ -579,11 +579,11 @@ describe("ghost CLI", () => {
     expect(gather.code).toBe(0);
     const menu = JSON.parse(gather.stdout);
     expect(menu).not.toHaveProperty("cover");
-    expect(menu.nodes.some((n: { id: string }) => n.id === "brand")).toBe(
+    expect(menu.nodes.some((n: { id: string }) => n.id === "framing")).toBe(
       false,
     );
     const pull = await runCli(["pull", "--format", "json"], dir);
-    expect(JSON.parse(pull.stdout).cover.id).toBe("brand");
+    expect(JSON.parse(pull.stdout).cover.id).toBe("framing");
   });
 
   it("requires a task for Markdown but keeps bare JSON for inspection", async () => {
@@ -628,7 +628,7 @@ describe("ghost CLI", () => {
     expect(markdown.stdout).not.toContain("package is silent");
     expect(markdown.stdout).not.toContain("ghost-backed");
     expect(markdown.stdout).not.toMatch(/^\d+\.\s+`/m);
-    expect(markdown.stdout).not.toMatch(/^- `brand`$/m);
+    expect(markdown.stdout).not.toMatch(/^- `framing`$/m);
 
     const json = await runCli(["gather", "--format", "json"], dir);
     expect(json.code).toBe(0);
@@ -636,7 +636,7 @@ describe("ghost CLI", () => {
     expect(payload).not.toHaveProperty("cover");
     expect(payload).not.toHaveProperty("silence");
     expect(payload.nodes.map((node: { id: string }) => node.id)).not.toContain(
-      "brand",
+      "framing",
     );
     expect(payload.coverage).toEqual({
       nodes: 9,
@@ -646,74 +646,47 @@ describe("ghost CLI", () => {
     });
   });
 
-  it("gather degrades to the plain menu when the declared cover is missing", async () => {
+  it("gathers a legacy menu when framing is absent", async () => {
     await runCli(["init"], dir);
+    await rm(join(dir, ".ghost", "framing.md"));
     await writeFile(
-      join(dir, ".ghost", "manifest.yml"),
-      "schema: ghost.package/v1\nid: local\ncover: missing\n",
+      join(dir, ".ghost", "voice.md"),
+      "---\nfor: Writing.\n---\nVoice.",
     );
-
-    const markdown = await runCli(["gather", "build", "a", "page"], dir);
-    expect(markdown.code).toBe(0);
-    expect(markdown.stdout).not.toContain("## Cover:");
-    expect(markdown.stdout).not.toContain("## If no guidance applies");
-    expect(markdown.stdout).toContain("run bare `ghost pull`");
-    // With no resolvable cover, brand stays an available guidance item.
-    expect(markdown.stdout).toMatch(/^- `brand`$/m);
-
-    const json = await runCli(["gather", "--format", "json"], dir);
-    expect(json.code).toBe(0);
-    const payload = JSON.parse(json.stdout);
-    expect(payload.cover).toBeUndefined();
-    expect(payload.nodes.map((node: { id: string }) => node.id)).toContain(
-      "brand",
-    );
+    const result = await runCli(["gather", "--format", "json"], dir);
+    expect(result.code).toBe(0);
+    expect(
+      JSON.parse(result.stdout).nodes.map((node: { id: string }) => node.id),
+    ).toContain("voice");
   });
 
-  it("validate reports cover declaration issues", async () => {
+  it("rejects cover manifests and validates fixed framing", async () => {
     await runCli(["init"], dir);
-
     await writeFile(
       join(dir, ".ghost", "manifest.yml"),
-      "schema: ghost.package/v1\nid: local\ncover: missing\n",
+      "schema: ghost.package/v1\nid: local\ncover: framing\n",
     );
-    const missing = await runCli(["validate", "--format", "json"], dir);
-    expect(missing.code).toBe(1);
-    let report = JSON.parse(missing.stdout);
-    expect(report.issues).toContainEqual(
-      expect.objectContaining({ severity: "error", rule: "cover-missing" }),
-    );
-
+    const retired = await runCli(["validate", "--format", "json"], dir);
+    expect(retired.code).toBe(1);
+    expect(JSON.parse(retired.stdout).issues[0].message).toContain("cover");
     await writeFile(
       join(dir, ".ghost", "manifest.yml"),
       "schema: ghost.package/v1\nid: local\n",
     );
-    const undeclared = await runCli(["validate", "--format", "json"], dir);
-    expect(undeclared.code).toBe(0);
-    report = JSON.parse(undeclared.stdout);
-    expect(report.issues).toContainEqual(
-      expect.objectContaining({
-        severity: "warning",
-        rule: "cover-undeclared",
-      }),
+    await rm(join(dir, ".ghost", "framing.md"));
+    const absent = await runCli(["validate", "--format", "json"], dir);
+    expect(JSON.parse(absent.stdout).issues).toContainEqual(
+      expect.objectContaining({ rule: "framing-missing", severity: "warning" }),
     );
-
     await writeFile(
-      join(dir, ".ghost", "manifest.yml"),
-      "schema: ghost.package/v1\nid: local\ncover: brand\n",
-    );
-    const brand = await readFile(join(dir, ".ghost", "brand.md"), "utf-8");
-    await writeFile(
-      join(dir, ".ghost", "brand.md"),
-      `${brand}\n${"x".repeat(1501)}`,
+      join(dir, ".ghost", "framing.md"),
+      `---\nfor: Every task.\n---\n## If no guidance applies\n${"x".repeat(1501)}`,
     );
     const oversized = await runCli(["validate", "--format", "json"], dir);
-    expect(oversized.code).toBe(0);
-    report = JSON.parse(oversized.stdout);
-    expect(report.issues).toContainEqual(
+    expect(JSON.parse(oversized.stdout).issues).toContainEqual(
       expect.objectContaining({
+        rule: "framing-oversized",
         severity: "warning",
-        rule: "cover-oversized",
       }),
     );
   });
@@ -721,7 +694,7 @@ describe("ghost CLI", () => {
   it("validate warns when the cover lacks uncovered-decision guidance", async () => {
     await writeBareTestPackage(dir);
     await writeFile(
-      join(dir, ".ghost", "index.md"),
+      join(dir, ".ghost", "framing.md"),
       "---\nfor: Test package cover.\n---\n\nTest package.\n",
     );
 
@@ -730,8 +703,8 @@ describe("ghost CLI", () => {
     expect(JSON.parse(validate.stdout).issues).toContainEqual(
       expect.objectContaining({
         severity: "warning",
-        rule: "cover-no-guidance-policy-missing",
-        path: "index.md",
+        rule: "framing-no-guidance-policy-missing",
+        path: "framing.md",
       }),
     );
   });
@@ -742,7 +715,7 @@ describe("ghost CLI", () => {
     const pull = await runCli(["pull", "foundation.layout"], dir);
 
     expect(pull.code).toBe(0);
-    expect(pull.stdout.indexOf("# `brand`")).toBeLessThan(
+    expect(pull.stdout.indexOf("# `framing`")).toBeLessThan(
       pull.stdout.indexOf("# `foundation.layout`"),
     );
   });
@@ -755,7 +728,7 @@ describe("ghost CLI", () => {
       "Cover data.\n",
     );
     await writeFile(
-      join(dir, ".ghost", "index.md"),
+      join(dir, ".ghost", "framing.md"),
       "---\nfor: Cover.\nmaterials:\n  - materials/cover.txt\n---\n\nCover prose.\n",
     );
 
@@ -782,17 +755,20 @@ describe("ghost CLI", () => {
     const bare = await runCli(["pull", "--format", "json"], dir);
     expect(bare.code).toBe(0);
     const barePacket = JSON.parse(bare.stdout);
-    expect(barePacket.cover).toMatchObject({ state: "resolved", id: "brand" });
+    expect(barePacket.cover).toMatchObject({
+      state: "resolved",
+      id: "framing",
+    });
     expect(barePacket.ids).toEqual([]);
     expect(barePacket.nodes).toEqual([]);
 
     const explicit = await runCli(
-      ["pull", "brand", "foundation.layout", "--format", "json"],
+      ["pull", "framing", "foundation.layout", "--format", "json"],
       dir,
     );
     expect(explicit.code).toBe(0);
     const explicitPacket = JSON.parse(explicit.stdout);
-    expect(explicitPacket.cover.id).toBe("brand");
+    expect(explicitPacket.cover.id).toBe("framing");
     expect(explicitPacket.requested).toEqual(["foundation.layout"]);
     expect(explicitPacket.ids).toEqual(["foundation.layout"]);
   });
@@ -804,6 +780,7 @@ describe("ghost CLI", () => {
       "schema: ghost.package/v1\nid: local\n",
     );
 
+    await rm(join(dir, ".ghost", "framing.md"));
     const pull = await runCli(["pull", "--format", "json"], dir);
     expect(pull.code).toBe(0);
     const packet = JSON.parse(pull.stdout);
@@ -816,13 +793,14 @@ describe("ghost CLI", () => {
     await writeBareTestPackage(dir);
     await writeFile(
       join(dir, ".ghost", "manifest.yml"),
-      "schema: ghost.package/v1\nid: local\ncover: missing\n",
+      "schema: ghost.package/v1\nid: local\n",
     );
 
+    await writeFile(join(dir, ".ghost", "framing.md"), "No frontmatter.");
     const pull = await runCli(["pull", "standard.model-defaults"], dir);
     expect(pull.code).toBe(2);
     expect(pull.stdout).toBe("");
-    expect(pull.stderr).toContain('manifest cover "missing" does not match');
+    expect(pull.stderr).toContain('framing node "framing" is missing');
     await expect(
       readFile(join(dir, ".ghost", ".events"), "utf-8"),
     ).rejects.toThrow();
@@ -929,7 +907,7 @@ describe("ghost CLI", () => {
     expect(second.code).toBe(0);
     expect(second.stderr).not.toContain(".ghost/.events");
 
-    const pull = await runCli(["pull", "brand"], dir);
+    const pull = await runCli(["pull", "framing"], dir);
     expect(pull.code).toBe(0);
     expect(pull.stderr).not.toContain(".ghost/.events");
   });
@@ -1370,7 +1348,7 @@ describe("ghost CLI", () => {
     expect(events[2]).toMatchObject({
       event: "pull",
       ids: ["principle.trust", "voice"],
-      cover: "brand",
+      cover: "framing",
     });
 
     // The tape is a dotfile: never a node, and gitignored by the scaffold.
@@ -1675,7 +1653,7 @@ describe("ghost CLI", () => {
     expect(cliPull.ids).toEqual(embedPull.ids);
     expect(cliPull.cover).toMatchObject({
       state: "resolved",
-      id: "index",
+      id: "framing",
     });
     expect(cliPull.nodes[0]).toMatchObject({
       id: embedPull.nodes[0].id,
@@ -1737,12 +1715,12 @@ describe("ghost CLI", () => {
         JSON.stringify({
           ts: "2026-08-15T00:00:00.000Z",
           event: "gather",
-          menu: ["index"],
+          menu: ["framing"],
         }),
         JSON.stringify({
           ts: "2026-08-15T00:00:01.000Z",
           event: "pull",
-          ids: ["index"],
+          ids: ["framing"],
         }),
         JSON.stringify({
           ts: "2026-08-15T00:00:02.000Z",
@@ -1823,7 +1801,7 @@ describe("ghost CLI", () => {
       hitRate: 0,
       coldNodes: ["voice"],
     });
-    expect(report.coldNodes).not.toContain("index");
+    expect(report.coldNodes).not.toContain("framing");
     const md = await runCli(["stats"], dir);
     expect(md.stdout).toContain("# ghost Stats");
     expect(md.stdout).toContain("## Kind hit rates");
@@ -2392,11 +2370,11 @@ async function writeCheckPackage(dir: string): Promise<void> {
   await Promise.all([
     writeFile(
       join(pkg, "manifest.yml"),
-      "schema: ghost.package/v1\nid: local\ncover: index\n",
+      "schema: ghost.package/v1\nid: local\n",
     ),
     writeFile(join(pkg, "glossary.md"), "---\nkinds: []\n---\n"),
     writeFile(
-      join(pkg, "index.md"),
+      join(pkg, "framing.md"),
       "---\nfor: Package-wide guidance.\n---\n\nUse the package guidance.\n",
     ),
   ]);

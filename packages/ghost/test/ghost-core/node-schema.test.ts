@@ -38,9 +38,10 @@ describe("ghost.node/v1 schema", () => {
     expect(report.errors).toBeGreaterThan(0);
   });
 
-  it("passes through free-form descriptive keys (e.g. audience)", () => {
-    // Authors may add descriptive keys; ghost does not gate on them.
-    expect(lintGhostNode(node("audience: enterprise")).errors).toBe(0);
+  it("rejects free-form descriptive keys", () => {
+    expect(lintGhostNode(node("audience: enterprise")).errors).toBeGreaterThan(
+      0,
+    );
   });
 
   it("accepts for (the retrieval payload)", () => {
@@ -88,8 +89,6 @@ describe("ghost.node/v1 schema", () => {
             note: "Approved payment marks",
           },
         ],
-        audience: "enterprise",
-        stage: "purchase",
       },
       body: "# Trust signals\n\nNear payment, reduce felt risk.",
     } satisfies GhostNodeDocument;
@@ -166,12 +165,10 @@ describe("ghost.node/v1 schema", () => {
     ).toBeGreaterThan(0);
   });
 
-  it("serializes free-form frontmatter keys deterministically after known keys", () => {
+  it("serializes supported frontmatter keys deterministically", () => {
     const serialized = serializeNode({
       frontmatter: {
-        stage: "purchase",
         for: "Checkout trust signals.",
-        audience: "enterprise",
         materials: ["src/components/checkout/**"],
       },
       body: "Near payment, reduce felt risk.",
@@ -182,8 +179,6 @@ describe("ghost.node/v1 schema", () => {
       for: Checkout trust signals.
       materials:
         - src/components/checkout/**
-      audience: enterprise
-      stage: purchase
       ---
 
       Near payment, reduce felt risk.

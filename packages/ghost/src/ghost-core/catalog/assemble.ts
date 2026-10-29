@@ -27,8 +27,8 @@ export interface AssembleCatalogInput {
 
 /**
  * Assemble package node files into one flat in-memory catalog. Each node's id
- * is its path; kind/slug come from its filename. Scope/layer and explicit prerequisites are
- * consumed metadata; they do not create file containment.
+ * is its path; kind/slug come from its filename. Scope/layer derive from the filename; explicit prerequisites are
+ * authored metadata; they do not create file containment.
  */
 export function assembleCatalog(input: AssembleCatalogInput): GhostCatalog {
   const nodes = new Map<string, GhostCatalogNode>();
@@ -44,7 +44,7 @@ export function assembleCatalog(input: AssembleCatalogInput): GhostCatalog {
       ...(placed.kind !== undefined ? { kind: placed.kind } : {}),
       slug: placed.slug ?? placed.id.split("/").pop() ?? placed.id,
       ...(fm.for !== undefined ? { for: fm.for } : {}),
-      ...(fm.scope !== undefined ? { scope: fm.scope, layer: fm.layer } : {}),
+      ...filenameClassification(placed.id),
       ...(fm.requires !== undefined ? { requires: [...fm.requires] } : {}),
       ...(fm.materials !== undefined ? { materials: fm.materials } : {}),
       concrete,
@@ -55,4 +55,17 @@ export function assembleCatalog(input: AssembleCatalogInput): GhostCatalog {
   }
 
   return { nodes };
+}
+
+/** The optional baseline prefix names scope; the next segment names kind/layer. */
+export function filenameClassification(
+  id: string,
+): Pick<GhostCatalogNode, "scope" | "layer"> {
+  const leaf = id.split("/").pop() ?? id;
+  const baseline = leaf.startsWith("baseline.");
+  const kind = (baseline ? leaf.slice("baseline.".length) : leaf).split(".")[0];
+  if (baseline || leaf.includes(".") || leaf === "framing") {
+    return { scope: baseline ? "baseline" : "brand", layer: kind };
+  }
+  return {};
 }

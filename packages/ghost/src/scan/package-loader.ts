@@ -6,6 +6,8 @@ import {
   type GhostPackageManifest,
   GhostPackageManifestSchema,
   inspectLayeredContext,
+  isBaselinePackage,
+  isLayeredPackage,
   parseCheckReference,
   parseGlossary,
   UsageError,
@@ -25,39 +27,32 @@ export async function loadGhostPackage(
   paths: GhostPackagePaths,
 ): Promise<LoadedGhostPackage> {
   const loaded = await loadSinglePackage(paths);
-  if (!paths.baseline) return loaded;
+  if (!paths.baseline || loaded.manifest.baseline === undefined) return loaded;
   const baseline = await loadSinglePackage(paths.baseline);
   const baselineDir = paths.baseline.packageDir;
-  if (
-    loaded.manifest.cover &&
-    !loaded.catalog.nodes.has(loaded.manifest.cover)
-  ) {
+  if (!isBaselinePackage(baseline.manifest)) {
     throw new UsageError(
-      `manifest cover "${loaded.manifest.cover}" must belong to the consuming package`,
+      `Baseline ${baselineDir} must declare manifest core or version`,
     );
   }
-  if (baseline.manifest.cover !== undefined) {
-    throw new UsageError(`Baseline ${baselineDir} must not declare a cover`);
-  }
-  if (!baseline.manifest.core?.length) {
-    throw new UsageError(`Baseline ${baselineDir} must declare manifest core`);
-  }
-  const glossary = parseGlossary(
-    await readFile(paths.baseline.glossary, "utf-8"),
-  );
-  if (!glossary.glossary?.kinds.some((kind) => kind.name === "baseline")) {
+  const baselineGlossaryRaw = await readOptionalUtf8(paths.baseline.glossary);
+  const glossary = parseGlossary(baselineGlossaryRaw ?? "");
+  if (baselineGlossaryRaw !== undefined && glossary.glossary === null) {
     throw new UsageError(
-      `Baseline ${baselineDir} needs a valid glossary declaring the baseline kind`,
+      `Baseline ${baselineDir} has an invalid glossary: ${glossary.errors.join("; ")}`,
     );
   }
   const brandGlossary = parseGlossary(
     (await readOptionalUtf8(paths.glossary)) ?? "",
   );
   const baselineKinds = new Set(
-    glossary.glossary.kinds.map((kind) => kind.name),
+    (glossary.glossary?.kinds ?? []).map((kind) => kind.name),
   );
   for (const kind of brandGlossary.glossary?.kinds ?? []) {
-    if (baselineKinds.has(kind.name)) {
+    if (
+      baselineKinds.has(kind.name) &&
+      !["framing", "identity", "interface", "fundamentals"].includes(kind.name)
+    ) {
       throw new UsageError(
         `Duplicate glossary kind "${kind.name}" in package ${paths.packageDir} and baseline ${baselineDir}; overlapping declared kinds are not allowed`,
       );
@@ -182,7 +177,13 @@ async function loadSinglePackage(
   const { nodes: placedNodes, invalid } = await loadNodeFiles(paths.packageDir);
   const checkFiles = await loadCheckFiles(paths.packageDir);
   const catalog = assembleCatalog({ placedNodes });
-  for (const node of catalog.nodes.values()) node.packageDir = paths.packageDir;
+  for (const node of catalog.nodes.values()) {
+    node.packageDir = paths.packageDir;
+    if (!isLayeredPackage(manifest)) {
+      delete node.scope;
+      delete node.layer;
+    }
+  }
   for (const check of checkFiles.checks.values())
     check.packageDir = paths.packageDir;
 

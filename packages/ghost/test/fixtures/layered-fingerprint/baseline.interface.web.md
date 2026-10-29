@@ -1,7 +1,5 @@
 ---
 for: Making a web.
-scope: baseline
-layer: interface
 requires: [baseline.fundamentals.accessibility]
 ---
 

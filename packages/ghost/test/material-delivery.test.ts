@@ -145,9 +145,9 @@ describe("whole material content and explicit delivery outcomes", () => {
     await writeFile(join(packageDir, "materials", "shared.txt"), text);
     await writeFile(
       join(packageDir, "manifest.yml"),
-      "schema: ghost.package/v1\nid: delivery-test\ncover: cover\n",
+      "schema: ghost.package/v1\nid: delivery-test\n",
     );
-    await node("cover", ["materials/shared.txt"]);
+    await node("framing", ["materials/shared.txt"]);
     await node("first", ["materials/shared.txt"]);
     await node("second", ["materials/shared.txt"]);
     const packet = await pullGhostNodes(await snapshot(), {
