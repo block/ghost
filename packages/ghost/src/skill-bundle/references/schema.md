@@ -115,7 +115,7 @@ copies it to `dist/baseline/` and stamps its manifest `version` from the public
 package's release version. Refresh content by updating that source directory in
 Git and rebuilding; a release never reads another checkout or fetches guidance.
 The payload is copied from the reviewed ghost-internal baseline at
-`ded6b5c9c2ed9dc45a7cdfc35ef8766d0865f74c`, with nine fundamentals, five
+`5ab5dd81caeaf7753cae572b77ac196656f53d22`, with nine fundamentals, five
 interfaces, and three automatic core nodes. Its checks remain review-only.
 
 An explicit `--baseline` directory supplies its own version and entirely replaces

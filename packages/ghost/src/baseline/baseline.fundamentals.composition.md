@@ -26,7 +26,7 @@ Judge balance through perceived mass: density, contrast, saturation, crop, textu
 - Use a small reusable anchor set for a template family; about 5–9 primary positions is a useful starting range. Establish a repeatable spacing unit and limited named steps; digital systems may start with a 4 px unit and major 8 px multiples, while print can derive spacing from leading or modules.
 - Place related elements closer together than unrelated elements. Separate groups more than members of a group; use proximity and alignment before adding boxes, fills, or dividers.
 - Recompose responsive layouts by changing columns, crop, alignment, and spacing while preserving content order, hierarchy, and intended measure. Stress-test translated copy with at least 30% expansion where useful; preserve relationships when positions change.
-- Design related pages and formats together: keep their grid, type roles, and information treatments consistent while varying density, scale, whitespace, and emphasis as content changes.
+- Design related pages and formats together: keep their grid, type roles, and information treatments consistent, adapting layout, density, scale, crop, spacing, and emphasis to the content, medium, and viewing conditions.
 - Begin with mathematical alignment, then make small optical corrections for curved, pointed, or irregular forms and punctuation; keep the apparent system intact at final scale.
 
 ## Never
