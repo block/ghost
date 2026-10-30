@@ -5,12 +5,10 @@ severity: medium
 references:
   - baseline.interface.web > Rules
   - baseline.interface.web > Never
+  - baseline.fundamentals.content-integrity > Rules
+  - baseline.fundamentals.content-integrity > Never
 ---
 
-- Flag product evidence does not support the leading outcome, or expression makes facts, terms, and actions hard to find. (`baseline.interface.web > Rules`)
-- Flag navigation and footer dominate content, or background changes imply no new subject. (`baseline.interface.web > Rules`)
-- Flag comparable prices or specifications are scattered outside tables, or a prominent figure lacks a reading-size label. (`baseline.interface.web > Rules`)
-- Flag an FAQ becomes a card grid, full-width sections lose inner horizontal margins, or unavailable photography is replaced by unsupported product imagery. (`baseline.interface.web > Rules`)
-- Flag a generic section sequence overrides the actual content, decorative stock fills space, or a fake dashboard stands in for the real product. (`baseline.interface.web > Never`)
-
-Review only applicable guidance. Do not apply a default flag where explicit brand or task guidance replaces that default.
+- Read the page from its leading outcome through the supporting sections and inspect their actual treatments against `baseline.interface.web > Rules`. Flag criteria that fail to support the audience’s decision, using the page’s content rather than a preferred template.
+- Compare the section sequence and decorative choices with `baseline.interface.web > Never`. Flag prohibited scaffolding or filler where the inspected page demonstrates it.
+- Trace depicted product evidence and factual claims to supplied sources against `baseline.fundamentals.content-integrity > Rules` and `baseline.fundamentals.content-integrity > Never`. Flag misrepresented evidence or an unresolved source gap; a credible-looking image is not proof.

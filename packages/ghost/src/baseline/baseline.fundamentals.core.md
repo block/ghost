@@ -4,19 +4,21 @@ for: "Creating or reviewing any visual, written, or interactive work."
 
 ## Usage
 
-Use these general design defaults to make the content order, relationships, and reading task clear before adding detail.
+The audience, intended response, medium, and viewing conditions give a composition its purpose. Content priority comes before styling: rank the message, then choose typography and spatial relationships that make that order apparent. Resolve an unclear idea by editing its structure before adding visual detail.
+
+Apply modes to elements rather than whole formats. Display favors immediate comprehension and short copy; editorial favors sustained reading and navigation; interface favors predictable task completion and repeated components; legal favors complete, accurate qualifications. A promotional page can contain all four. Advertising brevity is a poor model for instructions, disclosures, or multilingual passages.
+
+When rules leave choices open, favor meaning and the person's task over a familiar visual arrangement. A simple composition can carry a complex system. Keep variation where it explains a distinction; subtraction helps when several treatments compete for attention.
 
 ## Rules
 
-- Make primary content noticeable through size, weight, contrast, space, or placement; give equal primary roles matching prominence and identify them as peers.
-- Give repeated content roles the same placement, spacing, alignment logic, and style across a view and related views.
-- Align titles, media, text, navigation, controls, and groups to a grid line, margin, baseline, centerline, visible image edge, or another element.
-- Place related elements closer together than unrelated elements; establish groups through proximity and alignment before adding boxes, fills, or dividers.
-- Set body text left-aligned and ragged-right in left-to-right languages; use right alignment for right-to-left languages or an established right-hand layout axis.
-- Size text for its medium and viewing distance, and inspect it at the intended output size rather than zoomed in.
-- At every declared output size, show intended type and media without accidental fallback, missing sources, clipping, overlap, duplicate painting, or disappearing content.
+- Give the work an identifiable first read and a clear progression through secondary and supporting content. In display work, one message or element leads; editorial and interface work may have peer groups when their relationship and navigation are clear.
+- Give repeated content roles consistent treatment across related views, including placement, spacing, alignment logic, and style.
+- Use each visible difference to communicate a difference in hierarchy, state, category, meaning, or deliberate expression.
+- Give every element a purpose in communication, navigation, usability, mood, or brand recognition; remove elements that serve none of these.
 
 ## Never
 
-- Never shrink an entire composition to fit a smaller format — instead recompose columns, crops, and spacing while preserving content order, hierarchy, and intended line length.
-- Never add decoration, effects, containers, or color while primary content remains unclear — instead revise scale, spacing, alignment, or content hierarchy.
+- Never give every element equal emphasis by default — instead make priority and peer relationships visible.
+- Never preserve a layout that prevents comprehension — instead change the arrangement before shrinking, distorting, or obscuring the content.
+- Never add decoration, effects, containers, or color while the primary message remains unclear — instead repair content hierarchy and relationships.

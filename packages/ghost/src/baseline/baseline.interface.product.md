@@ -1,6 +1,6 @@
 ---
 for: "Creating or reviewing operational screens, entity lists, configuration pages, search, filters, or status messages."
-requires: [baseline.fundamentals.core, baseline.fundamentals.composition, baseline.fundamentals.typesetting, baseline.fundamentals.accessibility, baseline.fundamentals.content-integrity, baseline.fundamentals.craft]
+requires: [baseline.fundamentals.composition, baseline.fundamentals.typesetting, baseline.fundamentals.accessibility, baseline.fundamentals.content-integrity, baseline.fundamentals.production]
 ---
 
 ## Usage
@@ -9,7 +9,7 @@ Product defaults help a person locate a record, understand its current state, an
 
 ## Rules
 
-- Keep same-level buttons consistent in height, horizontal padding, and type style; let their labels determine their widths.
+- Let same-level button labels determine their widths.
 - Keep essential mobile actions in the same position with the same label as density increases.
 - Where dismissal is allowed, let an interruptive overlay close with Escape or an explicit close action.
 - Explain why a disabled action is unavailable when the reason matters to completing the task.
@@ -36,6 +36,4 @@ Product defaults help a person locate a record, understand its current state, an
 
 - Never shrink table type below the documented ramp or allow columns to overflow to make a table fit — instead shorten content or remove a column.
 - Never stack full page-sections vertically to show a flow — instead use a compact stepper or distinct labeled page-sized variants.
-
-- Never show every possible configuration state as simultaneous current truth — instead show the current state, with alternatives summarized or separated into labeled variants.
 - Never make fixed numeric buckets the only range control — instead allow an exact value in a text field.

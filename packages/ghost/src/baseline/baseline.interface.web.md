@@ -1,6 +1,6 @@
 ---
 for: "Creating or reviewing public marketing, campaign, pricing, or product web pages."
-requires: [baseline.fundamentals.core, baseline.fundamentals.composition, baseline.fundamentals.typesetting, baseline.fundamentals.accessibility, baseline.fundamentals.content-integrity, baseline.fundamentals.craft]
+requires: [baseline.fundamentals.composition, baseline.fundamentals.typesetting, baseline.fundamentals.accessibility, baseline.fundamentals.content-integrity, baseline.fundamentals.production, baseline.fundamentals.imagery]
 ---
 
 ## Usage
@@ -16,10 +16,8 @@ Public-page defaults connect an outcome to product evidence. Section order and e
 - Put comparable prices, specifications, and terms in tables; give a single figure display prominence only when it makes the page’s point, with its label at reading size.
 - Set marketing FAQs as expandable editorial text rather than a card grid.
 - Keep horizontal margins in an inner content wrapper while a full-width outer section sets the background and vertical spacing.
-- Use real product evidence when showing a product; if suitable photography is unavailable, lead with type or supplied product evidence.
 
 ## Never
 
 - Never default to a centered hero, feature grid, statistics strip, testimonial, and FAQ — instead choose sections and order for the actual content.
 - Never use a stock photograph or texture merely to fill a gap — instead use relevant product evidence or a type-led composition.
-- Never fabricate a dashboard preview or generic analytics to represent another product — instead show the actual product supported by evidence.

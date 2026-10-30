@@ -1,6 +1,6 @@
 ---
 for: "Creating or reviewing documents, reports, help articles, directories, or technical documentation."
-requires: [baseline.fundamentals.core, baseline.fundamentals.composition, baseline.fundamentals.typesetting, baseline.fundamentals.accessibility, baseline.fundamentals.content-integrity]
+requires: [baseline.fundamentals.composition, baseline.fundamentals.typesetting, baseline.fundamentals.accessibility, baseline.fundamentals.content-integrity, baseline.fundamentals.production, baseline.fundamentals.imagery]
 ---
 
 ## Usage

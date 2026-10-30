@@ -4,13 +4,10 @@ description: The message and action survive email-client limitations.
 severity: high
 references:
   - baseline.interface.email > Rules
+  - baseline.interface.email > Never
+  - baseline.fundamentals.composition > Rules
 ---
 
-- Flag the body depends on flexbox, grid, or an external stylesheet to remain usable. (`baseline.interface.email > Rules`)
-- Flag the hidden preheader is misplaced, repeats the subject, or subject, preheader, and heading lack distinct roles. (`baseline.interface.email > Rules`)
-- Flag the subject and first sentence omit the recipient’s gain, action, or consequence, or competing CTA identities appear. (`baseline.interface.email > Rules`)
-- Flag the CTA fails in a supported client, or the fallback font stack loses heading/body hierarchy. (`baseline.interface.email > Rules`)
-- Flag images lack explicit column widths or background fallbacks, or Outlook must render CSS background images for the message to work. (`baseline.interface.email > Rules`)
-- Flag appearance modes rely on client inversion, or mobile reflow loses the hierarchy or CTA. (`baseline.interface.email > Rules`)
-
-Review only applicable guidance. Do not apply a default flag where explicit brand or task guidance replaces that default.
+- Inspect actual supported-client renders, including degraded content, against `baseline.interface.email > Never`. Flag a failure of the fallback criteria; report missing client evidence separately from a demonstrated pass.
+- Compare subject, preheader, message, action, font fallback, hosted imagery, and appearance-mode evidence with `baseline.interface.email > Rules`. Flag mismatches with those email criteria; a source declaration alone does not demonstrate a client render.
+- Compare mobile renders with `baseline.fundamentals.composition > Rules` for hierarchy and relationships, and `baseline.interface.email > Rules` for the action. Pass only the variants actually inspected.

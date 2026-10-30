@@ -1,48 +1,40 @@
 ---
-for: "Constructing grids, spacing systems, scale relationships, optical alignment, color proportions, or figure-versus-prose layouts."
-requires: [baseline.fundamentals.core]
+for: "Arranging grids, hierarchy, scale, spacing, alignment, responsive layouts, or related sequences."
+requires: [baseline.fundamentals.core, baseline.fundamentals.accessibility, baseline.fundamentals.typesetting]
 ---
 
 ## Usage
 
-Defaults for detailed layout relationships. Visible content edges and recurring widths determine whether a grid subdivision is useful.
+Build the simplest grid that gives the content useful relationships. Its divisions come from real placement needs and reading measure, rather than a familiar column count. Negative space is one of the composition's large shapes; proximity can establish a relationship before a box is needed.
+
+Judge balance through perceived mass: density, contrast, saturation, crop, texture, and surrounding space can outweigh dimensions. Symmetry can express stability or equality; asymmetry can create movement and tension. Optical correction refines a measurable system when its apparent edges disagree with its geometry.
 
 ## Rules
 
-- Use one shared scale level for each distinct content role. Primary, supporting, and minor roles use three scale levels, not a different size for every element.
-- Consolidate scale levels that look interchangeable at the intended output size, or separate them enough to communicate different roles.
-- Judge prominence from the visible combination of size, contrast, density, color, texture, crop, and surrounding space rather than numeric dimensions alone.
-- Keep enough empty space around primary content for it to remain more prominent than supporting content.
-- Place content clearly at the top, middle, or bottom of a section or slide. Empty space separates groups, separates sections, or sets an important item apart; otherwise center or enlarge the content, or move it closer to the next block.
-- Balance columns by visual weight, not equal width. If one holds only a title and a line, add substantive content, enlarge its type, or use one column. Size a headline to its own column so neighboring media keeps its space.
-- Keep a current step, tab, or option most visible, with the others smaller or lighter but still present so its position in the set remains clear.
-- Vary headline placement, measure, column count, empty space, and scale changes across the artifact within its grid.
-- When two visible edges fall close together, align them exactly or separate them enough to form two clearly distinct positions.
-- Start by aligning element bounds. For curved, pointed, or irregular forms, adjust only when the visible contour remains offset from the shared alignment line at the final size.
-- Use a declared base unit and a limited set of spacing values.
-- To construct the grid, first identify the reading order, intended line length, recurring widths, and elements that need shared edges.
-- Set the outer margins, then add a column or subdivision only when it aligns a visible content edge, maintains a recurring width, or separates adjacent content roles.
-- Hold the chosen grid's columns, margins, and gutters across pages, sections, and slides; responsive margin and gutter changes apply to every section together.
-- Make blocks span whole columns; change the span rather than narrowing or widening a gutter to make content fit.
-- Keep gutters consistent within the grid and wide enough to prevent adjacent text and image areas from touching, overlapping, or reading as one group.
-- Above split-column content, place the headline in one column; use full-width headings above a single block or full-bleed image.
-- Put list markers in their own narrow column so wrapped text shares one starting edge.
-- In left-to-right work, left-align headings beside media and text inside centered lists, charts, or figure groups. A standalone heading may center when its content centers with it; do not center one element inside a left-aligned group. Follow the reading direction for other writing systems.
-- Run a divider between rows across the width of the row's content.
-- Treat margins as protected minimums. An element near an edge either respects the margin or deliberately bleeds past it while important content stays inside the safe area.
-- Use visual difference to communicate hierarchy, state, category, or intentional contrast; consolidate differences that communicate nothing.
-- Keep a deliberate grid break aligned with at least one surrounding edge, baseline, margin, or spacing interval.
-- Give each color a consistent role within the view, such as surface, text level, boundary, accent, status, or data distinction.
-- Establish dominant, supporting, and accent color roles. Reserve the strongest accent for fewer elements or less area than the dominant and supporting colors.
-
-- Put details readers need to find again, such as prices, dates, fees, or deadlines, in a plain table or on labeled lines. Keep explanations in sentences, including the one or two numbers that belong to them.
-- On reporting surfaces, set groups of comparable figures in plain tables or labeled lines at reading size. On non-reporting surfaces, set a figure that is the point of its block at display size, with its label beneath or beside it at reading size.
-- Set an unresolved figure as a value-shaped stand-in such as `XX%`, `$XX`, or `XX,XXX`, at the intended size and weight, with a small visible line saying the figures are illustrative; do not render the word “placeholder” or a bracketed process note in place of the value.
+- Use distinct large, medium, and small primary scale classes by default, each with a role; keep one visibly dominant. Display normally needs no more than three primary levels. Two genuine roles need no invented third; additional editorial, interface, legal, data, or navigation levels need a named recurring function.
+- Equal-size pattern, equality, repetition, or deliberate flatness may reduce scale tiers; create priority through another controlled variable such as position, contrast, density, orientation, crop, or spacing. Single-object illustrations, symbols, and minimal compositions need no artificial three-object system.
+- In multi-object work, let large masses establish focus, medium objects connect or counterbalance, and small details support story, atmosphere, rhythm, texture, or discovery. Repeat within recognizable tiers rather than assigning every object a separate scale.
+- Judge tiers and balance at final size, with a reduced, blurred, or silhouette view as useful evidence. If tiers feel interchangeable, consolidate them or increase their contrast.
+- Define margins, columns, gutters, horizontal fields, modules, baseline increments, and major anchors from the content and type measure. Each subdivision corresponds to a recurring relationship; the smallest module can hold its smallest recurring element.
+- Choose manuscript, column, modular, hierarchical, or compound grids for the task. Column counts divisible into useful groups and finer graphic modules are starting options, not universal formats.
+- Derive baseline rhythm from body leading; use whole or meaningful fractional increments and consistent repeated vertical relationships. Release an element from the baseline when forcing it harms the composition.
+- Align major elements to meaningful edges, baselines, grid lines, centerlines, or other elements; related and repeated elements share alignment logic. Align captions and labels with the content they describe.
+- Keep gutters consistent within a grid and columns sized for their intended reading measure. Use a limited set of widths in whole grid-field combinations.
+- Derive repeatable margins from the grid, baseline, type, or supplied mark clearspace. Related formats under the same viewing conditions share an optical margin system; scale margins for viewing distance as well as canvas size.
+- Keep elements clearly inside their margins or deliberately bleeding beyond an edge; full-bleed imagery preserves safe areas for protected content.
+- For a grid break, retain an anchor or relationship while the displaced element creates emphasis, tension, movement, sequence, or meaning. Broader disruption may serve a central disruptive concept; repeated templates keep their exception scoped consistently.
+- Use a small reusable anchor set for a template family; about 5–9 primary positions is a useful starting range. Establish a repeatable spacing unit and limited named steps; digital systems may start with a 4 px unit and major 8 px multiples, while print can derive spacing from leading or modules.
+- Place related elements closer together than unrelated elements. Separate groups more than members of a group; use proximity and alignment before adding boxes, fills, or dividers.
+- Recompose responsive layouts by changing columns, crop, alignment, and spacing while preserving content order, hierarchy, and intended measure. Stress-test translated copy with at least 30% expansion where useful; preserve relationships when positions change.
+- Design related pages and formats together: keep their grid, type roles, and information treatments consistent while varying density, scale, whitespace, and emphasis as content changes.
+- Begin with mathematical alignment, then make small optical corrections for curved, pointed, or irregular forms and punctuation; keep the apparent system intact at final scale.
 
 ## Never
 
-- Never center an element because no stronger placement was chosen — instead place it from the reading order and grid, using centered placement only when the content calls for a sparse focal statement.
-- Never begin with a familiar column count and fit the content into it — instead construct the grid from visible content relationships and the format.
-- Never introduce a one-off spacing, size, or scale value to make one case fit — instead use the declared set or revise the composition.
-- Never distribute elements evenly when doing so obscures group boundaries or weakens the primary content — instead preserve the space that separates groups or supports hierarchy.
-- Never leave an element ambiguously between two groups — instead place it with the group it belongs to through proximity and alignment.
+- Never subdivide a grid until it provides no constraint, or keep it so coarse it prevents necessary variation — instead use divisions tied to real content.
+- Never leave near-alignments or ambiguous grouping — instead align edges exactly or separate them visibly, and place an element with the group it belongs to.
+- Never fill empty space, center an element, or evenly distribute objects without a reason — instead use space and placement to support the content.
+- Never add near-identical spacing values, widths, or scale levels without distinct functions — instead consolidate them into the existing system.
+- Never add small details or depth effects merely for complexity — instead use them when they support the story or keep a flatter composition.
+- Never shrink a desktop composition uniformly for smaller formats — instead reflow its relationships.
+- Never repeat an identical layout mechanically when content priority changes, or redesign each related page independently — instead vary within the shared system.

@@ -114,8 +114,9 @@ The reviewed baseline payload lives in `packages/ghost/src/baseline/`. The build
 copies it to `dist/baseline/` and stamps its manifest `version` from the public
 package's release version. Refresh content by updating that source directory in
 Git and rebuilding; a release never reads another checkout or fetches guidance.
-The current payload is a placeholder copied from ghost-internal's existing
-baseline, with delivery headers migrated. The design-content rebuild is separate.
+The payload is copied from the reviewed ghost-internal baseline at
+`ded6b5c9c2ed9dc45a7cdfc35ef8766d0865f74c`, with nine fundamentals, five
+interfaces, and three automatic core nodes. Its checks remain review-only.
 
 An explicit `--baseline` directory supplies its own version and entirely replaces
 the bundle. Validate warns for an unversioned baseline and for an effective

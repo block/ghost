@@ -1,6 +1,6 @@
 ---
 for: "Creating or reviewing a slide deck, presentation, pitch, or narrative walkthrough."
-requires: [baseline.fundamentals.core, baseline.fundamentals.composition, baseline.fundamentals.typesetting, baseline.fundamentals.accessibility, baseline.fundamentals.content-integrity]
+requires: [baseline.fundamentals.composition, baseline.fundamentals.typesetting, baseline.fundamentals.accessibility, baseline.fundamentals.content-integrity, baseline.fundamentals.production, baseline.fundamentals.imagery]
 ---
 
 ## Usage
@@ -9,8 +9,7 @@ Presentation defaults organize a story into distinct slides. Live HTML adds a si
 
 ## Rules
 
-- Use one grid, margin system, and alignment axis throughout the deck.
-- Give each slide one narrative job and one first read.
+- Give each slide one narrative job.
 - Vary full-bleed, split, stacked, asymmetric, image-led, and type-led compositions within that grid as the story changes.
 - Keep repeated footers, labels, dates, deck titles, and page numbers informative; repeat page position rather than filler.
 - Keep slide text in normal flow inside the frame and margins; reserve absolute positioning for full-bleed media and page elements.
@@ -19,7 +18,7 @@ Presentation defaults organize a story into distinct slides. Live HTML adds a si
 - Reduce a display headline, full-bleed image, dark slide, or unusual composition when it obscures evidence or the next decision.
 - In a product pitch, show the mechanism in a real workflow, state relevant trust risks or exclusions, and end with the next decision.
 - In a live HTML presentation, show one active slide filling the available viewport and provide operable forward and backward navigation.
-- When a live presentation’s viewport changes size or aspect ratio, let slide content reflow without distortion.
+- Adapt a live slide’s aspect ratio to viewport changes without distorting its content.
 - Overlay optional player controls without reducing or offsetting the slide or reserving permanent space beside it.
 - Use numbered rows for an agenda, contents, index, sequence, or priority. Show a process through actual relationships such as direction, dependency, stages, a timeline, or repetition.
 - Use numbers only when they communicate order, quantity, priority, or a stable reference. Use an icon without a text label only when its meaning is clear.
@@ -36,4 +35,3 @@ Presentation defaults organize a story into distinct slides. Live HTML adds a si
 - Never require an image on every slide — instead use a type-led slide when no image supports its content.
 - Never render a live HTML presentation as a scrolling stack of slides — instead navigate a sequence with one active slide.
 - Never place a slide inside a decorative stage, shadowed card, or inset frame — instead let the slide itself be the presentation surface.
-- Never shrink type, hide overflow, or layer elements to force content into the frame — instead edit the content or move it to another slide.
