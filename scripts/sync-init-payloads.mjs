@@ -46,11 +46,13 @@ const release = JSON.parse(
   await readFile(join(ghostDir, "package.json"), "utf8"),
 );
 const manifestPath = join(baselineDir, "manifest.yml");
-const manifest = (await readFile(manifestPath, "utf8")).replace(
-  /^version:.*\n?/m,
-  "",
+const manifest = await readFile(manifestPath, "utf8");
+const version = manifest.match(
+  /^version:[ \t]*(?:"([^"\n]*)"|'([^'\n]*)'|([^\s#]+))[ \t]*(?:#.*)?$/m,
 );
-await writeFile(
-  manifestPath,
-  `${manifest.trimEnd()}\nversion: "${release.version}"\n`,
-);
+if ((version?.[1] ?? version?.[2] ?? version?.[3]) !== release.version) {
+  await writeFile(
+    manifestPath,
+    `${manifest.replace(/^version:.*\n?/m, "").trimEnd()}\nversion: "${release.version}"\n`,
+  );
+}

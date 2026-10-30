@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import {
   cp,
   mkdir,
@@ -10,6 +11,7 @@ import {
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   gatherGhostPackage,
@@ -94,6 +96,53 @@ it("loads a bundled baseline without an override and substitutes the override co
   expect(
     overridden.catalog.nodes.has("baseline.fundamentals.accessibility"),
   ).toBe(false);
+});
+
+it("gives bundled and explicit copies of the reviewed baseline equal hashes", async () => {
+  const source = fileURLToPath(new URL("../src/baseline/", import.meta.url));
+  const bundled = await loadGhostSnapshot(resolveGhostPackage(brand, root));
+  const explicit = await loadGhostSnapshot(
+    resolveGhostPackage(brand, root, source),
+  );
+  expect(bundled.provenance.baseline?.hash).toBe(
+    await hashGhostPackage(source),
+  );
+  expect(bundled.provenance.baseline).toEqual(explicit.provenance.baseline);
+});
+
+it("preserves matching manifest bytes and stamps a changed release version", async () => {
+  const scripts = join(root, "scripts");
+  const ghost = join(root, "packages", "ghost");
+  await mkdir(scripts);
+  await mkdir(join(ghost, "src", "baseline"), { recursive: true });
+  await mkdir(join(root, "packages", "vessel-light", ".ghost"), {
+    recursive: true,
+  });
+  const script = join(scripts, "sync-init-payloads.mjs");
+  await cp(
+    fileURLToPath(
+      new URL("../../../scripts/sync-init-payloads.mjs", import.meta.url),
+    ),
+    script,
+  );
+  const manifest =
+    'schema: ghost.package/v1\nversion: "0.35.0" # reviewed\nid: design-baseline\n';
+  await writeFile(join(ghost, "src", "baseline", "manifest.yml"), manifest);
+  await writeFile(
+    join(ghost, "package.json"),
+    JSON.stringify({ version: "0.35.0" }),
+  );
+  execFileSync(process.execPath, [script]);
+  const output = join(ghost, "dist", "baseline", "manifest.yml");
+  expect(await readFile(output, "utf8")).toBe(manifest);
+  await writeFile(
+    join(ghost, "package.json"),
+    JSON.stringify({ version: "0.36.0" }),
+  );
+  execFileSync(process.execPath, [script]);
+  expect(await readFile(output, "utf8")).toBe(
+    'schema: ghost.package/v1\nid: design-baseline\nversion: "0.36.0"\n',
+  );
 });
 
 it("warns about newer, unversioned, and invalid compatibility versions", async () => {
