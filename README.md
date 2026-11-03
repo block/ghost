@@ -6,22 +6,13 @@
 
 ![brand intelligence for your agents](https://github.com/user-attachments/assets/d4dce405-387e-44b9-93c1-fad91743622c)
 
-Agents give more people the tools to bring an idea to life. They do not give
-everyone the guidance or experience to direct that work. Without clear brand
-context, model output tends toward the average.
+Agents help us bring more ideas to life, faster. But without the right brand context, the result looks exactly like what it is: agent work.
 
-ghost brings the right brand context into the work your agents create. Record
-your brand's decisions alongside the code and assets they refer to. For each task,
-ghost provides the complete guidance menu. Your agent selects what is relevant
-rather than receiving all brand context every time, then ghost
-delivers the full guidance and materials before work begins.
+_ghost_ keeps your brand decisions alongside your code and assets. Before each task, it gives your agent the relevant guidance and materials.
 
-A model generates the likeliest thing. ghost helps make your brand the
-likeliest thing, so agents can produce work your team would actually use.
+Models generate the likeliest thing. _ghost_ helps make **your brand** the likeliest thing.
 
-ghost works where you do: Claude Code, Codex, Cursor, OpenCode, and Goose. It
-uses the agent and model you already use. The CLI does not call a model on its
-own or require an API key.
+It works with the tools, agents, and models you already use. The CLI doesn't make its own model calls or need an API key.
 
 [Get started](#get-started) ·
 [Authoring guide](./packages/ghost/src/skill-bundle/references/authoring.md) ·
