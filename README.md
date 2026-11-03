@@ -62,7 +62,7 @@ shape of the whole package, then loads only what the current task needs.
 ```text
 .ghost/
 ├── manifest.yml             package identity and cover
-├── glossary.md              the package's own categories
+├── glossary.md              the package's own kinds
 ├── brand.md                 guidance every task receives
 ├── foundation.voice.md      a broad brand decision
 ├── payment-failure.md       guidance for a specific situation
