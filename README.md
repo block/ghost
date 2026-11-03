@@ -4,7 +4,7 @@
 [![CI](https://github.com/block/ghost/actions/workflows/ci.yml/badge.svg)](https://github.com/block/ghost/actions/workflows/ci.yml)
 [![Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-black.svg)](./LICENSE)
 
-**Brand intelligence for your agents.**
+![brand intelligence for your agents](https://github.com/user-attachments/assets/d4dce405-387e-44b9-93c1-fad91743622c)
 
 Agents give more people the tools to bring an idea to life. They do not give
 everyone the guidance or experience to direct that work. Without clear brand
@@ -30,11 +30,12 @@ own or require an API key.
 > [!NOTE]
 > ghost is an early preview. The CLI, package format, and APIs can change
 > without migration support, and breaking changes can ship in minor versions.
+
 > Try it on a real repo and tell us what broke or confused you.
 
 ## How it works
 
-<img width="100%" alt="guidance-animation" src="https://github.com/user-attachments/assets/8685af17-fb8e-4ae2-bdca-6cdff41fcf44" />
+![guidance-animation](https://github.com/user-attachments/assets/8685af17-fb8e-4ae2-bdca-6cdff41fcf44)
 
 ```text
 Your task
@@ -234,4 +235,3 @@ checks. Project decisions follow the public [Governance](./GOVERNANCE.md).
 ## License
 
 [Apache License 2.0](./LICENSE)
-s pro
