@@ -177,7 +177,7 @@ without a ghost package.
 | Design tokens | Machine-readable visual values |
 | Component libraries | Reusable implementation materials |
 | Asset libraries and design files | Source artwork and visual references |
-| **ghost** | Brand decisions that apply only in particular situations |
+| **ghost** | Broad brand stances and decisions for particular situations |
 
 These tools work together. Keep repo-wide operating instructions in
 `AGENTS.md`, concrete values in tokens, implementation in components, and
