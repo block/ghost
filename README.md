@@ -34,6 +34,8 @@ own or require an API key.
 
 ## How it works
 
+<img width="960" height="540" alt="guidance-animation" src="https://github.com/user-attachments/assets/8685af17-fb8e-4ae2-bdca-6cdff41fcf44" />
+
 ```text
 Your task
    │
@@ -49,8 +51,6 @@ ghost pull      delivers the selected guidance and materials
    ▼
 Your agent      makes the work; you review the result
 ```
-
-<img width="960" height="540" alt="guidance-animation" src="https://github.com/user-attachments/assets/8685af17-fb8e-4ae2-bdca-6cdff41fcf44" />
 
 
 A `.ghost/` package turns your brand's identity into guidance an agent can
