@@ -1,3 +1,10 @@
+
+> [!NOTE]
+> ghost is an early preview. The CLI, package format, and APIs can change
+> without migration support, and breaking changes can ship in minor versions.
+
+> Try it on a real repo and tell us what broke or confused you.
+
 # ghost
 
 [![npm version](https://img.shields.io/npm/v/@design-intelligence/ghost.svg)](https://www.npmjs.com/package/@design-intelligence/ghost)
@@ -17,12 +24,6 @@ It works with the tools, agents, and models you already use. The CLI doesn't mak
 [Get started](#get-started) ·
 [Authoring guide](./packages/ghost/src/skill-bundle/references/authoring.md) ·
 [CLI reference](./packages/ghost/src/skill-bundle/references/schema.md)
-
-> [!NOTE]
-> ghost is an early preview. The CLI, package format, and APIs can change
-> without migration support, and breaking changes can ship in minor versions.
-
-> Try it on a real repo and tell us what broke or confused you.
 
 ## How it works
 
