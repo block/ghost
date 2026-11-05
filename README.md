@@ -24,6 +24,11 @@ It works with the tools, agents, and models you already use. The CLI doesn't mak
 [Authoring guide](./packages/ghost/src/skill-bundle/references/authoring.md) ·
 [CLI reference](./packages/ghost/src/skill-bundle/references/schema.md)
 
+## Same prompt, two results
+
+| Without ghost | With ghost |
+| --- | --- |
+| _Add image_ | _Add image_ |
 
 ## How it works
 
