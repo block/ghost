@@ -27,6 +27,8 @@ It works with the tools, agents, and models you already use. The CLI doesn't mak
 
 ## How it works
 
+_ghost_ separates mechanics from guidance. The mechanics handle selection, assembly, and review: which nodes are available, when they apply, what materials accompany them, and what reviewers check. The guidance is the brand context those mechanics deliver to the agent.
+
 ![guidance-animation](https://github.com/user-attachments/assets/8685af17-fb8e-4ae2-bdca-6cdff41fcf44)
 
 ```text
@@ -44,12 +46,6 @@ ghost pull      delivers the selected guidance and materials
    ▼
 Your agent      makes the work; you review the result
 ```
-
-
-A `.ghost/` package turns your brand's identity into guidance an agent can
-find and use. It keeps broad brand stances, task-specific decisions, and
-pointers to concrete materials in one versioned place. The agent sees the
-shape of the whole package, then loads only what the current task needs.
 
 ```text
 .ghost/
