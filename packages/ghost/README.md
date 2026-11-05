@@ -25,7 +25,7 @@ own or require an API key.
 
 [Get started](#get-started) ·
 [Authoring guide](https://github.com/block/ghost/blob/main/packages/ghost/src/skill-bundle/references/authoring.md) ·
-[CLI reference](https://github.com/block/ghost/blob/main/packages/ghost/src/skill-bundle/references/schema.md)
+[Package format](https://github.com/block/ghost/blob/main/packages/ghost/src/skill-bundle/references/schema.md)
 
 > [!NOTE]
 > ghost is an early preview. The CLI, package format, and APIs can change
@@ -209,8 +209,9 @@ npx ghost stats             # summarize local usage
 npx ghost skill install     # install the agent skill
 ```
 
-See the [package and CLI reference](https://github.com/block/ghost/blob/main/packages/ghost/src/skill-bundle/references/schema.md)
-for formats and flags, or the [authoring guide](https://github.com/block/ghost/blob/main/packages/ghost/src/skill-bundle/references/authoring.md)
+Run `npx ghost --help` or `npx ghost <command> --help` for current commands and
+flags. See the [package format](https://github.com/block/ghost/blob/main/packages/ghost/src/skill-bundle/references/schema.md)
+for the on-disk contract, or the [authoring guide](https://github.com/block/ghost/blob/main/packages/ghost/src/skill-bundle/references/authoring.md)
 for creating and updating guidance.
 
 ## What's in the repo

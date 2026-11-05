@@ -24,7 +24,7 @@ It works with the tools, agents, and models you already use. The CLI doesn't mak
 
 [Get started](./packages/ghost/README.md#get-started) ·
 [Authoring guide](./packages/ghost/src/skill-bundle/references/authoring.md) ·
-[CLI reference](./packages/ghost/src/skill-bundle/references/schema.md)
+[Package format](./packages/ghost/src/skill-bundle/references/schema.md)
 
 
 ## How it works
@@ -72,7 +72,7 @@ ranks the menu or selects guidance for the agent.
 
 - [Package guide](./packages/ghost/README.md) — setup, everyday use, and review
 - [Authoring guide](./packages/ghost/src/skill-bundle/references/authoring.md) — write and maintain guidance
-- [CLI reference](./packages/ghost/src/skill-bundle/references/schema.md) — commands, formats, and flags
+- [Package format](./packages/ghost/src/skill-bundle/references/schema.md) — package layout, fields, checks, and command behavior
 - [context-control](./packages/context-control) — test whether agents select the right guidance
 - [steering-control](./packages/steering-control) — compare work made with and without **ghost**
 - [Contributing](./CONTRIBUTING.md) — develop and release the project
