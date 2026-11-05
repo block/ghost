@@ -58,7 +58,7 @@ shape of the whole package, then loads only what the current task needs.
 ```text
 .ghost/
 ├── manifest.yml             package identity and cover
-├── glossary.md              the package's own categories
+├── glossary.md              your vocabulary
 ├── brand.md                 guidance every task receives
 ├── foundation.voice.md      a broad brand decision
 ├── payment-failure.md       guidance for a specific situation
@@ -174,7 +174,7 @@ to compare work made with and without a ghost package.
 | Design tokens | Machine-readable visual values |
 | Component libraries | Reusable implementation materials |
 | Asset libraries and design files | Source artwork and visual references |
-| **ghost** | Brand decisions that apply only in particular situations |
+| **ghost** | Broad brand stances and decisions for particular situations |
 
 These tools work together. Keep repo-wide operating instructions in
 `AGENTS.md`, concrete values in tokens, implementation in components, and
