@@ -1,10 +1,3 @@
-
-> [!NOTE]
-> ghost is an early preview. The CLI, package format, and APIs can change
-> without migration support, and breaking changes can ship in minor versions.
-
-> Try it on a real repo and tell us what broke or confused you.
-
 # ghost
 
 [![npm version](https://img.shields.io/npm/v/@design-intelligence/ghost.svg)](https://www.npmjs.com/package/@design-intelligence/ghost)
@@ -20,6 +13,13 @@ _ghost_ keeps your brand decisions alongside your code and assets. Before each t
 Models generate the likeliest thing. _ghost_ helps make **your brand** the likeliest thing.
 
 It works with the tools, agents, and models you already use. The CLI doesn't make its own model calls or need an API key.
+
+
+> [!NOTE]
+> ghost is an early preview. The CLI, package format, and APIs can change
+> without migration support, and breaking changes can ship in minor versions.
+
+> Try it on a real repo and tell us what broke or confused you.
 
 [Get started](#get-started) ·
 [Authoring guide](./packages/ghost/src/skill-bundle/references/authoring.md) ·
