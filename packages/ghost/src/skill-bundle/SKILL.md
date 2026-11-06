@@ -34,7 +34,8 @@ it applies, and an agent reads the relevant guidance before building.
 - Grounding before generating: [references/ground.md](references/ground.md)
 - Writing or revising a node: [references/nodes.md](references/nodes.md)
 - Binding guidance to materials: [references/materials.md](references/materials.md)
-- Creating or overhauling a package: [references/authoring.md](references/authoring.md)
+- Intake from loose evidence before package edits: [references/intake.md](references/intake.md)
+- Creating or overhauling a package from approved decisions: [references/authoring.md](references/authoring.md)
 - Auditing steering health: [references/steering-audit.md](references/steering-audit.md)
 - Formats and command behavior: [references/schema.md](references/schema.md)
 
@@ -131,9 +132,12 @@ After upgrading the CLI, use `ghost skill check --agent <name>` or
 shipped bundle. Review local edits before reinstalling with `--force`. This
 check does not establish which skill an active session has loaded.
 
-ghost package authoring is **elicitation, not scanning**. The raw material is what
-the human brings and points at: words, images, links, products, brand docs, copy
-they love or hate. Repo code can supply material locators and local
+ghost package authoring is **elicitation, not scanning**. When creating or
+revising a package from loose material, use [references/intake.md](references/intake.md)
+first: inspect available evidence, separate facts from inference, and ask for
+grouped approval of new brand decisions before package edits. The raw material
+is what the human brings and points at: words, images, links, products, brand
+docs, copy they love or hate. Repo code can supply material locators and local
 conventions, but durable brand guidance should be curated by the human.
 
 ## When the package is silent
