@@ -6,7 +6,11 @@ import { formatLoadDiagnostics } from "../internal/load-diagnostics.js";
 import { appendGhostEvent, resolveRunId } from "../observability-events.js";
 import { resolveGhostPackage } from "../package.js";
 import { exitCli, failFromError } from "./errors.js";
-import { parseEnumOption } from "./options.js";
+import {
+  parseEnumOption,
+  resolveUniversalPackage,
+  warnUniversalVersion,
+} from "./options.js";
 
 export function registerGatherCommand(cli: CAC): void {
   cli
@@ -38,13 +42,10 @@ export function registerGatherCommand(cli: CAC): void {
         const paths = resolveGhostPackage(opts.package, process.cwd());
         const snapshot = await loadGhostSnapshot(
           paths,
-          opts.universal === undefined
-            ? undefined
-            : resolveGhostPackage(opts.universal, process.cwd()),
+          resolveUniversalPackage(opts.universal),
         );
-        if (format === "json" && snapshot.cascade?.versionWarning) {
-          console.error(`Warning: ${snapshot.cascade.versionWarning.message}`);
-        }
+        if (format === "json")
+          warnUniversalVersion(snapshot.cascade?.versionWarning);
         if (format === "markdown" && ask === undefined) {
           throw new UsageError(
             "gather needs a task. Run `ghost gather <ask>`. For package inspection, use `ghost gather --format json`.",

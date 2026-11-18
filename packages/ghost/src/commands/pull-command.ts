@@ -10,7 +10,11 @@ import {
   resolveGitRoot,
 } from "../package.js";
 import { exitCli, failFromError } from "./errors.js";
-import { parseEnumOption } from "./options.js";
+import {
+  parseEnumOption,
+  resolveUniversalPackage,
+  warnUniversalVersion,
+} from "./options.js";
 
 export function registerPullCommand(cli: CAC): void {
   cli
@@ -52,9 +56,7 @@ export function registerPullCommand(cli: CAC): void {
         const paths = resolveGhostPackage(opts.package, process.cwd());
         const snapshot = await loadGhostSnapshot(
           paths,
-          opts.universal === undefined
-            ? undefined
-            : resolveGhostPackage(opts.universal, process.cwd()),
+          resolveUniversalPackage(opts.universal),
         );
         if (snapshot.cascade && order === "given") {
           console.error(
@@ -110,11 +112,7 @@ export function registerPullCommand(cli: CAC): void {
         }
 
         if (format === "json") {
-          if (snapshot.cascade?.versionWarning) {
-            console.error(
-              `Warning: ${snapshot.cascade.versionWarning.message}`,
-            );
-          }
+          warnUniversalVersion(snapshot.cascade?.versionWarning);
           process.stdout.write(
             `${JSON.stringify(formatPullJson(result, opts.materials !== false), null, 2)}\n`,
           );

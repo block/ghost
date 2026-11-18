@@ -11,7 +11,11 @@ import {
   formatReviewPacket,
 } from "../review/review-packet.js";
 import { exitCli, failFromError } from "./errors.js";
-import { parseEnumOption } from "./options.js";
+import {
+  parseEnumOption,
+  resolveUniversalPackage,
+  warnUniversalVersion,
+} from "./options.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -45,15 +49,9 @@ export function registerReviewCommand(cli: CAC): void {
         const paths = resolveGhostPackage(opts.package, process.cwd());
         const ghostPackage = await loadGhostPackage(
           paths,
-          opts.universal === undefined
-            ? undefined
-            : resolveGhostPackage(opts.universal, process.cwd()),
+          resolveUniversalPackage(opts.universal),
         );
-        if (ghostPackage.cascade?.versionWarning) {
-          console.error(
-            `Warning: ${ghostPackage.cascade.versionWarning.message}`,
-          );
-        }
+        warnUniversalVersion(ghostPackage.cascade?.versionWarning);
         if (!ghostPackage.hasChecksDir) {
           console.error(
             "No checks directory. Run `ghost checks init` to add review assertions.",
