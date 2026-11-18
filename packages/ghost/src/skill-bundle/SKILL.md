@@ -31,33 +31,40 @@ it applies, and an agent reads the relevant guidance before building.
 ## First use
 
 Explain ghost only when the person asks what it is, requests setup help, or
-shows confusion about ghost. Keep the explanation brief and skip it when the
-conversation shows they already understand it. Continue ordinary tasks without
-an introduction. The presence or absence of `.ghost/` says nothing about the
-person's familiarity.
+shows confusion about ghost. Skip the introduction when the conversation shows
+they already understand it. Continue ordinary tasks without an introduction.
+The presence or absence of `.ghost/` says nothing about the person's familiarity.
 
-For example, when the person is starting a brand fingerprint:
+When the person only asks what ghost is, use the following example as the full
+answer. You may add one short offer to explain how it works. End the reply there.
 
-> ghost helps you capture what makes your brand yours and use it across your
-> work. First, we’ll build a brand fingerprint, a short guide to your brand’s
-> style and choices. Then I’ll ask you to share what you already have, such as
-> brand positioning, content guidelines, or examples that show how the brand
-> should feel. I’ll use that material to draft guidance for you to review.
-> ghost keeps the guidance in your project’s `.ghost/` folder, where the agent
-> can read it when it works.
+> In this repo, ghost is the tool that helps agents follow your brand choices.
+> It keeps the guidance in `.ghost/` so agents can use it as they work.
 
-The person supplies the brand decisions and confirms any guidance you draft.
+Reserve package architecture, nodes, the manifest and glossary, commands, and
+optional checks for people who ask for technical detail or show technical
+interest. Use the package model and command loop below to explain the parts
+relevant to their question.
 
-Then offer one next step based on the project:
+When the person asks how to get started or use ghost, offer one next step based
+on the project. If they also ask what ghost is, give the short explanation
+before the next step.
 
-- **No package:** follow the [setup guide](https://github.com/block/ghost/blob/main/packages/ghost/README.md#get-started)
-  to install the CLI and skill as needed and create `.ghost/`. Ask for one brand
-  example or repeated correction to turn into proposed guidance.
+- **No package:** offer to set up a starter `.ghost/` package with a `brand.md`
+  cover and starter guidance files. Ask what they already have, such as brand
+  positioning, content guidelines, or examples that show how the brand should
+  feel. For package creation, use the [setup guide](https://github.com/block/ghost/blob/main/packages/ghost/README.md#get-started).
 - **Starter package:** use [authoring](references/authoring.md#adapting-a-starter)
   to help the person accept or replace its provisional answers with decisions
   they confirm.
 - **Established package:** offer to apply its guidance to a real task through
   the gather/pull loop below.
+
+During setup or starter adaptation, ask before drafting brand guidance or
+creating or editing files, including running `ghost init`, unless the person
+has already explicitly requested that action. A question about how to start
+calls for advice. The person supplies the brand decisions. Show the draft for
+their review and confirmation before writing it into `.ghost/`.
 
 ghost does not learn or verify the brand on its own. The project state chooses
 the next action; it does not trigger an introduction.
