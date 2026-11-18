@@ -3,8 +3,9 @@ name: ghost
 description: >-
   Author, validate, consume, and review against a repo-local package of brand
   guidance. Use when the user asks what ghost is, wants to set up a .ghost
-  package, write or update guidance nodes, gather brand context before
-  generation, or assemble a review packet from ghost checks.
+  package, asks for work on brand decisions or brand content, wants to write or
+  update guidance nodes, gather brand context before generation, or assemble a
+  review packet from ghost checks.
 license: Apache-2.0
 metadata:
   homepage: https://github.com/block/ghost
@@ -30,10 +31,14 @@ it applies, and an agent reads the relevant guidance before building.
 
 ## First use
 
-Explain ghost only when the person asks what it is, requests setup help, or
-shows confusion about ghost. Skip the introduction when the conversation shows
-they already understand it. Continue ordinary tasks without an introduction.
-The presence or absence of `.ghost/` says nothing about the person's familiarity.
+Explain ghost when the person asks what it is, requests setup help, or shows
+confusion about ghost. If the person asks for work on brand decisions or brand
+content and no ghost package is available for the project, briefly explain how
+ghost can help with that work and offer to set up the starter package. Check
+for packages configured through `GHOST_PACKAGE_DIR` or `--package` before
+offering setup. Skip the introduction and proactive offer when the conversation
+shows they already know ghost. Continue unrelated tasks without an
+introduction. Package availability says nothing about the person's familiarity.
 
 When the person only asks what ghost is, use the following example as the full
 answer. You may add one short offer to explain how it works. End the reply there.
@@ -60,14 +65,14 @@ before the next step.
 - **Established package:** offer to apply its guidance to a real task through
   the gather/pull loop below.
 
-During setup or starter adaptation, ask before drafting brand guidance or
-creating or editing files, including running `ghost init`, unless the person
-has already explicitly requested that action. A question about how to start
-calls for advice. The person supplies the brand decisions. Show the draft for
-their review and confirmation before writing it into `.ghost/`.
+During setup or starter adaptation, ask and wait for confirmation before
+drafting brand guidance or creating or editing files, including running
+`ghost init`, unless the person has already explicitly requested that action.
+A question about how to start calls for advice. The person supplies the brand
+decisions. Show the draft for their review and confirmation before writing it
+into the package.
 
-ghost does not learn or verify the brand on its own. The project state chooses
-the next action; it does not trigger an introduction.
+ghost does not learn or verify the brand on its own.
 
 ## Where to go
 
