@@ -62,6 +62,14 @@ afterEach(async () => {
 });
 
 it("gathers automatic guidance and pulls ordered closures from both owners without relying on names", async () => {
+  await put(
+    "shared/extra.md",
+    node([], "Shared dependency of fingerprint core."),
+  );
+  await put(
+    "brand/another.md",
+    node(["extra"], "Second fingerprint core body."),
+  );
   const gather = await runCli(
     ["gather", ...brandArgs, "--format", "json", "--no-events"],
     root,
@@ -73,6 +81,7 @@ it("gathers automatic guidance and pulls ordered closures from both owners witho
   expect(menu.automatic.map((entry: { id: string }) => entry.id)).toEqual([
     "parts/zebra",
     "starter",
+    "extra",
     "optional-piece",
     "custom.welcome",
     "another",
@@ -123,24 +132,33 @@ it("gathers automatic guidance and pulls ordered closures from both owners witho
   expect(pull.stderr).toContain("cascade pulls follow dependency graph order");
   const packet = JSON.parse(pull.stdout);
   expect(packet.ids).toEqual([
-    ...automatic.ids,
+    "parts/zebra",
+    "starter",
+    "extra",
     "prefix.optional",
+    "optional-piece",
+    "custom.welcome",
+    "another",
     "universal.foundation.choice",
   ]);
+  expect(packet.nodes.map((item: { id: string }) => item.id)).toEqual(
+    packet.ids,
+  );
   expect(
     packet.nodes.map((item: { packageId: string }) => item.packageId),
   ).toEqual([
     "universal",
     "universal",
-    "fingerprint",
-    "fingerprint",
-    "fingerprint",
     "universal",
+    "universal",
+    "fingerprint",
+    "fingerprint",
+    "fingerprint",
     "fingerprint",
   ]);
   expect(packet.nodes[0].packageDir).toBe(join(root, "shared"));
   expect(packet.nodes[0].materials[0].inlined).toBe("Universal material.");
-  expect(packet.nodes[2].materials[0].inlined).toBe("Fingerprint material.");
+  expect(packet.nodes[4].materials[0].inlined).toBe("Fingerprint material.");
   expect(packet.provenance).toEqual(menu.provenance);
   expect(packet.provenance.universal.hash).toMatch(/^sha256:[0-9a-f]{64}$/);
 

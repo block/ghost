@@ -65,10 +65,13 @@ A fingerprint node can require nodes from either package. A universal node
 can require nodes from its own package. IDs must be unique across the pair.
 Pull visits the universal core, fingerprint core and requested IDs in that
 order. At each visit it walks the node's `requires` in their declared order,
-emits prerequisites before dependents and emits each ID once. Pulls with dependencies
-follow this dependency order and print a notice if you pass `--order given`.
-Both gather formats show the automatic guidance bodies in dependency order,
-separate from selectable nodes.
+and collects each ID once, with prerequisites before dependents. A paired pull
+emits the universal package's nodes first, then the fingerprint's nodes.
+Within each package, prerequisites precede dependents and the automatic
+closure precedes any additional nodes from the requested closure. Pulls with
+dependencies print a notice if you pass `--order given`. Both gather formats
+show the automatic guidance bodies in the same order as a bare pull, separate
+from selectable nodes.
 
 An automatic node can supply `## If no guidance applies`. The CLI uses one
 distinct policy from the automatic nodes, including any prerequisite of

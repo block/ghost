@@ -10,6 +10,7 @@ import {
 import { isMissingPathError } from "../internal/fs.js";
 import {
   CascadeGraphError,
+  cascadeClosure,
   dependencyClosure,
   type GhostUniversalVersionWarning,
   hasAuthoredFallback,
@@ -172,7 +173,7 @@ async function assembleCascade(
     },
   });
   if (issues.size) throw new CascadeGraphError([...issues]);
-  const automatic = dependencyClosure(nodes, core);
+  const automatic = cascadeClosure(nodes, core, universalNodes.keys());
   let versionWarning: GhostUniversalVersionWarning | undefined;
   const version = primary.manifest.universal ?? primary.manifest.version;
   if (

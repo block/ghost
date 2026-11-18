@@ -132,6 +132,22 @@ export function dependencyClosure(
   return [...delivered.values()];
 }
 
+export function cascadeClosure(
+  nodes: ReadonlyMap<string, Readonly<GhostCatalogNode>>,
+  roots: readonly string[],
+  universalNodeIds: Iterable<string>,
+): Readonly<GhostCatalogNode>[] {
+  const universalIds = new Set(universalNodeIds);
+  const universal: Readonly<GhostCatalogNode>[] = [];
+  const primary: Readonly<GhostCatalogNode>[] = [];
+  for (const node of dependencyClosure(nodes, roots)) {
+    (universalIds.has(node.id) ? universal : primary).push(node);
+  }
+  // Universal nodes only require other universal nodes, so grouping by
+  // package preserves prerequisite order.
+  return [...universal, ...primary];
+}
+
 /** The caller's repository contains usual materials; an external package owns its directory. */
 export function materialRoot(packageDir: string, repoRoot: string): string {
   const path = relative(repoRoot, packageDir);

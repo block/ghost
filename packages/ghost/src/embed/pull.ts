@@ -15,7 +15,7 @@ import {
 import { guidanceDiagnostics } from "../internal/load-diagnostics.js";
 import type { PullMiss } from "../observability-events.js";
 import {
-  dependencyClosure,
+  cascadeClosure,
   fallbackPolicy,
   materialRoot,
 } from "../scan/cascade.js";
@@ -91,10 +91,11 @@ export async function pullGhostNodes(
       ? givenNodes
       : orderPulledNodes(givenNodes);
   const nodesToPull = snapshot.cascade
-    ? dependencyClosure(snapshot.catalog.nodes, [
-        ...snapshot.cascade.core,
-        ...known,
-      ])
+    ? cascadeClosure(
+        snapshot.catalog.nodes,
+        [...snapshot.cascade.core, ...known],
+        snapshot.cascade.universalNodeIds,
+      )
     : [
         ...(snapshot.cover.state === "resolved" ? [snapshot.cover.node] : []),
         ...orderedSelectedNodes,
