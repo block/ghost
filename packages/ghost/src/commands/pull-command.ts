@@ -155,6 +155,7 @@ function formatPullJson(
           },
         }
       : {}),
+    ...(result.authority ? { authority: result.authority } : {}),
     nodes: result.nodes.map((node) =>
       formatPullJsonNode(node, inlineMaterials),
     ),
@@ -167,6 +168,7 @@ function formatPullMarkdown(result: GhostPullResult): string {
   if (result.diagnostics.length > 0) {
     sections.push(formatLoadDiagnostics(result.diagnostics));
   }
+  if (result.authority) sections.push(`# Authority\n\n${result.authority}`);
   if (result.cover.state === "resolved") {
     sections.push(formatNodeMarkdown(result.cover.node));
   }

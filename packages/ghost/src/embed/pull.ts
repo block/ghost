@@ -40,6 +40,9 @@ interface PulledNode {
 export const GHOST_DEFAULT_FALLBACK_BODY =
   "The package has no authored policy for decisions its selected guidance does not cover. Continue with ordinary reasoning for reversible choices. Ask before consequential, irreversible, or brand-defining choices. Never present provisional reasoning as ghost-backed guidance.";
 
+const CASCADE_RULE_AUTHORITY =
+  "A more specific rule replaces or augments the rule it names, within the scope it states. Everything it doesn't name still applies. Required: exempts a rule from the cascade. A required rule cannot be replaced within its stated scope, wherever it lives. It is reserved for accessibility and legal obligations and documented technical limits, and it carries its reason and scope in the same bullet. The requires field declares delivery dependencies, not overrides. Report unresolved conflicts rather than guessing. Delivery order confers no authority.";
+
 export async function pullGhostNodes(
   snapshot: GhostEmbedSnapshot,
   options: {
@@ -119,7 +122,12 @@ export async function pullGhostNodes(
     diagnostics: guidanceDiagnostics(snapshot),
     requested: selectedRequested,
     ids: snapshot.cascade ? nodesToPull.map((node) => node.id) : known,
-    ...(snapshot.cascade ? { provenance: snapshot.cascade.provenance } : {}),
+    ...(snapshot.cascade
+      ? {
+          provenance: snapshot.cascade.provenance,
+          authority: CASCADE_RULE_AUTHORITY,
+        }
+      : {}),
     missed,
     cover:
       coverPulled !== undefined

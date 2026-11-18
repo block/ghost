@@ -172,6 +172,25 @@ it("supports standalone universal pulls and standalone fingerprint core", async 
   expect(JSON.parse(standalone.stdout).ids).toEqual(["entry"]);
 });
 
+it("emits the original rule authority in both formats for paired and standalone universal pulls", async () => {
+  const authority =
+    "A more specific rule replaces or augments the rule it names, within the scope it states. Everything it doesn't name still applies. Required: exempts a rule from the cascade. A required rule cannot be replaced within its stated scope, wherever it lives. It is reserved for accessibility and legal obligations and documented technical limits, and it carries its reason and scope in the same bullet. The requires field declares delivery dependencies, not overrides. Report unresolved conflicts rather than guessing. Delivery order confers no authority.";
+  for (const args of [brandArgs, ["--package", "shared"]]) {
+    const json = await runCli(
+      ["pull", ...args, "--format", "json", "--no-events"],
+      root,
+    );
+    expect(json.code).toBe(0);
+    expect(JSON.parse(json.stdout).authority).toBe(authority);
+
+    const markdown = await runCli(["pull", ...args, "--no-events"], root);
+    expect(markdown.code).toBe(0);
+    expect(
+      markdown.stdout.startsWith(`# Authority\n\n${authority}\n\n---\n\n`),
+    ).toBe(true);
+  }
+});
+
 it("requires an explicit universal source for paired fingerprints", async () => {
   const missing = await runCli(
     ["gather", "--package", "brand", "--format", "json"],
@@ -394,6 +413,7 @@ it("retains the legacy cover shape and menu", async () => {
     nodes: [{ id: "body" }],
   });
   expect(JSON.parse(pull.stdout)).not.toHaveProperty("provenance");
+  expect(JSON.parse(pull.stdout)).not.toHaveProperty("authority");
   const gather = await runCli(
     ["gather", "--package", "legacy", "--format", "json"],
     root,

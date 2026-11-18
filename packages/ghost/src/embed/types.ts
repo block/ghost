@@ -156,6 +156,8 @@ export interface GhostPullResult {
   /** Caller-selected ids after de-duplicating and removing a cover alias. */
   requested: readonly string[];
   provenance?: GhostProvenance;
+  /** Rule interpretation for packets delivered through manifest dependencies. */
+  authority?: string;
   ids: readonly string[];
   missed: readonly PullMiss[];
   cover: GhostPullCover;
