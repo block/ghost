@@ -16,7 +16,7 @@ export function registerPullCommand(cli: CAC): void {
   cli
     .command(
       "pull [...ids]",
-      "Emit the package cover plus named node bodies, and append the pull to the events tape.",
+      "Deliver automatic guidance and requested nodes and append the pull to the events tape.",
     )
     .option(
       "--package <dir>",
@@ -56,8 +56,10 @@ export function registerPullCommand(cli: CAC): void {
             ? undefined
             : resolveGhostPackage(opts.universal, process.cwd()),
         );
-        if (snapshot.cascade?.versionWarning) {
-          console.error(`Warning: ${snapshot.cascade.versionWarning}`);
+        if (snapshot.cascade && order === "given") {
+          console.error(
+            "Notice: cascade pulls follow dependency graph order; --order given does not apply.",
+          );
         }
         const repoRoot = await resolveGitRoot(process.cwd());
         const result = await pullGhostNodes(snapshot, {
@@ -108,6 +110,11 @@ export function registerPullCommand(cli: CAC): void {
         }
 
         if (format === "json") {
+          if (snapshot.cascade?.versionWarning) {
+            console.error(
+              `Warning: ${snapshot.cascade.versionWarning.message}`,
+            );
+          }
           process.stdout.write(
             `${JSON.stringify(formatPullJson(result, opts.materials !== false), null, 2)}\n`,
           );

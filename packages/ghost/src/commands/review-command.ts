@@ -50,7 +50,9 @@ export function registerReviewCommand(cli: CAC): void {
             : resolveGhostPackage(opts.universal, process.cwd()),
         );
         if (ghostPackage.cascade?.versionWarning) {
-          console.error(`Warning: ${ghostPackage.cascade.versionWarning}`);
+          console.error(
+            `Warning: ${ghostPackage.cascade.versionWarning.message}`,
+          );
         }
         if (!ghostPackage.hasChecksDir) {
           console.error(

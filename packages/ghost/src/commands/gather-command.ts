@@ -42,8 +42,8 @@ export function registerGatherCommand(cli: CAC): void {
             ? undefined
             : resolveGhostPackage(opts.universal, process.cwd()),
         );
-        if (snapshot.cascade?.versionWarning) {
-          console.error(`Warning: ${snapshot.cascade.versionWarning}`);
+        if (format === "json" && snapshot.cascade?.versionWarning) {
+          console.error(`Warning: ${snapshot.cascade.versionWarning.message}`);
         }
         if (format === "markdown" && ask === undefined) {
           throw new UsageError(
@@ -154,8 +154,12 @@ function formatMenuMarkdown(menu: GhostGatherResult): string {
     lines.push(
       "### Automatically included on pull",
       "",
-      ...menu.automatic.map(({ id }) => `- \`${id}\``),
-      "",
+      ...menu.automatic.flatMap(({ id, body }) => [
+        `#### \`${id}\``,
+        "",
+        body,
+        "",
+      ]),
     );
   }
   const kinds = menu.kinds ?? [];

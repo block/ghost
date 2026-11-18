@@ -9,7 +9,9 @@ import {
 } from "#ghost-core";
 import { isMissingPathError } from "../internal/fs.js";
 import {
+  CascadeGraphError,
   dependencyClosure,
+  type GhostUniversalVersionWarning,
   hasAuthoredFallback,
   validateCore,
 } from "./cascade.js";
@@ -113,44 +115,65 @@ async function assembleCascade(
   universal?: LoadedGhostPackage,
   universalPaths?: GhostPackagePaths,
 ): Promise<LoadedGhostPackage> {
+  const issues = new Set<string>();
+  const report = (message: string) => issues.add(message);
   if (universal?.manifest.id === primary.manifest.id) {
-    throw new UsageError(
+    report(
       `The universal package and fingerprint must have distinct package IDs, got "${primary.manifest.id}".`,
     );
   }
-  const localCore = validateCore(primary);
-  const universalCore = universal ? validateCore(universal) : [];
+  const localCore = validateCore(primary, report);
+  const universalCore = universal ? validateCore(universal, report) : [];
   const core = [...universalCore, ...localCore];
   const universalNodes = universal?.catalog.nodes ?? new Map();
   const nodes = new Map(universalNodes);
   for (const [id, node] of primary.catalog.nodes) {
-    if (nodes.has(id))
-      throw new UsageError(
+    if (nodes.has(id)) {
+      report(
         `Duplicate node ID "${id}" across the universal package and fingerprint.`,
       );
-    nodes.set(id, node);
+    } else nodes.set(id, node);
   }
   const checks = new Map(universal?.checks);
   for (const [id, check] of primary.checks) {
-    if (checks.has(id))
-      throw new UsageError(
+    if (checks.has(id)) {
+      report(
         `Duplicate check ID "${id}" across the universal package and fingerprint.`,
       );
-    checks.set(id, check);
+    } else checks.set(id, check);
   }
 
   for (const id of nodes.keys()) {
     if (!NodeIdSchema.safeParse(id).success)
-      throw new UsageError(
+      report(
         `Invalid node ID "${id}". Use a package-relative path of lowercase slug segments.`,
       );
   }
 
-  // Validate all authored edges even when the caller selects only a subset.
-  dependencyClosure(universalNodes, [...universalNodes.keys()]);
-  dependencyClosure(nodes, [...nodes.keys()]);
-  const automatic = dependencyClosure(nodes, core).map((node) => node.id);
-  let versionWarning: string | undefined;
+  // Validate every edge once, including those outside the delivered closure.
+  const localInvalid = new Map(
+    primary.invalid.map(({ file, message }) => [file, message]),
+  );
+  const universalInvalid = new Map(
+    universal?.invalid.map(({ file, message }) => [file, message]),
+  );
+  dependencyClosure(nodes, [...nodes.keys()], {
+    report,
+    allows: (from, id) =>
+      universalNodes.has(from) ? universalNodes.has(id) : nodes.has(id),
+    missing: (from, id) => {
+      const file = `${id}.md`;
+      const invalid = universalNodes.has(from)
+        ? universalInvalid.get(file)
+        : (localInvalid.get(file) ?? universalInvalid.get(file));
+      return invalid
+        ? `Node "${from}" requires invalid node "${id}": ${invalid}`
+        : `Node "${from}" requires missing node "${id}".`;
+    },
+  });
+  if (issues.size) throw new CascadeGraphError([...issues]);
+  const automatic = dependencyClosure(nodes, core);
+  let versionWarning: GhostUniversalVersionWarning | undefined;
   const version = primary.manifest.universal ?? primary.manifest.version;
   if (
     version !== undefined &&
@@ -167,8 +190,16 @@ async function assembleCascade(
       throw new UsageError(
         `Invalid universal version "${actual}"; use SemVer.`,
       );
-    if (comparison !== 0)
-      versionWarning = `Fingerprint expects universal ${version}; supplied universal is ${actual}.`;
+    if (comparison !== 0) {
+      versionWarning = {
+        code: "universal-version-mismatch",
+        severity: "warning",
+        file: "manifest.yml",
+        expectedVersion: version,
+        actualVersion: actual,
+        message: `Fingerprint expects universal ${version}; supplied universal is ${actual}.`,
+      };
+    }
   }
   const provenance = {
     package: await identifyPackage(primary, paths),
@@ -189,10 +220,14 @@ async function assembleCascade(
     ],
     cascade: {
       core,
-      automatic,
+      automatic: automatic.map(({ id }) => id),
       universalDir: universalPaths?.packageDir,
       universalNodeIds: [...universalNodes.keys()],
-      hasAuthoredFallback: hasAuthoredFallback(nodes, core),
+      hasAuthoredFallback: hasAuthoredFallback(automatic, (id) =>
+        universal && universalNodes.has(id)
+          ? universal.manifest.id
+          : primary.manifest.id,
+      ),
       provenance,
       ...(versionWarning ? { versionWarning } : {}),
     },

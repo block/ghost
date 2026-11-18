@@ -34,14 +34,20 @@ tells the agent when to continue and when to ask about uncovered decisions.
 
 ### Universal packages and fingerprints
 
-A universal package has `schema: ghost.package/v1`, `id`, and a SemVer
-`version`. A paired fingerprint has the same `schema` and its own `id`, plus
-`universal` set to the version it targets. Either manifest may declare an
-ordered `core` list containing IDs from its own package. A standalone
-fingerprint can opt in to dependency delivery with `core: []`.
+The manifest fields determine the package role. A universal package declares
+`schema: ghost.package/v1`, `id` and a SemVer `version`. A paired fingerprint
+declares the same schema, its own ID and a SemVer `universal` value. It omits
+`version`. Either package can list its own automatic node IDs in `core`.
+Use `core: []` to enable dependency delivery for a standalone fingerprint
+with no automatic roots. A manifest with only `schema`, `id` and optional
+`cover` uses legacy delivery.
 
-Pass both paths for a paired fingerprint. For a standalone universal pull,
-pass its directory as `--package`.
+`universal` records the version the fingerprint was authored against.
+`--universal <dir>` selects the actual source. Gather and pull record the
+supplied package's ID, version and hash in provenance. A version mismatch
+produces an advisory `universal-version-mismatch` diagnostic with
+`expectedVersion` and `actualVersion`. The caller supplies the package
+separately.
 
 ```sh
 ghost gather --package brand/fingerprint --universal universal "Draft an email"
@@ -49,20 +55,38 @@ ghost pull channel.email --package brand/fingerprint --universal universal
 ghost pull --package universal
 ```
 
-Use the same package options with `ghost validate` and `ghost review`.
-Use a node's `requires` list for prerequisites. A fingerprint node can require
-nodes in either package. A universal node can require nodes in its own package.
-IDs must be unique across the pair. Pull visits the universal core, then the
-fingerprint core, then the requested IDs. It emits prerequisites before each
-node and emits shared prerequisites once. Gather lists the automatic guidance
-separately from selectable nodes. Conflicting `If no guidance applies` policies
-among core nodes fail validation.
+Use the paired options with `ghost validate`, `ghost review` and `ghost stats`.
+Node IDs are package-relative paths without the Markdown extension. Each
+segment starts with a lowercase letter or digit and may also contain dots,
+underscores or hyphens. The package machinery uses the reserved root paths
+listed above.
+
+A fingerprint node can require nodes from either package. A universal node
+can require nodes from its own package. IDs must be unique across the pair.
+Pull visits the universal core, fingerprint core and requested IDs in that
+order. At each visit it walks the node's `requires` in their declared order,
+emits prerequisites before dependents and emits each ID once. Pulls with dependencies
+follow this dependency order and print a notice if you pass `--order given`.
+Both gather formats show the automatic guidance bodies in dependency order,
+separate from selectable nodes.
+
+An automatic node can supply `## If no guidance applies`. The CLI uses one
+distinct policy from the automatic nodes, including any prerequisite of
+either core. Identical section text after trimming surrounding whitespace
+is accepted. More than one distinct text fails validation and identifies the
+policy nodes and their packages. The CLI supplies its default when the
+automatic guidance contains no authored policy.
+
+A bare pull emits the automatic guidance. A request with only unknown IDs
+exits with status 2 and emits no packet. A mixed request delivers the known
+nodes and reports the misses. In paired-package JSON and tape events, `requested`
+records the explicit selection and `ids` records the delivered nodes.
+`ghost stats` measures selection from those requests.
 
 ## Glossary and identity
 
 `glossary.md` declares the package's kind vocabulary and defines each kind. A
-node's id is its filename minus `.md`; its kind is the first dotted filename
-segment. A bare filename has no kind. Undeclared kind prefixes warn in legacy packages.
+node's kind is the first dotted segment of its filename. A bare filename has no kind. Undeclared kind prefixes warn in legacy packages.
 In paired packages, prefixes group display entries and do not affect delivery.
 
 The starter vocabulary is `standard` (shared guidance, each rule an

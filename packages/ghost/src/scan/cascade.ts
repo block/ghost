@@ -7,6 +7,15 @@ import {
 import type { LoadedGhostPackage } from "./ghost-package.js";
 import type { GhostProvenance } from "./package-hash.js";
 
+export interface GhostUniversalVersionWarning {
+  code: "universal-version-mismatch";
+  severity: "warning";
+  file: "manifest.yml";
+  message: string;
+  expectedVersion: string;
+  actualVersion: string;
+}
+
 export interface GhostCascade {
   core: readonly string[];
   automatic: readonly string[];
@@ -14,39 +23,64 @@ export interface GhostCascade {
   universalNodeIds: readonly string[];
   hasAuthoredFallback: boolean;
   provenance: GhostProvenance;
-  versionWarning?: string;
+  versionWarning?: GhostUniversalVersionWarning;
 }
 
-export function validateCore(pkg: LoadedGhostPackage): string[] {
+export class CascadeGraphError extends UsageError {
+  constructor(readonly issues: readonly string[]) {
+    super(issues.join("\n"));
+  }
+}
+
+export function validateCore(
+  pkg: LoadedGhostPackage,
+  report: (message: string) => void,
+): string[] {
   const core = pkg.manifest.core ?? [];
   for (const id of core) {
-    if (!pkg.catalog.nodes.has(id)) {
-      throw new UsageError(
-        `Package "${pkg.manifest.id}" core node "${id}" must exist in the declaring package.`,
-      );
-    }
+    if (pkg.catalog.nodes.has(id)) continue;
+    const owner = `Package "${pkg.manifest.id}"`;
+    const invalid = pkg.invalid.find(({ file }) => file === `${id}.md`);
+    report(
+      invalid
+        ? `${owner} core node "${id}" could not be loaded: ${invalid.message}`
+        : `${owner} core node "${id}" must exist in the declaring package.`,
+    );
   }
   return core;
 }
 
+const FALLBACK_POLICY_HEADING = "If no guidance applies";
+
+const LEGACY_FALLBACK_HEADING = new RegExp(
+  `^##[ \t]+${FALLBACK_POLICY_HEADING}[ \t]*$`,
+  "im",
+);
+
+export function fallbackPolicy(
+  body: string,
+  { legacy = false } = {},
+): string | undefined {
+  // Released cover packages treat the heading alone as an authored policy.
+  if (legacy) return LEGACY_FALLBACK_HEADING.exec(body)?.[0];
+  return sliceNodeSection(body, FALLBACK_POLICY_HEADING)?.trim() || undefined;
+}
+
 export function hasAuthoredFallback(
-  nodes: ReadonlyMap<string, Readonly<GhostCatalogNode>>,
-  core: readonly string[],
+  automatic: readonly Readonly<GhostCatalogNode>[],
+  ownerOf: (id: string) => string,
 ): boolean {
-  const policies = new Set(
-    core.flatMap((id) => {
-      const node = nodes.get(id);
-      if (!node) return [];
-      const policy = sliceNodeSection(
-        node.body,
-        "If no guidance applies",
-      )?.trim();
-      return policy ? [policy] : [];
-    }),
-  );
+  const policies = new Set<string>();
+  const sources: string[] = [];
+  for (const node of automatic) {
+    const policy = fallbackPolicy(node.body);
+    if (!policy) continue;
+    policies.add(policy);
+    sources.push(`"${node.id}" (package "${ownerOf(node.id)}")`);
+  }
   if (policies.size > 1) {
     throw new UsageError(
-      'Conflicting "If no guidance applies" policies in core nodes.',
+      `More than one distinct "If no guidance applies" policy in automatic guidance: ${sources.join(", ")}.`,
     );
   }
   return policies.size > 0;
@@ -56,20 +90,37 @@ export function hasAuthoredFallback(
 export function dependencyClosure(
   nodes: ReadonlyMap<string, Readonly<GhostCatalogNode>>,
   roots: readonly string[],
+  validation?: {
+    report: (message: string) => void;
+    allows: (from: string, target: string) => boolean;
+    missing: (from: string, target: string) => string;
+  },
 ): Readonly<GhostCatalogNode>[] {
+  function fail(message: string): void {
+    if (validation) validation.report(message);
+    else throw new UsageError(message);
+  }
+
   const delivered = new Map<string, Readonly<GhostCatalogNode>>();
   const visiting = new Set<string>();
 
   function visit(id: string, from?: string): void {
+    if (from !== undefined && validation && !validation.allows(from, id)) {
+      fail(validation.missing(from, id));
+      return;
+    }
     if (delivered.has(id)) return;
     if (visiting.has(id)) {
-      throw new UsageError(
-        `Dependency cycle: ${[...visiting, id].join(" -> ")}.`,
+      const cycle = [...visiting];
+      fail(
+        `Dependency cycle: ${[...cycle.slice(cycle.indexOf(id)), id].join(" -> ")}.`,
       );
+      return;
     }
     const node = nodes.get(id);
     if (!node) {
-      throw new UsageError(`Node "${from}" requires missing node "${id}".`);
+      fail(`Node "${from}" requires missing node "${id}".`);
+      return;
     }
     visiting.add(id);
     for (const dependency of node.requires ?? []) visit(dependency, id);

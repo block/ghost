@@ -1,4 +1,5 @@
 import { buildCatalogMenu, type CatalogMenuEntry } from "#ghost-core";
+import { guidanceDiagnostics } from "../internal/load-diagnostics.js";
 import type {
   GhostEmbedSnapshot,
   GhostGatherContract,
@@ -41,7 +42,7 @@ export function gatherGhostPackage(
 
   return {
     kind: "menu",
-    diagnostics: snapshot.invalid,
+    diagnostics: guidanceDiagnostics(snapshot),
     ...(ask ? { ask } : {}),
     source: {
       artifact: "ghost package",

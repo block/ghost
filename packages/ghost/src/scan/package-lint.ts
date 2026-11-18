@@ -14,7 +14,7 @@ import {
   sliceNodeSection,
 } from "#ghost-core";
 import { isMissingPathError } from "../internal/fs.js";
-import { materialRoot } from "./cascade.js";
+import { CascadeGraphError, materialRoot } from "./cascade.js";
 import type { LoadedCheck } from "./check-files.js";
 import { GHOST_GLOSSARY_FILENAME, GHOST_MATERIALS_DIR } from "./constants.js";
 import {
@@ -68,8 +68,8 @@ export async function lintGhostPackage(
       if (cascade?.versionWarning)
         issues.push({
           severity: "warning",
-          rule: "universal-version-mismatch",
-          message: cascade.versionWarning,
+          rule: cascade.versionWarning.code,
+          message: cascade.versionWarning.message,
           path: "manifest.yml.universal",
         });
       // node pass: a node that failed its own schema was skipped while loading
@@ -123,12 +123,18 @@ export async function lintGhostPackage(
       }
       lintCheckReferences(catalog, checks, issues);
     } catch (err) {
-      issues.push({
-        severity: "error",
-        rule: "package-catalog-invalid",
-        message: err instanceof Error ? err.message : String(err),
-        path: ".ghost",
-      });
+      const messages =
+        err instanceof CascadeGraphError
+          ? err.issues
+          : [err instanceof Error ? err.message : String(err)];
+      for (const message of messages) {
+        issues.push({
+          severity: "error",
+          rule: "package-catalog-invalid",
+          message,
+          path: ".ghost",
+        });
+      }
     }
   }
 

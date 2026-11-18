@@ -7,7 +7,10 @@ import type {
   TransportedMaterial,
 } from "#ghost-core";
 import type { PullMiss } from "../observability-events.js";
-import type { GhostCascade } from "../scan/cascade.js";
+import type {
+  GhostCascade,
+  GhostUniversalVersionWarning,
+} from "../scan/cascade.js";
 import type { LoadedCheck } from "../scan/check-files.js";
 import type { GhostProvenance } from "../scan/package-hash.js";
 import type { ReadOnlySnapshotMap } from "./readonly-map.js";
@@ -84,10 +87,14 @@ export interface GhostGatherContract {
   noAsk: string;
 }
 
+export type GhostGuidanceDiagnostic =
+  | GhostEmbedSnapshot["invalid"][number]
+  | Readonly<GhostUniversalVersionWarning>;
+
 export interface GhostGatherResult {
   kind: "menu";
-  /** Invalid guidance files skipped during loading; never includes checks. */
-  diagnostics: GhostEmbedSnapshot["invalid"];
+  /** Skipped guidance files and package compatibility warnings. */
+  diagnostics: readonly GhostGuidanceDiagnostic[];
   ask?: string;
   source: {
     artifact: "ghost package";
@@ -144,8 +151,8 @@ export interface GhostPullFallback {
 
 export interface GhostPullResult {
   kind: "pull";
-  /** Invalid guidance files skipped during loading, including all-miss pulls. */
-  diagnostics: GhostEmbedSnapshot["invalid"];
+  /** Skipped guidance files and package compatibility warnings. */
+  diagnostics: readonly GhostGuidanceDiagnostic[];
   /** Caller-selected ids after de-duplicating and removing a cover alias. */
   requested: readonly string[];
   provenance?: GhostProvenance;

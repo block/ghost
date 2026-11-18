@@ -12,8 +12,13 @@ import {
   transportMaterials,
   UsageError,
 } from "#ghost-core";
+import { guidanceDiagnostics } from "../internal/load-diagnostics.js";
 import type { PullMiss } from "../observability-events.js";
-import { dependencyClosure, materialRoot } from "../scan/cascade.js";
+import {
+  dependencyClosure,
+  fallbackPolicy,
+  materialRoot,
+} from "../scan/cascade.js";
 import { GHOST_MATERIALS_DIR } from "../scan/constants.js";
 import type {
   GhostEmbedSnapshot,
@@ -34,8 +39,6 @@ interface PulledNode {
 
 export const GHOST_DEFAULT_FALLBACK_BODY =
   "The package has no authored policy for decisions its selected guidance does not cover. Continue with ordinary reasoning for reversible choices. Ask before consequential, irreversible, or brand-defining choices. Never present provisional reasoning as ghost-backed guidance.";
-
-const NO_GUIDANCE_HEADING = /^##[ \t]+If no guidance applies[ \t]*$/im;
 
 export async function pullGhostNodes(
   snapshot: GhostEmbedSnapshot,
@@ -70,7 +73,7 @@ export async function pullGhostNodes(
       selectedRequested,
       missed,
       coverId,
-      snapshot.invalid,
+      guidanceDiagnostics(snapshot),
     );
     return snapshot.cascade
       ? { ...packet, provenance: snapshot.cascade.provenance }
@@ -113,7 +116,7 @@ export async function pullGhostNodes(
 
   return {
     kind: "pull",
-    diagnostics: snapshot.invalid,
+    diagnostics: guidanceDiagnostics(snapshot),
     requested: selectedRequested,
     ids: snapshot.cascade ? nodesToPull.map((node) => node.id) : known,
     ...(snapshot.cascade ? { provenance: snapshot.cascade.provenance } : {}),
@@ -319,7 +322,7 @@ function fallbackForCover(
   }
   if (
     cover.state === "resolved" &&
-    !NO_GUIDANCE_HEADING.test(cover.node.body)
+    !fallbackPolicy(cover.node.body, { legacy: true })
   ) {
     return { source: "ghost-default", body: GHOST_DEFAULT_FALLBACK_BODY };
   }

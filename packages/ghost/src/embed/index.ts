@@ -18,6 +18,7 @@ export type {
   GhostGatherCoverage,
   GhostGatherResult,
   GhostGlossarySnapshot,
+  GhostGuidanceDiagnostic,
   GhostInspectLocalPolicy,
   GhostInspectPolicy,
   GhostMenuKind,

@@ -2,7 +2,7 @@ import { parse as parseYaml } from "yaml";
 import {
   GhostPackageManifestSchema,
   lintGhostCheck,
-  lintGhostNode,
+  parseNode,
 } from "#ghost-core";
 import { GHOST_MATERIALS_DIR } from "./constants.js";
 import type { LintReport } from "./lint.js";
@@ -76,7 +76,7 @@ export function lintDetectedFileKind(
       : kind === "material"
         ? emptyLintReport()
         : kind === "node"
-          ? lintGhostNode(raw)
+          ? parseNode(raw, { legacy: true }).report
           : lintUnsupportedFile();
 }
 
