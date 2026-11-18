@@ -14,7 +14,7 @@ export function gatherGhostPackage(
   const ask = normalizeAsk(options.ask);
   const coverId =
     snapshot.cover.state === "resolved" ? snapshot.cover.id : undefined;
-  const menu = buildCatalogMenu({
+  const allEntries = buildCatalogMenu({
     nodes: new Map(
       [...snapshot.catalog.nodes].map(([id, node]) => [
         id,
@@ -24,7 +24,19 @@ export function gatherGhostPackage(
         },
       ]),
     ),
-  }).filter((entry) => entry.id !== coverId);
+  });
+  const automaticIds = new Set(snapshot.cascade?.automatic);
+  const menu = allEntries.filter(
+    (entry) => entry.id !== coverId && !automaticIds.has(entry.id),
+  );
+  const entriesById = new Map(allEntries.map((entry) => [entry.id, entry]));
+  const automatic = snapshot.cascade?.automatic.map((id) => {
+    const entry = entriesById.get(id);
+    const node = snapshot.catalog.nodes.get(id);
+    if (!entry || !node)
+      throw new Error(`Automatic node "${id}" is missing from the catalog.`);
+    return { ...entry, body: node.body };
+  });
   const kinds = menuKinds(snapshot);
 
   return {
@@ -35,7 +47,17 @@ export function gatherGhostPackage(
       artifact: "ghost package",
       list: "Available guidance",
     },
-    contract: gatherContract(snapshot.invalid.length === 0),
+    contract: gatherContract(
+      snapshot.invalid.length === 0,
+      Boolean(snapshot.cascade),
+    ),
+    ...(snapshot.cascade
+      ? {
+          core: snapshot.cascade.core,
+          automatic,
+          provenance: snapshot.cascade.provenance,
+        }
+      : {}),
     coverage: menuCoverage(menu),
     ...(kinds.length > 0 ? { kinds } : {}),
     nodes: menu,
@@ -61,7 +83,10 @@ export const GATHER_IF_NONE_APPLY_INSTRUCTION =
 export const GATHER_NO_ASK_INSTRUCTION =
   "When no ask is supplied, this menu is not grounded to a task. Re-run `ghost gather <ask>` before pulling for a task.";
 
-export function gatherContract(complete = true): GhostGatherContract {
+export function gatherContract(
+  complete = true,
+  cascade = false,
+): GhostGatherContract {
   return {
     completeness: {
       complete,
@@ -76,7 +101,9 @@ export function gatherContract(complete = true): GhostGatherContract {
       addForCompleteness: false,
       omitApplicableForCount: false,
     },
-    ifNoneApply: GATHER_IF_NONE_APPLY_INSTRUCTION,
+    ifNoneApply: cascade
+      ? "If no selectable node applies, run bare `ghost pull` with the same package options to receive automatic guidance and the uncovered-guidance policy."
+      : GATHER_IF_NONE_APPLY_INSTRUCTION,
     noAsk: GATHER_NO_ASK_INSTRUCTION,
   };
 }

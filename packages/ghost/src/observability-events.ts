@@ -1,6 +1,7 @@
 import { access, appendFile, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { GHOST_EVENTS_FILENAME } from "./scan/constants.js";
+import type { GhostProvenance } from "./scan/package-hash.js";
 
 const FIRST_WRITE_NOTICE = `ghost: logging selection events locally to .ghost/${GHOST_EVENTS_FILENAME} (gitignored; never leaves your machine). Summarize with \`ghost stats\`.`;
 
@@ -11,6 +12,7 @@ export type GatherObservabilityEvent = {
   run?: string;
   ask?: string;
   menu: string[];
+  provenance?: GhostProvenance;
   materials?: string[];
 };
 
@@ -24,8 +26,10 @@ export type PullObservabilityEvent = {
   event: "pull";
   /** Caller-supplied run identifier (--run or GHOST_RUN_ID); attribution only. */
   run?: string;
-  /** Selectable node ids requested by the agent. The package cover is recorded separately. */
+  /** Delivered node IDs for paired packages, selected IDs for legacy packages. */
   ids: string[];
+  requested?: string[];
+  provenance?: GhostProvenance;
   /** Cover id included automatically in the pull packet, when resolved. */
   cover?: string;
   missed?: PullMiss[];

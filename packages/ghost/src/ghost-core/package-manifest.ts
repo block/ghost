@@ -27,7 +27,38 @@ export const GhostPackageManifestSchema = z
      * retrieve: essence, temperature, and brand-level refusals.
      */
     cover: NodeIdSchema.optional(),
+    version: z.string().trim().min(1).optional(),
+    universal: z.string().trim().min(1).optional(),
+    core: z.array(NodeIdSchema).optional(),
   })
-  .strict();
+  .strict()
+  .superRefine(({ cover, version, universal, core }, ctx) => {
+    if (version !== undefined && universal !== undefined) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["universal"],
+        message:
+          "A universal package cannot depend on another universal package",
+      });
+    }
+    if (
+      cover !== undefined &&
+      (version !== undefined || universal !== undefined || core !== undefined)
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["cover"],
+        message:
+          "Legacy cover cannot be combined with version, universal, or core",
+      });
+    }
+    if (core && new Set(core).size !== core.length) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["core"],
+        message: "Core node IDs must be unique",
+      });
+    }
+  });
 
 export type GhostPackageManifest = z.infer<typeof GhostPackageManifestSchema>;

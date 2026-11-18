@@ -45,11 +45,12 @@ export interface LoadedNodeFiles {
  */
 export async function loadNodeFiles(
   packageDir: string,
+  legacy: boolean,
 ): Promise<LoadedNodeFiles> {
   const nodes: PlacedNode[] = [];
   const invalid: LoadedNodeFiles["invalid"] = [];
 
-  await walk(packageDir, "", true, nodes, invalid);
+  await walk(packageDir, "", true, nodes, invalid, legacy);
 
   // Deterministic order by id, mirroring the old sorted readdir.
   nodes.sort((a, b) => a.id.localeCompare(b.id));
@@ -63,6 +64,7 @@ async function walk(
   isRoot: boolean,
   nodes: PlacedNode[],
   invalid: LoadedNodeFiles["invalid"],
+  legacy: boolean,
 ): Promise<void> {
   const absDir = relDir === "" ? packageDir : join(packageDir, relDir);
   let entries: Array<{ name: string; isDir: boolean }>;
@@ -84,7 +86,7 @@ async function walk(
     const relPath = relDir === "" ? entry.name : `${relDir}/${entry.name}`;
 
     if (entry.isDir) {
-      await walk(packageDir, relPath, false, nodes, invalid);
+      await walk(packageDir, relPath, false, nodes, invalid, legacy);
       continue;
     }
     if (!entry.name.endsWith(".md")) continue;
@@ -92,7 +94,7 @@ async function walk(
     const raw = await readFile(join(packageDir, relPath), "utf-8");
     let parsed: ReturnType<typeof parseNode>;
     try {
-      parsed = parseNode(raw);
+      parsed = parseNode(raw, { legacy });
     } catch (err) {
       if (!(err instanceof YAMLParseError)) throw err;
       invalid.push({ file: relPath, message: err.message });
@@ -108,6 +110,7 @@ async function walk(
       continue;
     }
 
+    if (legacy) delete node.frontmatter.requires;
     const { id, kind, slug } = locate(relPath);
     nodes.push({
       id,

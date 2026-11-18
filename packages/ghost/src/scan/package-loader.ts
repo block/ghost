@@ -4,19 +4,61 @@ import {
   assembleCatalog,
   type GhostPackageManifest,
   GhostPackageManifestSchema,
+  NodeIdSchema,
   UsageError,
 } from "#ghost-core";
 import { isMissingPathError } from "../internal/fs.js";
+import {
+  dependencyClosure,
+  hasAuthoredFallback,
+  validateCore,
+} from "./cascade.js";
 import { loadCheckFiles } from "./check-files.js";
 import type { GhostPackagePaths, LoadedGhostPackage } from "./ghost-package.js";
 import type { LintIssue } from "./lint.js";
 import { loadNodeFiles } from "./node-files.js";
+import { hashGhostPackage, invalidPackageSymlinks } from "./package-hash.js";
+import { compareVersions } from "./package-version-order.js";
 
 const RETIRED_PACKAGE_SCHEMA = "ghost.fingerprint-package/v1";
 const RETIRED_SCHEMA_MESSAGE =
   "manifest.yml uses the retired schema ghost.fingerprint-package/v1. Replace it with `schema: ghost.package/v1`, then run `ghost validate`.";
 
 export async function loadGhostPackage(
+  paths: GhostPackagePaths,
+  universalPaths?: GhostPackagePaths,
+): Promise<LoadedGhostPackage> {
+  const primary = await loadOnePackage(paths);
+  const { manifest } = primary;
+  if (manifest.universal === undefined && universalPaths !== undefined) {
+    throw new UsageError(
+      "The selected package must declare universal in manifest.yml to use --universal.",
+    );
+  }
+  if (
+    manifest.universal === undefined &&
+    manifest.version === undefined &&
+    manifest.core === undefined
+  )
+    return primary;
+  if (manifest.universal !== undefined && universalPaths === undefined) {
+    throw new UsageError(
+      `Package "${manifest.id}" requires universal ${manifest.universal}. Pass --universal <dir>.`,
+    );
+  }
+  const universal =
+    universalPaths === undefined
+      ? undefined
+      : await loadOnePackage(universalPaths);
+  if (universal && universal.manifest.version === undefined) {
+    throw new UsageError(
+      "--universal must point to a universal package with version in manifest.yml.",
+    );
+  }
+  return assembleCascade(primary, paths, universal, universalPaths);
+}
+
+async function loadOnePackage(
   paths: GhostPackagePaths,
 ): Promise<LoadedGhostPackage> {
   let manifestRaw: string;
@@ -32,10 +74,25 @@ export async function loadGhostPackage(
     throw err;
   }
   const manifest = parseManifest(manifestRaw, "manifest.yml");
+  const legacy =
+    manifest.version === undefined &&
+    manifest.universal === undefined &&
+    manifest.core === undefined;
+  if (!legacy) {
+    const invalidLinks = await invalidPackageSymlinks(paths.packageDir);
+    if (invalidLinks.length) {
+      throw new UsageError(
+        `Package "${manifest.id}" has invalid symlinks: ${invalidLinks.join(", ")}.`,
+      );
+    }
+  }
 
-  // The catalog is flat and valid by construction — no edges to resolve.
+  // Match prerequisites after both package catalogs are loaded.
   // Per-node schema failures are collected as `invalid`.
-  const { nodes: placedNodes, invalid } = await loadNodeFiles(paths.packageDir);
+  const { nodes: placedNodes, invalid } = await loadNodeFiles(
+    paths.packageDir,
+    legacy,
+  );
   const checkFiles = await loadCheckFiles(paths.packageDir);
   const catalog = assembleCatalog({ placedNodes });
 
@@ -47,6 +104,109 @@ export async function loadGhostPackage(
     checks: checkFiles.checks,
     invalid,
     invalidChecks: checkFiles.invalid,
+  };
+}
+
+async function assembleCascade(
+  primary: LoadedGhostPackage,
+  paths: GhostPackagePaths,
+  universal?: LoadedGhostPackage,
+  universalPaths?: GhostPackagePaths,
+): Promise<LoadedGhostPackage> {
+  if (universal?.manifest.id === primary.manifest.id) {
+    throw new UsageError(
+      `The universal package and fingerprint must have distinct package IDs, got "${primary.manifest.id}".`,
+    );
+  }
+  const localCore = validateCore(primary);
+  const universalCore = universal ? validateCore(universal) : [];
+  const core = [...universalCore, ...localCore];
+  const universalNodes = universal?.catalog.nodes ?? new Map();
+  const nodes = new Map(universalNodes);
+  for (const [id, node] of primary.catalog.nodes) {
+    if (nodes.has(id))
+      throw new UsageError(
+        `Duplicate node ID "${id}" across the universal package and fingerprint.`,
+      );
+    nodes.set(id, node);
+  }
+  const checks = new Map(universal?.checks);
+  for (const [id, check] of primary.checks) {
+    if (checks.has(id))
+      throw new UsageError(
+        `Duplicate check ID "${id}" across the universal package and fingerprint.`,
+      );
+    checks.set(id, check);
+  }
+
+  for (const id of nodes.keys()) {
+    if (!NodeIdSchema.safeParse(id).success)
+      throw new UsageError(
+        `Invalid node ID "${id}". Use a package-relative path of lowercase slug segments.`,
+      );
+  }
+
+  // Validate all authored edges even when the caller selects only a subset.
+  dependencyClosure(universalNodes, [...universalNodes.keys()]);
+  dependencyClosure(nodes, [...nodes.keys()]);
+  const automatic = dependencyClosure(nodes, core).map((node) => node.id);
+  let versionWarning: string | undefined;
+  const version = primary.manifest.universal ?? primary.manifest.version;
+  if (
+    version !== undefined &&
+    compareVersions(version, version) === undefined
+  ) {
+    throw new UsageError(
+      `Invalid package compatibility version "${version}"; use SemVer.`,
+    );
+  }
+  if (universal?.manifest.version !== undefined && version !== undefined) {
+    const actual = universal.manifest.version;
+    const comparison = compareVersions(actual, version);
+    if (comparison === undefined)
+      throw new UsageError(
+        `Invalid universal version "${actual}"; use SemVer.`,
+      );
+    if (comparison !== 0)
+      versionWarning = `Fingerprint expects universal ${version}; supplied universal is ${actual}.`;
+  }
+  const provenance = {
+    package: await identifyPackage(primary, paths),
+    universal:
+      universal && universalPaths
+        ? await identifyPackage(universal, universalPaths)
+        : null,
+  };
+  return {
+    ...primary,
+    catalog: { nodes },
+    checks,
+    hasChecksDir: primary.hasChecksDir || Boolean(universal?.hasChecksDir),
+    invalid: [...(universal?.invalid ?? []), ...primary.invalid],
+    invalidChecks: [
+      ...(universal?.invalidChecks ?? []),
+      ...primary.invalidChecks,
+    ],
+    cascade: {
+      core,
+      automatic,
+      universalDir: universalPaths?.packageDir,
+      universalNodeIds: [...universalNodes.keys()],
+      hasAuthoredFallback: hasAuthoredFallback(nodes, core),
+      provenance,
+      ...(versionWarning ? { versionWarning } : {}),
+    },
+  };
+}
+
+async function identifyPackage(
+  pkg: LoadedGhostPackage,
+  paths: GhostPackagePaths,
+) {
+  return {
+    id: pkg.manifest.id,
+    version: pkg.manifest.version ?? null,
+    hash: await hashGhostPackage(paths.packageDir),
   };
 }
 

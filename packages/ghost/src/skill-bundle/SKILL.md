@@ -40,7 +40,7 @@ it applies, and an agent reads the relevant guidance before building.
 
 ## The model in one breath
 
-- A **node** is a markdown file: a `for` payload, optional `materials`, and prose brand guidance.
+- A **node** is a Markdown file with a `for` payload, optional `materials` and `requires`, and prose brand guidance.
 - `materials` is one list of locators for the concrete stuff the guidance is about:
   explicit repo-relative file paths or supported external locators (see
   [schema.md](references/schema.md)); name each file rather than
@@ -57,8 +57,9 @@ it applies, and an agent reads the relevant guidance before building.
   test: a violation visible in one element belongs in that element's chapter;
   visible in one view, in the composition chapter; visible only across the
   whole body of work, on the cover.
-- There is **no hierarchy, no inheritance, no edges**. Directories are for browsing
-  only; the model reads a flat menu.
+- Directories organize files. In paired packages, `requires` lists prerequisites
+  and each manifest's `core` lists automatic roots. Use the same `--package`
+  and `--universal` paths for gather, pull, and review.
 - **Checks** are optional review assertions in a flat `.ghost/checks/*.md`
   directory. Checks are feed-back only; they never leak into generation
   context. Each check declares `references` to node ids and is used by

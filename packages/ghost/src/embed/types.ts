@@ -7,7 +7,9 @@ import type {
   TransportedMaterial,
 } from "#ghost-core";
 import type { PullMiss } from "../observability-events.js";
+import type { GhostCascade } from "../scan/cascade.js";
 import type { LoadedCheck } from "../scan/check-files.js";
+import type { GhostProvenance } from "../scan/package-hash.js";
 import type { ReadOnlySnapshotMap } from "./readonly-map.js";
 
 export type GhostCoverState =
@@ -40,6 +42,7 @@ export interface GhostEmbedSnapshot {
     nodes: ReadOnlySnapshotMap<string, Readonly<GhostCatalogNode>>;
   }>;
   cover: GhostCoverState;
+  cascade?: Readonly<GhostCascade>;
   glossary?: Readonly<GhostGlossarySnapshot>;
   checks: ReadOnlySnapshotMap<string, Readonly<LoadedCheck>>;
   invalid: readonly Readonly<{ file: string; message: string }>[];
@@ -93,6 +96,9 @@ export interface GhostGatherResult {
   contract: GhostGatherContract;
   coverage: GhostGatherCoverage;
   kinds?: readonly GhostMenuKind[];
+  core?: readonly string[];
+  automatic?: readonly (CatalogMenuEntry & { body: string })[];
+  provenance?: GhostProvenance;
   /** Selectable menu entries. A resolved cover is intentionally excluded. */
   nodes: readonly CatalogMenuEntry[];
 }
@@ -107,6 +113,8 @@ export interface GhostPulledSkeleton {
 
 export interface GhostPulledNode {
   id: string;
+  packageId?: string;
+  packageDir?: string;
   kind?: string;
   for?: string;
   declaredMaterials?: readonly GhostMaterial[];
@@ -140,6 +148,7 @@ export interface GhostPullResult {
   diagnostics: GhostEmbedSnapshot["invalid"];
   /** Caller-selected ids after de-duplicating and removing a cover alias. */
   requested: readonly string[];
+  provenance?: GhostProvenance;
   ids: readonly string[];
   missed: readonly PullMiss[];
   cover: GhostPullCover;

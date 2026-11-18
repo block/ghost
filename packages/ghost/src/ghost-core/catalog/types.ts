@@ -3,8 +3,8 @@ import type { GhostMaterial } from "../materials.js";
 /**
  * A node in the ghost catalog — pure prose plus its filename-derived
  * identity. The body is the design expression; there are no structured content
- * fields. Kind comes from the filename prefix; there is no traversal or
- * containment model — the catalog is a flat map the agent selects from.
+ * fields beyond retrieval metadata. Kind comes from the filename prefix
+ * for display. Only declared prerequisites create links between nodes.
  */
 export interface GhostCatalogNode {
   id: string;
@@ -12,6 +12,8 @@ export interface GhostCatalogNode {
   kind?: string;
   /** Filename slug: bare name, or the part after the first dot. */
   slug: string;
+  /** Node IDs that must be delivered before this node. */
+  requires?: readonly string[];
   /** Retrieval payload shown in gather: the situation or activity this guidance is for. */
   for?: string;
   /** Optional bare or annotated material locators carried by the authored node. */
@@ -27,7 +29,7 @@ export interface GhostCatalogNode {
 
 /**
  * The in-memory ghost catalog: prose nodes indexed by id. A flat map —
- * no edges, no cascade, no traversal. Identity comes from each file's path.
+ * identity comes from each file's path.
  */
 export interface GhostCatalog {
   /** Every node, indexed by id. */

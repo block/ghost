@@ -18,8 +18,8 @@ description: >-
 ```
 
 Reserved at the root: `manifest.yml`, `glossary.md`, `materials/`, and
-`checks/`. Every other `*.md` is a node. The corpus is flat: no hierarchy,
-inheritance, or edges.
+`checks/`. Every other `*.md` is a node. Its ID is the package-relative path
+without `.md`. Folders organize files.
 
 ## Manifest
 
@@ -32,11 +32,38 @@ cover as a warning, a cover body over 1500 bytes as a warning, and a cover
 without an exact `## If no guidance applies` section as a warning. That section
 tells the agent when to continue and when to ask about uncovered decisions.
 
+### Universal packages and fingerprints
+
+A universal package has `schema: ghost.package/v1`, `id`, and a SemVer
+`version`. A paired fingerprint has the same `schema` and its own `id`, plus
+`universal` set to the version it targets. Either manifest may declare an
+ordered `core` list containing IDs from its own package. A standalone
+fingerprint can opt in to dependency delivery with `core: []`.
+
+Pass both paths for a paired fingerprint. For a standalone universal pull,
+pass its directory as `--package`.
+
+```sh
+ghost gather --package brand/fingerprint --universal universal "Draft an email"
+ghost pull channel.email --package brand/fingerprint --universal universal
+ghost pull --package universal
+```
+
+Use the same package options with `ghost validate` and `ghost review`.
+Use a node's `requires` list for prerequisites. A fingerprint node can require
+nodes in either package. A universal node can require nodes in its own package.
+IDs must be unique across the pair. Pull visits the universal core, then the
+fingerprint core, then the requested IDs. It emits prerequisites before each
+node and emits shared prerequisites once. Gather lists the automatic guidance
+separately from selectable nodes. Conflicting `If no guidance applies` policies
+among core nodes fail validation.
+
 ## Glossary and identity
 
 `glossary.md` declares the package's kind vocabulary and defines each kind. A
 node's id is its filename minus `.md`; its kind is the first dotted filename
-segment. A bare filename has no kind. Undeclared kind prefixes warn.
+segment. A bare filename has no kind. Undeclared kind prefixes warn in legacy packages.
+In paired packages, prefixes group display entries and do not affect delivery.
 
 The starter vocabulary is `standard` (shared guidance, each rule an
 Obligation or a replaceable Default), `foundation` (the brand's load-bearing

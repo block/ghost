@@ -10,8 +10,9 @@ import type { GhostCoverState, GhostEmbedSnapshot } from "./types.js";
 
 export async function loadGhostSnapshot(
   paths: GhostPackagePaths,
+  universalPaths?: GhostPackagePaths,
 ): Promise<GhostEmbedSnapshot> {
-  const loaded = await loadGhostPackage(paths);
+  const loaded = await loadGhostPackage(paths, universalPaths);
   const nodes = snapshotMap(cloneNodeMap(loaded.catalog.nodes));
   const cover = resolveCoverState(loaded.manifest.cover, nodes);
   const glossary = await loadSnapshotGlossary(paths.glossary);
@@ -27,6 +28,7 @@ export async function loadGhostSnapshot(
       nodes,
     },
     cover,
+    ...(loaded.cascade ? { cascade: loaded.cascade } : {}),
     ...(glossary ? { glossary } : {}),
     checks: snapshotMap(cloneCheckMap(loaded.checks)),
     invalid: loaded.invalid.map((entry) => ({ ...entry })),
@@ -52,6 +54,7 @@ function cloneNodeMap(
       id,
       deepFreeze({
         ...node,
+        ...(node.requires ? { requires: [...node.requires] } : {}),
         ...(node.materials ? { materials: [...node.materials] } : {}),
       }),
     ]),

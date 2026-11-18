@@ -8,6 +8,7 @@ import {
 import { formatLoadDiagnostics } from "../internal/load-diagnostics.js";
 import { GHOST_MATERIALS_DIR } from "../scan/constants.js";
 import type { LoadedGhostPackage } from "../scan/ghost-package.js";
+import type { GhostProvenance } from "../scan/package-hash.js";
 import { resolveGitRoot } from "../scan/package-paths.js";
 import {
   neutralizeSentinels,
@@ -48,6 +49,7 @@ export interface PacketCheck {
 
 export interface ReviewPacket {
   packageId: string;
+  provenance?: GhostProvenance;
   /** Invalid guidance and check files skipped during loading. */
   diagnostics: ReadonlyArray<Readonly<{ file: string; message: string }>>;
   touchedFiles: string[];
@@ -85,6 +87,7 @@ export async function buildReviewPacket(
       materialsDir: GHOST_MATERIALS_DIR,
     },
     options.nodeIds,
+    ghostPackage.cascade,
   );
 
   const materialNodes: PacketMaterialNode[] = resolution.materialNodes.map(
@@ -123,6 +126,9 @@ export async function buildReviewPacket(
 
   return {
     packageId: ghostPackage.manifest.id,
+    ...(ghostPackage.cascade
+      ? { provenance: ghostPackage.cascade.provenance }
+      : {}),
     diagnostics: [...ghostPackage.invalid, ...ghostPackage.invalidChecks],
     touchedFiles: resolution.touchedFiles.map((file) => file.path),
     materialNodes,

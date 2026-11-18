@@ -1,7 +1,7 @@
 import { stringify as stringifyYaml } from "yaml";
 import type { GhostNodeDocument, GhostNodeFrontmatter } from "./types.js";
 
-const FRONTMATTER_KEY_ORDER = ["for", "materials"] as const;
+const FRONTMATTER_KEY_ORDER = ["for", "materials", "requires"] as const;
 
 function shouldSerializeFrontmatterValue(value: unknown): boolean {
   return value !== undefined;

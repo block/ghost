@@ -22,6 +22,7 @@ export function registerPullCommand(cli: CAC): void {
       "--package <dir>",
       "Use this ghost package directory (default: ./.ghost)",
     )
+    .option("--universal <dir>", "Use this universal guidance package")
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
     })
@@ -49,7 +50,15 @@ export function registerPullCommand(cli: CAC): void {
         ] as const);
 
         const paths = resolveGhostPackage(opts.package, process.cwd());
-        const snapshot = await loadGhostSnapshot(paths);
+        const snapshot = await loadGhostSnapshot(
+          paths,
+          opts.universal === undefined
+            ? undefined
+            : resolveGhostPackage(opts.universal, process.cwd()),
+        );
+        if (snapshot.cascade?.versionWarning) {
+          console.error(`Warning: ${snapshot.cascade.versionWarning}`);
+        }
         const repoRoot = await resolveGitRoot(process.cwd());
         const result = await pullGhostNodes(snapshot, {
           ids: ids ?? [],
@@ -83,6 +92,12 @@ export function registerPullCommand(cli: CAC): void {
             event: "pull",
             ...(runId ? { run: runId } : {}),
             ids: [...result.ids],
+            ...(result.provenance
+              ? {
+                  requested: [...result.requested],
+                  provenance: result.provenance,
+                }
+              : {}),
             ...(result.cover.state === "resolved"
               ? { cover: result.cover.id }
               : {}),
@@ -114,6 +129,7 @@ function formatPullJson(
     kind: "pull",
     diagnostics: result.diagnostics,
     requested: result.requested,
+    ...(result.provenance ? { provenance: result.provenance } : {}),
     ids: result.ids,
     ...(result.missed.length > 0 ? { missed: result.missed } : {}),
     cover:
@@ -147,6 +163,9 @@ function formatPullMarkdown(result: GhostPullResult): string {
   if (result.cover.state === "resolved") {
     sections.push(formatNodeMarkdown(result.cover.node));
   }
+  if (result.provenance) {
+    for (const node of result.nodes) sections.push(formatNodeMarkdown(node));
+  }
   if (result.fallback !== undefined) {
     sections.push(
       [
@@ -158,8 +177,8 @@ function formatPullMarkdown(result: GhostPullResult): string {
       ].join("\n"),
     );
   }
-  for (const node of result.nodes) {
-    sections.push(formatNodeMarkdown(node));
+  if (!result.provenance) {
+    for (const node of result.nodes) sections.push(formatNodeMarkdown(node));
   }
 
   if (result.skeletons.length > 0) {
@@ -196,6 +215,9 @@ function formatPullJsonNode(
 ): Record<string, unknown> {
   return {
     id: node.id,
+    ...(node.packageId !== undefined
+      ? { packageId: node.packageId, packageDir: node.packageDir }
+      : {}),
     ...(node.kind !== undefined ? { kind: node.kind } : {}),
     ...(node.for ? { for: node.for } : {}),
     ...(node.declaredMaterials !== undefined
