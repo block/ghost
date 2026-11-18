@@ -124,6 +124,7 @@ export interface GhostPulledNode {
   packageDir?: string;
   kind?: string;
   for?: string;
+  requires?: readonly string[];
   declaredMaterials?: readonly GhostMaterial[];
   materials?: readonly TransportedMaterial[];
   body: string;

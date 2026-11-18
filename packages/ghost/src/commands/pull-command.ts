@@ -206,6 +206,8 @@ function formatPullMarkdown(result: GhostPullResult): string {
 
 function formatNodeMarkdown(node: GhostPulledNode): string {
   const lines = [`# \`${node.id}\``];
+  if (node.requires?.length)
+    lines.push("", `requires: ${node.requires.join(", ")}`);
   if (node.for) lines.push("", `Applies when: ${node.for}`);
   lines.push("", node.body.trim());
   if (node.materials !== undefined && node.materials.length > 0) {
@@ -227,6 +229,7 @@ function formatPullJsonNode(
       : {}),
     ...(node.kind !== undefined ? { kind: node.kind } : {}),
     ...(node.for ? { for: node.for } : {}),
+    ...(node.requires?.length ? { requires: node.requires } : {}),
     ...(node.declaredMaterials !== undefined
       ? {
           materials: inlineMaterials

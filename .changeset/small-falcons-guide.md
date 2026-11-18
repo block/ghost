@@ -2,4 +2,4 @@
 "@design-intelligence/ghost": minor
 ---
 
-Load explicit universal guidance with fingerprints and deliver universal nodes first, preserving dependency order within each package.
+Load universal guidance with fingerprints, show each node's prerequisites in pulls, and explain how to apply conflicting rules.

@@ -41,7 +41,7 @@ export const GHOST_DEFAULT_FALLBACK_BODY =
   "The package has no authored policy for decisions its selected guidance does not cover. Continue with ordinary reasoning for reversible choices. Ask before consequential, irreversible, or brand-defining choices. Never present provisional reasoning as ghost-backed guidance.";
 
 const CASCADE_RULE_AUTHORITY =
-  "A more specific rule replaces or augments the rule it names, within the scope it states. Everything it doesn't name still applies. Required: exempts a rule from the cascade. A required rule cannot be replaced within its stated scope, wherever it lives. It is reserved for accessibility and legal obligations and documented technical limits, and it carries its reason and scope in the same bullet. The requires field declares delivery dependencies, not overrides. Report unresolved conflicts rather than guessing. Delivery order confers no authority.";
+  "Guidance moves from general to specific; universal guidance is followed by the brand's guidance. A node's `requires` field lists the nodes it builds on. Where a node's rule differs from a rule in a node it requires, directly or through other nodes, follow the node's own rule; the rest of the required node still applies. A rule marked `!important` is the exception: only another `!important` rule in a node that requires it can override it. If rules conflict and neither node `requires` the other, report the conflict instead of guessing.";
 
 export async function pullGhostNodes(
   snapshot: GhostEmbedSnapshot,
@@ -315,6 +315,7 @@ function formatPulledNode({
     ...(packageId !== undefined ? { packageId, packageDir } : {}),
     ...(node.kind !== undefined ? { kind: node.kind } : {}),
     ...(node.for ? { for: node.for } : {}),
+    ...(node.requires?.length ? { requires: [...node.requires] } : {}),
     ...(node.materials !== undefined
       ? { declaredMaterials: [...node.materials] }
       : {}),

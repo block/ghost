@@ -81,9 +81,14 @@ policy nodes and their packages. The CLI supplies its default when the
 automatic guidance contains no authored policy.
 
 Pulls with dependencies include rule authority as `authority` in JSON and
-under `# Authority` in Markdown. The earlier draft's pull JSON `context`
-field was removed. Gather JSON provides the command and package options in
-`next.command`.
+under `# Authority` in Markdown. A node with prerequisites includes a
+`requires` array in JSON and a `requires: id, id` line under its Markdown
+heading, using the IDs in their declared order. A node's rules can override
+conflicting rules in nodes it requires, directly or through other nodes.
+Only an `!important` rule can override another `!important` rule, and the
+same dependency relationship applies. If neither node requires the other
+directly or through other nodes, report the conflict. Gather JSON provides
+the pull command and package options in `next.command`.
 
 A bare pull emits the automatic guidance. A request with only unknown IDs
 exits with status 2 and emits no packet. A mixed request delivers the known
