@@ -15,7 +15,7 @@ Use one workflow with a different first move:
 
 | Starting state | First move |
 | --- | --- |
-| No package | Run `ghost init`, then capture one repeated decision. Do not attempt the whole brand. |
+| No package | Run `ghost init` once the person explicitly requests or confirms package creation, then capture one repeated decision. Do not attempt the whole brand. |
 | Existing package | Run `ghost validate`, `ghost gather "update the package"`, and pull potentially affected nodes before proposing edits. |
 | Starter package | Treat every inherited answer as provisional until the owner replaces or accepts it. Change the manifest id only when the human takes ownership. |
 
