@@ -23,6 +23,7 @@ It works with the tools, agents, and models you already use. The CLI doesn't mak
 
 
 [Get started](./packages/ghost/README.md#get-started) ·
+[First-use guidance for agents](./packages/ghost/src/skill-bundle/SKILL.md#first-use) ·
 [Authoring guide](./packages/ghost/src/skill-bundle/references/authoring.md) ·
 [Package format](./packages/ghost/src/skill-bundle/references/schema.md)
 

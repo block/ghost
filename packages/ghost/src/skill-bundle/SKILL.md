@@ -2,9 +2,9 @@
 name: ghost
 description: >-
   Author, validate, consume, and review against a repo-local package of brand
-  guidance. Use when the user wants to set up a .ghost package, write or update
-  guidance nodes, gather brand context before generation, or assemble a review
-  packet from ghost checks.
+  guidance. Use when the user asks what ghost is, wants to set up a .ghost
+  package, write or update guidance nodes, gather brand context before
+  generation, or assemble a review packet from ghost checks.
 license: Apache-2.0
 metadata:
   homepage: https://github.com/block/ghost
@@ -27,6 +27,40 @@ it applies, and an agent reads the relevant guidance before building.
   <slug>.md           # guidance without a kind
   checks/             # optional review assertions; never nodes
 ```
+
+## First use
+
+Explain ghost only when the person asks what it is, requests setup help, or
+shows confusion about ghost. Keep the explanation brief and skip it when the
+conversation shows they already understand it. Continue ordinary tasks without
+an introduction. The presence or absence of `.ghost/` says nothing about the
+person's familiarity.
+
+For example, when the person is starting a brand fingerprint:
+
+> ghost helps you capture what makes your brand yours and use it across your
+> work. First, we’ll build a brand fingerprint, a short guide to your brand’s
+> style and choices. Then I’ll ask you to share what you already have, such as
+> brand positioning, content guidelines, or examples that show how the brand
+> should feel. I’ll use that material to draft guidance for you to review.
+> ghost keeps the guidance in your project’s `.ghost/` folder, where the agent
+> can read it when it works.
+
+The person supplies the brand decisions and confirms any guidance you draft.
+
+Then offer one next step based on the project:
+
+- **No package:** follow the [setup guide](https://github.com/block/ghost/blob/main/packages/ghost/README.md#get-started)
+  to install the CLI and skill as needed and create `.ghost/`. Ask for one brand
+  example or repeated correction to turn into proposed guidance.
+- **Starter package:** use [authoring](references/authoring.md#adapting-a-starter)
+  to help the person accept or replace its provisional answers with decisions
+  they confirm.
+- **Established package:** offer to apply its guidance to a real task through
+  the gather/pull loop below.
+
+ghost does not learn or verify the brand on its own. The project state chooses
+the next action; it does not trigger an introduction.
 
 ## Where to go
 
