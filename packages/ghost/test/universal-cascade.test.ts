@@ -1,6 +1,7 @@
 import {
   mkdir,
   mkdtemp,
+  readFile,
   realpath,
   rm,
   symlink,
@@ -218,6 +219,67 @@ it("emits rule authority in both formats for paired and standalone universal pul
       );
     }
   }
+});
+
+it("emits directly openable paired-package materials from outside both packages", async () => {
+  const locator = "materials/logo.svg";
+  const sharedLogo = '<svg id="shared"/>';
+  const brandLogo = '<svg id="brand"/>';
+  await put(`shared/${locator}`, sharedLogo);
+  await put(`brand/${locator}`, brandLogo);
+  await put(
+    "shared/starter.md",
+    node(["parts/zebra"], "Shared core.", `materials: [${locator}]\n`),
+  );
+  await put(
+    "brand/another.md",
+    node([], "Brand core.", `materials: [${locator}]\n`),
+  );
+  const caller = join(root, "caller");
+  await mkdir(caller);
+  const args = [
+    "pull",
+    "--package",
+    join(root, "brand"),
+    "--universal",
+    join(root, "shared"),
+    "--no-events",
+  ];
+  const json = await runCli([...args, "--format", "json"], caller);
+  const markdown = await runCli(args, caller);
+  expect(json.code).toBe(0);
+  expect(markdown.code).toBe(0);
+  for (const [id, owner, bytes] of [
+    ["starter", "shared", sharedLogo],
+    ["another", "brand", brandLogo],
+  ]) {
+    const expectedPath = join(root, owner, locator);
+    const entry = JSON.parse(json.stdout).nodes.find(
+      (node: { id: string }) => node.id === id,
+    );
+    expect(entry.materials).toMatchObject([{ locator, inspect: expectedPath }]);
+    expect(await readFile(entry.materials[0].inspect, "utf8")).toBe(bytes);
+    const section = markdown.stdout.split("# `" + id + "`")[1]?.split("---")[0];
+    const address = section?.match(/View before making: `([^`]+)`/)?.[1];
+    expect(address).toBe(expectedPath);
+    expect(await readFile(address ?? "", "utf8")).toBe(bytes);
+  }
+  const raw = await runCli([...args, "--no-materials"], caller);
+  const rawJson = await runCli(
+    [...args, "--no-materials", "--format", "json"],
+    caller,
+  );
+  expect(raw.code).toBe(0);
+  expect(rawJson.code).toBe(0);
+  for (const owner of ["shared", "brand"]) {
+    expect(raw.stdout).toContain(`Material package: \`${join(root, owner)}\``);
+  }
+  expect(raw.stdout).toContain(`- Reference: \`${locator}\``);
+  expect(
+    JSON.parse(rawJson.stdout).nodes.find(
+      (node: { id: string }) => node.id === "starter",
+    ).materials,
+  ).toEqual([locator]);
 });
 
 it("requires an explicit universal source for paired fingerprints", async () => {

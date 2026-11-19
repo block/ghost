@@ -1,3 +1,4 @@
+import { resolve } from "node:path";
 import type { CAC } from "cac";
 import { inferMaterialMime, type TransportedMaterial } from "#ghost-core";
 import type { GhostPulledNode, GhostPullResult } from "../embed/index.js";
@@ -9,6 +10,7 @@ import {
   resolveGhostPackage,
   resolveGitRoot,
 } from "../package.js";
+import { materialRoot } from "../scan/cascade.js";
 import { exitCli, failFromError } from "./errors.js";
 import {
   parseEnumOption,
@@ -64,10 +66,11 @@ export function registerPullCommand(cli: CAC): void {
           );
         }
         const repoRoot = await resolveGitRoot(process.cwd());
+        const inlineMaterials = opts.materials !== false;
         const result = await pullGhostNodes(snapshot, {
           ids: ids ?? [],
           repoRoot,
-          inlineMaterials: opts.materials !== false,
+          inlineMaterials,
           order,
         });
 
@@ -111,13 +114,33 @@ export function registerPullCommand(cli: CAC): void {
           });
         }
 
+        if (snapshot.cascade?.universalDir && inlineMaterials) {
+          for (const node of result.nodes) {
+            if (!node.packageDir) continue;
+            const ownerRoot = materialRoot(node.packageDir, repoRoot);
+            for (const material of node.materials ?? []) {
+              if (
+                material.path &&
+                !UNAVAILABLE_MATERIAL_REASONS.has(material.reason ?? "")
+              ) {
+                material.path = resolve(ownerRoot, material.path);
+              }
+            }
+          }
+        }
+
         if (format === "json") {
           warnUniversalVersion(snapshot.cascade?.versionWarning);
           process.stdout.write(
-            `${JSON.stringify(formatPullJson(result, opts.materials !== false), null, 2)}\n`,
+            `${JSON.stringify(formatPullJson(result, inlineMaterials), null, 2)}\n`,
           );
         } else {
-          process.stdout.write(formatPullMarkdown(result));
+          process.stdout.write(
+            formatPullMarkdown(
+              result,
+              Boolean(snapshot.cascade?.universalDir) && !inlineMaterials,
+            ),
+          );
         }
         await exitCli(0);
       } catch (err) {
@@ -161,7 +184,10 @@ function formatPullJson(
   };
 }
 
-function formatPullMarkdown(result: GhostPullResult): string {
+function formatPullMarkdown(
+  result: GhostPullResult,
+  showMaterialOwner: boolean,
+): string {
   const sections: string[] = [];
   if (result.diagnostics.length > 0) {
     sections.push(formatLoadDiagnostics(result.diagnostics));
@@ -171,7 +197,8 @@ function formatPullMarkdown(result: GhostPullResult): string {
     sections.push(formatNodeMarkdown(result.cover.node));
   }
   if (result.provenance) {
-    for (const node of result.nodes) sections.push(formatNodeMarkdown(node));
+    for (const node of result.nodes)
+      sections.push(formatNodeMarkdown(node, showMaterialOwner));
   }
   if (result.fallback !== undefined) {
     sections.push(
@@ -204,13 +231,23 @@ function formatPullMarkdown(result: GhostPullResult): string {
   return `${sections.join("\n\n---\n\n")}\n`;
 }
 
-function formatNodeMarkdown(node: GhostPulledNode): string {
+function formatNodeMarkdown(
+  node: GhostPulledNode,
+  showMaterialOwner = false,
+): string {
   const lines = [`# \`${node.id}\``];
   if (node.requires?.length)
     lines.push("", `requires: ${node.requires.join(", ")}`);
   if (node.for) lines.push("", `Applies when: ${node.for}`);
   lines.push("", node.body.trim());
   if (node.materials !== undefined && node.materials.length > 0) {
+    if (
+      showMaterialOwner &&
+      node.packageDir &&
+      node.materials.some(({ tier }) => tier !== "url")
+    ) {
+      lines.push("", `Material package: \`${node.packageDir}\``);
+    }
     for (const material of node.materials) {
       appendMaterialMarkdown(lines, material);
     }
