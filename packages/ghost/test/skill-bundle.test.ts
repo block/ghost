@@ -64,7 +64,7 @@ describe("ghost skill bundle frontmatter", () => {
       expect(parsed.frontmatter).toMatchObject({
         name: "ghost",
         description:
-          "Author, validate, consume, and review against a repo-local package of brand guidance. Use when the user wants to set up a .ghost package, write or update guidance nodes, gather brand context before generation, or assemble a review packet from ghost checks.",
+          "Author, validate, consume, and review against a repo-local package of brand guidance. Use when the user asks what ghost is, wants to set up a .ghost package, asks for work on brand decisions or brand content, wants to write or update guidance nodes, gather brand context before generation, or assemble a review packet from ghost checks.",
         license: "Apache-2.0",
         metadata: {
           homepage: "https://github.com/block/ghost",

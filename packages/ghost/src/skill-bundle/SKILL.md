@@ -2,9 +2,10 @@
 name: ghost
 description: >-
   Author, validate, consume, and review against a repo-local package of brand
-  guidance. Use when the user wants to set up a .ghost package, write or update
-  guidance nodes, gather brand context before generation, or assemble a review
-  packet from ghost checks.
+  guidance. Use when the user asks what ghost is, wants to set up a .ghost
+  package, asks for work on brand decisions or brand content, wants to write or
+  update guidance nodes, gather brand context before generation, or assemble a
+  review packet from ghost checks.
 license: Apache-2.0
 metadata:
   homepage: https://github.com/block/ghost
@@ -27,6 +28,87 @@ it applies, and an agent reads the relevant guidance before building.
   <slug>.md           # guidance without a kind
   checks/             # optional review assertions; never nodes
 ```
+
+## First use
+
+Explain ghost when the person asks what it is, requests setup help, or shows
+confusion about ghost. Check for `manifest.yml` in the selected package
+directory. Use the repo-local `.ghost/` by default. `GHOST_PACKAGE_DIR`
+overrides that default, and `--package` takes precedence over both. Use the
+selected directory when offering to set up a starter package. Skip the
+introduction and proactive offer when the conversation shows they already know
+ghost. Continue unrelated tasks without an introduction. Package availability
+says nothing about the person's familiarity.
+
+When the person asks for work on brand decisions or brand content and no
+package is available, finish the requested work first. Then explain how the
+brief can become brand guidance for future work across the project. Describe a
+brand fingerprint as a short guide to that brand's voice, audience, and key
+choices. Explain that a ghost package keeps this guidance in one place for
+agents to use. Say that accepting the offer will create a starter package at
+the selected path. End with one question about creating the brand's
+fingerprint together.
+
+> We bake sourdough for our neighbors.
+>
+> Your brief gives us a good start on the bakery’s brand. We can turn it into a
+> brand fingerprint: a short guide to the bakery’s voice, audience, and key
+> choices. A ghost package keeps that guidance in one place, so agents can use
+> it across future work. If you’d like to go ahead, I’ll create a starter package
+> at `<package path>`. Would you like to create the bakery’s brand fingerprint
+> together?
+
+When the person only asks what ghost is, give the short explanation below and
+end with a next step that fits package availability.
+
+> In this repo, ghost is the tool that helps agents follow your brand choices.
+
+- **Package available:** “Agents can read the brand guidance in this project's
+  ghost package as they work. Want me to find guidance for something you're
+  working on?”
+- **No package available:** “Would you like me to set up a starter package at
+  `<package path>` to store your brand guidance?”
+
+Reserve package architecture, nodes, the manifest and glossary, commands, and
+optional checks for people who ask for technical detail or show technical
+interest. Use the package model and command loop below to explain the parts
+relevant to their question.
+
+When the person asks how to get started or use ghost, offer one next step based
+on the project. If they also ask what ghost is, give the short explanation
+before the next step.
+
+Use the starter path while inherited guidance is still provisional.
+`id: local` or a copied body's original ID in `manifest.yml` can help identify
+a starter. The person may change the ID on taking ownership, before reviewing
+the guidance. Use the established path once the project has confirmed the
+guidance it will use.
+
+- **No package:** offer to set up a starter package in the selected directory,
+  with a `brand.md` cover and starter guidance files. Ask what they already
+  have, such as brand positioning, content guidelines, or examples that show
+  how the brand should feel. For package creation, use the [setup guide](https://github.com/block/ghost/blob/main/packages/ghost/README.md#get-started).
+- **Starter package:** use [authoring](references/authoring.md#adapting-a-starter)
+  to help the person accept or replace its provisional answers with decisions
+  they confirm.
+- **Established package:** offer to apply its guidance to a real task through
+  the gather/pull loop below.
+
+A question about how to start calls for advice. When the person asks you to
+create a package, follow the setup guide.
+
+If the person accepts the offer to create a brand fingerprint, you can create
+the starter scaffold in the selected directory. Use the brief and existing brand
+material. Ask only for decisions you still need. Follow the
+[authoring recipe](references/authoring.md) to draft the guidance.
+
+If `--package` selected the directory, pass that same `--package <dir>` to
+`ghost init`.
+
+The person supplies the brand decisions. Show draft guidance for review and
+get their confirmation before writing it into the package.
+
+ghost does not learn or verify the brand on its own.
 
 ## Where to go
 
