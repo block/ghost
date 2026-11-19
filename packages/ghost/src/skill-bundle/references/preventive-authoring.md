@@ -186,3 +186,12 @@ and `ghost pull`. If checks exist, keep them out of generation context and use
 Report the final state as: supported needs, not-relevant needs, unresolved gaps
 ranked by consequence, package edits made, decisions that still need approval,
 and material that was not inspected.
+
+When the task includes testing the package through generated work, validation
+is not completion. Use [making.md](making.md) to make and inspect a bounded
+output once consequential risks are resolved. Ask what feels right or wrong,
+rather than seeking approval of every feature. Distinguish missing guidance,
+failure to select or follow available guidance, and changed human preference
+before proposing a source edit. Keep feedback within its confirmed scope;
+approval of one output is not approval of every incidental choice as a brand
+rule. Record what was tested and what remains unassessed.
