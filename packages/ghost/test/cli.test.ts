@@ -1873,6 +1873,7 @@ describe("ghost CLI", () => {
         "SKILL.md",
         "references/authoring.md",
         "references/ground.md",
+        "references/intake.md",
         "references/making.md",
         "references/materials.md",
         "references/nodes.md",
