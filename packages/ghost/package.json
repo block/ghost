@@ -1,6 +1,6 @@
 {
   "name": "@design-intelligence/ghost",
-  "version": "0.35.1",
+  "version": "0.35.2",
   "description": "A brand context router for agents. Your agent selects the guidance; ghost delivers it.",
   "license": "Apache-2.0",
   "engines": {
