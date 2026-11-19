@@ -79,6 +79,29 @@ assertOrder(tarballWorkflow, "release-tarball.yml", [
   ["GitHub Release creation", 'gh release create "$TAG"'],
 ]);
 
+if (!/^\s*id-token:\s*write\s*$/m.test(releaseWorkflow)) {
+  fail(
+    "release.yml must grant 'id-token: write' so npm trusted publishing can request an OIDC token",
+  );
+}
+
+if (
+  /^\s*(?:NPM_TOKEN|NODE_AUTH_TOKEN)\s*:/m.test(releaseWorkflow) ||
+  /\bsecrets\s*(?:\.\s*|\[\s*["'])(?:NPM_TOKEN|NODE_AUTH_TOKEN|DESIGN_INTELLIGENCE_NPM_PUBLISH_TOKEN)\b/.test(
+    releaseWorkflow,
+  )
+) {
+  fail(
+    "release.yml must remove legacy npm token mappings and secret references; use npm trusted publishing instead",
+  );
+}
+
+if (/^\s*registry-url\s*:/m.test(releaseWorkflow)) {
+  fail(
+    "release.yml must remove setup-node registry-url so it does not generate token-based npm auth",
+  );
+}
+
 if (!releaseWorkflow.includes("publish: pnpm changeset publish")) {
   fail(
     "release.yml must publish through Changesets so the action can detect published packages and skip already-published versions",

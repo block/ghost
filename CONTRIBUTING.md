@@ -53,6 +53,36 @@ the list.
   preview. Reserve `major` for the 1.0 release. One sentence, user-facing,
   present tense.
 
+## Release authentication
+
+`release.yml` publishes through npm trusted publishing (OIDC), not a stored
+npm token. Before merging authentication changes, an npm package owner must
+configure a GitHub Actions trusted publisher in the settings for
+`@design-intelligence/ghost`:
+
+- Organization: `block`
+- Repository: `ghost`
+- Workflow filename: `release.yml`
+- Environment name: leave blank (the release job does not use one)
+- Allowed actions: enable direct publishing with `npm publish`. Stage-only
+  authorization does not permit the existing Changesets publish command.
+
+Complete the first publish within two days of creating the trusted publisher
+or npm expires the configuration. The workflow uses a GitHub-hosted runner,
+Node 24, and `id-token: write`, as required for OIDC. Do not add `NPM_TOKEN`,
+`NODE_AUTH_TOKEN`, or setup-node `registry-url` authentication to this workflow.
+The repository `.npmrc` already selects the public npm registry.
+
+After configuring npm and merging the workflow, let the main-branch release
+run publish the pending version. Confirm npm publication, the GitHub Release
+and its tarball, and any configured downstream syncs. Only after a successful
+OIDC publish, revoke the obsolete publish token and remove the
+`DESIGN_INTELLIGENCE_NPM_PUBLISH_TOKEN` repository secret. Local workflow
+checks and `npm publish --dry-run` cannot verify npm-side authorization.
+
+See [npm's trusted publishing guide](https://docs.npmjs.com/trusted-publishers/)
+for setup and troubleshooting.
+
 ## Dogfooding
 
 Surfaces in this repo carry their own ghost packages: `apps/docs/.ghost` and
