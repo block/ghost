@@ -17,18 +17,29 @@ brand decision and only needs package edits, go to [authoring.md](authoring.md).
 
 1. **Name the intended use.** Capture what the package is being prepared to help
    agents make or review. If the use is broad, start with the visible scope and
-   state the limit.
+   state the limit. When the person is defining the brand itself, begin with
+   what it stands for, how it speaks, and how those beliefs make it recognizable.
+   Concrete elements and specific situations can follow. Keep the discussion
+   manageable without reducing the brand to the first deliverable. This is a
+   useful opening, not a required questionnaire or package structure.
 2. **Inventory accessible evidence.** List what the human supplied or pointed at
    and what you can open. If access fails, say what failed and ask for a copy,
    transcript, screenshot, or authoritative source only when that evidence would
    change guidance.
 3. **Inspect before asking.** Open available material before broad questions.
    Prefer direct inspection over asking the human to summarize material you can
-   read yourself.
+   read yourself. Offer an interpretation the person can respond to. Explain
+   how beliefs lead to recognizable choices, including voice and refusals,
+   before listing fonts, colors, or layouts. When preference is unclear, ask
+   which examples feel closest and what matters in them. A live website is
+   evidence, not automatically the preferred standard.
 4. **Sort conclusions.** Keep facts, machine inferences, proposed brand
-   decisions, excluded evidence, and open questions separate.
-5. **Group related choices.** Present conclusions by decision area, not by file.
-   Ask for approval, correction, narrowing, rejection, or deferral of each group.
+   decisions, excluded evidence, and open questions separate in your analysis.
+   Discuss the brand in ordinary language; do not make the person work through
+   that bookkeeping.
+5. **Group related choices.** Discuss meaningful direction, not each extracted
+   feature or proposed file. Ask the person to approve, correct, narrow, reject,
+   or defer related choices together.
 6. **Ask only for decisions.** Ask when the machine cannot settle a choice that
    affects guidance. Do not ask for background that would not change a node,
    material locator, check, or package boundary.
@@ -41,6 +52,12 @@ brand decision and only needs package edits, go to [authoring.md](authoring.md).
 Missing information is not always a blocker. Start with the useful approved
 scope, name what is out of scope, and leave open questions outside `.ghost/`
 until the human decides them.
+
+Stop inspecting when more evidence would not change the next decision. Once
+enough direction is approved, make a bounded example when the task calls for
+one and remaining choices are better tested in use. Keep unresolved type,
+color, and layout choices provisional. Do not require a complete design
+inventory before showing useful work.
 
 ## Evidence classes
 
@@ -74,6 +91,11 @@ A session may keep a plain Markdown handoff at `.ghost-workbench/intake.md` when
 local durable state is useful. This file is optional consumer state. It is not a
 `.ghost/` package file, has no schema guarantee, and must not be treated as
 canonical guidance. The same content may stay in conversation instead.
+
+For a session that must continue later, keep draft files and inspected materials
+in a persistent project location. Record their paths and unresolved choices in
+the handoff when one is used. Do not rely on a temporary directory as the only
+copy. Preserve earlier outputs when comparing revisions.
 
 Use this shape when a handoff is useful:
 

@@ -49,7 +49,8 @@ become the package.
 For loose material, use [intake.md](intake.md) first. Inspect the supplied
 evidence and propose a useful starting direction before asking questions.
 If intake is complete, start from its approved decisions without repeating the
-interview. One grounded node beats an empty catalog and a broad first pass.
+interview. A small first pass can cover brand fundamentals; it need not be a
+recipe for one deliverable. Let approved decisions determine the package size.
 
 Use these questions only for unresolved choices that change guidance. Do not
 present them as a required questionnaire:
@@ -116,9 +117,10 @@ proceed without asking again. The human may accept, correct,
 narrow, reject, mark legacy, or defer it. Write only accepted changes. Restate
 the final form after a correction or narrowing.
 
-When no package exists, the first proposal should usually be one cover decision
-or one node, not a completed taxonomy. Grow the package when the next repeated
-decision appears.
+When no package exists, propose a manageable set of related decisions without
+requiring a complete design inventory. A cover decision or one node may be
+enough; broader approved fundamentals may need several. Grow the package when
+another consequential decision needs a home.
 
 ### 5. Write and confirm
 
