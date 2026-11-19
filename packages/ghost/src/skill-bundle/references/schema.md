@@ -90,6 +90,26 @@ same dependency relationship applies. If neither node requires the other
 directly or through other nodes, report the conflict. Gather JSON provides
 the pull command and package options in `next.command`.
 
+Paired CLI pulls emit absolute paths for resolved local materials in Markdown
+and in JSON `inspect`, using the package that owns each node. JSON `locator`
+keeps the declared value. With `--no-materials`, JSON returns the original
+declarations and Markdown names the owning package directory beside its local
+locators.
+
+Reviews of packages with dependency metadata use the same rule authority
+and guidance order as pulls. The `Guidance` section in Markdown and the
+`nodes` array in JSON put prerequisites before dependents in each package.
+When reviewing paired packages, universal guidance comes first. Each node
+carries its `requires` links and has a `matched`, `explicit`, or `context` role.
+Core nodes and prerequisites appear as context when they have no match or
+explicit request. Each node appears once. A matched node can also appear in
+`explicitNodeIds` when requested. JSON identifies each node's owning package
+with `packageId` and `packageDir`. Markdown uses `Material package:` when a
+matched or explicit node declares local materials from the other package.
+Adding context leaves file
+matches and check selection intact. Check citations identify the guidance by
+node ID and omit its repeated body when the packet already supplies the prose.
+
 A bare pull emits the automatic guidance. A request with only unknown IDs
 exits with status 2 and emits no packet. A mixed request delivers the known
 nodes and reports the misses. In paired-package JSON and tape events, `requested`
@@ -204,9 +224,12 @@ it does not grade them.
   exit 2; duplicates are ignored in first-request order. The flag accepts node
   IDs rather than paths to node files, globs, or heading references.
   Explicit selection adds referencing checks without suppressing material
-  matches or always-offered checks. JSON adds `explicitNodeIds` and
-  `explicitNodes` only when IDs are supplied; matched nodes keep their prose in
-  `materialNodes`. Check provenance retains `matched` or `always` where it
+  matches or always-offered checks. JSON adds `explicitNodeIds` when IDs are
+  supplied. For legacy packages, `explicitNodes` holds selected
+  nodes without a material match and `materialNodes` holds matched nodes.
+  Reviews of packages with dependency metadata use the ordered `nodes` array
+  described above. Check
+  provenance retains `matched` or `always` where it
   already applies, uses `explicit` for newly offered checks, and records
   explicit reasons in `explicitVia`. Selected guidance without a check remains
   visible. File coverage gaps are still material-match gaps, not evidence that
