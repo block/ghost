@@ -259,7 +259,7 @@ it("emits directly openable paired-package materials from outside both packages"
     );
     expect(entry.materials).toMatchObject([{ locator, inspect: expectedPath }]);
     expect(await readFile(entry.materials[0].inspect, "utf8")).toBe(bytes);
-    const section = markdown.stdout.split("# `" + id + "`")[1]?.split("---")[0];
+    const section = markdown.stdout.split(`# \`${id}\``)[1]?.split("---")[0];
     const address = section?.match(/View before making: `([^`]+)`/)?.[1];
     expect(address).toBe(expectedPath);
     expect(await readFile(address ?? "", "utf8")).toBe(bytes);
@@ -470,11 +470,252 @@ it("reviews a universal material and resolves the universal check from its packa
   );
   expect(review.code).toBe(0);
   const packet = JSON.parse(review.stdout);
-  expect(packet.materialNodes[0].id).toBe("parts/zebra");
+  expect(
+    packet.nodes.filter((node: { role: string }) => node.role === "matched"),
+  ).toMatchObject([{ id: "parts/zebra" }]);
   expect(packet.checks[0]).toMatchObject({
     id: "material",
     offered: "matched",
   });
+});
+
+it("identifies review material owners for matched, explicit, and context nodes", async () => {
+  await put(
+    "shared/checks/material.md",
+    "---\nname: material\ndescription: Review material.\nreferences: [parts/zebra]\n---\n\nReview the material.\n",
+  );
+  const pull = await runCli(
+    ["pull", ...brandArgs, "--no-events", "--format", "json"],
+    root,
+  );
+  expect(pull.code).toBe(0);
+  const pulledNodes = JSON.parse(pull.stdout).nodes;
+  const locator = "materials/local.txt";
+  const owner = `Material package: \`${join(root, "shared")}\``;
+  for (const role of ["matched", "explicit", "context"]) {
+    const file =
+      role === "matched" ? "shared/materials/local.txt" : "output.html";
+    const stdin = `diff --git a/${file} b/${file}\n--- a/${file}\n+++ b/${file}\n`;
+    const args = [
+      "review",
+      ...brandArgs,
+      "--diff=-",
+      ...(role === "explicit" ? ["--node", "parts/zebra"] : []),
+    ];
+    const json = await runCli([...args, "--format", "json"], root, { stdin });
+    const markdown = await runCli(args, root, { stdin });
+    expect(json.code).toBe(0);
+    expect(markdown.code).toBe(0);
+    const nodes = JSON.parse(json.stdout).nodes;
+    const materialNode = nodes.find(
+      ({ id }: { id: string }) => id === "parts/zebra",
+    );
+    expect(materialNode).toMatchObject({
+      packageId: "universal",
+      packageDir: join(root, "shared"),
+      role,
+      materials: [locator],
+    });
+    for (const { id, packageId, packageDir } of pulledNodes) {
+      expect(
+        nodes.find((node: { id: string }) => node.id === id),
+      ).toMatchObject({ packageId, packageDir });
+    }
+    const materialSection = markdown.stdout
+      .split("### `parts/zebra`")[1]
+      ?.split("\n### ")[0];
+    expect(materialSection).toBeDefined();
+    if (role === "context") {
+      expect(materialSection).not.toContain("Material package:");
+    } else {
+      expect(markdown.stdout.split(owner)).toHaveLength(2);
+      expect(materialSection).toContain(owner);
+    }
+  }
+});
+
+it("orders standalone review guidance the same as a pull", async () => {
+  await put("shared/parts/base.md", node([], "Base guidance."));
+  await put(
+    "shared/prefix.optional.md",
+    node(["parts/base"], "Requested guidance."),
+  );
+  await put(
+    "shared/checks/optional.md",
+    "---\nname: optional\ndescription: Review the optional guidance.\nreferences: [prefix.optional]\n---\n\nReview the guidance.\n",
+  );
+
+  const args = ["--package", "shared"];
+  const pull = await runCli(
+    ["pull", "prefix.optional", ...args, "--format", "json", "--no-events"],
+    root,
+  );
+  const stdin =
+    "diff --git a/output.html b/output.html\n--- a/output.html\n+++ b/output.html\n";
+  const reviewArgs = [
+    "review",
+    ...args,
+    "--node",
+    "prefix.optional",
+    "--diff=-",
+  ];
+  const review = await runCli([...reviewArgs, "--format", "json"], root, {
+    stdin,
+  });
+  const markdown = await runCli(reviewArgs, root, { stdin });
+  expect(pull.code).toBe(0);
+  expect(review.code).toBe(0);
+  expect(markdown.code).toBe(0);
+  const ids = JSON.parse(pull.stdout).ids;
+  expect(ids).toEqual([
+    "parts/zebra",
+    "starter",
+    "parts/base",
+    "prefix.optional",
+  ]);
+  const packet = JSON.parse(review.stdout);
+  expect(packet.nodes.map(({ id }: { id: string }) => id)).toEqual(ids);
+  expect(packet.nodes.map(({ role }: { role: string }) => role)).toEqual([
+    "context",
+    "context",
+    "context",
+    "explicit",
+  ]);
+  expect(
+    Array.from(markdown.stdout.matchAll(/^### `([^`]+)`/gm), ([, id]) => id),
+  ).toEqual(ids);
+});
+
+it("shares authority and dependency context in pull, matched review, and explicit review", async () => {
+  const light = "Use a light ground.";
+  const dark = "Use a dark ground.";
+  await put(
+    "shared/light.md",
+    node([], light, "materials: [materials/light.svg]\n"),
+  );
+  await put("shared/materials/light.svg", "<svg/>");
+  await put("shared/ground.md", node(["light"], "Choose a ground."));
+  await put("brand/base-ground.md", node([], "Keep the ground consistent."));
+  await put(
+    "brand/ground-choice.md",
+    node(["ground", "base-ground"], dark, "materials: [materials/dark.svg]\n"),
+  );
+  await put("brand/materials/dark.svg", "<svg/>");
+  for (const [owner, name, reference] of [
+    ["shared", "light-check", "light"],
+    ["brand", "dark-check", "ground-choice"],
+  ]) {
+    await put(
+      `${owner}/checks/${name}.md`,
+      `---\nname: ${name}\ndescription: Review ground.\nseverity: medium\nreferences: [${reference}]\n---\n\nCheck the ground.\n`,
+    );
+  }
+  const diff = (file: string) =>
+    `diff --git a/${file} b/${file}\n--- a/${file}\n+++ b/${file}\n`;
+  const pullArgs = ["pull", "ground-choice", ...brandArgs, "--no-events"];
+  const pull = await runCli([...pullArgs, "--format", "json"], root);
+  expect(pull.code).toBe(0);
+  const packet = JSON.parse(pull.stdout);
+  const pullMarkdown = await runCli(pullArgs, root);
+  expect(pullMarkdown.code).toBe(0);
+  for (const value of [
+    packet.authority,
+    light,
+    dark,
+    "requires: ground, base-ground",
+    "requires: light",
+  ]) {
+    expect(pullMarkdown.stdout).toContain(value);
+  }
+
+  const pullOrder = Array.from(
+    pullMarkdown.stdout.matchAll(/^# `([^`]+)`$/gm),
+    ([, id]) => id,
+  );
+  expect(pullOrder).toEqual(packet.ids);
+
+  for (const variant of ["matched", "explicit", "both"]) {
+    const explicit = variant !== "matched";
+    const brandDiff = diff("brand/materials/dark.svg");
+    const stdin =
+      variant === "explicit"
+        ? diff("output.html")
+        : brandDiff +
+          (variant === "both" ? diff("shared/materials/light.svg") : "");
+    const args = [
+      "review",
+      ...brandArgs,
+      "--diff=-",
+      ...(explicit ? ["--node", "ground-choice"] : []),
+    ];
+    const json = await runCli([...args, "--format", "json"], root, { stdin });
+    const markdown = await runCli(args, root, { stdin });
+    expect(json.code).toBe(0);
+    expect(markdown.code).toBe(0);
+    const review = JSON.parse(json.stdout);
+    expect(review.authority).toBe(packet.authority);
+    const guidance = review.nodes;
+    expect(guidance.map((node: { id: string }) => node.id)).toEqual(packet.ids);
+    expect(
+      guidance.filter((node: { role: string }) => node.role === "matched"),
+    ).toMatchObject(
+      variant === "both"
+        ? [
+            { id: "light", files: ["shared/materials/light.svg"] },
+            { id: "ground-choice", files: ["brand/materials/dark.svg"] },
+          ]
+        : variant === "matched"
+          ? [{ id: "ground-choice", files: ["brand/materials/dark.svg"] }]
+          : [],
+    );
+    expect(review.explicitNodeIds).toEqual(
+      explicit ? ["ground-choice"] : undefined,
+    );
+    expect(
+      guidance.find((node: { id: string }) => node.id === "ground-choice").role,
+    ).toBe(variant === "explicit" ? "explicit" : "matched");
+    expect(
+      guidance.find((node: { id: string }) => node.id === "base-ground").role,
+    ).toBe("context");
+    expect(review.checks).toMatchObject([
+      ...(variant === "both"
+        ? [{ id: "light-check", offered: "matched" }]
+        : []),
+      {
+        id: "dark-check",
+        offered: variant === "explicit" ? "explicit" : "matched",
+        baseline: [{ nodeId: "ground-choice" }],
+      },
+    ]);
+    expect(review.checks.at(-1).baseline[0]).not.toHaveProperty("body");
+    const markdownOrder = Array.from(
+      markdown.stdout.matchAll(/^### `([^`]+)`/gm),
+      ([, id]) => id,
+    );
+    expect(markdownOrder).toEqual(pullOrder);
+    for (const { id, requires, body } of packet.nodes) {
+      const reviewNode = guidance.find((node) => node.id === id);
+      expect(reviewNode.prose.trim()).toBe(body.trim());
+      expect(reviewNode.requires).toEqual(requires);
+    }
+    for (const value of [
+      packet.authority,
+      light,
+      dark,
+      "requires: ground, base-ground",
+      "requires: light",
+    ]) {
+      expect(markdown.stdout.split(value)).toHaveLength(2);
+    }
+    expect(markdown.stdout).toContain("## Guidance");
+    if (variant === "both") {
+      expect(markdown.stdout).toContain(
+        "Matched material and explicitly requested.",
+      );
+    } else {
+      expect(markdown.stdout).not.toContain("checks/light-check");
+    }
+  }
 });
 
 it("retains the legacy cover shape and menu", async () => {

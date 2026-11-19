@@ -15,6 +15,7 @@ import {
 import { guidanceDiagnostics } from "../internal/load-diagnostics.js";
 import type { PullMiss } from "../observability-events.js";
 import {
+  CASCADE_RULE_AUTHORITY,
   cascadeClosure,
   fallbackPolicy,
   materialRoot,
@@ -39,9 +40,6 @@ interface PulledNode {
 
 export const GHOST_DEFAULT_FALLBACK_BODY =
   "The package has no authored policy for decisions its selected guidance does not cover. Continue with ordinary reasoning for reversible choices. Ask before consequential, irreversible, or brand-defining choices. Never present provisional reasoning as ghost-backed guidance.";
-
-const CASCADE_RULE_AUTHORITY =
-  "Guidance moves from general to specific; universal guidance is followed by the brand's guidance. A node's `requires` field lists the nodes it builds on. Where a node's rule differs from a rule in a node it requires, directly or through other nodes, follow the node's own rule; the rest of the required node still applies. A rule marked `!important` is the exception: only another `!important` rule in a node that requires it can override it. If rules conflict and neither node `requires` the other, directly or through other nodes, report the conflict instead of guessing.";
 
 export async function pullGhostNodes(
   snapshot: GhostEmbedSnapshot,

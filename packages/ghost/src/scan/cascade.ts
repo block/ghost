@@ -132,6 +132,9 @@ export function dependencyClosure(
   return [...delivered.values()];
 }
 
+export const CASCADE_RULE_AUTHORITY =
+  "Guidance moves from general to specific; universal guidance is followed by the brand's guidance. A node's `requires` field lists the nodes it builds on. Where a node's rule differs from a rule in a node it requires, directly or through other nodes, follow the node's own rule; the rest of the required node still applies. A rule marked `!important` is the exception: only another `!important` rule in a node that requires it can override it. If rules conflict and neither node `requires` the other, directly or through other nodes, report the conflict instead of guessing.";
+
 export function cascadeClosure(
   nodes: ReadonlyMap<string, Readonly<GhostCatalogNode>>,
   roots: readonly string[],
