@@ -1,6 +1,7 @@
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { parse as parseYaml } from "yaml";
 import { runCli } from "./cli-test-utils.js";
@@ -9,6 +10,8 @@ interface ParsedSkillMarkdown {
   frontmatter: Record<string, unknown>;
   body: string;
 }
+
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
 const OLD_MALFORMED_SKILL_HEADER = `---
 name: ghost
@@ -96,6 +99,7 @@ describe("ghost skill bundle frontmatter", () => {
         "references/making.md",
         "references/materials.md",
         "references/nodes.md",
+        "references/preventive-authoring.md",
         "references/schema.md",
         "references/steering-audit.md",
       ];
@@ -107,6 +111,70 @@ describe("ghost skill bundle frontmatter", () => {
       }
     } finally {
       await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("bundles preventive authoring structure and scenario markers", async () => {
+    const reference = await readFile(
+      resolve(
+        REPO_ROOT,
+        "packages/ghost/src/skill-bundle/references/preventive-authoring.md",
+      ),
+      "utf-8",
+    );
+    const fixture = await readFile(
+      resolve(
+        REPO_ROOT,
+        "packages/ghost/test/fixtures/authoring/preventive-example.md",
+      ),
+      "utf-8",
+    );
+
+    for (const heading of [
+      "## Preventive authoring loop",
+      "## Shared knowledge versus brand decision",
+      "## Additions must earn space",
+      "## Important ambiguity triage",
+      "## Small example pattern",
+      "## Existing component and material first",
+      "## Worked authoring patterns",
+      "## Handoff to validation and review",
+    ]) {
+      expect(reference).toContain(heading);
+    }
+
+    for (const pattern of [
+      "### Correct components with wrong composition",
+      "### Exact tokens without emphasis rules",
+      "### Voice adjectives without a usable decision",
+      "### Conflicting legacy implementation",
+    ]) {
+      const start = reference.indexOf(pattern);
+      expect(start, pattern).toBeGreaterThanOrEqual(0);
+      const next = reference.indexOf("### ", start + pattern.length);
+      const block = reference.slice(start, next === -1 ? undefined : next);
+      for (const marker of [
+        "**Warning sign:**",
+        "**Inspection:**",
+        "**Possible causes:**",
+        "**Small repair:**",
+        "**Limits:**",
+      ]) {
+        expect(block, `${pattern} ${marker}`).toContain(marker);
+      }
+    }
+
+    for (const marker of [
+      "design assessment without silent override",
+      "no package addition is needed",
+      "Near miss:",
+      "ranks the action contrast and trust-order gaps first",
+      "This example is normative",
+      "incidental",
+      "Use this pattern only",
+      "src/components/ReceiptConfirmation.tsx",
+    ]) {
+      expect(fixture).toContain(marker);
     }
   });
 });

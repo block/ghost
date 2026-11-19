@@ -109,6 +109,19 @@ If a node includes or points to an example, say what the agent should keep and
 what should change with the task. Name the situation it fits when needed. If
 you cannot give those instructions, leave the example out.
 
+Annotate examples in prose near the example, not through new fields:
+
+```markdown
+This example is normative for spacing rhythm and action order.
+The copy is incidental.
+Use the compact variant only when the surface has less than 320px width.
+```
+
+Name what future work must preserve, what may vary, and when the example
+applies. Where useful, include a plausible nearby wrong choice and explain why
+it is wrong in that situation. Do not require a counterexample for every
+example. Do not encode task facts or one-off answers as brand guidance.
+
 ## Reusable blocks earn prose by purpose
 
 Generic primitives need no node merely because they exist. A primitive earns

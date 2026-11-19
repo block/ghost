@@ -116,6 +116,7 @@ ghost does not learn or verify the brand on its own.
 - Grounding before generating: [references/ground.md](references/ground.md)
 - Writing or revising a node: [references/nodes.md](references/nodes.md)
 - Binding guidance to materials: [references/materials.md](references/materials.md)
+- Preventive authoring after approved intake and before first generation: [references/preventive-authoring.md](references/preventive-authoring.md)
 - Creating or overhauling a package: [references/authoring.md](references/authoring.md)
 - Auditing steering health: [references/steering-audit.md](references/steering-audit.md)
 - Formats and command behavior: [references/schema.md](references/schema.md)
