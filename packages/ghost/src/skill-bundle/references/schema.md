@@ -100,15 +100,16 @@ Reviews of packages with dependency metadata use the same rule authority
 and guidance order as pulls. The `Guidance` section in Markdown and the
 `nodes` array in JSON put prerequisites before dependents in each package.
 When reviewing paired packages, universal guidance comes first. Each node
-carries its `requires` links and has a `matched`, `explicit`, or `context` role.
-Core nodes and prerequisites appear as context when they have no match or
-explicit request. Each node appears once. A matched node can also appear in
-`explicitNodeIds` when requested. JSON identifies each node's owning package
-with `packageId` and `packageDir`. Markdown uses `Material package:` when a
-matched or explicit node declares local materials from the other package.
-Adding context leaves file
-matches and check selection intact. Check citations identify the guidance by
-node ID and omit its repeated body when the packet already supplies the prose.
+carries its `requires` links. Its role is `matched` for a diff material match,
+`explicit` for a node requested with `--node`, `check` for a node cited by an
+offered check, or `context` for other core nodes and prerequisites. A match or
+explicit request takes precedence over a check citation. Each node appears once.
+A matched node can also appear in `explicitNodeIds` when requested. JSON identifies
+each node's owning package with `packageId` and `packageDir`. Markdown uses
+`Material package:` when a matched, explicit, or check-cited node declares local
+materials from the other package. Check citations add their nodes and full
+prerequisite chains after checks are selected. They point to the prose in
+Guidance without repeating it.
 
 A bare pull emits the automatic guidance. A request with only unknown IDs
 exits with status 2 and emits no packet. A mixed request delivers the known

@@ -46,7 +46,7 @@ export type PacketExplicitNode = Omit<
 
 type PacketReviewNode = { packageId: string; packageDir: string } & (
   | (PacketMaterialNode & { role: "matched" })
-  | (PacketExplicitNode & { role: "explicit" | "context" })
+  | (PacketExplicitNode & { role: "explicit" | "check" | "context" })
 );
 
 /** The body may already appear as guidance elsewhere in a cascade packet. */
@@ -119,27 +119,7 @@ export async function buildReviewPacket(
     .map((id) =>
       guidanceNode(catalog.nodes.get(id) as GhostCatalogNode, !!cascade),
     );
-  const shownNodeIds = new Set([...matchedIds, ...resolution.explicitNodeIds]);
-  const closure = cascade
-    ? cascadeClosure(
-        catalog.nodes,
-        [...cascade.core, ...shownNodeIds],
-        cascade.universalNodeIds,
-      )
-    : [];
-  // Keep the pull order while preserving how each node entered the review.
-  const nodes = cascade
-    ? orderReviewNodes(
-        closure,
-        materialNodes,
-        explicitNodes,
-        cascade,
-        packageDir,
-      )
-    : undefined;
-  for (const node of closure) shownNodeIds.add(node.id);
-  const shownSections = new Set<string>();
-
+  const checkNodeIds = new Set<string>();
   const checks: PacketCheck[] = resolution.offeredChecks.map((offered) => {
     const check = ghostPackage.checks.get(offered.id);
     return {
@@ -155,22 +135,36 @@ export async function buildReviewPacket(
           .filter((ref): ref is BaselineProse => ref !== null)
           .map((ref): PacketCheckBaseline => {
             if (!cascade) return ref;
+            checkNodeIds.add(ref.nodeId);
             const { body, ...reference } = ref;
-            const wholeNode =
-              ref.heading === undefined || ref.warning !== undefined;
-            const section = `${ref.nodeId}\0${ref.heading?.toLowerCase() ?? ""}`;
-            if (
-              shownNodeIds.has(ref.nodeId) ||
-              (!wholeNode && shownSections.has(section))
-            ) {
-              return reference;
-            }
-            if (wholeNode) shownNodeIds.add(ref.nodeId);
-            else shownSections.add(section);
-            return { ...reference, body };
+            return reference;
           }) ?? [],
     };
   });
+
+  const closure = cascade
+    ? cascadeClosure(
+        catalog.nodes,
+        [
+          ...cascade.core,
+          ...matchedIds,
+          ...resolution.explicitNodeIds,
+          ...checkNodeIds,
+        ],
+        cascade.universalNodeIds,
+      )
+    : [];
+  // Keep the pull order while preserving how each node entered the review.
+  const nodes = cascade
+    ? orderReviewNodes(
+        closure,
+        materialNodes,
+        explicitNodes,
+        checkNodeIds,
+        cascade,
+        packageDir,
+      )
+    : undefined;
 
   return {
     packageId: ghostPackage.manifest.id,
@@ -201,6 +195,7 @@ function orderReviewNodes(
   closure: readonly Readonly<GhostCatalogNode>[],
   materialNodes: readonly PacketMaterialNode[],
   explicitNodes: readonly PacketExplicitNode[],
+  checkNodeIds: ReadonlySet<string>,
   cascade: GhostCascade,
   packageDir: string,
 ): PacketReviewNode[] {
@@ -219,7 +214,11 @@ function orderReviewNodes(
     if (match) return { ...match, ...owner, role: "matched" };
     const selection = explicit.get(node.id);
     if (selection) return { ...selection, ...owner, role: "explicit" };
-    return { ...guidanceNode(node, true), ...owner, role: "context" };
+    return {
+      ...guidanceNode(node, true),
+      ...owner,
+      role: checkNodeIds.has(node.id) ? "check" : "context",
+    };
   });
 }
 
@@ -469,7 +468,7 @@ function appendMatchedNode(
 function appendProseNode(
   out: string[],
   node: PacketExplicitNode,
-  role?: "explicit" | "context",
+  role?: "explicit" | "check" | "context",
   materialPackage?: string,
 ): void {
   out.push(`### \`${node.id}\``, "");

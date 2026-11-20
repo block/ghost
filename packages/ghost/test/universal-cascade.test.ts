@@ -624,7 +624,7 @@ it("orders standalone review guidance the same as a pull", async () => {
   ).toEqual(ids);
 });
 
-it("shares authority and dependency context in pull, matched review, and explicit review", async () => {
+it("shares authority and dependency context in pull and all review selection paths", async () => {
   const light = "Use a light ground.";
   const dark = "Use a dark ground.";
   await put(
@@ -672,11 +672,17 @@ it("shares authority and dependency context in pull, matched review, and explici
   );
   expect(pullOrder).toEqual(packet.ids);
 
-  for (const variant of ["matched", "explicit", "both"]) {
-    const explicit = variant !== "matched";
+  for (const variant of ["matched", "explicit", "both", "check"]) {
+    const explicit = variant === "explicit" || variant === "both";
+    if (variant === "check") {
+      await put(
+        "brand/ground-choice.md",
+        node(["ground", "base-ground"], dark),
+      );
+    }
     const brandDiff = diff("brand/materials/dark.svg");
     const stdin =
-      variant === "explicit"
+      variant === "explicit" || variant === "check"
         ? diff("output.html")
         : brandDiff +
           (variant === "both" ? diff("shared/materials/light.svg") : "");
@@ -711,7 +717,13 @@ it("shares authority and dependency context in pull, matched review, and explici
     );
     expect(
       guidance.find((node: { id: string }) => node.id === "ground-choice").role,
-    ).toBe(variant === "explicit" ? "explicit" : "matched");
+    ).toBe(
+      variant === "check"
+        ? "check"
+        : variant === "explicit"
+          ? "explicit"
+          : "matched",
+    );
     expect(
       guidance.find((node: { id: string }) => node.id === "base-ground").role,
     ).toBe("context");
@@ -721,7 +733,12 @@ it("shares authority and dependency context in pull, matched review, and explici
         : []),
       {
         id: "dark-check",
-        offered: variant === "explicit" ? "explicit" : "matched",
+        offered:
+          variant === "check"
+            ? "always"
+            : variant === "explicit"
+              ? "explicit"
+              : "matched",
         baseline: [{ nodeId: "ground-choice" }],
       },
     ]);
@@ -754,6 +771,101 @@ it("shares authority and dependency context in pull, matched review, and explici
       expect(markdown.stdout).not.toContain("checks/light-check");
     }
   }
+});
+
+it("shows check-only guidance and its prerequisites without offering extra checks", async () => {
+  await put(
+    "shared/manifest.yml",
+    'schema: ghost.package/v1\nid: universal\nversion: "0.36.0"\n',
+  );
+  await put(
+    "brand/manifest.yml",
+    'schema: ghost.package/v1\nid: fingerprint\nuniversal: "0.36.0"\n',
+  );
+  const universalRule = "Use label-width buttons.";
+  const brandRule = "Use a full-width bottom confirmation button.";
+  await put("shared/button.md", node([], universalRule));
+  await put("brand/confirm.md", node(["button"], brandRule));
+  await put("brand/voice.md", node([], "Label the next action."));
+  await put(
+    "brand/fixture.md",
+    node([], "Use the supplied fixture.", "materials: [materials/local.txt]\n"),
+  );
+  await put(
+    "brand/checks/button-width.md",
+    "---\nname: button-width\ndescription: Check button width.\nseverity: medium\nreferences: [confirm, voice]\n---\n\nCheck the confirmation button.\n",
+  );
+  await put(
+    "brand/checks/fixture-check.md",
+    "---\nname: fixture-check\ndescription: Check the fixture.\nseverity: medium\nreferences: [confirm, fixture]\n---\n\nCheck the fixture.\n",
+  );
+  const stdin =
+    "diff --git a/screen.css b/screen.css\n--- a/screen.css\n+++ b/screen.css\n";
+  const args = ["review", ...brandArgs, "--diff=-"];
+  const json = await runCli([...args, "--format", "json"], root, { stdin });
+  const markdown = await runCli(args, root, { stdin });
+  const explicit = await runCli(
+    [...args, "--node", "confirm", "--format", "json"],
+    root,
+    { stdin },
+  );
+  expect(json.code).toBe(0);
+  expect(markdown.code).toBe(0);
+  expect(explicit.code).toBe(0);
+  const packet = JSON.parse(json.stdout);
+  const explicitPacket = JSON.parse(explicit.stdout);
+  expect(packet).not.toHaveProperty("explicitNodeIds");
+  expect(packet.authority).toContain("A node's `requires` field");
+  expect(packet.authority).toBe(explicitPacket.authority);
+  expect(packet.nodes).toMatchObject([
+    {
+      id: "button",
+      role: "context",
+      prose: expect.stringContaining(universalRule),
+    },
+    {
+      id: "confirm",
+      role: "check",
+      requires: ["button"],
+      prose: expect.stringContaining(brandRule),
+    },
+    { id: "voice", role: "check" },
+  ]);
+  expect(packet.nodes).toHaveLength(3);
+  expect(
+    packet.checks.map(
+      ({
+        id,
+        offered,
+        via,
+      }: {
+        id: string;
+        offered: string;
+        via: string[];
+      }) => ({ id, offered, via }),
+    ),
+  ).toEqual([
+    { id: "button-width", offered: "always", via: ["confirm", "voice"] },
+  ]);
+  expect(explicitPacket.checks).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ id: "fixture-check", offered: "explicit" }),
+    ]),
+  );
+  expect(
+    packet.checks[0].baseline.every((ref: object) => !("body" in ref)),
+  ).toBe(true);
+  const guidance = markdown.stdout.split("## Offered checks")[0];
+  expect(guidance).toContain(packet.authority);
+  expect(guidance).toContain("requires: button");
+  expect(guidance).toContain(universalRule);
+  expect(guidance).toContain(brandRule);
+  expect(guidance.indexOf(universalRule)).toBeLessThan(
+    guidance.indexOf(brandRule),
+  );
+  expect(markdown.stdout.split(brandRule)).toHaveLength(2);
+  expect(markdown.stdout).toContain("Baseline prose shown above.");
+  expect(markdown.stdout).not.toContain("checks/fixture-check");
 });
 
 it("retains the legacy cover shape and menu", async () => {
