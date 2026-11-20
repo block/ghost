@@ -123,9 +123,14 @@ the task, start the artifact from it verbatim, then fill it with task facts.
 
 ## Receiving a ghost package
 
-Copy the `.ghost/` directory, run `ghost validate --package <dir>`, then run
-`ghost skill install` in the receiving workspace. From there, gather and pull
-against that package with `--package <dir>`.
+Copy the `.ghost/` directory into the receiving workspace and validate it.
+For a standalone or legacy package, run `ghost validate --package <dir>`.
+If the fingerprint's manifest declares `universal`, install that package
+separately and run
+`ghost validate --package <fingerprint-dir> --universal <universal-dir>`.
+
+Run `ghost skill install` in the receiving workspace. Use the same package
+flags for `gather`, `pull`, `review`, and `stats`.
 
 After upgrading the CLI, use `ghost skill check --agent <name>` or
 `ghost skill check --dest <path>` to compare the intended installation with the
