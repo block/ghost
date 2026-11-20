@@ -114,7 +114,7 @@ export function registerPullCommand(cli: CAC): void {
           });
         }
 
-        if (snapshot.cascade?.universalDir && inlineMaterials) {
+        if (snapshot.cascade && inlineMaterials) {
           for (const node of result.nodes) {
             if (!node.packageDir) continue;
             const ownerRoot = materialRoot(node.packageDir, repoRoot);

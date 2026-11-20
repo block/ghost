@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import {
   mkdir,
   mkdtemp,
@@ -237,6 +238,7 @@ it("emits directly openable paired-package materials from outside both packages"
   );
   const caller = join(root, "caller");
   await mkdir(caller);
+  execFileSync("git", ["init", "--quiet"], { cwd: caller });
   const args = [
     "pull",
     "--package",
@@ -280,6 +282,42 @@ it("emits directly openable paired-package materials from outside both packages"
       (node: { id: string }) => node.id === "starter",
     ).materials,
   ).toEqual([locator]);
+});
+
+it.each([
+  ["versioned", 'version: "0.36.0"'],
+  ["core-only", "core: [mark]"],
+])("opens standalone %s materials from a sibling repo", async (name, declaration) => {
+  const locator = "materials/logo.svg";
+  const contents = `<svg id="${name}"/>`;
+  await put(
+    `${name}/manifest.yml`,
+    `schema: ghost.package/v1\nid: ${name}\n${declaration}\n`,
+  );
+  await put(
+    `${name}/mark.md`,
+    node([], "Use the logo.", `materials: [${locator}]\n`),
+  );
+  await put(`${name}/${locator}`, contents);
+  const caller = join(root, "caller");
+  await mkdir(caller);
+  execFileSync("git", ["init", "--quiet"], { cwd: caller });
+
+  const args = ["pull", "mark", "--package", `../${name}`, "--no-events"];
+  const markdown = await runCli(args, caller);
+  const json = await runCli([...args, "--format", "json"], caller);
+  expect(markdown.code).toBe(0);
+  expect(json.code).toBe(0);
+  const { inspect } = JSON.parse(json.stdout).nodes[0].materials[0];
+  const printed = markdown.stdout.match(/View before making: `([^`]+)`/)?.[1];
+  expect(inspect).toBe(join(root, name, locator));
+  expect(printed).toBe(inspect);
+  expect(await readFile(inspect, "utf8")).toBe(contents);
+
+  const raw = await runCli([...args, "--no-materials"], caller);
+  expect(raw.code).toBe(0);
+  expect(raw.stdout).toContain(`- Reference: \`${locator}\``);
+  expect(raw.stdout).not.toContain("Material package:");
 });
 
 it("requires an explicit universal source for paired fingerprints", async () => {
