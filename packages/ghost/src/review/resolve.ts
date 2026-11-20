@@ -8,6 +8,7 @@ import {
   parseCheckReference,
   UsageError,
 } from "#ghost-core";
+import { type GhostCascade, materialRoot } from "../scan/cascade.js";
 import type { LoadedCheck } from "../scan/check-files.js";
 import { parseTouchedFiles, type TouchedFile } from "./diff.js";
 
@@ -63,6 +64,7 @@ export function resolveReview(
   diffText: string,
   transport: MaterialTransportOptions,
   nodeIds: readonly string[] = [],
+  cascade?: GhostCascade,
 ): ReviewResolution {
   const explicitNodeIds = validateExplicitReviewNodes(catalog, nodeIds);
   const explicitNodes = new Set(explicitNodeIds);
@@ -74,7 +76,15 @@ export function resolveReview(
   >();
   const claimedFiles = new Set<string>();
 
+  const universalIds = new Set(cascade?.universalNodeIds);
   for (const node of catalog.nodes.values()) {
+    const packageDir = universalIds.has(node.id)
+      ? (cascade?.universalDir ?? transport.packageDir)
+      : transport.packageDir;
+    const nodeTransport = { ...transport, packageDir };
+    const repoRoot = cascade
+      ? materialRoot(packageDir, transport.repoRoot)
+      : transport.repoRoot;
     const localLocators = (node.materials ?? [])
       .map(materialLocator)
       .filter((locator) => classifyMaterialLocator(locator).kind === "local");
@@ -86,8 +96,10 @@ export function resolveReview(
       // matching diff paths (which git emits repo-relative). Matching the
       // raw locator text silently missed every exact-path locator whenever
       // the package lives below the repo root.
-      const locators = localLocators.filter((locator) =>
-        materialLocatorClaimsPath(locator, file.path, transport),
+      const locators = localLocators.filter(
+        (locator) =>
+          repoRoot === transport.repoRoot &&
+          materialLocatorClaimsPath(locator, file.path, nodeTransport),
       );
       if (locators.length === 0) continue;
       claimedFiles.add(file.path);

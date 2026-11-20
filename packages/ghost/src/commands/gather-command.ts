@@ -6,7 +6,11 @@ import { formatLoadDiagnostics } from "../internal/load-diagnostics.js";
 import { appendGhostEvent, resolveRunId } from "../observability-events.js";
 import { resolveGhostPackage } from "../package.js";
 import { exitCli, failFromError } from "./errors.js";
-import { parseEnumOption } from "./options.js";
+import {
+  parseEnumOption,
+  resolveUniversalPackage,
+  warnUniversalVersion,
+} from "./options.js";
 
 export function registerGatherCommand(cli: CAC): void {
   cli
@@ -18,9 +22,11 @@ export function registerGatherCommand(cli: CAC): void {
       "--package <dir>",
       "Use this ghost package directory (default: ./.ghost)",
     )
+    .option("--universal <dir>", "Use this universal guidance package")
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
     })
+    .option("--no-events", "Skip appending selection events")
     .option(
       "--run <id>",
       "Attribute the tape event to this run id (default: GHOST_RUN_ID)",
@@ -34,7 +40,12 @@ export function registerGatherCommand(cli: CAC): void {
 
         const ask = normalizeAskParts(askParts);
         const paths = resolveGhostPackage(opts.package, process.cwd());
-        const snapshot = await loadGhostSnapshot(paths);
+        const snapshot = await loadGhostSnapshot(
+          paths,
+          resolveUniversalPackage(opts.universal),
+        );
+        if (format === "json")
+          warnUniversalVersion(snapshot.cascade?.versionWarning);
         if (format === "markdown" && ask === undefined) {
           throw new UsageError(
             "gather needs a task. Run `ghost gather <ask>`. For package inspection, use `ghost gather --format json`.",
@@ -42,22 +53,36 @@ export function registerGatherCommand(cli: CAC): void {
         }
         const menu = gatherGhostPackage(snapshot, { ask });
         const runId = resolveRunId(opts.run);
-        await appendGhostEvent(paths.packageDir, {
-          event: "gather",
-          ...(runId ? { run: runId } : {}),
-          ...(menu.ask ? { ask: menu.ask } : {}),
-          menu: menu.nodes.map((entry) => entry.id),
-        });
+        if (opts.events !== false)
+          await appendGhostEvent(paths.packageDir, {
+            event: "gather",
+            ...(runId ? { run: runId } : {}),
+            ...(menu.ask ? { ask: menu.ask } : {}),
+            menu: menu.nodes.map((entry) => entry.id),
+            ...(menu.provenance ? { provenance: menu.provenance } : {}),
+          });
 
         // ghost does no selection. It emits the complete catalog; the agent
         // reads the ask against it and pulls the nodes whose described
         // conditions apply.
+        const args = snapshot.cascade
+          ? [
+              "--package",
+              quoteArgument(paths.packageDir),
+              ...(snapshot.cascade.universalDir
+                ? ["--universal", quoteArgument(snapshot.cascade.universalDir)]
+                : []),
+            ].join(" ")
+          : undefined;
         if (format === "json") {
           process.stdout.write(
-            `${JSON.stringify(formatGatherJson(menu), null, 2)}\n`,
+            `${JSON.stringify(formatGatherJson(menu, args), null, 2)}\n`,
           );
         } else {
-          process.stdout.write(formatMenuMarkdown(menu));
+          const continuation = args
+            ? `\nKeep the same package options for pull, validate, and review:\n\n    ${args}\n`
+            : "";
+          process.stdout.write(formatMenuMarkdown(menu) + continuation);
         }
         await exitCli(0);
       } catch (err) {
@@ -71,16 +96,32 @@ function normalizeAskParts(askParts: string[] | undefined): string | undefined {
   return ask.length > 0 ? ask : undefined;
 }
 
-function formatGatherJson(menu: GhostGatherResult): Record<string, unknown> {
+function quoteArgument(value: string): string {
+  return "'" + value.replaceAll("'", "'\\''") + "'";
+}
+
+function formatGatherJson(
+  menu: GhostGatherResult,
+  args?: string,
+): Record<string, unknown> {
   return {
     kind: menu.kind,
     diagnostics: menu.diagnostics,
     ...(menu.ask ? { ask: menu.ask } : {}),
     source: menu.source,
     contract: menu.contract,
-    next: { command: "ghost pull [<id>…]" },
+    next: {
+      command: args ? `ghost pull [<id>…] ${args}` : "ghost pull [<id>…]",
+    },
     coverage: menu.coverage,
     ...(menu.kinds !== undefined ? { kinds: menu.kinds } : {}),
+    ...(menu.provenance
+      ? {
+          provenance: menu.provenance,
+          core: menu.core,
+          automatic: menu.automatic,
+        }
+      : {}),
     nodes: menu.nodes,
   };
 }
@@ -110,6 +151,18 @@ function formatMenuMarkdown(menu: GhostGatherResult): string {
     "",
   ];
 
+  if (menu.automatic?.length) {
+    lines.push(
+      "### Automatically included on pull",
+      "",
+      ...menu.automatic.flatMap(({ id, body }) => [
+        `#### \`${id}\``,
+        "",
+        body,
+        "",
+      ]),
+    );
+  }
   const kinds = menu.kinds ?? [];
   const groups = groupMenuByKind(menu.nodes, kinds);
   for (const group of groups) {

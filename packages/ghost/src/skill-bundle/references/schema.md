@@ -18,8 +18,8 @@ description: >-
 ```
 
 Reserved at the root: `manifest.yml`, `glossary.md`, `materials/`, and
-`checks/`. Every other `*.md` is a node. The corpus is flat: no hierarchy,
-inheritance, or edges.
+`checks/`. Every other `*.md` is a node. Its ID is the package-relative path
+without `.md`. Folders organize files.
 
 ## Manifest
 
@@ -32,11 +32,96 @@ cover as a warning, a cover body over 1500 bytes as a warning, and a cover
 without an exact `## If no guidance applies` section as a warning. That section
 tells the agent when to continue and when to ask about uncovered decisions.
 
+### Universal packages and fingerprints
+
+The manifest fields determine the package role. A universal package declares
+`schema: ghost.package/v1`, `id` and a SemVer `version`. A paired fingerprint
+declares the same schema, its own ID and a SemVer `universal` value. It omits
+`version`. Either package can list its own automatic node IDs in `core`.
+Use `core: []` to enable dependency delivery for a standalone fingerprint
+with no automatic roots. A manifest with only `schema`, `id` and optional
+`cover` uses legacy delivery.
+
+`universal` records the version the fingerprint was authored against.
+`--universal <dir>` selects the actual source. Gather and pull record the
+supplied package's ID, version and hash in provenance. A version mismatch
+produces an advisory `universal-version-mismatch` diagnostic with
+`expectedVersion` and `actualVersion`. The caller supplies the package
+separately.
+
+```sh
+ghost gather --package brand/fingerprint --universal universal "Draft an email"
+ghost pull channel.email --package brand/fingerprint --universal universal
+ghost pull --package universal
+```
+
+Use the paired options with `ghost validate`, `ghost review` and `ghost stats`.
+Node IDs are package-relative paths without the Markdown extension. Each
+segment starts with a lowercase letter or digit and may also contain dots,
+underscores or hyphens. The package machinery uses the reserved root paths
+listed above.
+
+A fingerprint node can require nodes from either package. A universal node
+can require nodes from its own package. IDs must be unique across the pair.
+Pull visits the universal core, fingerprint core and requested IDs in that
+order. At each visit it walks the node's `requires` in their declared order,
+and collects each ID once, with prerequisites before dependents. A paired pull
+emits the universal package's nodes first, then the fingerprint's nodes.
+Within each package, prerequisites precede dependents and the automatic
+closure precedes any additional nodes from the requested closure. Pulls with
+dependencies print a notice if you pass `--order given`. Both gather formats
+show the automatic guidance bodies in the same order as a bare pull, separate
+from selectable nodes.
+
+An automatic node can supply `## If no guidance applies`. The CLI uses one
+distinct policy from the automatic nodes, including any prerequisite of
+either core. Identical section text after trimming surrounding whitespace
+is accepted. More than one distinct text fails validation and identifies the
+policy nodes and their packages. The CLI supplies its default when the
+automatic guidance contains no authored policy.
+
+Pulls with dependencies include rule authority as `authority` in JSON and
+under `# Authority` in Markdown. A node with prerequisites includes a
+`requires` array in JSON and a `requires: id, id` line under its Markdown
+heading, using the IDs in their declared order. A node's rules can override
+conflicting rules in nodes it requires, directly or through other nodes.
+Only an `!important` rule can override another `!important` rule, and the
+same dependency relationship applies. If neither node requires the other
+directly or through other nodes, report the conflict. Gather JSON provides
+the pull command and package options in `next.command`.
+
+Paired CLI pulls emit absolute paths for resolved local materials in Markdown
+and in JSON `inspect`, using the package that owns each node. JSON `locator`
+keeps the declared value. With `--no-materials`, JSON returns the original
+declarations and Markdown names the owning package directory beside its local
+locators.
+
+Reviews of packages with dependency metadata use the same rule authority
+and guidance order as pulls. The `Guidance` section in Markdown and the
+`nodes` array in JSON put prerequisites before dependents in each package.
+When reviewing paired packages, universal guidance comes first. Each node
+carries its `requires` links. Its role is `matched` for a diff material match,
+`explicit` for a node requested with `--node`, `check` for a node cited by an
+offered check, or `context` for other core nodes and prerequisites. A match or
+explicit request takes precedence over a check citation. Each node appears once.
+A matched node can also appear in `explicitNodeIds` when requested. JSON identifies
+each node's owning package with `packageId` and `packageDir`. Markdown uses
+`Material package:` when a matched, explicit, or check-cited node declares local
+materials from the other package. Check citations add their nodes and full
+prerequisite chains after checks are selected. They point to the prose in
+Guidance without repeating it.
+
+A bare pull emits the automatic guidance. A request with only unknown IDs
+exits with status 2 and emits no packet. A mixed request delivers the known
+nodes and reports the misses. In paired-package JSON and tape events, `requested`
+records the explicit selection and `ids` records the delivered nodes.
+`ghost stats` measures selection from those requests.
+
 ## Glossary and identity
 
 `glossary.md` declares the package's kind vocabulary and defines each kind. A
-node's id is its filename minus `.md`; its kind is the first dotted filename
-segment. A bare filename has no kind. Undeclared kind prefixes warn.
+node's kind is the first dotted segment of its filename. A bare filename has no kind. Undeclared kind prefixes warn in legacy packages.
+In paired packages, prefixes group display entries and do not affect delivery.
 
 The starter vocabulary is `standard` (shared guidance, each rule an
 Obligation or a replaceable Default), `foundation` (the brand's load-bearing
@@ -140,9 +225,12 @@ it does not grade them.
   exit 2; duplicates are ignored in first-request order. The flag accepts node
   IDs rather than paths to node files, globs, or heading references.
   Explicit selection adds referencing checks without suppressing material
-  matches or always-offered checks. JSON adds `explicitNodeIds` and
-  `explicitNodes` only when IDs are supplied; matched nodes keep their prose in
-  `materialNodes`. Check provenance retains `matched` or `always` where it
+  matches or always-offered checks. JSON adds `explicitNodeIds` when IDs are
+  supplied. For legacy packages, `explicitNodes` holds selected
+  nodes without a material match and `materialNodes` holds matched nodes.
+  Reviews of packages with dependency metadata use the ordered `nodes` array
+  described above. Check
+  provenance retains `matched` or `always` where it
   already applies, uses `explicit` for newly offered checks, and records
   explicit reasons in `explicitVia`. Selected guidance without a check remains
   visible. File coverage gaps are still material-match gaps, not evidence that

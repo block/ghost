@@ -27,8 +27,8 @@ export interface AssembleCatalogInput {
 
 /**
  * Assemble package node files into one flat in-memory catalog. Each node's id
- * is its path; kind/slug come from its filename. No edges, no cascade — the
- * agent selects from the catalog.
+ * is its path; kind and slug are display metadata. The catalog retains
+ * declared prerequisites for package resolution.
  */
 export function assembleCatalog(input: AssembleCatalogInput): GhostCatalog {
   const nodes = new Map<string, GhostCatalogNode>();
@@ -45,6 +45,7 @@ export function assembleCatalog(input: AssembleCatalogInput): GhostCatalog {
       slug: placed.slug ?? placed.id.split("/").pop() ?? placed.id,
       ...(fm.for !== undefined ? { for: fm.for } : {}),
       ...(fm.materials !== undefined ? { materials: fm.materials } : {}),
+      ...(fm.requires !== undefined ? { requires: fm.requires } : {}),
       concrete,
       hasFencedExample: hasSubstantialFencedExample(placed.doc.body),
       hasSkeleton: extractSkeletonSections(placed.doc.body).length > 0,

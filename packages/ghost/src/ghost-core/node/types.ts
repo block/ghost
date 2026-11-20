@@ -18,6 +18,7 @@ export interface GhostNodeFrontmatter {
    * any node worth anchoring a task at.
    */
   for?: string;
+  requires?: string[];
   /**
    * Optional locators for the concrete materials this guidance is about:
    * explicit repo-relative file paths and supported external locators. Glob

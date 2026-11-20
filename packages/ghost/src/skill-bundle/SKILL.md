@@ -122,7 +122,7 @@ ghost does not learn or verify the brand on its own.
 
 ## The model in one breath
 
-- A **node** is a markdown file: a `for` payload, optional `materials`, and prose brand guidance.
+- A **node** is a Markdown file with a `for` payload, optional `materials` and `requires`, and prose brand guidance.
 - `materials` is one list of locators for the concrete stuff the guidance is about:
   explicit repo-relative file paths or supported external locators (see
   [schema.md](references/schema.md)); name each file rather than
@@ -139,8 +139,9 @@ ghost does not learn or verify the brand on its own.
   test: a violation visible in one element belongs in that element's chapter;
   visible in one view, in the composition chapter; visible only across the
   whole body of work, on the cover.
-- There is **no hierarchy, no inheritance, no edges**. Directories are for browsing
-  only; the model reads a flat menu.
+- Directories organize files. In paired packages, `requires` lists prerequisites
+  and each manifest's `core` lists automatic roots. Use the same `--package`
+  and `--universal` paths for gather, pull, and review.
 - **Checks** are optional review assertions in a flat `.ghost/checks/*.md`
   directory. Checks are feed-back only; they never leak into generation
   context. Each check declares `references` to node ids and is used by
@@ -204,9 +205,14 @@ the task, start the artifact from it verbatim, then fill it with task facts.
 
 ## Receiving a ghost package
 
-Copy the `.ghost/` directory, run `ghost validate --package <dir>`, then run
-`ghost skill install` in the receiving workspace. From there, gather and pull
-against that package with `--package <dir>`.
+Copy the `.ghost/` directory into the receiving workspace and validate it.
+For a standalone or legacy package, run `ghost validate --package <dir>`.
+If the fingerprint's manifest declares `universal`, install that package
+separately and run
+`ghost validate --package <fingerprint-dir> --universal <universal-dir>`.
+
+Run `ghost skill install` in the receiving workspace. Use the same package
+flags for `gather`, `pull`, `review`, and `stats`.
 
 After upgrading the CLI, use `ghost skill check --agent <name>` or
 `ghost skill check --dest <path>` to compare the intended installation with the

@@ -1,3 +1,4 @@
+import { resolve } from "node:path";
 import type { CAC } from "cac";
 import { inferMaterialMime, type TransportedMaterial } from "#ghost-core";
 import type { GhostPulledNode, GhostPullResult } from "../embed/index.js";
@@ -9,19 +10,25 @@ import {
   resolveGhostPackage,
   resolveGitRoot,
 } from "../package.js";
+import { materialRoot } from "../scan/cascade.js";
 import { exitCli, failFromError } from "./errors.js";
-import { parseEnumOption } from "./options.js";
+import {
+  parseEnumOption,
+  resolveUniversalPackage,
+  warnUniversalVersion,
+} from "./options.js";
 
 export function registerPullCommand(cli: CAC): void {
   cli
     .command(
       "pull [...ids]",
-      "Emit the package cover plus named node bodies, and append the pull to the events tape.",
+      "Deliver automatic guidance and requested nodes and append the pull to the events tape.",
     )
     .option(
       "--package <dir>",
       "Use this ghost package directory (default: ./.ghost)",
     )
+    .option("--universal <dir>", "Use this universal guidance package")
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
     })
@@ -49,12 +56,21 @@ export function registerPullCommand(cli: CAC): void {
         ] as const);
 
         const paths = resolveGhostPackage(opts.package, process.cwd());
-        const snapshot = await loadGhostSnapshot(paths);
+        const snapshot = await loadGhostSnapshot(
+          paths,
+          resolveUniversalPackage(opts.universal),
+        );
+        if (snapshot.cascade && order === "given") {
+          console.error(
+            "Notice: cascade pulls follow dependency graph order; --order given does not apply.",
+          );
+        }
         const repoRoot = await resolveGitRoot(process.cwd());
+        const inlineMaterials = opts.materials !== false;
         const result = await pullGhostNodes(snapshot, {
           ids: ids ?? [],
           repoRoot,
-          inlineMaterials: opts.materials !== false,
+          inlineMaterials,
           order,
         });
 
@@ -83,6 +99,12 @@ export function registerPullCommand(cli: CAC): void {
             event: "pull",
             ...(runId ? { run: runId } : {}),
             ids: [...result.ids],
+            ...(result.provenance
+              ? {
+                  requested: [...result.requested],
+                  provenance: result.provenance,
+                }
+              : {}),
             ...(result.cover.state === "resolved"
               ? { cover: result.cover.id }
               : {}),
@@ -92,12 +114,33 @@ export function registerPullCommand(cli: CAC): void {
           });
         }
 
+        if (snapshot.cascade && inlineMaterials) {
+          for (const node of result.nodes) {
+            if (!node.packageDir) continue;
+            const ownerRoot = materialRoot(node.packageDir, repoRoot);
+            for (const material of node.materials ?? []) {
+              if (
+                material.path &&
+                !UNAVAILABLE_MATERIAL_REASONS.has(material.reason ?? "")
+              ) {
+                material.path = resolve(ownerRoot, material.path);
+              }
+            }
+          }
+        }
+
         if (format === "json") {
+          warnUniversalVersion(snapshot.cascade?.versionWarning);
           process.stdout.write(
-            `${JSON.stringify(formatPullJson(result, opts.materials !== false), null, 2)}\n`,
+            `${JSON.stringify(formatPullJson(result, inlineMaterials), null, 2)}\n`,
           );
         } else {
-          process.stdout.write(formatPullMarkdown(result));
+          process.stdout.write(
+            formatPullMarkdown(
+              result,
+              Boolean(snapshot.cascade?.universalDir) && !inlineMaterials,
+            ),
+          );
         }
         await exitCli(0);
       } catch (err) {
@@ -114,6 +157,7 @@ function formatPullJson(
     kind: "pull",
     diagnostics: result.diagnostics,
     requested: result.requested,
+    ...(result.provenance ? { provenance: result.provenance } : {}),
     ids: result.ids,
     ...(result.missed.length > 0 ? { missed: result.missed } : {}),
     cover:
@@ -132,6 +176,7 @@ function formatPullJson(
           },
         }
       : {}),
+    ...(result.authority ? { authority: result.authority } : {}),
     nodes: result.nodes.map((node) =>
       formatPullJsonNode(node, inlineMaterials),
     ),
@@ -139,13 +184,21 @@ function formatPullJson(
   };
 }
 
-function formatPullMarkdown(result: GhostPullResult): string {
+function formatPullMarkdown(
+  result: GhostPullResult,
+  showMaterialOwner: boolean,
+): string {
   const sections: string[] = [];
   if (result.diagnostics.length > 0) {
     sections.push(formatLoadDiagnostics(result.diagnostics));
   }
+  if (result.authority) sections.push(`# Authority\n\n${result.authority}`);
   if (result.cover.state === "resolved") {
     sections.push(formatNodeMarkdown(result.cover.node));
+  }
+  if (result.provenance) {
+    for (const node of result.nodes)
+      sections.push(formatNodeMarkdown(node, showMaterialOwner));
   }
   if (result.fallback !== undefined) {
     sections.push(
@@ -158,8 +211,8 @@ function formatPullMarkdown(result: GhostPullResult): string {
       ].join("\n"),
     );
   }
-  for (const node of result.nodes) {
-    sections.push(formatNodeMarkdown(node));
+  if (!result.provenance) {
+    for (const node of result.nodes) sections.push(formatNodeMarkdown(node));
   }
 
   if (result.skeletons.length > 0) {
@@ -178,11 +231,23 @@ function formatPullMarkdown(result: GhostPullResult): string {
   return `${sections.join("\n\n---\n\n")}\n`;
 }
 
-function formatNodeMarkdown(node: GhostPulledNode): string {
+function formatNodeMarkdown(
+  node: GhostPulledNode,
+  showMaterialOwner = false,
+): string {
   const lines = [`# \`${node.id}\``];
+  if (node.requires?.length)
+    lines.push("", `requires: ${node.requires.join(", ")}`);
   if (node.for) lines.push("", `Applies when: ${node.for}`);
   lines.push("", node.body.trim());
   if (node.materials !== undefined && node.materials.length > 0) {
+    if (
+      showMaterialOwner &&
+      node.packageDir &&
+      node.materials.some(({ tier }) => tier !== "url")
+    ) {
+      lines.push("", `Material package: \`${node.packageDir}\``);
+    }
     for (const material of node.materials) {
       appendMaterialMarkdown(lines, material);
     }
@@ -196,8 +261,12 @@ function formatPullJsonNode(
 ): Record<string, unknown> {
   return {
     id: node.id,
+    ...(node.packageId !== undefined
+      ? { packageId: node.packageId, packageDir: node.packageDir }
+      : {}),
     ...(node.kind !== undefined ? { kind: node.kind } : {}),
     ...(node.for ? { for: node.for } : {}),
+    ...(node.requires?.length ? { requires: node.requires } : {}),
     ...(node.declaredMaterials !== undefined
       ? {
           materials: inlineMaterials

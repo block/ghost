@@ -7,7 +7,12 @@ import type {
   TransportedMaterial,
 } from "#ghost-core";
 import type { PullMiss } from "../observability-events.js";
+import type {
+  GhostCascade,
+  GhostUniversalVersionWarning,
+} from "../scan/cascade.js";
 import type { LoadedCheck } from "../scan/check-files.js";
+import type { GhostProvenance } from "../scan/package-hash.js";
 import type { ReadOnlySnapshotMap } from "./readonly-map.js";
 
 export type GhostCoverState =
@@ -40,6 +45,7 @@ export interface GhostEmbedSnapshot {
     nodes: ReadOnlySnapshotMap<string, Readonly<GhostCatalogNode>>;
   }>;
   cover: GhostCoverState;
+  cascade?: Readonly<GhostCascade>;
   glossary?: Readonly<GhostGlossarySnapshot>;
   checks: ReadOnlySnapshotMap<string, Readonly<LoadedCheck>>;
   invalid: readonly Readonly<{ file: string; message: string }>[];
@@ -81,10 +87,14 @@ export interface GhostGatherContract {
   noAsk: string;
 }
 
+export type GhostGuidanceDiagnostic =
+  | GhostEmbedSnapshot["invalid"][number]
+  | Readonly<GhostUniversalVersionWarning>;
+
 export interface GhostGatherResult {
   kind: "menu";
-  /** Invalid guidance files skipped during loading; never includes checks. */
-  diagnostics: GhostEmbedSnapshot["invalid"];
+  /** Skipped guidance files and package compatibility warnings. */
+  diagnostics: readonly GhostGuidanceDiagnostic[];
   ask?: string;
   source: {
     artifact: "ghost package";
@@ -93,6 +103,9 @@ export interface GhostGatherResult {
   contract: GhostGatherContract;
   coverage: GhostGatherCoverage;
   kinds?: readonly GhostMenuKind[];
+  core?: readonly string[];
+  automatic?: readonly (CatalogMenuEntry & { body: string })[];
+  provenance?: GhostProvenance;
   /** Selectable menu entries. A resolved cover is intentionally excluded. */
   nodes: readonly CatalogMenuEntry[];
 }
@@ -107,8 +120,11 @@ export interface GhostPulledSkeleton {
 
 export interface GhostPulledNode {
   id: string;
+  packageId?: string;
+  packageDir?: string;
   kind?: string;
   for?: string;
+  requires?: readonly string[];
   declaredMaterials?: readonly GhostMaterial[];
   materials?: readonly TransportedMaterial[];
   body: string;
@@ -136,10 +152,13 @@ export interface GhostPullFallback {
 
 export interface GhostPullResult {
   kind: "pull";
-  /** Invalid guidance files skipped during loading, including all-miss pulls. */
-  diagnostics: GhostEmbedSnapshot["invalid"];
+  /** Skipped guidance files and package compatibility warnings. */
+  diagnostics: readonly GhostGuidanceDiagnostic[];
   /** Caller-selected ids after de-duplicating and removing a cover alias. */
   requested: readonly string[];
+  provenance?: GhostProvenance;
+  /** Rule interpretation for packets delivered through manifest dependencies. */
+  authority?: string;
   ids: readonly string[];
   missed: readonly PullMiss[];
   cover: GhostPullCover;

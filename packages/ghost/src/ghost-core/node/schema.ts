@@ -45,6 +45,7 @@ const AnnotatedMaterialSchema = z
 export const GhostNodeFrontmatterSchema = z
   .object({
     for: z.string().min(1).optional(),
+    requires: z.array(NodeRefSchema).optional(),
     materials: z
       .array(z.union([MaterialLocatorSchema, AnnotatedMaterialSchema]))
       .optional(),
@@ -59,7 +60,9 @@ export const GhostNodeFrontmatterSchema = z
     // `relates` (and all typed edges) were removed. Reject it with a message
     // that names the key so authors get a clear signal.
     relates: z
-      .never({ message: "`relates` is a removed key (edges no longer exist)" })
+      .never({
+        message: "`relates` is a removed key (use requires for prerequisites)",
+      })
       .optional(),
   })
   // Passthrough, not strict: authors may add free-form descriptive keys

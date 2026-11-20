@@ -14,6 +14,7 @@ import {
   validateMaterialLocator,
 } from "#ghost-core";
 import { effectiveLocalMaterialTier } from "../ghost-core/material-transport.js";
+import { materialRoot } from "../scan/cascade.js";
 import { GHOST_MATERIALS_DIR } from "../scan/constants.js";
 import type {
   GhostEmbedSnapshot,
@@ -33,6 +34,12 @@ export async function inspectGhostMaterial(
   if (node === undefined) {
     return rejected(request, "unknown node");
   }
+  const packageDir = snapshot.cascade?.universalNodeIds.includes(node.id)
+    ? (snapshot.cascade.universalDir ?? snapshot.package.dir)
+    : snapshot.package.dir;
+  const repoRoot = snapshot.cascade
+    ? materialRoot(packageDir, request.repoRoot)
+    : request.repoRoot;
   const validationError = validateMaterialLocator(request.locator);
   if (validationError !== null) {
     return rejected(request, validationError);
@@ -41,8 +48,8 @@ export async function inspectGhostMaterial(
   const declaredLocator = declaredMaterialLocator(
     node.materials ?? [],
     request.locator,
-    request.repoRoot,
-    snapshot.package.dir,
+    repoRoot,
+    packageDir,
   );
   if (declaredLocator === undefined) {
     return rejected(request, "locator is not declared by node");
@@ -59,8 +66,8 @@ export async function inspectGhostMaterial(
 
   const policy = normalizePolicy(request.policy);
   const resolved = await resolveLocalMaterialFile(request.locator, {
-    repoRoot: request.repoRoot,
-    packageDir: snapshot.package.dir,
+    repoRoot,
+    packageDir,
     materialsDir: GHOST_MATERIALS_DIR,
   });
 
@@ -78,10 +85,7 @@ export async function inspectGhostMaterial(
 
   let contained: Awaited<ReturnType<typeof resolveContainedRealFile>>;
   try {
-    contained = await resolveContainedRealFile(
-      match.absolutePath,
-      request.repoRoot,
-    );
+    contained = await resolveContainedRealFile(match.absolutePath, repoRoot);
   } catch {
     return rejected(
       request,
@@ -105,8 +109,8 @@ export async function inspectGhostMaterial(
       resolved.tier,
       contained.realPath,
       {
-        repoRoot: request.repoRoot,
-        packageDir: snapshot.package.dir,
+        repoRoot,
+        packageDir,
         materialsDir: GHOST_MATERIALS_DIR,
       },
     );
