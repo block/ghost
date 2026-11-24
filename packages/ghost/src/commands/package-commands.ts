@@ -31,6 +31,7 @@ export function registerPackageCommands(cli: CAC): void {
       "--package <dir>",
       "Use this ghost package directory (default: ./.ghost)",
     )
+    .option("--universal <dir>", "Use this universal guidance package")
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (path: string | undefined, opts) => {
       try {
@@ -44,7 +45,11 @@ export function registerPackageCommands(cli: CAC): void {
         const target = resolveGhostPackage(packagePath, process.cwd()).dir;
         let report: LintReport;
         if (path === undefined || (await isDirectory(target))) {
-          report = await lintGhostPackage(packagePath, process.cwd());
+          report = await lintGhostPackage(
+            packagePath,
+            process.cwd(),
+            opts.universal,
+          );
           writeLintReport(report, format);
           await exitCli(report.errors > 0 ? 1 : 0);
           return;

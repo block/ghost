@@ -6,6 +6,7 @@ import {
   UsageError,
 } from "#ghost-core";
 import { isExistingPathError, isMissingPathError } from "../internal/fs.js";
+import type { GhostCascade } from "./cascade.js";
 import type { LoadedCheck } from "./check-files.js";
 import {
   GHOST_GLOSSARY_FILENAME,
@@ -34,6 +35,7 @@ export interface GhostPackagePaths {
 export interface LoadedGhostPackage {
   manifest: GhostPackageManifest;
   manifestRaw: string;
+  cascade?: GhostCascade;
   /** The in-memory flat node catalog: the ghost package model. */
   catalog: GhostCatalog;
   /** Whether `.ghost/checks/` exists; `ghost review` requires it. */

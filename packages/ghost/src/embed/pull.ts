@@ -1,3 +1,4 @@
+import { resolve } from "node:path";
 import {
   classifyMaterialLocator,
   closestIds,
@@ -11,7 +12,14 @@ import {
   transportMaterials,
   UsageError,
 } from "#ghost-core";
+import { guidanceDiagnostics } from "../internal/load-diagnostics.js";
 import type { PullMiss } from "../observability-events.js";
+import {
+  CASCADE_RULE_AUTHORITY,
+  cascadeClosure,
+  fallbackPolicy,
+  materialRoot,
+} from "../scan/cascade.js";
 import { GHOST_MATERIALS_DIR } from "../scan/constants.js";
 import type {
   GhostEmbedSnapshot,
@@ -25,12 +33,13 @@ import type {
 interface PulledNode {
   node: GhostCatalogNode;
   materials: MaterialTransportResult;
+  repoRoot: string;
+  packageId?: string;
+  packageDir?: string;
 }
 
 export const GHOST_DEFAULT_FALLBACK_BODY =
   "The package has no authored policy for decisions its selected guidance does not cover. Continue with ordinary reasoning for reversible choices. Ask before consequential, irreversible, or brand-defining choices. Never present provisional reasoning as ghost-backed guidance.";
-
-const NO_GUIDANCE_HEADING = /^##[ \t]+If no guidance applies[ \t]*$/im;
 
 export async function pullGhostNodes(
   snapshot: GhostEmbedSnapshot,
@@ -61,12 +70,15 @@ export async function pullGhostNodes(
     .map((id) => ({ requested: id, suggested: closestIds(id, selectableIds) }));
 
   if (known.length === 0 && missed.length > 0) {
-    return emptyMissResult(
+    const packet = emptyMissResult(
       selectedRequested,
       missed,
       coverId,
-      snapshot.invalid,
+      guidanceDiagnostics(snapshot),
     );
+    return snapshot.cascade
+      ? { ...packet, provenance: snapshot.cascade.provenance }
+      : packet;
   }
 
   const givenNodes = known.map(
@@ -76,16 +88,23 @@ export async function pullGhostNodes(
     (options.order ?? "steering") === "given"
       ? givenNodes
       : orderPulledNodes(givenNodes);
-  const nodesToPull = [
-    ...(snapshot.cover.state === "resolved" ? [snapshot.cover.node] : []),
-    ...orderedSelectedNodes,
-  ];
+  const nodesToPull = snapshot.cascade
+    ? cascadeClosure(
+        snapshot.catalog.nodes,
+        [...snapshot.cascade.core, ...known],
+        snapshot.cascade.universalNodeIds,
+      )
+    : [
+        ...(snapshot.cover.state === "resolved" ? [snapshot.cover.node] : []),
+        ...orderedSelectedNodes,
+      ];
   const packageDir = snapshot.package.dir;
   const pulledNodes = await resolvePulledNodes(
     nodesToPull,
     options.repoRoot,
     packageDir,
     options.inlineMaterials !== false,
+    snapshot.cascade,
   );
   dedupeInlinedMaterials(pulledNodes);
   const materialCounts = sumMaterialCounts(pulledNodes);
@@ -93,13 +112,21 @@ export async function pullGhostNodes(
     snapshot.cover.state === "resolved" ? pulledNodes[0] : undefined;
   const selectedPulled =
     snapshot.cover.state === "resolved" ? pulledNodes.slice(1) : pulledNodes;
-  const fallback = fallbackForCover(snapshot.cover);
+  const fallback = snapshot.cascade?.hasAuthoredFallback
+    ? undefined
+    : fallbackForCover(snapshot.cover);
 
   return {
     kind: "pull",
-    diagnostics: snapshot.invalid,
+    diagnostics: guidanceDiagnostics(snapshot),
     requested: selectedRequested,
-    ids: known,
+    ids: snapshot.cascade ? nodesToPull.map((node) => node.id) : known,
+    ...(snapshot.cascade
+      ? {
+          provenance: snapshot.cascade.provenance,
+          authority: CASCADE_RULE_AUTHORITY,
+        }
+      : {}),
     missed,
     cover:
       coverPulled !== undefined
@@ -143,18 +170,33 @@ async function resolvePulledNodes(
   repoRoot: string,
   packageDir: string,
   inlineMaterials: boolean,
+  cascade: GhostEmbedSnapshot["cascade"],
 ): Promise<PulledNode[]> {
+  const universalIds = new Set(cascade?.universalNodeIds);
   return Promise.all(
-    nodes.map(async (node) => ({
-      node,
-      materials: inlineMaterials
-        ? await transportMaterials(node.materials, {
-            repoRoot,
-            packageDir,
-            materialsDir: GHOST_MATERIALS_DIR,
-          })
-        : locatorOnlyMaterials(node.materials, repoRoot, packageDir),
-    })),
+    nodes.map(async (node) => {
+      const universal = universalIds.has(node.id);
+      const ownerDir = universal
+        ? (cascade?.universalDir ?? packageDir)
+        : packageDir;
+      const ownerRoot = cascade ? materialRoot(ownerDir, repoRoot) : repoRoot;
+      return {
+        node,
+        repoRoot: ownerRoot,
+        packageDir: cascade ? ownerDir : undefined,
+        packageId: (universal
+          ? cascade?.provenance.universal
+          : cascade?.provenance.package
+        )?.id,
+        materials: inlineMaterials
+          ? await transportMaterials(node.materials, {
+              repoRoot: ownerRoot,
+              packageDir: ownerDir,
+              materialsDir: GHOST_MATERIALS_DIR,
+            })
+          : locatorOnlyMaterials(node.materials, ownerRoot, ownerDir),
+      };
+    }),
   );
 }
 
@@ -168,14 +210,15 @@ async function resolvePulledNodes(
  */
 function dedupeInlinedMaterials(nodes: readonly PulledNode[]): void {
   const firstCarrier = new Map<string, string>();
-  for (const { node, materials } of nodes) {
+  for (const { node, materials, repoRoot } of nodes) {
     for (const material of materials.materials) {
       if (material.inlined === undefined || material.path === undefined) {
         continue;
       }
-      const carrier = firstCarrier.get(material.path);
+      const path = resolve(repoRoot, material.path);
+      const carrier = firstCarrier.get(path);
       if (carrier === undefined) {
-        firstCarrier.set(material.path, node.id);
+        firstCarrier.set(path, node.id);
         continue;
       }
       materials.materials[materials.materials.indexOf(material)] = {
@@ -259,11 +302,18 @@ function pulledSkeletons(nodes: readonly PulledNode[]): GhostPulledSkeleton[] {
   );
 }
 
-function formatPulledNode({ node, materials }: PulledNode): GhostPulledNode {
+function formatPulledNode({
+  node,
+  materials,
+  packageId,
+  packageDir,
+}: PulledNode): GhostPulledNode {
   return {
     id: node.id,
+    ...(packageId !== undefined ? { packageId, packageDir } : {}),
     ...(node.kind !== undefined ? { kind: node.kind } : {}),
     ...(node.for ? { for: node.for } : {}),
+    ...(node.requires?.length ? { requires: [...node.requires] } : {}),
     ...(node.materials !== undefined
       ? { declaredMaterials: [...node.materials] }
       : {}),
@@ -280,7 +330,7 @@ function fallbackForCover(
   }
   if (
     cover.state === "resolved" &&
-    !NO_GUIDANCE_HEADING.test(cover.node.body)
+    !fallbackPolicy(cover.node.body, { legacy: true })
   ) {
     return { source: "ghost-default", body: GHOST_DEFAULT_FALLBACK_BODY };
   }

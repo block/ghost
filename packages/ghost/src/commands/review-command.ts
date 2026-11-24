@@ -11,7 +11,11 @@ import {
   formatReviewPacket,
 } from "../review/review-packet.js";
 import { exitCli, failFromError } from "./errors.js";
-import { parseEnumOption } from "./options.js";
+import {
+  parseEnumOption,
+  resolveUniversalPackage,
+  warnUniversalVersion,
+} from "./options.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -31,6 +35,7 @@ export function registerReviewCommand(cli: CAC): void {
     )
     .option("--base <ref>", "Git ref to diff against (default: HEAD)")
     .option("--diff <path>", "Read diff from a file, or '-' for stdin")
+    .option("--universal <dir>", "Use this universal guidance package")
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
     })
@@ -42,7 +47,11 @@ export function registerReviewCommand(cli: CAC): void {
         ] as const);
 
         const paths = resolveGhostPackage(opts.package, process.cwd());
-        const ghostPackage = await loadGhostPackage(paths);
+        const ghostPackage = await loadGhostPackage(
+          paths,
+          resolveUniversalPackage(opts.universal),
+        );
+        warnUniversalVersion(ghostPackage.cascade?.versionWarning);
         if (!ghostPackage.hasChecksDir) {
           console.error(
             "No checks directory. Run `ghost checks init` to add review assertions.",

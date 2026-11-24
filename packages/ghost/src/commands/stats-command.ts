@@ -21,6 +21,7 @@ export function registerStatsCommand(cli: CAC): void {
         "--package <dir>",
         "Use this ghost package directory (default: ./.ghost)",
       )
+      .option("--universal <dir>", "Use this universal guidance package")
       .option("--format <fmt>", "Output format: markdown or json", {
         default: "markdown",
       });
@@ -37,6 +38,7 @@ export function registerStatsCommand(cli: CAC): void {
 
 async function runStats(opts: {
   package?: string;
+  universal?: string;
   format?: string;
 }): Promise<void> {
   try {
@@ -46,8 +48,16 @@ async function runStats(opts: {
     ] as const);
 
     const paths = resolveGhostPackage(opts.package, process.cwd());
-    const loaded = await loadGhostPackage(paths);
-    const menu = buildCatalogMenu(loaded.catalog);
+    const loaded = await loadGhostPackage(
+      paths,
+      opts.universal === undefined
+        ? undefined
+        : resolveGhostPackage(opts.universal, process.cwd()),
+    );
+    const automatic = new Set(loaded.cascade?.automatic);
+    const menu = buildCatalogMenu(loaded.catalog).filter(
+      ({ id }) => !automatic.has(id),
+    );
     const events = await readGhostEvents(paths.packageDir);
     const report = buildStatsReport(events, menu);
 
@@ -141,7 +151,11 @@ function buildStatsReport(
     if (event.event === "pull") {
       pulls += 1;
       if (sawGather) activeGatherHasPull = true;
-      for (const id of event.ids) {
+      const delivered = new Set(event.ids);
+      for (const id of Array.isArray(event.requested)
+        ? event.requested
+        : event.ids) {
+        if (!delivered.has(id)) continue;
         pullCounts.set(id, (pullCounts.get(id) ?? 0) + 1);
       }
       for (const miss of event.missed ?? []) {

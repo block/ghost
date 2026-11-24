@@ -14,6 +14,7 @@ import {
   sliceNodeSection,
 } from "#ghost-core";
 import { isMissingPathError } from "../internal/fs.js";
+import { CascadeGraphError, materialRoot } from "./cascade.js";
 import type { LoadedCheck } from "./check-files.js";
 import { GHOST_GLOSSARY_FILENAME, GHOST_MATERIALS_DIR } from "./constants.js";
 import {
@@ -35,6 +36,7 @@ import { resolveGitRoot } from "./package-paths.js";
 export async function lintGhostPackage(
   dirArg: string | undefined,
   cwd = process.cwd(),
+  universalDir?: string,
 ): Promise<LintReport> {
   const paths = resolveGhostPackage(dirArg, cwd);
   const issues: LintIssue[] = [];
@@ -57,8 +59,19 @@ export async function lintGhostPackage(
     if (manifestHasErrors) return finalize(issues);
     // catalog pass: load + validate the node catalog.
     try {
-      const { manifest, catalog, checks, invalid, invalidChecks } =
-        await loadGhostPackage(paths);
+      const universalPaths =
+        universalDir === undefined
+          ? undefined
+          : resolveGhostPackage(universalDir, cwd);
+      const { manifest, catalog, checks, invalid, invalidChecks, cascade } =
+        await loadGhostPackage(paths, universalPaths);
+      if (cascade?.versionWarning)
+        issues.push({
+          severity: "warning",
+          rule: cascade.versionWarning.code,
+          message: cascade.versionWarning.message,
+          path: "manifest.yml.universal",
+        });
       // node pass: a node that failed its own schema was skipped while loading
       // the catalog; surface it here so a malformed node is loud, not silent.
       issues.push(
@@ -78,19 +91,50 @@ export async function lintGhostPackage(
         })),
       );
       await lintGlossary(paths.glossary, issues);
-      lintCover(manifest.cover, catalog, issues);
-      await lintKindPrefixes(paths, catalog, issues);
+      if (!cascade) {
+        lintCover(manifest.cover, catalog, issues);
+        await lintKindPrefixes(paths, catalog, issues);
+      }
       lintNodeForPayloads(catalog, issues);
       lintSkeletonSections(catalog, issues);
-      await lintMaterialLocators(paths, catalog, issues, cwd);
+      const universalIds = new Set(cascade?.universalNodeIds);
+      const local = {
+        nodes: new Map(
+          [...catalog.nodes].filter(([id]) => !universalIds.has(id)),
+        ),
+      };
+      const repoRoot = await resolveGitRoot(cwd);
+      await lintMaterialLocators(
+        paths,
+        local,
+        issues,
+        cascade ? materialRoot(paths.packageDir, repoRoot) : repoRoot,
+      );
+      if (universalPaths) {
+        const nodes = new Map(
+          [...catalog.nodes].filter(([id]) => universalIds.has(id)),
+        );
+        await lintMaterialLocators(
+          universalPaths,
+          { nodes },
+          issues,
+          materialRoot(universalPaths.packageDir, repoRoot),
+        );
+      }
       lintCheckReferences(catalog, checks, issues);
     } catch (err) {
-      issues.push({
-        severity: "error",
-        rule: "package-catalog-invalid",
-        message: err instanceof Error ? err.message : String(err),
-        path: ".ghost",
-      });
+      const messages =
+        err instanceof CascadeGraphError
+          ? err.issues
+          : [err instanceof Error ? err.message : String(err)];
+      for (const message of messages) {
+        issues.push({
+          severity: "error",
+          rule: "package-catalog-invalid",
+          message,
+          path: ".ghost",
+        });
+      }
     }
   }
 
@@ -239,9 +283,8 @@ async function lintMaterialLocators(
   paths: GhostPackagePaths,
   catalog: GhostCatalog,
   issues: LintIssue[],
-  cwd: string,
+  repoRoot: string,
 ): Promise<void> {
-  const repoRoot = await resolveGitRoot(cwd);
   const options = {
     repoRoot,
     packageDir: paths.packageDir,
