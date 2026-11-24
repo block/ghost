@@ -1,5 +1,11 @@
 # @design-intelligence/ghost
 
+## 0.35.2
+
+### Patch Changes
+
+- [#316](https://github.com/block/ghost/pull/316) [`8936dc5`](https://github.com/block/ghost/commit/8936dc574ecb83e64f76479cd4fb485dabd0b817) Thanks [@awinther1](https://github.com/awinther1)! - Guide agents to explain ghost when asked and offer a next step based on the project's package.
+
 ## 0.35.1
 
 ### Patch Changes
