@@ -24,9 +24,11 @@ If the output reports excluded guidance, do not interpret it as silence. Run
 `ghost validate` with the same package flags, then resolve the reported
 failures or state the grounding gap before continuing provisionally.
 
-The cover is not in this menu because every pull includes it automatically. If
-nothing in the list applies, run bare `ghost pull` with the same package flags for the
-cover and uncovered-guidance policy.
+The cover is not in this menu because every pull includes it automatically. In
+paired packages, the menu lists automatic guidance under `Automatically included
+on pull`; every pull delivers it, so do not request those IDs. If nothing in the
+list applies, run bare `ghost pull` with the same package flags for the cover
+and uncovered-guidance policy.
 
 ## Pull and inspect
 

@@ -88,6 +88,10 @@ it("gathers automatic guidance and pulls ordered closures from both owners witho
     "custom.welcome",
     "another",
   ]);
+  for (const entry of menu.automatic) {
+    expect(entry).toMatchObject({ for: "Building a page." });
+    expect(entry).not.toHaveProperty("body");
+  }
   expect(menu.nodes.map((entry: { id: string }) => entry.id)).toEqual([
     "prefix.optional",
     "universal.foundation.choice",
@@ -97,12 +101,27 @@ it("gathers automatic guidance and pulls ordered closures from both owners witho
     root,
   );
   expect(markdown.code).toBe(0);
+  const automaticSection = markdown.stdout.slice(
+    markdown.stdout.indexOf("### Automatically included on pull"),
+    markdown.stdout.indexOf("### Other guidance"),
+  );
   let last = -1;
-  for (const { id, body } of menu.automatic as { id: string; body: string }[]) {
-    const entry = markdown.stdout.indexOf(`#### \`${id}\`\n\n${body}`);
+  for (const { id } of menu.automatic as { id: string }[]) {
+    const entry = automaticSection.indexOf(
+      `- \`${id}\`\n  - Applies when: Building a page.\n`,
+    );
     expect(entry).toBeGreaterThan(last);
-    expect(markdown.stdout).not.toContain(`- \`${id}\`\n`);
     last = entry;
+  }
+  for (const body of [
+    "Shared prerequisite.",
+    "Shared core body.",
+    "Shared dependency of fingerprint core.",
+    "Fingerprint prerequisite.",
+    "Fingerprint core body.",
+    "Second fingerprint core body.",
+  ]) {
+    expect(markdown.stdout).not.toContain(body);
   }
   const bare = await runCli(
     ["pull", ...brandArgs, "--format", "json", "--no-events"],

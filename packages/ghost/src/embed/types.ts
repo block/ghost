@@ -104,7 +104,8 @@ export interface GhostGatherResult {
   coverage: GhostGatherCoverage;
   kinds?: readonly GhostMenuKind[];
   core?: readonly string[];
-  automatic?: readonly (CatalogMenuEntry & { body: string })[];
+  /** Automatic guidance in bare-pull order. Pull delivers the bodies. */
+  automatic?: readonly CatalogMenuEntry[];
   provenance?: GhostProvenance;
   /** Selectable menu entries. A resolved cover is intentionally excluded. */
   nodes: readonly CatalogMenuEntry[];
