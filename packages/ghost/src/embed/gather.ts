@@ -31,12 +31,13 @@ export function gatherGhostPackage(
     (entry) => entry.id !== coverId && !automaticIds.has(entry.id),
   );
   const entriesById = new Map(allEntries.map((entry) => [entry.id, entry]));
+  // Pull delivers automatic guidance in full; the menu only names it, so one
+  // gather and pull cycle carries each body once.
   const automatic = snapshot.cascade?.automatic.map((id) => {
     const entry = entriesById.get(id);
-    const node = snapshot.catalog.nodes.get(id);
-    if (!entry || !node)
+    if (!entry)
       throw new Error(`Automatic node "${id}" is missing from the catalog.`);
-    return { ...entry, body: node.body };
+    return entry;
   });
   const kinds = menuKinds(snapshot);
 

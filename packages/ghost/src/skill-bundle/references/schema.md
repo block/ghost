@@ -70,8 +70,9 @@ emits the universal package's nodes first, then the fingerprint's nodes.
 Within each package, prerequisites precede dependents and the automatic
 closure precedes any additional nodes from the requested closure. Pulls with
 dependencies print a notice if you pass `--order given`. Both gather formats
-show the automatic guidance bodies in the same order as a bare pull, separate
-from selectable nodes.
+list the automatic guidance IDs and `for` payloads in the same order as a bare
+pull, separate from selectable nodes. Pull delivers the bodies, so a gather and
+pull cycle carries each automatic body once.
 
 An automatic node can supply `## If no guidance applies`. The CLI uses one
 distinct policy from the automatic nodes, including any prerequisite of

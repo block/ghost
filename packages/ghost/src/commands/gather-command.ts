@@ -155,12 +155,13 @@ function formatMenuMarkdown(menu: GhostGatherResult): string {
     lines.push(
       "### Automatically included on pull",
       "",
-      ...menu.automatic.flatMap(({ id, body }) => [
-        `#### \`${id}\``,
-        "",
-        body,
-        "",
+      "Every pull delivers these in full. Do not request them by ID.",
+      "",
+      ...menu.automatic.flatMap((entry) => [
+        `- \`${entry.id}\``,
+        ...(entry.for?.trim() ? [`  - Applies when: ${entry.for.trim()}`] : []),
       ]),
+      "",
     );
   }
   const kinds = menu.kinds ?? [];
