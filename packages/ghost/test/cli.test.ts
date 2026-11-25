@@ -1878,6 +1878,7 @@ describe("ghost CLI", () => {
         "references/nodes.md",
         "references/schema.md",
         "references/steering-audit.md",
+        "references/vocabulary.md",
       ].sort(),
     );
     for (const path of installedFiles) {

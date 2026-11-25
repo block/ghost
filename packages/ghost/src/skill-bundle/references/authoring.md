@@ -99,7 +99,8 @@ decision appears.
 ### 5. Write and confirm
 
 Use [nodes.md](nodes.md) for node craft, [materials.md](materials.md) for material
-bindings, and [schema.md](schema.md) for the package contract.
+bindings, and [schema.md](schema.md) for the package contract. Apply
+[vocabulary.md](vocabulary.md) to guidance and explanations throughout authoring.
 
 Keep each edit attributable to something the human said, showed, or accepted.
 Ask the human to keep, soften, narrow, reject, or mark important claims as
