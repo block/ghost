@@ -55,9 +55,8 @@ the list.
 
 ## Dogfooding
 
-Surfaces in this repo carry their own ghost packages: `apps/docs/.ghost` and
-`packages/vessel-react/.ghost`. If you touch a surface, `ghost gather` from its
-package before you build, and expect review against it. This is where
+The docs site carries its own ghost package at `apps/docs/.ghost`. If you touch
+it, `ghost gather` from that package before you build, and expect review against it. This is where
 you experience ghost as a user; treat friction you hit here as a bug worth
 reporting.
 

@@ -25,15 +25,3 @@ const sourceInitPayloadsDir = join(
 if (existsSync(sourceInitPayloadsDir)) {
   await cp(sourceInitPayloadsDir, distInitPayloadsDir, { recursive: true });
 }
-
-await cp(
-  join(ROOT, "packages", "vessel-light", ".ghost"),
-  join(distInitPayloadsDir, "vessel-light"),
-  {
-    recursive: true,
-    filter(source) {
-      const name = source.split(/[\\/]/).at(-1);
-      return name !== ".events" && name !== ".gitignore";
-    },
-  },
-);

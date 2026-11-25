@@ -2,7 +2,6 @@ import type { CAC } from "cac";
 import { UsageError } from "#ghost-core";
 import { initGhostPackage } from "../package.js";
 import { addChecksDir } from "../scan/check-scaffold.js";
-import { getInitBody } from "../scan/templates.js";
 import { exitCli, failFromError } from "./errors.js";
 import { parseEnumOption } from "./options.js";
 
@@ -13,10 +12,6 @@ export function registerInitCommand(cli: CAC): void {
       "Scaffold .ghost/ with the starter package: manifest, glossary, a brand cover, foundation chapters, and context nodes.",
     )
     .option("--package <dir>", "Exact ghost package directory to initialize")
-    .option(
-      "--body <name>",
-      "Init body to install: a full inhabited package (e.g. vessel-light)",
-    )
     .option(
       "--with <capabilities>",
       "Comma-separated capabilities to add after scaffolding (e.g. checks)",
@@ -46,16 +41,7 @@ export function registerInitCommand(cli: CAC): void {
             );
           }
         }
-        const body =
-          typeof opts.body === "string" ? getInitBody(opts.body) : undefined;
-        if (body?.includesChecks && withIds.includes("checks")) {
-          throw new UsageError(
-            `--with checks is redundant with --body ${body.name}: this body already includes its own checks/.`,
-          );
-        }
-
         const result = await initGhostPackage(exactPackage, process.cwd(), {
-          ...(typeof opts.body === "string" ? { body: opts.body } : {}),
           force: Boolean(opts.force),
         });
         const addedChecks = withIds.includes("checks")

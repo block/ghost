@@ -14,11 +14,7 @@ import {
 import { lintGhostPackage } from "./package-lint.js";
 import { loadGhostPackage } from "./package-loader.js";
 import { resolveGhostDirDefault } from "./package-paths.js";
-import {
-  getDefaultInitTemplate,
-  getInitBody,
-  listInitBodies,
-} from "./templates.js";
+import { getDefaultInitTemplate } from "./templates.js";
 
 // The lint pass lives beside this module; re-export it so `validate` callers
 // keep a single import site for package loading and linting.
@@ -51,11 +47,6 @@ export interface LoadedGhostPackage {
 }
 
 export interface InitGhostPackageOptions {
-  /**
-   * Init body name (e.g. "vessel-light"): a full inhabited package with
-   * answered dials, materials, and its own checks.
-   */
-  body?: string;
   force?: boolean;
 }
 
@@ -92,22 +83,7 @@ export async function initGhostPackage(
   cwd = process.cwd(),
   options: InitGhostPackageOptions = {},
 ): Promise<InitGhostPackageResult> {
-  let source: {
-    files():
-      | Promise<Array<{ relativePath: string; content: string | Uint8Array }>>
-      | Array<{ relativePath: string; content: string | Uint8Array }>;
-  };
-  if (options.body !== undefined) {
-    const body = getInitBody(options.body);
-    if (!body) {
-      throw new UsageError(
-        `Unknown init body '${options.body}'. Available: ${listInitBodies().join(", ")}.`,
-      );
-    }
-    source = body;
-  } else {
-    source = getDefaultInitTemplate();
-  }
+  const source = getDefaultInitTemplate();
 
   const paths = resolveGhostPackage(dirArg, cwd);
   await mkdir(paths.packageDir, { recursive: true });
