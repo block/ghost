@@ -210,7 +210,7 @@ describe("ghost.node/v1 schema", () => {
 
   it("retains materials when serializing a parsed real fixture", () => {
     const raw = readFileSync(
-      resolve(REPO_ROOT, "packages/vessel-light/.ghost/foundation.shape.md"),
+      resolve(REPO_ROOT, "apps/docs/.ghost/visual-system.md"),
       "utf8",
     );
     const { node: doc, report } = parseNode(raw);
@@ -219,10 +219,12 @@ describe("ghost.node/v1 schema", () => {
 
     const reparsed = parseNode(serializeNode(doc as GhostNodeDocument));
     expect(reparsed.report.errors).toBe(0);
-    expect(reparsed.node?.frontmatter.materials).toEqual([
-      "materials/tokens.css",
-      "materials/primitives.css",
-    ]);
+    expect(reparsed.node?.frontmatter.materials).toEqual(
+      doc?.frontmatter.materials,
+    );
+    expect(reparsed.node?.frontmatter.materials).toContain(
+      "apps/docs/src/styles/base.css",
+    );
   });
 });
 

@@ -197,10 +197,8 @@ describe("ghost CLI", () => {
   ];
 
   async function expectSkeletonPackage(written: string[]) {
-    // Exact file inventory: no vessel-light body files, no materials/.
+    // Exact file inventory: no materials/.
     expect([...written].sort()).toEqual([...SKELETON_FILES].sort());
-    expect(written).not.toContain("foundation.tells.md");
-    expect(written).not.toContain("context.email.md");
     expect(written.some((f: string) => f.startsWith("materials/"))).toBe(false);
     // Core init is package-only: checks are opt-in via --with / checks init.
     expect(written).not.toContain("checks/example.md.example");
@@ -257,27 +255,6 @@ describe("ghost CLI", () => {
     expect(layout.stdout).toContain("has not yet reviewed");
     expect(layout.stdout).toContain("Known gap");
     expect(layout.stdout).toContain("invent values");
-
-    // No Vessel strings anywhere in the scaffolded package.
-    const forbidden = [
-      "Vessel",
-      "HK Grotesk",
-      "999px",
-      "Morrow",
-      "amber",
-      "periwinkle",
-      "clay",
-      "orchid",
-      "sage",
-    ];
-    for (const file of written) {
-      const content = await readFile(join(dir, ".ghost", file), "utf-8");
-      for (const needle of forbidden) {
-        expect(content, `${file} must not contain "${needle}"`).not.toMatch(
-          new RegExp(`\\b${needle}\\b`, "i"),
-        );
-      }
-    }
   }
 
   it("initializes the default skeleton ghost package", async () => {
@@ -289,74 +266,10 @@ describe("ghost CLI", () => {
     await expectSkeletonPackage(initOutput.written);
   });
 
-  it("installs the vessel-light body: full corpus, materials, checks", async () => {
-    const init = await runCli(
-      ["init", "--body", "vessel-light", "--format", "json"],
-      dir,
+  it("rejects the removed --body init flag", async () => {
+    await expect(runCli(["init", "--body", "anything"], dir)).rejects.toThrow(
+      "Unknown option `--body`",
     );
-    expect(init.code).toBe(0);
-    const { written } = JSON.parse(init.stdout) as { written: string[] };
-
-    // The body is the inhabited package: corpus + tells + registers +
-    // materials tree + its own checks. No .events tape.
-    expect(written).toContain("manifest.yml");
-    expect(written).toContain("standard.model-defaults.md");
-    expect(written).toContain("foundation.tells.md");
-    expect(written).toContain("context.email.md");
-    expect(written).toContain("foundation.shape.md");
-    expect(written).toContain("materials/tokens.css");
-    expect(written).toContain("materials/fonts/HKGrotesk-Regular.woff2");
-    expect(written).toContain("materials/examples/composition.form.html");
-    expect(written).toContain("checks/median-tells.md");
-    expect(written).toContain("checks/values.md");
-    expect(written.some((p) => p.includes(".events"))).toBe(false);
-
-    // Manifest id stays vessel-light: renaming it is step one of adapting
-    // the starter — an explicit human act, never pre-executed by init.
-    const manifest = await readFile(
-      join(dir, ".ghost", "manifest.yml"),
-      "utf-8",
-    );
-    expect(manifest).toContain("schema: ghost.package/v1");
-    expect(manifest).toContain("id: vessel-light");
-
-    // Fonts survive the packed payload byte-identically.
-    const [installed, source] = await Promise.all([
-      readFile(
-        join(dir, ".ghost", "materials", "fonts", "HKGrotesk-Regular.woff2"),
-      ),
-      readFile(
-        new URL(
-          "../../vessel-light/.ghost/materials/fonts/HKGrotesk-Regular.woff2",
-          import.meta.url,
-        ),
-      ),
-    ]);
-    expect(installed.equals(source)).toBe(true);
-
-    // The installed body validates clean, checks included.
-    const validate = await runCli(["validate", "--format", "json"], dir);
-    expect(validate.code).toBe(0);
-    const report = JSON.parse(validate.stdout);
-    expect(report.errors).toBe(0);
-    expect(report.warnings).toBe(0);
-  });
-
-  it("rejects unknown bodies and contradictory body flags", async () => {
-    const unknown = await runCli(["init", "--body", "nope"], dir, {
-      allowNoExit: true,
-    });
-    expect(unknown.code).toBe(2);
-    expect(unknown.stderr).toContain("Unknown init body 'nope'");
-    expect(unknown.stderr).toContain("vessel-light");
-
-    const withChecks = await runCli(
-      ["init", "--body", "vessel-light", "--with", "checks"],
-      dir,
-      { allowNoExit: true },
-    );
-    expect(withChecks.code).toBe(2);
-    expect(withChecks.stderr).toContain("already includes its own checks/");
   });
 
   it("uses GHOST_PACKAGE_DIR as the default ghost package directory for init", async () => {
@@ -564,7 +477,7 @@ describe("ghost CLI", () => {
 
   it("rejects the removed --reference init flag", async () => {
     await expect(
-      runCli(["init", "--reference", "packages/vessel-react/.ghost"], dir),
+      runCli(["init", "--reference", "some/other/.ghost"], dir),
     ).rejects.toThrow("Unknown option `--reference`");
   });
 
@@ -2112,7 +2025,7 @@ describe("ghost CLI", () => {
   it("review resolves package-relative locators when the package sits below the repo root", async () => {
     // Regression: exact-path `materials/…` locators were matched as raw text
     // against repo-relative diff paths, so a package below the repo root
-    // (e.g. packages/vessel-light/.ghost) never matched them — its value
+    // (e.g. apps/docs/.ghost) never matched them — its value
     // checks were silently dropped from the packet.
     const packageDir = join("nested", "app", ".ghost");
     await runCli(["init", "--package", packageDir], dir);
@@ -2250,7 +2163,6 @@ describe("ghost CLI", () => {
     expect(median).toContain(
       "`ghost validate` warns; delete the flag and its reference together.",
     );
-    expect(median).not.toContain("Vessel");
 
     // Running init twice is a usage error.
     const again = await runCli(["checks", "init"], dir);

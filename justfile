@@ -57,16 +57,6 @@ docs-pages:
     mkdir -p dist
     cp -r apps/docs/dist/. dist/
 
-# ── Vessel ───────────────────────────────────────────────────
-
-# Build the Vessel library and types
-vessel-build:
-    pnpm --filter @design-intelligence/vessel-react --fail-if-no-match build
-
-# Build the Vessel shadcn registry
-vessel-registry:
-    pnpm --filter @design-intelligence/vessel-react --fail-if-no-match build:registry
-
 # ── Utilities ────────────────────────────────────────────────
 
 # Clean build artifacts

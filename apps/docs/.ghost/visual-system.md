@@ -3,11 +3,12 @@ for: Choosing or implementing color, typography, spacing, shape, elevation, inte
 materials:
   - apps/docs/src/styles/marked-doc.css
   - apps/docs/src/styles/docs.css
+  - apps/docs/src/styles/base.css
   - apps/docs/src/components/DocSection.astro
   - apps/docs/src/components/docs/gather-demo.tsx
 ---
 
-The docs site is the living source for these values. Preserve their roles when translating the expression to another medium. The docs-local roles override Vessel's type, color, radius, and shadow defaults; do not inherit those underlying defaults back into this expression.
+The docs site is the living source for these values. Preserve their roles when translating the expression to another medium. The docs-local roles override the base type, color, radius, and shadow defaults in `base.css`; do not inherit those underlying defaults back into this expression.
 
 ## Color
 
@@ -78,7 +79,7 @@ The prompt control is the reference state model for selectable controls.
 | focus-visible | retain current state, then add a `1px` current-color outline with `2px` offset | unchanged | unchanged |
 | disabled, error, destructive | `TBD` | `TBD` | `TBD` |
 
-Do not invent unspecified states from Vessel defaults. When a new state is needed, design and confirm it before adding it to the closed set.
+Do not invent unspecified states from base defaults. When a new state is needed, design and confirm it before adding it to the closed set.
 
 ## Accessibility
 

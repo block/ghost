@@ -1,8 +1,8 @@
 # ghost site
 
 Public thesis site and development log for ghost. Astro renders the site as
-static HTML and keeps the gather example as a small React island. The site
-consumes [`vessel-react`](../../packages/vessel-react) for its shared styles.
+static HTML and keeps the gather example as a small React island. Base tokens
+and Tailwind setup live in `src/styles/base.css`.
 
 The site does not publish product documentation. Current command behavior lives
 in `ghost --help` and `ghost <command> --help`.

@@ -13,7 +13,6 @@
     "@astrojs/mdx": "4.3.14",
     "@astrojs/react": "4.4.2",
     "@astrojs/rss": "4.0.19",
-    "@design-intelligence/vessel-react": "workspace:*",
     "@tailwindcss/vite": "^4.2.2",
     "astro": "5.18.2",
     "react": "19.1.0",

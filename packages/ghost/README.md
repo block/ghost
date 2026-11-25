@@ -221,8 +221,6 @@ for creating and updating guidance.
 | [`packages/ghost`](https://github.com/block/ghost/tree/main/packages/ghost) | The public CLI and agent skill bundle. Install this. |
 | [`packages/context-control`](https://github.com/block/ghost/tree/main/packages/context-control) | Tests whether agents select the right guidance. |
 | [`packages/steering-control`](https://github.com/block/ghost/tree/main/packages/steering-control) | Compares work made with and without a ghost package. |
-| [`packages/vessel-light`](https://github.com/block/ghost/tree/main/packages/vessel-light) | An example design language packaged for raw HTML and CSS work. |
-| [`packages/vessel-react`](https://github.com/block/ghost/tree/main/packages/vessel-react) | The reference component system used to exercise ghost workflows. |
 | [`apps/docs`](https://github.com/block/ghost/tree/main/apps/docs) | The project site and development log. |
 
 ## Contributing
