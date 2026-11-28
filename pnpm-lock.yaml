@@ -234,7 +234,7 @@ importers:
         version: 1.5.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       lucide-react:
         specifier: ^1.7.0
-        version: 1.73.0(@types/react@19.1.2)(react@19.1.0)
+        version: 1.81.0(@types/react@19.1.2)(react@19.1.0)
       media-chrome:
         specifier: ^4.18.3
         version: 4.19.5(react@19.1.0)
@@ -1466,22 +1466,22 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@inquirer/ansi@2.1.0':
-    resolution: {integrity: sha512-63GU5AD9KhNbWM0jlhHoMJTEFck2upFOPxHlnCKf3xYTV3rjTUUQfodihmTnfYQzMLS29oy8lK/gA1eJgu4bhA==}
-    engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
+  '@inquirer/ansi@2.1.1':
+    resolution: {integrity: sha512-WwCc5T9554vU/M3W6mztOJvZK/5RgMwQsGlSZSZpKA/H2IfsTWIPdn1WiS8+HHjhe3H0IsmQCXUlDbvGM6vvuA==}
+    engines: {node: '>=23.5.0 || ^22.13.0 || ^20.17.0'}
 
-  '@inquirer/confirm@6.4.0':
-    resolution: {integrity: sha512-+DCZxrOF01Q/1SzTQkgycAQPS/Jf+Yol0h1P/MVmopukTsxGOu1h/LKqf30y0eHKFZYYrgUMVhGDhEbPmSPi9A==}
-    engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
+  '@inquirer/confirm@6.4.1':
+    resolution: {integrity: sha512-ZLvGnS/+OtditM3RxULWDI3FVl3lR8mvh1ljZ8GCK8XKyfjI6Fq+ni6/2gbbH6n3gj6tinfNbE3QPplZ/xNVtQ==}
+    engines: {node: '>=23.5.0 || ^22.13.0 || ^20.17.0'}
     peerDependencies:
       '@types/node': '>=18'
     peerDependenciesMeta:
       '@types/node':
         optional: true
 
-  '@inquirer/core@12.1.0':
-    resolution: {integrity: sha512-6H7usRWw4Gdjgpaem10CA5MfZ/xoYPGyInriR1Xubqjv+SVo8LIJ1erpFxW5JgCza6VZVZiKLTko7RtUU3AQMg==}
-    engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
+  '@inquirer/core@12.1.1':
+    resolution: {integrity: sha512-JrVSjoB/+B4le+A/0GyZGv/oIK30KgGNUA0eVtEMNQLUmdpizfyXM0zglUZnwTtHLjpKGRlU/q6Iv5z2GYQw9w==}
+    engines: {node: '>=23.5.0 || ^22.13.0 || ^20.17.0'}
     peerDependencies:
       '@types/node': '>=18'
     peerDependenciesMeta:
@@ -1497,13 +1497,13 @@ packages:
       '@types/node':
         optional: true
 
-  '@inquirer/figures@2.1.0':
-    resolution: {integrity: sha512-CR9u2PME23jxy2SOyTb117efwAAPm98Zr+LoWI+PiQ55D6U8Yeu/HyFTxwytKhPa6oxAGzdsm2Kg7oLS6B9z8w==}
-    engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
+  '@inquirer/figures@2.1.1':
+    resolution: {integrity: sha512-63AOoKi9Wlsd1G+X5dKRg15GzN/WIEf0VghxHkcVn9JswideMlwq40qJMAO3II6JyhpDZPmi3CmVKjwOSYBAmA==}
+    engines: {node: '>=23.5.0 || ^22.13.0 || ^20.17.0'}
 
-  '@inquirer/type@4.3.0':
-    resolution: {integrity: sha512-/IA8q2nyjgyl0NGSjqiRXB8gh3We7Pzx9C0c+6Zoolu905jFc79anerrUG7+n65+qs310DRK43yi2WDI8nY59A==}
-    engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
+  '@inquirer/type@4.3.1':
+    resolution: {integrity: sha512-WzfM7UPG5F8fhKPey5pTkAZQrGcGjOHbm6YLotuDdiuAkXEHiHSZh59yNeZs4RyrMHcZEZrl+GOcuLzzfLKJqg==}
+    engines: {node: '>=23.5.0 || ^22.13.0 || ^20.17.0'}
     peerDependencies:
       '@types/node': '>=18'
     peerDependenciesMeta:
@@ -2898,6 +2898,9 @@ packages:
 
   '@types/node@22.20.5':
     resolution: {integrity: sha512-U2+DNr+wSjpsTS/wZGYHq7GcwfuSmKiKvoPvK22zwTlRhU91yOniN4qRR5KhIjvif7ysw/dz/hKmfDH0Ris4aA==}
+
+  '@types/node@22.20.7':
+    resolution: {integrity: sha512-F/Mcc4pD3YwXQCG50hb8BjB5RmrOere6hge7n2XHf0V8tpkZOVEjwYv9Ql7n0MpMn8Bv7+q12P9w6UHsBm0Sfw==}
 
   '@types/prop-types@15.7.15':
     resolution: {integrity: sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw==}
@@ -4439,8 +4442,8 @@ packages:
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
-  lucide-react@1.73.0:
-    resolution: {integrity: sha512-fVOzGviL9mTfHenG1PbCfIceavyGlnpYNSYr+aGZHLRymAJ7DTP6KHuqt0uBkCKAoenr1UVkwSbDIYt2xIesEQ==}
+  lucide-react@1.81.0:
+    resolution: {integrity: sha512-U+CisvFQ84m+xUJAKKA4q+mykGB1LAmu196hOblQbuNYJgD43iHwpmfYuqcFYHXJu2oqRih5JoH3f5LxwsUegg==}
     peerDependencies:
       '@types/react': '*'
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
@@ -4774,9 +4777,9 @@ packages:
   muggle-string@0.4.1:
     resolution: {integrity: sha512-VNTrAak/KhO2i8dqqnqnAHOa3cYBwXEZe9h+D5h/1ZqFSTEFHdM65lR7RoIqq3tBBYavsOXV84NoHXZ0AkPyqQ==}
 
-  mute-stream@4.0.0:
-    resolution: {integrity: sha512-gSrprq0fJ3EiOErzjdIZrjysVVmJ4uu1QWfCDss5LypA5OXvrMje5Ym5z6V6RLyJ2eF87lasX7t6a0AnFvZblg==}
-    engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
+  mute-stream@3.0.0:
+    resolution: {integrity: sha512-dkEJPVvun4FryqBmZ5KhDo0K9iDXAwn08tMLDinNdRBNPcYEDiWYysLcc6k3mjTMlbP9KyylvRpd4wFtwrT9rw==}
+    engines: {node: ^20.17.0 || >=22.9.0}
 
   nanoid@3.3.20:
     resolution: {integrity: sha512-uKdg2G3GNCKQn9byYOpxbGqrT2fGO5KRt5J/8b3pok8rT6qxGWF6hxMyJiEYtAf+FVyYuD9hRaDqX5uPFYJ4ZQ==}
@@ -5295,8 +5298,8 @@ packages:
   retext@9.0.0:
     resolution: {integrity: sha512-sbMDcpHCNjvlheSgMfEcVrZko3cDzdbe1x/e7G66dFp0Ff7Mldvi2uv6JkJQzdRcvLYE8CA8Oe8siQx8ZOgTcA==}
 
-  rettime@0.11.12:
-    resolution: {integrity: sha512-5ExtR1ppiDBQkVoPw5NAqdbfH4Iq2VOmQKHMtUoaFxA9bo2krzFYBtyq6K40xxbYp+2w/YOr6D+1ToF6tTN53A==}
+  rettime@0.11.13:
+    resolution: {integrity: sha512-kzDWDmrxn6KPqqyFaBcXtV+GzaUzgYulSrWBetyxsPZjlXabWoeg3uZJU+zK/TnFUtkWC2Yw7J/VAWYnzy0tRA==}
 
   reusify@1.1.0:
     resolution: {integrity: sha512-g6QUff04oZpHs0eG5p83rFLhHeV00ug/Yf9nZM6fLeUrPguBTkTQOdpAWWspMh55TZfVQDPaN3NQJfbVRAxdIw==}
@@ -5595,11 +5598,11 @@ packages:
     resolution: {integrity: sha512-u8KszXvGfU68hVcZpRHKG28T0krMuv2G5nDhiHaMLen/gIuFEgIJhaJuO69qjnXg5paSrbPMFfx3brNuN8eVSg==}
     engines: {node: '>=14.0.0'}
 
-  tldts-core@7.5.4:
-    resolution: {integrity: sha512-9+4zWtKEDZ3V3FoZ1B97rv+5z5oqp7yeXGVze3CxgQ+CJro9do9DCPD00wxstYZDXDMXsurkBerFfiB6GYtPbA==}
+  tldts-core@7.6.2:
+    resolution: {integrity: sha512-/ZG+gignPzfgtpWNnbS7AKcU1ptt9jDqhIlr7vHOaw/Psz6HjXyB2CeFS3RrUGYwER/Q4F6IS8+9rZuYfRUz+Q==}
 
-  tldts@7.5.4:
-    resolution: {integrity: sha512-Rn2ABgjHZrA+jzqom5zhxA0hLohzYrIgfCPyhpTUxqsUrcsBYuab49LseR9waB9Jr8/MxdodvMHA91oRiGLO3Q==}
+  tldts@7.6.2:
+    resolution: {integrity: sha512-IylRLICacWmPVf5tQIOvKkZzf2Vp8qJT3bAZox+3bWXj5P/pn45PC1a9l86loP7D/ywbSt/h/NnyIoR0fg4utA==}
     hasBin: true
 
   to-regex-range@5.0.1:
@@ -5816,8 +5819,8 @@ packages:
       uploadthing:
         optional: true
 
-  until-async@3.0.2:
-    resolution: {integrity: sha512-IiSk4HlzAMqTUseHHe3VhIGyuFmN90zMTpD3Z3y8jeQbzLIq500MVM7Jq2vUAnTKAFPJrqwkzr6PoTcPhGcOiw==}
+  until-async@3.0.3:
+    resolution: {integrity: sha512-Ix78tBf1shsd8V8zc+msjiUk8Yf6upBuqR9iTgcWTyNFkTPy7hMonnsG/W6jhu53vrNTB0VZHxSNayRHrF+Auw==}
 
   update-browserslist-db@1.4.0:
     resolution: {integrity: sha512-WPJuOnjI9FWDct4fB+ej4Mz8opLaw5CDcZ2t44tFZ0vIQVYWzBhWR3mkixuUj/A7+vY4V9+ApOZ2YYLwdgq46w==}
@@ -7318,25 +7321,26 @@ snapshots:
   '@img/sharp-win32-x64@0.34.5':
     optional: true
 
-  '@inquirer/ansi@2.1.0':
+  '@inquirer/ansi@2.1.1':
     optional: true
 
-  '@inquirer/confirm@6.4.0(@types/node@22.20.5)':
+  '@inquirer/confirm@6.4.1(@types/node@22.20.5)':
     dependencies:
-      '@inquirer/core': 12.1.0(@types/node@22.20.5)
-      '@inquirer/type': 4.3.0(@types/node@22.20.5)
+      '@inquirer/core': 12.1.1(@types/node@22.20.5)
+      '@inquirer/type': 4.3.1(@types/node@22.20.5)
     optionalDependencies:
       '@types/node': 22.20.5
     optional: true
 
-  '@inquirer/core@12.1.0(@types/node@22.20.5)':
+  '@inquirer/core@12.1.1(@types/node@22.20.5)':
     dependencies:
-      '@inquirer/ansi': 2.1.0
-      '@inquirer/figures': 2.1.0
-      '@inquirer/type': 4.3.0(@types/node@22.20.5)
+      '@inquirer/ansi': 2.1.1
+      '@inquirer/figures': 2.1.1
+      '@inquirer/type': 4.3.1(@types/node@22.20.5)
       cli-width: 4.1.0
+      fast-string-width: 3.0.2
       fast-wrap-ansi: 0.2.2
-      mute-stream: 4.0.0
+      mute-stream: 3.0.0
       signal-exit: 4.1.0
     optionalDependencies:
       '@types/node': 22.20.5
@@ -7349,10 +7353,10 @@ snapshots:
     optionalDependencies:
       '@types/node': 22.20.5
 
-  '@inquirer/figures@2.1.0':
+  '@inquirer/figures@2.1.1':
     optional: true
 
-  '@inquirer/type@4.3.0(@types/node@22.20.5)':
+  '@inquirer/type@4.3.1(@types/node@22.20.5)':
     optionalDependencies:
       '@types/node': 22.20.5
     optional: true
@@ -8770,6 +8774,11 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
+  '@types/node@22.20.7':
+    dependencies:
+      undici-types: 6.21.0
+    optional: true
+
   '@types/prop-types@15.7.15':
     optional: true
 
@@ -8794,7 +8803,7 @@ snapshots:
 
   '@types/set-cookie-parser@2.4.10':
     dependencies:
-      '@types/node': 22.20.5
+      '@types/node': 22.20.7
     optional: true
 
   '@types/statuses@2.0.6':
@@ -10525,7 +10534,7 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
-  lucide-react@1.73.0(@types/react@19.1.2)(react@19.1.0):
+  lucide-react@1.81.0(@types/react@19.1.2)(react@19.1.0):
     dependencies:
       react: 19.1.0
     optionalDependencies:
@@ -11193,7 +11202,7 @@ snapshots:
 
   msw@2.13.4(@types/node@22.20.5)(typescript@5.9.3):
     dependencies:
-      '@inquirer/confirm': 6.4.0(@types/node@22.20.5)
+      '@inquirer/confirm': 6.4.1(@types/node@22.20.5)
       '@mswjs/interceptors': 0.41.9
       '@open-draft/deferred-promise': 3.0.0
       '@types/statuses': 2.0.6
@@ -11204,12 +11213,12 @@ snapshots:
       outvariant: 1.4.3
       path-to-regexp: 6.3.0
       picocolors: 1.1.1
-      rettime: 0.11.12
+      rettime: 0.11.13
       statuses: 2.0.2
       strict-event-emitter: 0.5.1
       tough-cookie: 6.1.0
       type-fest: 5.10.0
-      until-async: 3.0.2
+      until-async: 3.0.3
       yargs: 17.7.3
     optionalDependencies:
       typescript: 5.9.3
@@ -11219,7 +11228,7 @@ snapshots:
 
   muggle-string@0.4.1: {}
 
-  mute-stream@4.0.0:
+  mute-stream@3.0.0:
     optional: true
 
   nanoid@3.3.20: {}
@@ -11795,7 +11804,7 @@ snapshots:
       retext-stringify: 4.0.0
       unified: 11.0.5
 
-  rettime@0.11.12:
+  rettime@0.11.13:
     optional: true
 
   reusify@1.1.0: {}
@@ -12185,12 +12194,12 @@ snapshots:
 
   tinyspy@4.0.6: {}
 
-  tldts-core@7.5.4:
+  tldts-core@7.6.2:
     optional: true
 
-  tldts@7.5.4:
+  tldts@7.6.2:
     dependencies:
-      tldts-core: 7.5.4
+      tldts-core: 7.6.2
     optional: true
 
   to-regex-range@5.0.1:
@@ -12206,7 +12215,7 @@ snapshots:
 
   tough-cookie@6.1.0:
     dependencies:
-      tldts: 7.5.4
+      tldts: 7.6.2
     optional: true
 
   tr46@0.0.3: {}
@@ -12363,7 +12372,7 @@ snapshots:
       ofetch: 1.5.1
       ufo: 1.6.3
 
-  until-async@3.0.2:
+  until-async@3.0.3:
     optional: true
 
   update-browserslist-db@1.4.0(browserslist@4.29.6):
